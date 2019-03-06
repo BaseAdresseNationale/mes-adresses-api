@@ -14,7 +14,11 @@
     "access": "public"
   },
   "scripts": {
-    "lint": "xo"
+    "lint": "xo",
+    "start": "node server"
+  },
+  "dependencies": {
+    "express": "^4.16.4"
   },
   "devDependencies": {
     "xo": "^0.24.0"
