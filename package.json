@@ -1,0 +1,19 @@
+{
+  "name": "@etalab/api-bal",
+  "version": "0.0.0",
+  "description": "API permettant la gestion de bases d’adresses à l’échelon local",
+  "main": "index.js",
+  "repository": "git@github.com:etalab/api-bal.git",
+  "contributors": [
+    "Jérôme Desboeufs <jerome.desboeufs@data.gouv.fr>",
+    "Théophile Merlière <theophile.merliere@data.gouv.fr>"
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">= 10"
+  }
+}
