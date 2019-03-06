@@ -18,7 +18,8 @@
     "start": "node server"
   },
   "dependencies": {
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "morgan": "^1.9.1"
   },
   "devDependencies": {
     "xo": "^0.24.0"
