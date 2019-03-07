@@ -3,6 +3,7 @@ const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const mongo = require('./lib/util/mongo')
+const routes = require('./lib/routes')
 
 async function main() {
   const app = express()
@@ -11,14 +12,13 @@ async function main() {
   await mongo.connect()
 
   app.use(cors())
+  app.use(express.json())
 
   if (process.env.NODE_ENV !== 'production') {
     app.use(morgan('dev'))
   }
 
-  app.get('/', (req, res) => {
-    res.send({message: 'Hello world!'})
-  })
+  app.use('/v1', routes)
 
   app.listen(port)
 }
