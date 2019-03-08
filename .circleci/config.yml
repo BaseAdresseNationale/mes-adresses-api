@@ -94,6 +94,14 @@ jobs:
           name: Run tests
           command: yarn test-unit
 
+      - run:
+          name: Compute coverage report
+          command: yarn nyc report --reporter=text-lcov > coverage.lcov
+
+      - run:
+          name: Upload code coverage to codecov
+          command: yarn codecov
+
       - save_cache:
           name: Save mongodb-prebuilt cache
           key: v2-api-bal-mongodb-prebuilt
