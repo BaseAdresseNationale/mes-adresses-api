@@ -171,10 +171,10 @@ workflows:
             - install
           filters: *default_filters
 
-      - changelog:
-          requires:
-            - install
-          filters: *default_filters
+      # - changelog:
+      #     requires:
+      #       - install
+      #     filters: *default_filters
 
       - release:
           requires:
