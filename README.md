@@ -1,6 +1,13 @@
-# API Bases Adresse Locales
+# API Bases Adresse Locales [![CircleCI](https://circleci.com/gh/etalab/api-bal/tree/master.svg?style=svg)](https://circleci.com/gh/etalab/api-bal/tree/master)
+
+
 
 API permettant la gestion de bases d’adresses à l’échelon local
+
+[![npm version](https://badgen.net/npm/v/@etalab/api-bal)](https://www.npmjs.com/package/@etalab/api-bal)
+[![dependencies Status](https://david-dm.org/etalab/api-bal/status.svg)](https://david-dm.org/etalab/api-bal)
+[![codecov](https://badgen.net/codecov/c/github/etalab/api-bal)](https://codecov.io/gh/etalab/api-bal)
+[![XO code style](https://badgen.net/badge/code%20style/XO/cyan)](https://github.com/xojs/xo)
 
 ## Pré-requis
 
