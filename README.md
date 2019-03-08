@@ -8,6 +8,26 @@ API permettant la gestion de bases d’adresses à l’échelon local
 - [yarn](https://www.yarnpkg.com)
 - [MongoDB](https://www.mongodb.com) 4+
 
+## Utilisation
+
+### Installation
+
+```
+yarn
+```
+
+### Démarrer le service
+
+```
+yarn start
+```
+
+### Lancer les tests
+
+```
+yarn test
+```
+
 ## Configuration
 
 Cette application utilise des variables d'environnement pour sa configuration.
