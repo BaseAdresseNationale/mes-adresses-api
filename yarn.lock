@@ -325,6 +325,11 @@
   dependencies:
     arrify "^1.0.1"
 
+"@etalab/decoupage-administratif@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@etalab/decoupage-administratif/-/decoupage-administratif-0.3.0.tgz#5af34065ac82672f62ece3b9cd12184688ffcb73"
+  integrity sha512-tpXVQ2kv8cZPe9DXfflsKK4xF18VwNTitpgnj2nvZO1jmg5co3wDg8qGucSVoPK6LTzD3ON7U6E1yxNX9s4/XQ==
+
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@mrmlnc/readdir-enhanced/-/readdir-enhanced-2.2.1.tgz#524af240d1a360527b730475ecfa1344aa540dde"
