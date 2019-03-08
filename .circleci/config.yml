@@ -176,10 +176,10 @@ workflows:
       #       - install
       #     filters: *default_filters
 
-      - release:
-          requires:
-            - changelog
-          filters:
-            <<: *default_filters
-            branches:
-              ignore: /.*/
+      # - release:
+      #     requires:
+      #       - changelog
+      #     filters:
+      #       <<: *default_filters
+      #       branches:
+      #         ignore: /.*/
