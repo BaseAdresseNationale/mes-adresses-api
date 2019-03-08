@@ -85,9 +85,20 @@ jobs:
       - *attach_workspace
       - *restore_node_modules
 
+      - restore_cache:
+          name: Restore mongodb-prebuilt cache
+          keys:
+            - v2-api-bal-mongodb-prebuilt
+
       - run:
           name: Run tests
           command: yarn test-unit
+
+      - save_cache:
+          name: Save mongodb-prebuilt cache
+          key: v2-api-bal-mongodb-prebuilt
+          paths:
+            - ~/.mongodb-prebuilt
 
   changelog:
     <<: *nodejs_container
