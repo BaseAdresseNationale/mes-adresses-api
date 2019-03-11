@@ -36,7 +36,7 @@
     "lerna-changelog": "^0.8.2",
     "mongomem": "^0.1.9",
     "nyc": "^13.3.0",
-    "supertest": "^3.4.2",
+    "supertest": "^4.0.0",
     "xo": "^0.24.0"
   },
   "xo": {
