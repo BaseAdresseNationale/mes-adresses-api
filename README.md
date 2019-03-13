@@ -48,6 +48,27 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 
 Toutes ces variables ont des valeurs par défaut que vous trouverez dans le fichier `.env.sample`.
 
+## Docker
+
+Il est possible d’executer cette application dans un conteneur Docker afin d’éviter d’avoir à installer toutes ses dépendances sur votre machine.
+
+Le fichier `docker-compose.yml` crée les services suivants :
+- Une base mongodb, non exposée
+- L’API Bases Adresses Locales, exposée sur le port `5000`
+- Un service Mongo Express, exposé sur le port `8081` (interface web à mongodb)
+
+Pour démarrer les services, lancer
+
+```
+docker-compose up
+```
+
+L’image Docker de l’API est construite avec le fichier `Dockerfile`. Les modifications apportées au code ne seront pas détectées automatiquement, il est nécessaire de reconstruire l’image avec
+
+```
+docker-compose build
+```
+
 ## Licence
 
 MIT
