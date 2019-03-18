@@ -24,7 +24,7 @@
     "cors": "^2.8.5",
     "csv-parser": "^2.2.0",
     "decompress": "^4.2.0",
-    "dotenv": "^6.2.0",
+    "dotenv": "^7.0.0",
     "express": "^4.16.4",
     "get-stream": "^5.0.0",
     "got": "^9.6.0",
