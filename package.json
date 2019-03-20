@@ -21,8 +21,10 @@
   },
   "dependencies": {
     "@etalab/decoupage-administratif": "^0.3.0",
+    "@etalab/project-legal": "^0.3.3",
     "cors": "^2.8.5",
     "csv-parser": "^2.2.0",
+    "csv-write-stream": "^2.0.0",
     "decompress": "^4.2.0",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
