@@ -44,6 +44,7 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 
 | Nom de la variable | Description |
 | --- | --- |
+| `EDITOR_URL_PATTERN ` | Pattern permettant de construire l'URL vers l'édition d'une BAL |
 | `MONGODB_URL` | Paramètre de connexion à MongoDB |
 | `MONGODB_DBNAME` | Nom de la base de données à utiliser |
 | `PORT` | Port à utiliser pour l'API |
