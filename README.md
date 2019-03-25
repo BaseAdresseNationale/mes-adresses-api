@@ -53,7 +53,8 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `SMTP_USER` | Nom d'utilisateur pour se connecter au serveur SMTP |
 | `SMTP_PASS` | Mot de passe pour se connecter au serveur SMTP |
 | `SMTP_SECURE` | Indique si le serveur SMTP nécessite une connexion sécurisée (`YES`) |
-| `SMTP_SENDER` | Adresse à utiliser en tant qu'expéditeur des emails |
+| `SMTP_FROM` | Adresse à utiliser en tant qu'expéditeur des emails |
+| `SMTP_BCC` | Adresse(s) en copie cachée à utiliser pour tous les envois de notifications |
 | `SHOW_EMAILS` | Indique si les courriels doivent être affichés dans les logs (`YES`) |
 
 Toutes ces variables ont des valeurs par défaut que vous trouverez dans le fichier `.env.sample`.
