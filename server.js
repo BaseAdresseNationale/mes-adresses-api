@@ -13,7 +13,7 @@ async function main() {
   await mongo.connect()
   await mongo.ensureIndexes()
 
-  app.use(cors())
+  app.use(cors({origin: true}))
 
   if (process.env.NODE_ENV !== 'production') {
     app.use(morgan('dev'))
