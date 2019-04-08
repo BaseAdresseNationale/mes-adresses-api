@@ -2598,7 +2598,7 @@ fresh@0.5.2:
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
   integrity sha1-PYyt2Q2XZWn6g1qx+OSyOhBWBac=
 
-from2@^2.1.0, from2@^2.1.1:
+from2@^2.1.0, from2@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/from2/-/from2-2.3.0.tgz#8bfb5502bde4a4d36cfdeea007fcca21d7e382af"
   integrity sha1-i/tVAr3kpNNs/e6gB/zKIdfjgq8=
@@ -3164,12 +3164,12 @@ inquirer@^6.2.2:
     strip-ansi "^5.0.0"
     through "^2.3.6"
 
-into-stream@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/into-stream/-/into-stream-5.0.0.tgz#690569d7806b29d7cbd496cb05972fbe725b42a5"
-  integrity sha512-VcdJDRK7+vZrcGCdklXy9Zu6lwh2BFVwxCUhqYwolNYAsJE5og3aY4PR+03Hup8pwKV6JhvQ4dxRMOHUgrutdg==
+into-stream@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/into-stream/-/into-stream-5.1.0.tgz#b05f37d8fed05c06a0b43b556d74e53e5af23878"
+  integrity sha512-cbDhb8qlxKMxPBk/QxTtYg1DQ4CwXmadu7quG3B7nrJsgSncEreF2kwWKZFdnjc/lSNNIkFPsjI7SM0Cx/QXPw==
   dependencies:
-    from2 "^2.1.1"
+    from2 "^2.3.0"
     p-is-promise "^2.0.0"
 
 invert-kv@^1.0.0:
