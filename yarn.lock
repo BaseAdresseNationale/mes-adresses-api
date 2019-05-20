@@ -1588,10 +1588,10 @@ crypto-random-string@^1.0.0:
   resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-1.0.0.tgz#a230f64f568310e1498009940790ec99545bca7e"
   integrity sha1-ojD2T1aDEOFJgAmUB5DsmVRbyn4=
 
-csv-parser@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/csv-parser/-/csv-parser-2.2.0.tgz#241dc4d02854f1b05965895219988338240d833a"
-  integrity sha512-d2USCnRP5fSMHEPfVdzIxlk7+zpFlffak5Ad4Ndzm3Nw1rmxBxezpyL4A3FD1g4R+W/cx2TEeKnGdTz49BJyRg==
+csv-parser@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/csv-parser/-/csv-parser-2.3.0.tgz#d236657dbd33ff3733b74cae6c3d7d7389679174"
+  integrity sha512-yfYRZ9P9LNKuRK0lEFf40Be4HcFxe1XgxWL/QmlkakSE8SHcWbOGFZA/u7YpfGX/hVbRUdbnO5xO8XuYxrcBtA==
   dependencies:
     buffer-alloc "^1.1.0"
     buffer-from "^1.0.0"
