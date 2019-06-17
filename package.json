@@ -38,7 +38,7 @@
     "mongodb": "^3.2.6",
     "morgan": "^1.9.1",
     "nodemailer": "^6.2.1",
-    "pumpify": "^1.5.1"
+    "pumpify": "^2.0.0"
   },
   "devDependencies": {
     "ava": "^1.4.1",
