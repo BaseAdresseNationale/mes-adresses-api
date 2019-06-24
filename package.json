@@ -41,7 +41,7 @@
     "pumpify": "^2.0.0"
   },
   "devDependencies": {
-    "ava": "^1.4.1",
+    "ava": "^2.1.0",
     "babel-runtime": "^6.26.0",
     "codecov": "^3.5.0",
     "lerna-changelog": "^0.8.2",
