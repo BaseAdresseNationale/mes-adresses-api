@@ -45,7 +45,7 @@
     "codecov": "^3.6.1",
     "lerna-changelog": "^0.8.2",
     "mongomem": "^0.1.9",
-    "nock": "^11.3.5",
+    "nock": "^11.6.0",
     "nyc": "^14.1.1",
     "supertest": "^4.0.2",
     "xo": "^0.24.0"
