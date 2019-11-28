@@ -1,7 +1,3 @@
-const {template} = require('lodash')
-const {getEditorUrl} = require('./util')
-
-const bodyTemplate = template(`
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -80,7 +76,6 @@ const bodyTemplate = template(`
       padding: 10px;
       text-align: center;
     }
-
   </style>
 </head>
 
@@ -95,30 +90,16 @@ const bodyTemplate = template(`
   </div>
 
   <div class="container">
-    
+
     <p>Vous pouvez dès maintenant particper à l'administration de votre <b>Base Adresse Locale</b> à partir de la page
       suivante: </p>
     <button><a href="<%= editorUrl %>" target="blank">Gérer mes adresses</a></button>
-      
+
     <p>En cas de problème, l'accès à la <b><i>Base Adresse Locale</i></b> peut être réinitialisé sur demande.</p>
-      
+
     <p><i>L’équipe adresse.data.gouv.fr</i></p>
     <p class="infos"><small><i>Nouveau jeton (information expert): <%= baseLocale.token %></i></small></p>
   </div>
 </body>
 
 </html>
-
-`)
-
-function formatEmail(data) {
-  const {baseLocale} = data
-  const editorUrl = getEditorUrl(baseLocale)
-
-  return {
-    subject: 'Invitation à l‘administration d‘une Base Adresse Locale',
-    text: bodyTemplate({baseLocale, editorUrl})
-  }
-}
-
-module.exports = formatEmail
