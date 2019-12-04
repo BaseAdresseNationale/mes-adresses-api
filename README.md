@@ -56,7 +56,8 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `SMTP_FROM` | Adresse à utiliser en tant qu'expéditeur des emails |
 | `SMTP_BCC` | Adresse(s) en copie cachée à utiliser pour tous les envois de notifications |
 | `SHOW_EMAILS` | Indique si les courriels doivent être affichés dans les logs (`YES`) |
-
+| `API_URL` | Chemin du dossier `public` |
+ 
 Toutes ces variables ont des valeurs par défaut que vous trouverez dans le fichier `.env.sample`.
 
 ## Docker
