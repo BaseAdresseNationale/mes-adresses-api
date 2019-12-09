@@ -19,6 +19,7 @@ async function main() {
     app.use(morgan('dev'))
   }
 
+  app.use('/public', express.static('public'))
   app.use('/v1', routes)
 
   app.listen(port)
