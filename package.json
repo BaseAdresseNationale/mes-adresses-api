@@ -34,7 +34,7 @@
     "into-stream": "^5.1.1",
     "joi": "^14.3.1",
     "lodash": "^4.17.15",
-    "mongodb": "^3.3.5",
+    "mongodb": "^3.5.5",
     "morgan": "^1.9.1",
     "nodemailer": "^6.4.1",
     "pumpify": "^2.0.1"
