@@ -427,10 +427,12 @@
     papaparse "^4.6.3"
     yargs "^13.2.2"
 
-"@etalab/decoupage-administratif@^0.6.2":
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/@etalab/decoupage-administratif/-/decoupage-administratif-0.6.2.tgz#99d5482f05e206b6f9e6a2a56fa92bb83a9e7f1d"
-  integrity sha512-i/SteoVD/rhPZf1AZCvA86KfEVOWtOKkclUHoDUbWcqlvZrETHXvBtNRqUSMH4W6+0+HxVjlZMhYJamzaKwMTA==
+"@etalab/decoupage-administratif@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@etalab/decoupage-administratif/-/decoupage-administratif-0.8.0.tgz#378a73a00737de5432179394dd28244a93bcbd46"
+  integrity sha512-BNO0BLfPyUvLpGAStdKpZAX80hUHdkhhD3GMu7HcwERqmshl96uIU0v3/1LlL23DiMs9qRyVIRnfDDIAfHaG/w==
+  dependencies:
+    lodash "^4.17.15"
 
 "@etalab/project-legal@^0.3.3":
   version "0.3.3"
