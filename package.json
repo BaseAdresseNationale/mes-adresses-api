@@ -52,7 +52,10 @@
   },
   "xo": {
     "semicolon": false,
-    "space": 2
+    "space": 2,
+    "rules": {
+      "unicorn/prevent-abbreviations": "off"
+    }
   },
   "engines": {
     "node": ">= 10"
