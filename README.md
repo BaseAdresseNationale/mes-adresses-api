@@ -1,4 +1,4 @@
-# API Bases Adresse Locales [![CircleCI](https://circleci.com/gh/etalab/api-bal/tree/master.svg?style=svg)](https://circleci.com/gh/etalab/api-bal/tree/master)
+# API Bases Adresse Locales
 
 API permettant la gestion de bases d’adresses à l’échelon local
 
@@ -57,7 +57,7 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `SMTP_BCC` | Adresse(s) en copie cachée à utiliser pour tous les envois de notifications |
 | `SHOW_EMAILS` | Indique si les courriels doivent être affichés dans les logs (`YES`) |
 | `API_URL` | URL de base de l’API |
- 
+
 Toutes ces variables ont des valeurs par défaut que vous trouverez dans le fichier `.env.sample`.
 
 ## Docker
