@@ -29,7 +29,7 @@
     "csv-write-stream": "^2.0.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "get-stream": "^5.1.0",
+    "get-stream": "^5.2.0",
     "got": "^10.0.2",
     "into-stream": "^5.1.1",
     "joi": "^14.3.1",
