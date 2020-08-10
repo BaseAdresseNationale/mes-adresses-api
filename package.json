@@ -43,7 +43,7 @@
     "ava": "^3.10.1",
     "babel-runtime": "^6.26.0",
     "codecov": "^3.7.2",
-    "lerna-changelog": "^0.8.3",
+    "lerna-changelog": "^1.0.1",
     "mongomem": "^0.1.9",
     "nock": "^11.7.0",
     "nyc": "^15.1.0",
