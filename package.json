@@ -36,7 +36,7 @@
     "lodash": "^4.17.19",
     "mongodb": "^3.3.5",
     "morgan": "^1.10.0",
-    "nodemailer": "^6.4.10",
+    "nodemailer": "^6.4.11",
     "pumpify": "^2.0.1"
   },
   "devDependencies": {
