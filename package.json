@@ -41,7 +41,6 @@
   },
   "devDependencies": {
     "ava": "^3.11.1",
-    "babel-runtime": "^6.26.0",
     "codecov": "^3.7.2",
     "lerna-changelog": "^1.0.1",
     "mongodb-memory-server": "^6.6.3",
