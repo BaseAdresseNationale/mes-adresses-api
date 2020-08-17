@@ -44,7 +44,7 @@
     "codecov": "^3.7.2",
     "lerna-changelog": "^1.0.1",
     "mongodb-memory-server": "^6.6.3",
-    "nock": "^13.0.3",
+    "nock": "^13.0.4",
     "nyc": "^15.1.0",
     "supertest": "^4.0.2",
     "xo": "^0.24.0"
