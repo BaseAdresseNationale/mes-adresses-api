@@ -46,7 +46,7 @@
     "mongodb-memory-server": "^6.9.2",
     "nock": "^13.0.4",
     "nyc": "^15.1.0",
-    "supertest": "^4.0.2",
+    "supertest": "^5.0.0",
     "xo": "^0.24.0"
   },
   "xo": {
