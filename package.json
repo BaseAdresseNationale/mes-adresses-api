@@ -43,7 +43,7 @@
     "ava": "^3.13.0",
     "codecov": "^3.7.2",
     "lerna-changelog": "^1.0.1",
-    "mongodb-memory-server": "^6.9.0",
+    "mongodb-memory-server": "^6.9.2",
     "nock": "^13.0.4",
     "nyc": "^15.1.0",
     "supertest": "^4.0.2",
