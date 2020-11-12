@@ -32,7 +32,6 @@
     "get-stream": "^6.0.0",
     "got": "^11.5.2",
     "into-stream": "^6.0.0",
-    "isomorphic-unfetch": "^3.1.0",
     "joi": "^17.2.0",
     "lodash": "^4.17.20",
     "mongodb": "^3.6.3",
