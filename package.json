@@ -47,13 +47,14 @@
     "nock": "^13.0.5",
     "nyc": "^15.1.0",
     "supertest": "^6.0.1",
-    "xo": "^0.24.0"
+    "xo": "^0.34.2"
   },
   "xo": {
     "semicolon": false,
     "space": 2,
     "rules": {
-      "unicorn/prevent-abbreviations": "off"
+      "unicorn/prevent-abbreviations": "off",
+      "unicorn/no-reduce": "off"
     }
   },
   "engines": {
