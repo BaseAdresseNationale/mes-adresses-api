@@ -25,12 +25,12 @@
     "@etalab/project-legal": "^0.4.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
-    "csv-parser": "^2.3.3",
+    "csv-parser": "^3.0.0",
     "csv-write-stream": "^2.0.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "get-stream": "^6.0.0",
-    "got": "^11.8.0",
+    "got": "^11.8.1",
     "into-stream": "^6.0.0",
     "joi": "^17.3.0",
     "lodash": "^4.17.20",
@@ -40,14 +40,14 @@
     "pumpify": "^2.0.1"
   },
   "devDependencies": {
-    "ava": "^3.13.0",
+    "ava": "^3.14.0",
     "codecov": "^3.8.1",
     "lerna-changelog": "^1.0.1",
     "mongodb-memory-server": "^6.9.2",
     "nock": "^13.0.5",
     "nyc": "^15.1.0",
     "supertest": "^6.0.1",
-    "xo": "^0.35.0"
+    "xo": "^0.36.1"
   },
   "xo": {
     "semicolon": false,
