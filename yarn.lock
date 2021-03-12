@@ -260,18 +260,19 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@etalab/bal@^0.23.0":
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/@etalab/bal/-/bal-0.23.0.tgz#b1451c2c0dd3160e392de07ddd56708cfc40dfbc"
-  integrity sha512-csuFJKqnzK2z+fs8/uNYqVOwVkoYyJYJenxF5NQJVUCHkWvd2bEhWxIlI6tgApkxXIg8Avq06fzOvKGSaFRyuQ==
+"@etalab/bal@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@etalab/bal/-/bal-1.2.0.tgz#2a236ba24034ca13654b6e3df147deb4dbea6a3e"
+  integrity sha512-FJHHOpW1JvKIrKcHU1hLOYY0QkFDmb61IgUXqhpMsusEWnOijQOkzd2TVHaC6PpV2iOyEazahJl/fr+6zjryUA==
   dependencies:
-    blob-to-buffer "^1.2.8"
-    date-fns "^2.10.0"
-    debug "^4.1.1"
+    blob-to-buffer "^1.2.9"
+    chalk "^4.1.0"
+    date-fns "^2.17.0"
+    iconv-lite "^0.6.2"
     jschardet-french "^0.0.1"
-    lodash "^4.17.15"
-    papaparse "^5.1.1"
-    yargs "^15.1.0"
+    lodash "^4.17.20"
+    papaparse "^5.3.0"
+    yargs "^16.2.0"
 
 "@etalab/decoupage-administratif@^0.8.0":
   version "0.8.0"
@@ -991,10 +992,10 @@ bl@^4.0.3:
     inherits "^2.0.4"
     readable-stream "^3.4.0"
 
-blob-to-buffer@^1.2.8:
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/blob-to-buffer/-/blob-to-buffer-1.2.8.tgz#78eeeb332f1280ed0ca6fb2b60693a8c6d36903a"
-  integrity sha512-re0AIxakF504MgeMtIyJkVcZ8T5aUxtp/QmTMlmjyb3P44E1BEv5x3LATBGApWAJATyXHtkXRD+gWTmeyYLiQA==
+blob-to-buffer@^1.2.9:
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/blob-to-buffer/-/blob-to-buffer-1.2.9.tgz#a17fd6c1c564011408f8971e451544245daaa84a"
+  integrity sha512-BF033y5fN6OCofD3vgHmNtwZWRcq9NLyyxyILx9hfMy1sXYy4ojFl765hJ2lP0YaN2fuxPaLO2Vzzoxy0FLFFA==
 
 blueimp-md5@^2.10.0:
   version "2.11.0"
@@ -1801,10 +1802,10 @@ currently-unhandled@^0.4.1:
   dependencies:
     array-find-index "^1.0.1"
 
-date-fns@^2.10.0:
-  version "2.15.0"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.15.0.tgz#424de6b3778e4e69d3ff27046ec136af58ae5d5f"
-  integrity sha512-ZCPzAMJZn3rNUvvQIMlXhDr4A+Ar07eLeGsGREoWU19a3Pqf5oYa+ccd+B3F6XVtQY6HANMFdOQ8A+ipFnvJdQ==
+date-fns@^2.17.0:
+  version "2.19.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.19.0.tgz#65193348635a28d5d916c43ec7ce6fbd145059e1"
+  integrity sha512-X3bf2iTPgCAQp9wvjOQytnf5vO5rESYRXlPIVcgSbtT5OTScPcsf9eZU+B/YIkKAtYr5WeCii58BgATrNitlWg==
 
 date-time@^3.1.0:
   version "3.1.0"
@@ -5175,10 +5176,10 @@ pako@~1.0.5:
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
 
-papaparse@^5.1.1:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.2.0.tgz#97976a1b135c46612773029153dc64995caa3b7b"
-  integrity sha512-ylq1wgUSnagU+MKQtNeVqrPhZuMYBvOSL00DHycFTCxownF95gpLAk1HiHdUW77N8yxRq1qHXLdlIPyBSG9NSA==
+papaparse@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.3.0.tgz#ab1702feb96e79ab4309652f36db9536563ad05a"
+  integrity sha512-Lb7jN/4bTpiuGPrYy4tkKoUS8sTki8zacB5ke1p5zolhcSE4TlWgrlsxjrDTbG/dFVh07ck7X36hUf/b5V68pg==
 
 parent-module@^1.0.0:
   version "1.0.0"
@@ -7146,7 +7147,7 @@ yargs@^13.0.0:
     y18n "^4.0.0"
     yargs-parser "^13.1.2"
 
-yargs@^15.0.0, yargs@^15.0.2, yargs@^15.1.0:
+yargs@^15.0.0, yargs@^15.0.2:
   version "15.4.1"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-15.4.1.tgz#0d87a16de01aee9d8bec2bfbf74f67851730f4f8"
   integrity sha512-aePbxDmcYW++PaqBsJ+HYUFwCdv4LVvdnhBy78E57PIor8/OVvhMrADFFEDh8DHDFRv/O9i3lPhsENjO7QX0+A==
