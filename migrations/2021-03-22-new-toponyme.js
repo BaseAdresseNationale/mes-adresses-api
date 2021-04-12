@@ -34,9 +34,8 @@ async function formatHameaux(hameaux) {
 
 async function insertManyLieuxDits(toponymes) {
   const lieuxDits = toponymes.map(({nom, positions, commune, _bal, _created, _updated}) => {
-    const idToponyme = new ObjectID()
     return {
-      _id: idToponyme,
+      _id: new ObjectID(),
       nom,
       _bal,
       commune,
@@ -81,8 +80,22 @@ async function main() {
   const toponymes = await mongo.db.collection('voies').find({positions: {$ne: []}}).toArray()
   const voieComplements = await mongo.db.collection('voies').find({complement: {$ne: null}, positions: {$eq: []}}).toArray()
 
-  await insertManyLieuxDits(toponymes)
-  await insertManyHameaux(voieComplements)
+  if (toponymes.length > 0) {
+    await insertManyLieuxDits(toponymes)
+    await mongo.db.collection('voies').deleteMany({
+      _id: {
+        $in: toponymes.map(({_id}) => _id)
+      }
+    })
+  }
+
+  if (voieComplements.length > 0) {
+    await insertManyHameaux(voieComplements)
+    await mongo.db.collection('voies').updateMany(
+      {_id: {$in: voieComplements.map(({_id}) => _id)}},
+      {$unset: {complement: ''}}
+    )
+  }
 
   await mongo.disconnect()
 }
