@@ -1,7 +1,8 @@
 const test = require('ava')
 const {MongoMemoryServer} = require('mongodb-memory-server')
+const {uniq} = require('lodash')
 const mongo = require('../../lib/util/mongo')
-const {insertManyLieuxDits, insertManyHameaux} = require('../2021-03-22-new-toponyme')
+const {migrateToponymes, insertManyLieuxDits, insertManyHameaux} = require('../2021-03-22-new-toponyme')
 
 const mongod = new MongoMemoryServer()
 
@@ -12,6 +13,80 @@ test.before('start server', async () => {
 test.after.always('cleanup', async () => {
   await mongo.disconnect()
   await mongod.stop()
+})
+
+test.serial('migrateToponymes', async t => {
+  const idBal = new mongo.ObjectID()
+  const idVoieA = new mongo.ObjectID()
+  const idVoieB = new mongo.ObjectID()
+  const idToponyme = new mongo.ObjectID()
+  const idNumeroA = new mongo.ObjectID()
+  const idNumeroB = new mongo.ObjectID()
+
+  await mongo.db.collection('bases_locales').insertOne({
+    _id: idBal
+  })
+  await mongo.db.collection('voies').insertOne({
+    _id: idVoieA,
+    nom: 'Rue du Vieux Chêne',
+    commune: '27570',
+    complement: 'La Haute Folie',
+    _bal: idBal,
+    positions: []
+  })
+  await mongo.db.collection('voies').insertOne({
+    _id: idVoieB,
+    nom: 'Impasse des Reneux',
+    commune: '27570',
+    complement: 'la Haute folie',
+    _bal: idBal,
+    positions: []
+  })
+  await mongo.db.collection('numeros').insertMany([{
+    _id: idNumeroA,
+    _bal: idBal,
+    commune: '12345',
+    voie: idVoieA,
+    numero: 42,
+    positions: []
+  },
+  {
+    _id: idNumeroB,
+    _bal: idBal,
+    commune: '12345',
+    voie: idVoieB,
+    numero: 21,
+    positions: []
+  }])
+  await mongo.db.collection('voies').insertOne({
+    _id: idToponyme,
+    nom: 'la Haute Folie',
+    commune: '27570',
+    _bal: idBal,
+    positions: [{
+      type: 'segment',
+      point: {type: 'Point', coordinates: [1, 1]}
+    }]
+  })
+
+  await migrateToponymes()
+
+  const toponymes = await mongo.db.collection('toponymes').find().toArray()
+  t.is(toponymes.length, 1)
+  t.deepEqual(toponymes[0].positions, [{
+    type: 'segment',
+    point: {type: 'Point', coordinates: [1, 1]}
+  }])
+  t.falsy(await mongo.db.collection('toponymes').findOne({_id: idToponyme}))
+
+  const voies = await mongo.db.collection('voies').find().toArray()
+  t.is(voies.length, 2)
+  t.is(voies[0].complement, undefined)
+  t.is(voies[1].complement, undefined)
+
+  const numeros = await mongo.db.collection('numeros').find().toArray()
+  t.is(numeros.length, 2)
+  t.is(uniq(numeros.map(({toponyme}) => `${toponyme}`)).length, 1)
 })
 
 test('insertManyLieutsDits', async t => {
