@@ -99,11 +99,11 @@ async function migrateToponymes() {
 
   if (voieComplements.length > 0) {
     await insertManyHameaux(voieComplements)
-    await mongo.db.collection('voies').updateMany(
-      {_id: {$in: voieComplements.map(({_id}) => _id)}},
-      {$unset: {complement: ''}}
-    )
   }
+
+  await mongo.db.collection('voies').updateMany({},
+    {$unset: {complement: '', positions: ''}}
+  )
 }
 
 async function main() {

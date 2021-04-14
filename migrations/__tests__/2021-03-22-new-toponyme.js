@@ -82,7 +82,9 @@ test.serial('migrateToponymes', async t => {
   const voies = await mongo.db.collection('voies').find().toArray()
   t.is(voies.length, 2)
   t.is(voies[0].complement, undefined)
+  t.is(voies[0].positions, undefined)
   t.is(voies[1].complement, undefined)
+  t.is(voies[1].positions, undefined)
 
   const numeros = await mongo.db.collection('numeros').find().toArray()
   t.is(numeros.length, 2)
