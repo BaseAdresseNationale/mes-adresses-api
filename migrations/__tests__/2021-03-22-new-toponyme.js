@@ -8,11 +8,16 @@ const mongod = new MongoMemoryServer()
 
 test.before('start server', async () => {
   await mongo.connect(await mongod.getUri())
+  await mongo.db.dropDatabase()
 })
 
 test.after.always('cleanup', async () => {
   await mongo.disconnect()
   await mongod.stop()
+})
+
+test.afterEach(async () => {
+  await mongo.db.dropDatabase()
 })
 
 test.serial('migrateToponymes', async t => {
@@ -91,7 +96,7 @@ test.serial('migrateToponymes', async t => {
   t.is(uniq(numeros.map(({toponyme}) => `${toponyme}`)).length, 1)
 })
 
-test('insertManyLieutsDits', async t => {
+test.serial('insertManyLieutsDits', async t => {
   const idBal = new mongo.ObjectID()
   const idVoieA = new mongo.ObjectID()
   const idVoieB = new mongo.ObjectID()
@@ -147,7 +152,7 @@ test('insertManyLieutsDits', async t => {
   t.deepEqual(lieuDitA._updated, new Date('2021-01-01'))
 })
 
-test('insertManyHameaux', async t => {
+test.serial('insertManyHameaux', async t => {
   const idBal = new mongo.ObjectID()
   const idVoie = new mongo.ObjectID()
   const idNumeroA = new mongo.ObjectID()
