@@ -86,7 +86,7 @@ async function migrateToponymes() {
 
   // Supprime les champs 'complement' et 'positions' de voies, désormais inutile
   await mongo.db.collection('voies').updateMany({},
-    {$unset: {complement: '', positions: ''}}
+    {$unset: {complement: 1, positions: 1}}
   )
 }
 
