@@ -72,7 +72,7 @@ async function runMigrationOnContext({_bal, commune}) {
   await mongo.db.collection('voies').deleteMany({_bal, commune, positions: {$ne: []}})
 
   // On supprime le champ complement
-  await mongo.db.collection('voies').updateMany({_bal, commune}, {$unset: {complement: 1}})
+  await mongo.db.collection('voies').updateMany({_bal, commune}, {$unset: {complement: 1, positions: 1}})
 }
 
 async function listContexts() {
