@@ -2,7 +2,6 @@
 /* eslint no-await-in-loop: off */
 require('dotenv').config()
 
-const Promise = require('bluebird')
 const mongo = require('../lib/util/mongo')
 
 async function migrateCommune() {
@@ -15,7 +14,7 @@ async function migrateCommune() {
 
   for (const baseLocale of basesLocalesWithCommunes) {
     const {_id, communes} = baseLocale
-    await Promise.all(communes.map(code => mongo.db.collection('communes').insertOne({_bal: _id, code})))
+    await mongo.db.collection('communes').insertMany(communes.map(code => ({_bal: _id, code})))
   }
 
   await mongo.db.collection('bases_locales').updateMany({}, {$unset: {communes: ''}})
