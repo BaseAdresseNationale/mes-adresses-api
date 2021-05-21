@@ -6,8 +6,8 @@ const mongo = require('../lib/util/mongo')
 async function main() {
   await mongo.connect()
 
-  await mongo.db.collection('numeros').updateMany({}, {$set: {parcelles: []}})
-  await mongo.db.collection('toponymes').updateMany({}, {$set: {parcelles: []}})
+  await mongo.db.collection('numeros').updateMany({parcelles: {$exists: false}}, {$set: {parcelles: []}})
+  await mongo.db.collection('toponymes').updateMany({parcelles: {$exists: false}}, {$set: {parcelles: []}})
 
   await mongo.disconnect()
 }
