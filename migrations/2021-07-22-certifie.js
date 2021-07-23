@@ -7,7 +7,6 @@ async function main() {
   await mongo.connect()
 
   await mongo.db.collection('numeros').updateMany({certifie: {$exists: false}}, {$set: {certifie: false}})
-  await mongo.db.collection('toponymes').updateMany({certifie: {$exists: false}}, {$set: {certifie: false}})
 
   await mongo.disconnect()
 }
