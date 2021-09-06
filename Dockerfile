@@ -1,5 +1,5 @@
 # 1/2 Create build image
-FROM node:10-alpine AS build
+FROM node:14-alpine AS build
 
 RUN mkdir -p /opt/api-bal
 WORKDIR /opt/api-bal
@@ -8,7 +8,7 @@ COPY package.json yarn.lock ./
 RUN yarn --production --frozen-lockfile
 
 # 2/2 Create production image
-FROM node:10-alpine
+FROM node:14-alpine
 
 RUN mkdir -p /opt/api-bal
 WORKDIR /opt/api-bal
