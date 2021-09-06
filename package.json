@@ -43,7 +43,6 @@
   "devDependencies": {
     "ava": "^3.15.0",
     "codecov": "^3.8.2",
-    "lerna-changelog": "^1.0.1",
     "mongodb-memory-server": "^6.9.6",
     "nock": "^13.1.0",
     "nyc": "^15.1.0",
