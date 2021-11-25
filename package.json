@@ -20,7 +20,7 @@
     "start": "node server"
   },
   "dependencies": {
-    "@etalab/bal": "^1.3.1",
+    "@etalab/bal": "^1.7.1",
     "@etalab/decoupage-administratif": "^0.8.0",
     "@etalab/project-legal": "^0.4.1",
     "body-parser": "^1.19.0",
