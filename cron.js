@@ -28,14 +28,14 @@ const jobs = [
 
       if (toUpdateToNotPublished.length > 0) {
         await mongo.db.collection('bases_locales').updateMany(
-          {status: 'published', _id: {$in: toUpdateToNotPublished.map(id => new mongo.ObjectID(id))}},
+          {status: 'published', _id: {$in: toUpdateToNotPublished.map(id => new mongo.ObjectId(id))}},
           {$set: {status: 'ready-to-publish'}}
         )
       }
 
       if (toUpdateToPublished.length > 0) {
         await mongo.db.collection('bases_locales').updateMany(
-          {status: {$ne: 'published'}, _id: {$in: toUpdateToPublished.map(id => new mongo.ObjectID(id))}},
+          {status: {$ne: 'published'}, _id: {$in: toUpdateToPublished.map(id => new mongo.ObjectId(id))}},
           {$set: {status: 'published'}}
         )
       }

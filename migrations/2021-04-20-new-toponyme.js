@@ -3,7 +3,7 @@
 require('dotenv').config()
 const {keyBy, deburr} = require('lodash')
 const mongo = require('../lib/util/mongo')
-const {ObjectID} = require('../lib/util/mongo')
+const {ObjectId} = require('../lib/util/mongo')
 
 const now = new Date()
 
@@ -19,7 +19,7 @@ async function runMigrationOnContext({_bal, commune}) {
   const toponymes = voiesToponymes.map(voieToponyme => ({
     _bal,
     commune,
-    _id: new ObjectID(),
+    _id: new ObjectId(),
     nom: voieToponyme.nom,
     positions: voieToponyme.positions,
     _created: voieToponyme._created,
@@ -42,7 +42,7 @@ async function runMigrationOnContext({_bal, commune}) {
       const toponyme = {
         _bal,
         commune,
-        _id: new ObjectID(),
+        _id: new ObjectId(),
         nom: voie.complement,
         positions: [],
         _created: now,
