@@ -12,7 +12,6 @@ async function main() {
   const port = process.env.PORT || 5000
 
   await mongo.connect()
-  await mongo.ensureIndexes()
   await prepareContoursCommunes()
 
   app.use(cors({origin: true}))
