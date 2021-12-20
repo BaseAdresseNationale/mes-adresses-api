@@ -2,8 +2,6 @@
 
 API permettant la gestion de bases d’adresses à l’échelon local
 
-[![npm version](https://badgen.net/npm/v/@etalab/api-bal)](https://www.npmjs.com/package/@etalab/api-bal)
-[![dependencies Status](https://david-dm.org/etalab/api-bal/status.svg)](https://david-dm.org/etalab/api-bal)
 [![codecov](https://badgen.net/codecov/c/github/etalab/api-bal)](https://codecov.io/gh/etalab/api-bal)
 [![XO code style](https://badgen.net/badge/code%20style/XO/cyan)](https://github.com/xojs/xo)
 
@@ -13,7 +11,7 @@ API permettant la gestion de bases d’adresses à l’échelon local
 
 ## Pré-requis
 
-- [Node.js](https://nodejs.org) 14+
+- [Node.js](https://nodejs.org) 16+
 - [yarn](https://www.yarnpkg.com)
 - [MongoDB](https://www.mongodb.com) 4+
 
