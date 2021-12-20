@@ -15,7 +15,7 @@
   },
   "scripts": {
     "lint": "xo",
-    "test-unit": "nyc ava",
+    "test-unit": "nyc ava --serial",
     "test": "yarn lint && yarn test-unit",
     "start": "node server"
   },
