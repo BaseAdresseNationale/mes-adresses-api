@@ -20,7 +20,7 @@ const jobs = [
     }
   },
   {
-    name: 'detect sync in conflict',
+    name: 'sync outdated',
     every: '5m',
     async handler() {
       await syncOutdated()
