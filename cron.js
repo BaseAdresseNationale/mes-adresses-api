@@ -34,7 +34,7 @@ async function main() {
   jobs.forEach(job => {
     setInterval(() => {
       const now = new Date()
-      console.log(`${now.toISOString()} | running job : ${job.name}`)
+      console.log(`${now.toISOString().slice(0, 19)} | running job : ${job.name}`)
       job.handler()
     }, ms(job.every))
   })
