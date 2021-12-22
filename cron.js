@@ -3,6 +3,7 @@ require('dotenv').config()
 const ms = require('ms')
 const got = require('got')
 const {difference} = require('lodash')
+const {detectOutdated} = require('./lib/sync')
 const mongo = require('./lib/util/mongo')
 
 async function getPublishedUrls() {
@@ -39,6 +40,13 @@ const jobs = [
           {$set: {status: 'published'}}
         )
       }
+    }
+  },
+  {
+    name: 'detect outdated synchronizations',
+    every: '30s',
+    async handler() {
+      await detectOutdated()
     }
   }
 ]
