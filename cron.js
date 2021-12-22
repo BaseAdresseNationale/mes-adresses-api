@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 require('dotenv').config()
 const ms = require('ms')
-const {detectOutdated, detectConflict} = require('./lib/sync')
+const {detectOutdated, detectConflict, syncOutdated} = require('./lib/sync')
 const mongo = require('./lib/util/mongo')
 
 const jobs = [
@@ -17,6 +17,13 @@ const jobs = [
     every: '30s',
     async handler() {
       await detectConflict()
+    }
+  },
+  {
+    name: 'detect sync in conflict',
+    every: '5m',
+    async handler() {
+      await syncOutdated()
     }
   }
 ]
