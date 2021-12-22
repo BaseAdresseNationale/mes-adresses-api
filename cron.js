@@ -32,7 +32,11 @@ async function main() {
   await mongo.connect()
 
   jobs.forEach(job => {
-    setInterval(() => job.handler(), ms(job.every))
+    setInterval(() => {
+      const now = new Date()
+      console.log(`${now.toISOString()} | running job : ${job.name}`)
+      job.handler()
+    }, ms(job.every))
   })
 }
 
