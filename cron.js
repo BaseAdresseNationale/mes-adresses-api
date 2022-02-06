@@ -1,44 +1,29 @@
 #!/usr/bin/env node
 require('dotenv').config()
 const ms = require('ms')
-const got = require('got')
-const {difference} = require('lodash')
+const {detectOutdated, detectConflict, syncOutdated} = require('./lib/sync')
 const mongo = require('./lib/util/mongo')
-
-async function getPublishedUrls() {
-  const response = await got('https://backend.adresse.data.gouv.fr/publication/submissions/published-urls', {responseType: 'json'})
-  return response.body
-}
 
 const jobs = [
   {
-    name: 'sync published status',
+    name: 'detect outdated sync',
     every: '30s',
     async handler() {
-      const locallyPublishedResult = await mongo.db.collection('bases_locales').distinct('_id', {status: 'published'})
-      const locallyPublished = locallyPublishedResult.map(id => id.toString())
-
-      const publishedUrl = await getPublishedUrls()
-      const remotelyPublished = publishedUrl
-        .filter(url => url.startsWith('https://api-bal.adresse.data.gouv.fr/v1/bases-locales/'))
-        .map(url => url.slice(54, 78))
-
-      const toUpdateToNotPublished = difference(locallyPublished, remotelyPublished)
-      const toUpdateToPublished = difference(remotelyPublished, locallyPublished)
-
-      if (toUpdateToNotPublished.length > 0) {
-        await mongo.db.collection('bases_locales').updateMany(
-          {status: 'published', _id: {$in: toUpdateToNotPublished.map(id => new mongo.ObjectId(id))}},
-          {$set: {status: 'ready-to-publish'}}
-        )
-      }
-
-      if (toUpdateToPublished.length > 0) {
-        await mongo.db.collection('bases_locales').updateMany(
-          {status: {$ne: 'published'}, _id: {$in: toUpdateToPublished.map(id => new mongo.ObjectId(id))}},
-          {$set: {status: 'published'}}
-        )
-      }
+      await detectOutdated()
+    }
+  },
+  {
+    name: 'detect sync in conflict',
+    every: '30s',
+    async handler() {
+      await detectConflict()
+    }
+  },
+  {
+    name: 'sync outdated',
+    every: '5m',
+    async handler() {
+      await syncOutdated()
     }
   }
 ]
@@ -47,7 +32,11 @@ async function main() {
   await mongo.connect()
 
   jobs.forEach(job => {
-    setInterval(() => job.handler(), ms(job.every))
+    setInterval(() => {
+      const now = new Date()
+      console.log(`${now.toISOString().slice(0, 19)} | running job : ${job.name}`)
+      job.handler()
+    }, ms(job.every))
   })
 }
 
