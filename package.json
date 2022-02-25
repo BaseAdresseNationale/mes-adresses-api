@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@etalab/bal": "^2.3.0",
-    "@etalab/decoupage-administratif": "^0.8.0",
+    "@etalab/decoupage-administratif": "^2.0.0",
     "@etalab/project-legal": "^0.4.1",
     "body-parser": "^1.19.1",
     "cors": "^2.8.5",
