@@ -20,9 +20,9 @@
     "start": "node server"
   },
   "dependencies": {
-    "@etalab/bal": "^1.8.0",
-    "@etalab/decoupage-administratif": "^0.8.0",
-    "@etalab/project-legal": "^0.4.1",
+    "@etalab/bal": "^2.3.1",
+    "@etalab/decoupage-administratif": "^2.0.0",
+    "@etalab/project-legal": "^0.5.0",
     "body-parser": "^1.19.1",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
