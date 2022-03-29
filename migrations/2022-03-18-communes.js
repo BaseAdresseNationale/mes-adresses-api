@@ -6,6 +6,8 @@ const mongo = require('../lib/util/mongo')
 async function main() {
   await mongo.connect()
 
+  await mongo.db.collection('bases_locales').deleteMany({communes: {$eq: []}})
+
   await mongo.db.collection('bases_locales').updateMany(
     {},
     [
