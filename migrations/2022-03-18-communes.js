@@ -9,7 +9,7 @@ async function runMigrationOnContext({_bal, commune}) {
 
 async function listContexts() {
   const result = await mongo.db.collection('bases_locales').aggregate([
-    {$addFields: {commune: {$first: '$communes'}}}
+    {$addFields: {commune: {$arrayElemAt: ['$communes', 0]}}}
   ]).toArray()
 
   return result.map(({_id, commune}) => ({_bal: _id, commune}))
