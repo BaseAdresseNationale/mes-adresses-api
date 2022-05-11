@@ -20,7 +20,7 @@
     "start": "node server"
   },
   "dependencies": {
-    "@etalab/bal": "^2.3.3",
+    "@etalab/bal": "^2.4.0",
     "@etalab/decoupage-administratif": "^2.0.0",
     "@etalab/project-legal": "^0.5.0",
     "bluebird": "^3.7.2",
