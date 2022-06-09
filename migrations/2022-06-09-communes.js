@@ -7,14 +7,14 @@ const mongo = require('../lib/util/mongo')
 async function main() {
   await mongo.connect()
 
-  const countMultiple = mongo.db.collection('bases_locales').countDocuments({'communes.1': {$exists: true}})
+  const countMultiple = await mongo.db.collection('bases_locales').countDocuments({'communes.1': {$exists: true}})
 
   if (countMultiple > 0) {
     console.error(`Impossible de migrer les données : ${countMultiple} BAL contiennent plus d'une commune`)
     process.exit(1)
   }
 
-  const countEmpty = mongo.db.collection('bases_locales').countDocuments({communes: {size: 0}})
+  const countEmpty = await mongo.db.collection('bases_locales').countDocuments({communes: {size: 0}})
 
   if (countEmpty > 0) {
     console.log(`${countEmpty} BAL sont vides : elles vont être supprimées dans 10 secondes…`)
