@@ -1,0 +1,38 @@
+[
+  {
+    "code": "975",
+    "hasOpenMapTiles": true,
+    "hasOrtho": true,
+    "hasPlanIGN": false
+  },
+  {
+    "code": "977",
+    "hasOpenMapTiles": true,
+    "hasOrtho": true,
+    "hasPlanIGN": true
+  },
+  {
+    "code": "978",
+    "hasOpenMapTiles": true,
+    "hasOrtho": true,
+    "hasPlanIGN": true
+  },
+  {
+    "code": "986",
+    "hasOpenMapTiles": true,
+    "hasOrtho": true,
+    "hasPlanIGN": false
+  },
+  {
+    "code": "987",
+    "hasOpenMapTiles": true,
+    "hasOrtho": false,
+    "hasPlanIGN": false
+  },
+  {
+    "code": "988",
+    "hasOpenMapTiles": true,
+    "hasOrtho": false,
+    "hasPlanIGN": false
+  }
+]
