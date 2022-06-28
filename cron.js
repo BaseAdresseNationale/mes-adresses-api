@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 require('dotenv').config()
 const ms = require('ms')
-const {detectOutdated, detectConflict, syncOutdated} = require('./lib/sync')
+const {detectOutdated, detectConflict, syncOutdated, removeSoftDeletedBALs} = require('./lib/sync')
 const mongo = require('./lib/util/mongo')
 
 const jobs = [
@@ -24,6 +24,13 @@ const jobs = [
     every: '5m',
     async handler() {
       await syncOutdated()
+    }
+  },
+  {
+    name: 'delete soft deleted BALs',
+    every: '1h',
+    async handler() {
+      await removeSoftDeletedBALs()
     }
   }
 ]
