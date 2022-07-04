@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 require('dotenv').config()
 const ms = require('ms')
-const {detectOutdated, detectConflict, syncOutdated, removeSoftDeletedBALs} = require('./lib/sync')
+const {detectOutdated, detectConflict, syncOutdated} = require('./lib/sync')
+const {removeSoftDeletedBALs} = require('./lib/util/remove-soft-deleted-bals.js')
 const mongo = require('./lib/util/mongo')
 
 const jobs = [
