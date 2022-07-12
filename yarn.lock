@@ -236,22 +236,6 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@etalab/bal@^2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@etalab/bal/-/bal-2.6.0.tgz#8146a2d9c16e2825e9d5e8d1a29abbe1a3ce7644"
-  integrity sha512-LAiXIT0gKmjlr4rNPuzKjqxC2OezfG2PdatGKph0SyslyyawGpQNalSnUEPYCd3aZGpwqvEZJstbx9nQkZxv+Q==
-  dependencies:
-    blob-to-buffer "^1.2.9"
-    bluebird "^3.7.2"
-    chalk "^4.1.2"
-    chardet "^1.4.0"
-    date-fns "^2.28.0"
-    file-type "^12.4.2"
-    iconv-lite "^0.6.3"
-    lodash "^4.17.21"
-    papaparse "^5.3.2"
-    yargs "^17.5.0"
-
 "@etalab/decoupage-administratif@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@etalab/decoupage-administratif/-/decoupage-administratif-2.0.0.tgz#24ee640070c47e3c62883873c35450197fa5f78c"

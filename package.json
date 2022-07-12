@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@ban-team/validateur-bal": "^2.7.1",
-    "@etalab/bal": "^2.6.0",
     "@etalab/decoupage-administratif": "^2.0.0",
     "@etalab/project-legal": "^0.6.0",
     "bluebird": "^3.7.2",
