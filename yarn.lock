@@ -197,6 +197,11 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
+"@ban-team/shared-data@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@ban-team/shared-data/-/shared-data-1.0.1.tgz#bc3f49beab5bf492ad5da4d2a3852a539e68416b"
+  integrity sha512-eRrAZ2QJRiYd3wiPQE1ejA8fwn18AWvKASaEn7ajGVxIjOD5ty3E2hKlLPDOjdrg/bsVrabzOvxnnUN0sxboIA==
+
 "@ban-team/validateur-bal@^2.7.1":
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/@ban-team/validateur-bal/-/validateur-bal-2.7.1.tgz#ff9f530593d9fbca6592b980888eec37c6cdc739"
