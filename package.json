@@ -21,7 +21,7 @@
     "update-cadastre": "node ./scripts/update-communes-cadastre.js"
   },
   "dependencies": {
-    "@ban-team/shared-data": "^1.0.0",
+    "@ban-team/shared-data": "^1.0.1",
     "@ban-team/validateur-bal": "^2.7.1",
     "@etalab/decoupage-administratif": "^2.0.0",
     "@etalab/project-legal": "^0.6.0",
