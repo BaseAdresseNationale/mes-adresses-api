@@ -17,7 +17,7 @@ async function main() {
   console.log('************************************\n')
 
   await mongo.disconnect()
-  process.exit(1)
+  process.exit()
 }
 
 main().catch(error => {
