@@ -247,6 +247,17 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
+"@etalab/adresses-util@^0.8.2":
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/@etalab/adresses-util/-/adresses-util-0.8.2.tgz#697c3ca9ed2e6103650a8f3c43fa2ae9caec360f"
+  integrity sha512-PsZfyECOvW6y5WzPq3NqaBk53CMcq9bNdcG8IzoFkAIf03RbFCMtSYFrhfOkJXa7qAxHJbESYBuiEPbaxCzZYw==
+  dependencies:
+    "@turf/distance" "^6.3.0"
+    leven "^3.1.0"
+    lodash "^4.17.20"
+    talisman "^1.1.4"
+    written-number "^0.9.1"
+
 "@etalab/decoupage-administratif@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@etalab/decoupage-administratif/-/decoupage-administratif-2.0.0.tgz#24ee640070c47e3c62883873c35450197fa5f78c"
@@ -379,6 +390,26 @@
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
+
+"@turf/distance@^6.3.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/distance/-/distance-6.5.0.tgz#21f04d5f86e864d54e2abde16f35c15b4f36149a"
+  integrity sha512-xzykSLfoURec5qvQJcfifw/1mJa+5UwByZZ5TZ8iaqjGYN0vomhV9aiSLeYdUGtYRESZ+DYC/OzY+4RclZYgMg==
+  dependencies:
+    "@turf/helpers" "^6.5.0"
+    "@turf/invariant" "^6.5.0"
+
+"@turf/helpers@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-6.5.0.tgz#f79af094bd6b8ce7ed2bd3e089a8493ee6cae82e"
+  integrity sha512-VbI1dV5bLFzohYYdgqwikdMVpe7pJ9X3E+dlr425wa2/sMJqYDhTO++ec38/pcPvPE6oD9WEEeU3Xu3gza+VPw==
+
+"@turf/invariant@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/invariant/-/invariant-6.5.0.tgz#970afc988023e39c7ccab2341bd06979ddc7463f"
+  integrity sha512-Wv8PRNCtPD31UVbdJE/KVAWKe7l6US+lJItRR/HOEW3eh+U/JwRCSUl/KZ7bmjM/C+zLNoreM2TU6OoLACs4eg==
+  dependencies:
+    "@turf/helpers" "^6.5.0"
 
 "@types/cacheable-request@^6.0.1":
   version "6.0.1"
@@ -2745,6 +2776,11 @@ hosted-git-info@^4.0.1:
   dependencies:
     lru-cache "^6.0.0"
 
+html-entities@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/html-entities/-/html-entities-1.4.0.tgz#cfbd1b01d2afaf9adca1b10ae7dffab98c71d2dc"
+  integrity sha512-8nxjcBcd8wovbeKx7h3wTji4e6+rhaVuPNpMqwWgnHh+N9ToqsCs6XztWRBPQ+UtzsoMAdKZtUENoVzU/EMtZA==
+
 html-escaper@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
@@ -3512,6 +3548,11 @@ latest-version@^5.1.0:
   dependencies:
     package-json "^6.3.0"
 
+leven@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/leven/-/leven-3.1.0.tgz#77891de834064cccba82ae7842bb6b14a13ed7f2"
+  integrity sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==
+
 levn@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/levn/-/levn-0.4.1.tgz#ae4562c007473b932a6200d403268dd2fffc6ade"
@@ -3623,6 +3664,11 @@ log-symbols@^4.1.0:
   dependencies:
     chalk "^4.1.0"
     is-unicode-supported "^0.1.0"
+
+long@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/long/-/long-4.0.0.tgz#9a7b71cfb7d361a194ea555241c92f7468d5bf28"
+  integrity sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA==
 
 lowercase-keys@^1.0.0, lowercase-keys@^1.0.1:
   version "1.0.1"
@@ -3895,6 +3941,20 @@ minimist@^1.2.6:
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
   integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
 
+mnemonist@^0.38.1:
+  version "0.38.5"
+  resolved "https://registry.yarnpkg.com/mnemonist/-/mnemonist-0.38.5.tgz#4adc7f4200491237fe0fa689ac0b86539685cade"
+  integrity sha512-bZTFT5rrPKtPJxj8KSV0WkPyNxl72vQepqqVUAW2ARUpUSF2qXMB6jZj7hW5/k7C1rtpzqbD/IIbJwLXUjCHeg==
+  dependencies:
+    obliterator "^2.0.0"
+
+mnemonist@^0.39.0:
+  version "0.39.2"
+  resolved "https://registry.yarnpkg.com/mnemonist/-/mnemonist-0.39.2.tgz#7e6a0bd5c7199460ee12a651103c7007adc6225a"
+  integrity sha512-n3ZCEosuMH03DVivZ9N0fcXPWiZrBLEdfSlEJ+S/mJxmk3zuo1ur0dj9URDczFyP1VS3wfiyKzqLLDXoPJ6rPA==
+  dependencies:
+    obliterator "^2.0.1"
+
 mongodb-connection-string-url@^2.5.2:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/mongodb-connection-string-url/-/mongodb-connection-string-url-2.5.2.tgz#f075c8d529e8d3916386018b8a396aed4f16e5ed"
@@ -4145,6 +4205,16 @@ object.values@^1.1.5:
     define-properties "^1.1.3"
     es-abstract "^1.19.1"
 
+obliterator@^1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/obliterator/-/obliterator-1.6.1.tgz#dea03e8ab821f6c4d96a299e17aef6a3af994ef3"
+  integrity sha512-9WXswnqINnnhOG/5SLimUlzuU1hFJUc8zkwyD59Sd+dPOMf05PmnYG/d6Q7HZ+KmgkZJa1PxRso6QdM3sTNHig==
+
+obliterator@^2.0.0, obliterator@^2.0.1:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/obliterator/-/obliterator-2.0.4.tgz#fa650e019b2d075d745e44f1effeb13a2adbe816"
+  integrity sha512-lgHwxlxV1qIg1Eap7LgIeoBWIMFibOjbrYPIPJZcI1mmGAI2m3lNYpK12Y+GBdPQ0U1hRwSord7GIaawz962qQ==
+
 on-finished@2.4.1:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.4.1.tgz#58c8c44116e54845ad57f14ab10b03533184ac3f"
@@ -4376,6 +4446,13 @@ package-json@^6.3.0:
     registry-auth-token "^4.0.0"
     registry-url "^5.0.0"
     semver "^6.2.0"
+
+pandemonium@^2.0.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/pandemonium/-/pandemonium-2.3.0.tgz#d9c70686bb33c3ee4f435162601b0755a439bdcb"
+  integrity sha512-/+5rFCn3npqNwAvhKOSRKwAnEWQeXH4xFuur7vWKlj5Z7AM2JNJt1tC2rptfm1M7t7OlXAyeBuRjspqe+gQGHA==
+  dependencies:
+    mnemonist "^0.39.0"
 
 papaparse@^5.3.2:
   version "5.3.2"
@@ -5382,6 +5459,18 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
+talisman@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/talisman/-/talisman-1.1.4.tgz#649fdc3bc6e631c17405742edee338133fb8ac69"
+  integrity sha512-XZ/vf5B2aW5A0c0CE6F6w/UgdBdD/0ClBgh/phpYSjV1CnQIFni3bKZ1z9ZXWHkGZRSpnbiWWMPx05DoxXBoFw==
+  dependencies:
+    html-entities "^1.4.0"
+    lodash "^4.17.20"
+    long "^4.0.0"
+    mnemonist "^0.38.1"
+    obliterator "^1.6.1"
+    pandemonium "^2.0.0"
+
 tapable@^0.1.8:
   version "0.1.10"
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-0.1.10.tgz#29c35707c2b70e50d07482b5d202e8ed446dafd4"
@@ -5816,6 +5905,11 @@ write-file-atomic@^3.0.0, write-file-atomic@^3.0.3:
     is-typedarray "^1.0.0"
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
+
+written-number@^0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/written-number/-/written-number-0.9.1.tgz#a400a4d2d6ca2575ad2afc62dc28d2d9f94f5e7e"
+  integrity sha512-tl2EquIdCYnEeGu3p71GRsEJSqnD15CXjVtR6Hl0AFO0PrQ+SATIe3Sf4phaaKwLIuGRzWmA4+sThjJCZqwK1A==
 
 xdg-basedir@^4.0.0:
   version "4.0.0"
