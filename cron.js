@@ -2,7 +2,7 @@
 require('dotenv').config()
 const ms = require('ms')
 const {detectOutdated, detectConflict, syncOutdated} = require('./lib/sync')
-const {removeSoftDeletedBALs} = require('./lib/models/base-locale')
+const {removeSoftDeletedBALsOlderThanOneYear} = require('./lib/models/base-locale')
 const mongo = require('./lib/util/mongo')
 
 const jobs = [
@@ -31,7 +31,7 @@ const jobs = [
     name: 'purge old deleted BALs',
     every: '1h',
     async handler() {
-      await removeSoftDeletedBALs()
+      await removeSoftDeletedBALsOlderThanOneYear()
     }
   }
 ]
