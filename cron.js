@@ -28,7 +28,7 @@ const jobs = [
     }
   },
   {
-    name: 'delete soft deleted BALs',
+    name: 'purge old deleted BALs',
     every: '1h',
     async handler() {
       await removeSoftDeletedBALs()
