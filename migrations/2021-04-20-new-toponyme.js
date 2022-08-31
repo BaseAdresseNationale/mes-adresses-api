@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 /* eslint no-await-in-loop: off */
 require('dotenv').config()
-const {keyBy, deburr} = require('lodash')
+const {keyBy} = require('lodash')
+const {normalize} = require('@etalab/adresses-util/lib/voies')
 const mongo = require('../lib/util/mongo')
 const {ObjectId} = require('../lib/util/mongo')
 
 const now = new Date()
-
-function normalizeString(string) {
-  return deburr(string.trim().toLowerCase())
-}
 
 async function runMigrationOnContext({_bal, commune}) {
   // On récupère toutes les voies avec des positions, considérées actuellement comme des toponymes
@@ -27,7 +24,7 @@ async function runMigrationOnContext({_bal, commune}) {
   }))
 
   // On créé un index selon le libellé normalisé, qui nous servira à rechercher à partir du complément
-  const toponymesIndex = keyBy(toponymes, t => normalizeString(t.nom))
+  const toponymesIndex = keyBy(toponymes, t => normalize(t.nom))
 
   // Récupères toutes les voies avec un complément, ce complément est considéré comme un toponyme
   const voiesAvecComplement = await mongo.db.collection('voies').find({_bal, commune, complement: {$ne: null}}).toArray()
@@ -35,7 +32,7 @@ async function runMigrationOnContext({_bal, commune}) {
   // Pour chacun de ces voies on se rattache à un toponyme existant ou on en créé un
   for (const voie of voiesAvecComplement) {
     // On normalise le libellé du complément
-    const normalizedComplement = normalizeString(voie.complement)
+    const normalizedComplement = normalize(voie.complement)
 
     // Si on a pas déjà ce toponyme, on le créé et on l'ajoute à l'index
     if (!(normalizedComplement in toponymesIndex)) {
