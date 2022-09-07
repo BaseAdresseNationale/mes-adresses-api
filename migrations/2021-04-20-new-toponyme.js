@@ -2,7 +2,7 @@
 /* eslint no-await-in-loop: off */
 require('dotenv').config()
 const {keyBy} = require('lodash')
-const {normalize} = require('@etalab/adresses-util/lib/voies')
+const {normalize} = require('@ban-team/adresses-util/lib/voies')
 const mongo = require('../lib/util/mongo')
 const {ObjectId} = require('../lib/util/mongo')
 
