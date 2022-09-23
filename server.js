@@ -12,6 +12,7 @@ async function main() {
   const port = process.env.PORT || 5000
 
   await mongo.connect()
+  console.log('Prepare contours communes…')
   await prepareContoursCommunes()
 
   app.use(cors({origin: true}))
@@ -23,7 +24,9 @@ async function main() {
   app.use('/public', express.static('public'))
   app.use('/v1', routes)
 
-  app.listen(port)
+  app.listen(port, () => {
+    console.log(`Start listening on port ${port}`)
+  })
 }
 
 main().catch(error => {
