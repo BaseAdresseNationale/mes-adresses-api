@@ -253,10 +253,10 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@etalab/decoupage-administratif@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@etalab/decoupage-administratif/-/decoupage-administratif-2.0.0.tgz#24ee640070c47e3c62883873c35450197fa5f78c"
-  integrity sha512-X+pQDnm0Sk8T5KPhT5kU9cLyMKc+LagK8ObYxyzVDoQapjLNZl9/KY2VFr42aw4LEiTnUfqCgNZc9lhHfi6shQ==
+"@etalab/decoupage-administratif@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@etalab/decoupage-administratif/-/decoupage-administratif-2.3.1.tgz#9d8c4606407ceef062c1bcde3aa57be31d661fdc"
+  integrity sha512-52zR447e9Csr/HkzmLJIrOTCAuwJNd4O9fay8BRgOQUSbqaKOP6vFpsrj5lKlrH9vA+ii07h1TnChdMFZNgcwg==
 
 "@etalab/project-legal@^0.6.0":
   version "0.6.0"
