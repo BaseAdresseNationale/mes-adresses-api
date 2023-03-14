@@ -213,10 +213,10 @@
   resolved "https://registry.yarnpkg.com/@ban-team/shared-data/-/shared-data-1.2.0.tgz#0e29e84a00f7df3b17e5821bde1405a2bfa656b5"
   integrity sha512-35jz6ITHHufUKxXAfa8ReSMl6lZarnfVBkS++wgHpk27e9K52bXyAHo+n3X331n2mSzoIQXxFK7SEcPob7a5cA==
 
-"@ban-team/validateur-bal@^2.12.0":
-  version "2.12.0"
-  resolved "https://registry.yarnpkg.com/@ban-team/validateur-bal/-/validateur-bal-2.12.0.tgz#4d8eb83291cfdfc1cdfa574b36cc9f7ca716bd0f"
-  integrity sha512-+bI65V10UVfJUrKQIH9+R4LfygcWPNz/n08Z6ThDhkX7eWfesgHMJlimIqpKRavrwjaowFtGrHgWaW/qP06rSA==
+"@ban-team/validateur-bal@^2.13.0":
+  version "2.13.0"
+  resolved "https://registry.yarnpkg.com/@ban-team/validateur-bal/-/validateur-bal-2.13.0.tgz#0d23e8192f631614d59312d265a04697f8fe09db"
+  integrity sha512-+GFoSti7n5dn4l+ZjiWjk19wkdxauhDIFa0gk3uIsDInwE1e3HiCdYxDYkYMAeU5/p1XadxANIVv73CH92YGbg==
   dependencies:
     "@ban-team/shared-data" "^1.2.0"
     "@etalab/project-legal" "^0.6.0"
@@ -253,10 +253,10 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@etalab/decoupage-administratif@^2.3.1":
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/@etalab/decoupage-administratif/-/decoupage-administratif-2.3.1.tgz#9d8c4606407ceef062c1bcde3aa57be31d661fdc"
-  integrity sha512-52zR447e9Csr/HkzmLJIrOTCAuwJNd4O9fay8BRgOQUSbqaKOP6vFpsrj5lKlrH9vA+ii07h1TnChdMFZNgcwg==
+"@etalab/decoupage-administratif@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@etalab/decoupage-administratif/-/decoupage-administratif-3.0.0.tgz#1d0d54b5b884c3df9555b4b8db543f83559629d3"
+  integrity sha512-WlXHeArXK7zwcxoPev8NM3ncUjaIiBYiTmY1wh3X6RXITKjTwn3yaYdQqbPplTfFA/ByllG4Y4q4Jt0bCmbEzw==
 
 "@etalab/project-legal@^0.6.0":
   version "0.6.0"
