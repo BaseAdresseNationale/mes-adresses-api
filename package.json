@@ -18,7 +18,8 @@
     "test-unit": "nyc ava --serial",
     "test": "yarn lint && yarn test-unit",
     "start": "node server",
-    "update-cadastre": "node ./scripts/update-communes-cadastre.js"
+    "update-cadastre": "node ./scripts/update-communes-cadastre.js",
+    "update-contours": "node ./scripts/update-contours-communes.js"
   },
   "dependencies": {
     "@ban-team/adresses-util": "^0.9.0",
