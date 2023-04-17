@@ -35,6 +35,22 @@ yarn start
 yarn test
 ```
 
+## Mise a jour
+
+
+### Contoures des communes
+
+```
+yarn update-contours
+```
+
+### Cadastres des communes
+
+```
+yarn update-cadastre
+```
+
+
 ## Configuration
 
 Cette application utilise des variables d'environnement pour sa configuration.

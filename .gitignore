@@ -112,4 +112,7 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
+# Contours Communes
+contours-communes.json
+
 # End of https://www.gitignore.io/api/node,macos
