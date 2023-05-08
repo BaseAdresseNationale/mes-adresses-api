@@ -115,4 +115,7 @@ typings/
 # Contours Communes
 contours-communes.json
 
+#pm2
+ecosystem.json
+
 # End of https://www.gitignore.io/api/node,macos
