@@ -115,4 +115,6 @@ typings/
 # Contours Communes
 contours-communes.json
 
+ecosystem.config.js
+
 # End of https://www.gitignore.io/api/node,macos
