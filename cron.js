@@ -43,16 +43,34 @@ const jobs = [
   }
 ]
 
+const queue = []
+
 async function main() {
   await mongo.connect()
 
+  // ADD TASK IN QUEUE AT INTERVALLE
   jobs.forEach(job => {
     setInterval(() => {
-      const now = new Date()
-      console.log(`${now.toISOString().slice(0, 19)} | running job : ${job.name}`)
-      job.handler()
+      if (queue.some(j => j.name === job.name) === false) {
+        queue.push(job)
+      }
     }, ms(job.every))
   })
+
+  // LAUNCH TASK IN QUEUE
+  let jobIsRunning = false
+  setInterval(async () => {
+    if (!jobIsRunning) {
+      const nextJob = queue.pop()
+      if (nextJob) {
+        jobIsRunning = true
+        const now = new Date()
+        console.log(`${now.toISOString().slice(0, 19)} | running job : ${nextJob.name}`)
+        await nextJob.handler()
+        jobIsRunning = false
+      }
+    }
+  }, ms('5s'))
 }
 
 main().catch(error => {
