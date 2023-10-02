@@ -1,6 +1,6 @@
 const test = require('ava')
 const {MongoMemoryServer} = require('mongodb-memory-server')
-const mongo = require('../../util/mongo')
+const mongo = require('../mongo')
 const {calcMetaTilesVoie, calcMetaTilesNumero} = require('../tiles')
 
 let mongod

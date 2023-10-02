@@ -1,6 +1,6 @@
 const bbox = require('@turf/bbox').default
 const {groupBy} = require('lodash')
-const mongo = require('../util/mongo')
+const mongo = require('./mongo')
 
 async function expandBalWithNumeros(bal) {
   const numeros = await mongo.db.collection('numeros')

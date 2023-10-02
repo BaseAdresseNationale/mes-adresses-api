@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-require('dotenv').config()
-const {createContoursCommunesJson} = require('../lib/util/contours-communes')
+require('dotenv').config();
+const { createContoursCommunesJson } = require('../legacy-api/util/contours-communes');
 
 async function updateContoursCommune() {
   try {
-    await createContoursCommunesJson()
+    await createContoursCommunesJson();
   } catch (error) {
-    console.error(error)
-    process.exit(1)
+    console.error(error);
+    process.exit(1);
   }
 }
 
-updateContoursCommune()
+updateContoursCommune();

@@ -1,7 +1,7 @@
 const test = require('ava')
 const express = require('express')
 const request = require('supertest')
-const routes = require('../')
+const routes = require('..')
 
 const KEYS = ['hasCadastre', 'isCOM', 'hasOpenMapTiles', 'hasOrtho', 'hasPlanIGN']
 

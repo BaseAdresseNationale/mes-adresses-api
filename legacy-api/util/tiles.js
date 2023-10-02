@@ -1,7 +1,7 @@
 const turf = require('@turf/turf')
 const {range, union} = require('lodash')
 const {pointToTile, bboxToTile, getParent, getChildren, tileToBBOX} = require('@mapbox/tilebelt')
-const mongo = require('../util/mongo')
+const mongo = require('./mongo')
 const {getPriorityPosition} = require('../export/geojson')
 
 const ZOOM = {
