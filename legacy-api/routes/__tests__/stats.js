@@ -3,7 +3,7 @@ const request = require('supertest')
 const express = require('express')
 const {MongoMemoryServer} = require('mongodb-memory-server')
 const mongo = require('../../util/mongo')
-const {prepareContoursCommunes} = require('../../../lib/util/contours-communes')
+const {prepareContoursCommunes} = require('../../util/contours-communes')
 const routes = require('../stats')
 
 function getApp() {
