@@ -5,15 +5,12 @@ const morgan = require('morgan')
 const cors = require('cors')
 const mongo = require('./lib/util/mongo')
 const routes = require('./lib/routes')
-const {prepareContoursCommunes} = require('./lib/util/contours-communes')
 
 async function main() {
   const app = express()
   const port = process.env.PORT || 5000
 
   await mongo.connect()
-
-  await prepareContoursCommunes()
 
   app.use(cors({origin: true}))
 
