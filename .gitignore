@@ -112,9 +112,6 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
-# Contours Communes
-contours-communes.json
-
 #pm2
 ecosystem.json
 
