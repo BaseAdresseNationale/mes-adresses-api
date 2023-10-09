@@ -1,10 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Position, PositionSchema } from './position.schema';
+import { omit } from 'lodash'
 
 export type NumeroDocument = HydratedDocument<Numeros>;
 
-@Schema({collection: 'numeros'})
+@Schema({
+  collection: 'numeros',
+  toJSON: {
+    virtuals: true,
+  },
+})
 export class Numeros {
 
   @Prop({type: SchemaTypes.ObjectId})
@@ -20,22 +26,22 @@ export class Numeros {
   commune: string;
 
   @Prop({type: SchemaTypes.String})
-  suffixe: string;
+  suffixe?: string;
 
   @Prop({type: SchemaTypes.String})
-  comment: string;
+  comment?: string;
 
   @Prop({type: SchemaTypes.String})
-  toponyme: string;
+  toponyme?: string;
 
   @Prop({type: SchemaTypes.String})
   voie: string;
 
   @Prop([SchemaTypes.String])
-  parcelles: string[];
+  parcelles?: string[];
 
   @Prop({type: SchemaTypes.Boolean})
-  certifie: boolean;
+  certifie?: boolean;
 
   @Prop({type: [PositionSchema]})
   positions: Position[];
@@ -50,7 +56,24 @@ export class Numeros {
   _updated: Date;
 
   @Prop({type: SchemaTypes.Date})
-  _delete: Date;
+  _delete?: Date;
+
 }
 
-export const NumerosSchema = SchemaFactory.createForClass(Numeros);
+export const NumerosSchema = SchemaFactory.createForClass(Numeros)
+
+function displaySuffix(suffix) {
+  if (suffix) {
+    return suffix.trim().match(/^\d/) ? (
+      '-' + suffix.trim()
+    ) : (
+      suffix.trim()
+    )
+  }
+
+  return ''
+}
+
+NumerosSchema.virtual('numeroComplet').get(function (this: NumeroDocument) {
+  return this.numero + displaySuffix(this.suffixe)
+});

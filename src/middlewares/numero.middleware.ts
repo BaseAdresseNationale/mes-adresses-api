@@ -15,13 +15,11 @@ export class NumeroMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: NextFunction) {
     const { numeroId } = req.params;
     if (numeroId) {
-      console.log('numeroId', numeroId);
       const _id = new Types.ObjectId(numeroId)
       const numero: Numeros = await this.numerosModel.findOne({ _id }).exec()
-      console.log(numero)
       res.locals.numero = numero;
       const basesLocale: BasesLocales = await this.basesLocalesModel.findOne({ _id: numero._bal }).select({token: 1}).exec()
-      console.log(basesLocale)
+      res.locals.isAdmin = req.headers.token === basesLocale.token
     }
     next();
   }
