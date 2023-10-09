@@ -4,7 +4,7 @@ import { ApiParam, ApiTags, ApiResponse, ApiHeader, ApiBody } from '@nestjs/swag
 import { AdminGuard } from 'src/guards/admin.guard';
 import { NumeroService } from './numero.service';
 import { Numero } from './schema/numero.schema'
-import { UpdateNumeroDto } from './dto/update.numero.dto'
+import { UpdateNumeroDto } from './dto/update_numero.dto'
 
 @ApiTags('numeros')
 @Controller('numeros')
