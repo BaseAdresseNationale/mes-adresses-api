@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Position, PositionSchema } from './position.schema';
-import { omit } from 'lodash'
 
-export type NumeroDocument = HydratedDocument<Numeros>;
+export type NumeroDocument = HydratedDocument<Numero>;
 
 @Schema({
   collection: 'numeros',
@@ -11,56 +11,71 @@ export type NumeroDocument = HydratedDocument<Numeros>;
     virtuals: true,
   },
 })
-export class Numeros {
+export class Numero {
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.ObjectId})
   _id: Types.ObjectId;
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.ObjectId})
   _bal: Types.ObjectId;
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.Number})
   numero: number;
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.String})
   commune: string;
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.String})
   suffixe?: string;
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.String})
   comment?: string;
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.String})
   toponyme?: string;
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.String})
   voie: string;
 
+  @ApiProperty()
   @Prop([SchemaTypes.String])
   parcelles?: string[];
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.Boolean})
   certifie?: boolean;
 
+  @ApiProperty({ type: () => Position, isArray: true })
   @Prop({type: [PositionSchema]})
   positions: Position[];
 
+  @ApiProperty()
   @Prop({type: [SchemaTypes.String]})
   tiles: string[];
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.Date})
   _created: Date;
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.Date})
   _updated: Date;
 
+  @ApiProperty()
   @Prop({type: SchemaTypes.Date})
   _delete?: Date;
 
 }
 
-export const NumerosSchema = SchemaFactory.createForClass(Numeros)
+export const NumeroSchema = SchemaFactory.createForClass(Numero)
 
 function displaySuffix(suffix) {
   if (suffix) {
@@ -74,6 +89,6 @@ function displaySuffix(suffix) {
   return ''
 }
 
-NumerosSchema.virtual('numeroComplet').get(function (this: NumeroDocument) {
+NumeroSchema.virtual('numeroComplet').get(function (this: NumeroDocument) {
   return this.numero + displaySuffix(this.suffixe)
 });

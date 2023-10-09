@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './tasks/tasks.service';
-import { NumerosModule } from './numeros/numeros.module';
+import { NumeroModule } from './numeros/numero.module';
 import { BasesLocalesModule } from './bases_locales/bases_locales.module';
 
 @Module({
@@ -18,7 +18,7 @@ import { BasesLocalesModule } from './bases_locales/bases_locales.module';
       }),
       inject: [ConfigService],
     }),
-    NumerosModule,
+    NumeroModule,
     BasesLocalesModule,
   ],
   controllers: [],

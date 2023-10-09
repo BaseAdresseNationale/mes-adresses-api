@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, Schema as SchemaMongoose } from 'mongoose';
 
 export type PointDocument = HydratedDocument<Point>;
@@ -6,6 +7,7 @@ export type PointDocument = HydratedDocument<Point>;
 @Schema()
 export class Point {
 
+  @ApiProperty()
   @Prop({type: SchemaMongoose.Types.String})
   type: {
     type: String,
@@ -13,6 +15,7 @@ export class Point {
     required: true
   };
 
+  @ApiProperty()
   @Prop({type: [SchemaMongoose.Types.Number]})
   coordinates: {
     type: [Number],
@@ -21,21 +24,3 @@ export class Point {
 }
 
 export const PointSchema = SchemaFactory.createForClass(Point);
-
-export type PositionDocument = HydratedDocument<Position>;
-
-@Schema()
-export class Position {
-
-  @Prop({type: SchemaMongoose.Types.String})
-  type: string;
-
-  @Prop({type: SchemaMongoose.Types.String})
-  source: string;
-
-  @Prop({type: PointSchema})
-  point: Point;
-
-}
-
-export const PositionSchema = SchemaFactory.createForClass(Position);

@@ -1,20 +1,20 @@
 import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Numeros, NumerosSchema } from './numeros.schema';
+import { Numero, NumeroSchema } from './schema/numero.schema';
 import { BasesLocales, BasesLocalesSchema } from './../bases_locales/bases_locales.schema';
-import { NumerosService } from './numeros.service';
-import { NumerosController } from './numeros.controller';
+import { NumeroService } from './numero.service';
+import { NumeroController } from './numero.controller';
 import { NumeroMiddleware } from './../middlewares/numero.middleware';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Numeros.name, schema: NumerosSchema }]),
+    MongooseModule.forFeature([{ name: Numero.name, schema: NumeroSchema }]),
     MongooseModule.forFeature([{ name: BasesLocales.name, schema: BasesLocalesSchema }])
   ],
-  providers: [NumerosService, NumeroMiddleware],
-  controllers: [NumerosController],
+  providers: [NumeroService, NumeroMiddleware],
+  controllers: [NumeroController],
 })
-export class NumerosModule {
+export class NumeroModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(NumeroMiddleware)
