@@ -18,9 +18,10 @@ export class NumeroMiddleware implements NestMiddleware {
       console.log('numeroId', numeroId);
       const _id = new Types.ObjectId(numeroId)
       const numero: Numeros = await this.numerosModel.findOne({ _id }).exec()
-      console.log(numero, numero._bal)
-      const basesLocales: BasesLocales = await this.basesLocalesModel.findOne({ _id: numero._bal }).exec()
-      console.log(basesLocales)
+      console.log(numero)
+      res.locals.numero = numero;
+      const basesLocale: BasesLocales = await this.basesLocalesModel.findOne({ _id: numero._bal }).select({token: 1}).exec()
+      console.log(basesLocale)
     }
     next();
   }

@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -23,8 +21,8 @@ import { BasesLocalesModule } from './bases_locales/bases_locales.module';
     NumerosModule,
     BasesLocalesModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, TasksService],
+  controllers: [],
+  providers: [TasksService],
 })
 export class AppModule {
 }

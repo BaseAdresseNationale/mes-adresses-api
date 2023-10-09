@@ -43,6 +43,7 @@
     "@nestjs/mongoose": "^10.0.1",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/schedule": "^3.0.4",
+    "@nestjs/swagger": "^7.1.13",
     "@turf/turf": "^6.5.0",
     "bluebird": "^3.7.2",
     "body-parser": "^1.20.2",

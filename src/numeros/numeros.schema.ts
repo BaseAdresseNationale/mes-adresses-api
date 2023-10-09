@@ -4,7 +4,7 @@ import { Position, PositionSchema } from './position.schema';
 
 export type NumeroDocument = HydratedDocument<Numeros>;
 
-@Schema()
+@Schema({collection: 'numeros'})
 export class Numeros {
 
   @Prop({type: SchemaTypes.ObjectId})

@@ -3,6 +3,7 @@ import { AppModule } from './app.module.js';
 import * as express from 'express';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ExpressAdapter } from '@nestjs/platform-express';
 
 import * as apiLegacy from '../legacy-api/routes';
@@ -30,6 +31,15 @@ async function bootstrap() {
   const adapter = new ExpressAdapter(expressApp);
 
   const app = await NestFactory.create(AppModule, adapter);
+
+  const config = new DocumentBuilder()
+    .setTitle('Mes adresses API')
+    .setDescription('Mes adresses API description')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
   await app.listen(process.env.PORT || 5000);
 }
 bootstrap();

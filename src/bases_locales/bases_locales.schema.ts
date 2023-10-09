@@ -4,7 +4,7 @@ import { Sync, SyncSchema } from './sync.schema';
 
 export type BasesLocalesDocument = HydratedDocument<BasesLocales>;
 
-@Schema()
+@Schema({ collection: 'bases_locales'})
 export class BasesLocales {
 
   @Prop({type: SchemaTypes.ObjectId})

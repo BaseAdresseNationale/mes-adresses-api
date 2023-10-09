@@ -1,21 +1,21 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Res, HttpStatus } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import { ApiParam, ApiTags, ApiResponse } from '@nestjs/swagger';
+import { NumeroDto } from './dto/numeros.dto'
 
-// app.route('/numeros/:numeroId')
-//   .get(w(async (req, res) => {
-//     if (req.isAdmin) {
-//       res.send(Numero.expandModel(req.numero))
-//     } else {
-//       const filtered = Numero.filterSensitiveFields(req.numero)
-
-//       res.send(Numero.expandModel(filtered))
-//     }
-//   }))
-
+@ApiTags('numeros')
 @Controller('numeros')
 export class NumerosController {
 
   @Get(':numeroId')
-  find(@Param('numeroId') numeroId: string): string {
-    return 'Coucou ' + numeroId + ' !';
+  @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Numero trouvé.',
+    type: NumeroDto,
+  })
+  find(@Param('numeroId') numeroId: string, @Res() res: Response): any {
+    console.log('res.locals.numero', res.locals.numero)
+    res.status(HttpStatus.OK).json(res.locals.numero);
   }
 }
