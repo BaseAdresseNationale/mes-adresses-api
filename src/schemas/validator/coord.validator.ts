@@ -37,7 +37,7 @@ export class PointValidator implements ValidatorConstraintInterface {
   }
 
   defaultMessage(args: ValidationArguments) {
-    return 'Les coordonées du point ne sont pas valide';
+    return 'Les coordonnées du point ne sont pas valide';
   }
 }
 
@@ -71,7 +71,7 @@ export class LineStringValidator implements ValidatorConstraintInterface {
   }
 
   defaultMessage(args: ValidationArguments) {
-    return 'Les coordonées de la lineString ne sont pas valide';
+    return 'Les coordonnées de la lineString ne sont pas valide';
   }
 }
 
