@@ -20,7 +20,7 @@ export class NumeroController {
 
     const numero: Numero = res.locals.isAdmin ?
       res.locals.numero :
-      Numero.filterSensitiveFields(res.locals.numero)
+      res.locals.numero.filterSensitiveFields()
 
     res.status(HttpStatus.OK).json(numero);
   }
