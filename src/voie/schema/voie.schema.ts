@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { FeaturePoint, FeaturePointSchema } from '../../schemas/geosjon/feature_point.schema'
 import { LineString, LineStringSchema } from '../../schemas/geosjon/line_string.schema'
+import { TypeNumerotationEnum } from './type_numerotation.enum'
 
 export type VoieDocument = HydratedDocument<Voie>;
 
@@ -29,11 +30,8 @@ export class Voie {
   @Prop({type: [SchemaTypes.String]})
   centroidTiles: string[];
 
-  @Prop({type: SchemaTypes.String})
-  typeNumerotation: {
-    type: String,
-    enum: ['numerique'],
-  };
+  @Prop({type: SchemaTypes.String, enum: TypeNumerotationEnum})
+  typeNumerotation: TypeNumerotationEnum;
 
   @Prop({type: LineStringSchema})
   trace: LineString;

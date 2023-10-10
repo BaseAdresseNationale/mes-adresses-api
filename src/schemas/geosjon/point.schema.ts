@@ -6,17 +6,17 @@ import { PointValidator } from '../validator/coord.validator'
 
 export type PointDocument = HydratedDocument<Point>;
 
+export enum PointTypeEnum {
+  POINT = 'Point',
+}
+
 @Schema()
 export class Point {
 
-  @IsEnum(['Point'])
+  @IsEnum(PointTypeEnum)
   @ApiProperty()
-  @Prop({type: SchemaTypes.String})
-  type: {
-    type: String,
-    enum: ['Point'],
-    required: true
-  };
+  @Prop({type: SchemaTypes.String, enum: PointTypeEnum})
+  type: PointTypeEnum
 
   @Validate(PointValidator)
   @ApiProperty()

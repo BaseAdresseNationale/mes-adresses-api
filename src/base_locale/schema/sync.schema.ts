@@ -7,7 +7,7 @@ export type SyncDocument = HydratedDocument<Sync>;
 @Schema()
 export class Sync {
 
-  @Prop({type: SchemaTypes.String})
+  @Prop({type: SchemaTypes.String, enum: StatusSyncEnum})
   status: StatusSyncEnum
 
   @Prop({type: SchemaTypes.Boolean})

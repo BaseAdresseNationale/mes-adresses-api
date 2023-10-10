@@ -6,17 +6,17 @@ import { LineStringValidator } from '../validator/coord.validator'
 
 export type LineStringDocument = HydratedDocument<LineString>;
 
+export enum LineStringTypeEnum {
+  LINE_STRING = 'LineString',
+}
+
 @Schema()
 export class LineString {
 
-  @IsEnum(['LineString'])
+  @IsEnum(LineStringTypeEnum)
   @ApiProperty()
-  @Prop({type: SchemaTypes.String})
-  type: {
-    type: String,
-    enum: ['LineString'],
-    required: true
-  };
+  @Prop({type: SchemaTypes.String, enum: LineStringTypeEnum})
+  type: LineStringTypeEnum
 
   @Validate(LineStringValidator)
   @ApiProperty()

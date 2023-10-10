@@ -6,16 +6,17 @@ import { ValidatorBal } from '../validator/validator_bal.validator'
 import { ValidateNested, IsEnum } from 'class-validator'
 import { Type } from 'class-transformer';
 
+export enum FeatureTypeEnum {
+  FEATURE = 'Feature',
+}
+
 @Schema()
 export class FeaturePoint {
 
-  @IsEnum(['Feature'])
+  @IsEnum(FeatureTypeEnum)
   @ApiProperty()
-  @Prop({type: SchemaTypes.String})
-  type: {
-    type: String,
-    enum: ['Feature'],
-  }
+  @Prop({type: SchemaTypes.String, enum: FeatureTypeEnum})
+  type: FeatureTypeEnum
 
   @ApiProperty()
   @Prop({type: SchemaTypes.Map})

@@ -20,7 +20,7 @@ export class BaseLocale {
   @Prop({type: SchemaTypes.String})
   token: string;
 
-  @Prop({type: SchemaTypes.String})
+  @Prop({type: SchemaTypes.String, enum: StatusBaseLocalEnum})
   status: StatusBaseLocalEnum;
 
   @Prop({type: SchemaTypes.String})
