@@ -15,41 +15,41 @@ export class UpdateNumeroDto {
   @IsOptional()
   @Validate(ValidatorBal, [ 'numero' ])
   @ApiProperty({required: false, nullable: false})
-  numero: number;
+  numero?: number;
 
   @IsOptional()
   @Validate(ValidatorBal, [ 'suffixe' ])
   @ApiProperty({required: false, nullable: true})
-  suffixe: string;
+  suffixe?: string;
 
   @IsOptional()
   @MaxLength(5000)
   @ApiProperty({required: false, nullable: true})
-  comment: string;
+  comment?: string;
 
   @IsOptional()
   @IsMongoId()
   @ApiProperty({required: false, nullable: true})
-  toponyme: string;
+  toponyme?: string;
 
   @IsOptional()
   @IsMongoId()
   @ApiProperty({required: false, nullable: false})
-  voie: string;
+  voie?: string;
 
   @IsOptional()
   @Validate(ValidatorBal, [ 'cad_parcelles' ])
   @ApiProperty({required: false, nullable: false})
-  parcelles: string[];
+  parcelles?: string[];
 
   @IsOptional()
   @ApiProperty({required: false, nullable: false})
-  certifie: boolean;
+  certifie?: boolean;
 
   @IsOptional()
   @ValidateNested({each: true})
   @Type(() => Position)
   @ApiProperty({ type: () => Position, isArray: true, required: false, nullable: false })
-  positions: Position[];
+  positions?: Position[];
 
 }

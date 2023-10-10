@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './tasks/tasks.service';
 import { NumeroModule } from './numeros/numero.module';
 import { BaseLocaleModule } from './base_locale/base_locale.module';
+import { VoieModule } from './voie/voie.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { BaseLocaleModule } from './base_locale/base_locale.module';
     }),
     NumeroModule,
     BaseLocaleModule,
+    VoieModule,
   ],
   controllers: [],
   providers: [TasksService],

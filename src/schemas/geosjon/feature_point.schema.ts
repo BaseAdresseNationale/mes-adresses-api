@@ -3,23 +3,23 @@ import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { Point, PointSchema } from '../../schemas/geosjon/point.schema';
 import { ValidatorBal } from '../../validator/validator_bal.validator'
-import { ValidateNested, Validate } from 'class-validator'
+import { ValidateNested, IsEnum } from 'class-validator'
 import { Type } from 'class-transformer';
 
-export type PositionDocument = HydratedDocument<Position>;
-
 @Schema()
-export class Position {
+export class FeaturePoint {
 
-  @Validate(ValidatorBal, [ 'position' ])
+  @IsEnum(['Feature'])
   @ApiProperty()
   @Prop({type: SchemaTypes.String})
-  type: string;
+  type: {
+    type: String,
+    enum: ['Feature'],
+  }
 
-  @Validate(ValidatorBal, [ 'source' ])
   @ApiProperty()
-  @Prop({type: SchemaTypes.String})
-  source: string;
+  @Prop({type: SchemaTypes.Map})
+  properties: Object;
 
   @ValidateNested()
   @Type(() => Point)
@@ -29,4 +29,4 @@ export class Position {
 
 }
 
-export const PositionSchema = SchemaFactory.createForClass(Position);
+export const FeaturePointSchema = SchemaFactory.createForClass(FeaturePoint);
