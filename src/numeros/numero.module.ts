@@ -1,7 +1,7 @@
 import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Numero, NumeroSchema } from './schema/numero.schema';
-import { BasesLocales, BasesLocalesSchema } from './../bases_locales/bases_locales.schema';
+import { BaseLocale, BaseLocaleSchema } from './../base_locale/schema/base_locale.schema';
 import { NumeroService } from './numero.service';
 import { NumeroController } from './numero.controller';
 import { NumeroMiddleware } from './../middlewares/numero.middleware';
@@ -9,7 +9,7 @@ import { NumeroMiddleware } from './../middlewares/numero.middleware';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Numero.name, schema: NumeroSchema }]),
-    MongooseModule.forFeature([{ name: BasesLocales.name, schema: BasesLocalesSchema }])
+    MongooseModule.forFeature([{ name: BaseLocale.name, schema: BaseLocaleSchema }])
   ],
   providers: [NumeroService, NumeroMiddleware],
   controllers: [NumeroController],

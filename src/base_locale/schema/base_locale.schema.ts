@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Sync, SyncSchema } from './sync.schema';
+import { StatusBaseLocalEnum } from './status.enum';
 
 export type BasesLocaleDocument = HydratedDocument<BaseLocale>;
 
@@ -20,7 +21,7 @@ export class BaseLocale {
   token: string;
 
   @Prop({type: SchemaTypes.String})
-  status: string;
+  status: StatusBaseLocalEnum;
 
   @Prop({type: SchemaTypes.String})
   _habilitation: string;

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { HydratedDocument, Schema as SchemaMongoose } from 'mongoose';
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { Point, PointSchema } from './point.schema';
 import { ValidatorBal } from '../../validator/validator_bal.validator'
 import { ValidateNested, Validate } from 'class-validator'
@@ -13,12 +13,12 @@ export class Position {
 
   @Validate(ValidatorBal, [ 'position' ])
   @ApiProperty()
-  @Prop({type: SchemaMongoose.Types.String})
+  @Prop({type: SchemaTypes.String})
   type: string;
 
   @Validate(ValidatorBal, [ 'source' ])
   @ApiProperty()
-  @Prop({type: SchemaMongoose.Types.String})
+  @Prop({type: SchemaTypes.String})
   source: string;
 
   @ValidateNested()
