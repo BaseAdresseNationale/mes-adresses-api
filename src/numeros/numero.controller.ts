@@ -18,10 +18,9 @@ export class NumeroController {
   @ApiHeader({name: 'Token'})
   find(@Res() res: Response): any {
 
-    const numero: Numero = res.locals.numero
-    if (!res.locals.isAdmin) {
-      this.numeroService.filterSensitiveFields(numero)
-    }
+    const numero: Numero = res.locals.isAdmin ?
+      res.locals.numero :
+      Numero.filterSensitiveFields(res.locals.numero)
 
     res.status(HttpStatus.OK).json(numero);
   }
@@ -32,7 +31,8 @@ export class NumeroController {
   @ApiBody({type: UpdateNumeroDto, required: true})
   @ApiHeader({name: 'Token'})
   @UseGuards(AdminGuard)
-  update(@Body() updateNumeroDto: UpdateNumeroDto, @Res() res: Response): any {
-    res.status(HttpStatus.OK).json(updateNumeroDto);
+  async update(@Body() updateNumeroDto: UpdateNumeroDto, @Res() res: Response) {
+    const result: Numero = await this.numeroService.update(res.locals.numero, updateNumeroDto)
+    res.status(HttpStatus.OK).json(result);
   }
 }

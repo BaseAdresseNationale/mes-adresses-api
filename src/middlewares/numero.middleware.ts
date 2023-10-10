@@ -14,7 +14,6 @@ export class NumeroMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction) {
     const { numeroId } = req.params;
-    console.log(req.params)
     if (numeroId) {
       const _id = new Types.ObjectId(numeroId)
       const numero: Numero = await this.numeroModel.findOne({ _id }).exec()

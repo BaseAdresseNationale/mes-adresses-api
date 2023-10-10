@@ -5,6 +5,8 @@ import { Position, PositionSchema } from './position.schema';
 
 export type NumeroDocument = HydratedDocument<Numero>;
 
+// MODEL
+
 @Schema({
   collection: 'numeros',
   toJSON: {
@@ -73,7 +75,13 @@ export class Numero {
   @Prop({type: SchemaTypes.Date})
   _delete?: Date;
 
+  static filterSensitiveFields(numero: Numero): Numero {
+    numero.comment = null
+    return numero
+  }
 }
+
+// SCHEMA
 
 export const NumeroSchema = SchemaFactory.createForClass(Numero)
 
@@ -89,6 +97,7 @@ function displaySuffix(suffix) {
   return ''
 }
 
-NumeroSchema.virtual('numeroComplet').get(function (this: NumeroDocument) {
+
+NumeroSchema.virtual('numeroComplet').get(function () {
   return this.numero + displaySuffix(this.suffixe)
-});
+})
