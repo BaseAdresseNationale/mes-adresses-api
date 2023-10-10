@@ -30,7 +30,6 @@
     "@etalab/project-legal": "^0.6.0",
     "@mapbox/tilebelt": "^1.0.2",
     "@turf/turf": "^6.5.0",
-    "bluebird": "^3.7.2",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "csv-write-stream": "^2.0.0",
