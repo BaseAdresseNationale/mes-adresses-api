@@ -80,6 +80,8 @@ export class Numero extends Document {
 
 export const NumeroSchema = SchemaFactory.createForClass(Numero)
 
+// METHODS
+
 NumeroSchema.methods.displaySuffix = function () {
   if (this.suffixe) {
     if (this.suffixe.trim().match(/^\d/)) {
@@ -98,6 +100,17 @@ NumeroSchema.methods.filterSensitiveFields = function (filter: boolean = true) {
   return this
 };
 
+// VIRTUALS
+
 NumeroSchema.virtual('numeroComplet').get(function () {
   return this.numero + this.displaySuffix()
 })
+
+// INDEXES
+
+NumeroSchema.index({_bal: 1})
+NumeroSchema.index({_bal: 1, commune: 1})
+NumeroSchema.index({voie: 1})
+NumeroSchema.index({toponyme: 1})
+NumeroSchema.index({_deleted: 1})
+NumeroSchema.index({tiles: 1})

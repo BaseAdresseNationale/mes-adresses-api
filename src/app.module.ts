@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './tasks/tasks.service';
 import { NumeroModule } from './numeros/numero.module';
-import { BasesLocalesModule } from './bases_locales/bases_locales.module';
+import { BaseLocaleModule } from './base_locale/base_locale.module';
 
 @Module({
   imports: [
@@ -19,7 +19,7 @@ import { BasesLocalesModule } from './bases_locales/bases_locales.module';
       inject: [ConfigService],
     }),
     NumeroModule,
-    BasesLocalesModule,
+    BaseLocaleModule,
   ],
   controllers: [],
   providers: [TasksService],

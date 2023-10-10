@@ -2,10 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Sync, SyncSchema } from './sync.schema';
 
-export type BasesLocalesDocument = HydratedDocument<BasesLocales>;
+export type BasesLocaleDocument = HydratedDocument<BaseLocale>;
 
 @Schema({ collection: 'bases_locales'})
-export class BasesLocales {
+export class BaseLocale {
 
   @Prop({type: SchemaTypes.ObjectId})
   _id: Types.ObjectId;
@@ -44,4 +44,4 @@ export class BasesLocales {
   _delete: Date;
 }
 
-export const BasesLocalesSchema = SchemaFactory.createForClass(BasesLocales);
+export const BaseLocaleSchema = SchemaFactory.createForClass(BaseLocale);
