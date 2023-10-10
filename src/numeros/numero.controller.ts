@@ -18,9 +18,7 @@ export class NumeroController {
   @ApiHeader({name: 'Token'})
   find(@Res() res: Response): any {
 
-    const numero: Numero = res.locals.isAdmin ?
-      res.locals.numero :
-      res.locals.numero.filterSensitiveFields()
+    const numero: Numero = res.locals.numero.filterSensitiveFields(!res.locals.isAdmin)
 
     res.status(HttpStatus.OK).json(numero);
   }

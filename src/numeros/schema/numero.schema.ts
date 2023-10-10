@@ -5,7 +5,6 @@ import { Position, PositionSchema } from './position.schema';
 
 export type NumeroDocument = HydratedDocument<Numero>;
 
-// MODEL
 @Schema({
   collection: 'numeros',
   toJSON: {
@@ -74,30 +73,28 @@ export class Numero extends Document {
   @Prop({type: SchemaTypes.Date})
   _delete?: Date;
 
-  filterSensitiveFields: () => Numero
+  filterSensitiveFields: (filter: boolean) => Numero
 
   displaySuffix: () => string
 }
 
-// SCHEMA
-
 export const NumeroSchema = SchemaFactory.createForClass(Numero)
-
 
 NumeroSchema.methods.displaySuffix = function () {
   if (this.suffixe) {
-    return this.suffixe.trim().match(/^\d/) ? (
-      '-' + this.suffixe.trim()
-    ) : (
-      this.suffixe.trim()
-    )
+    if (this.suffixe.trim().match(/^\d/)) {
+      return '-' + this.suffixe.trim()
+    }
+    return this.suffixe.trim()
   }
 
   return ''
 };
 
-NumeroSchema.methods.filterSensitiveFields = function () {
-  this.comment = null
+NumeroSchema.methods.filterSensitiveFields = function (filter: boolean = true) {
+  if (filter) {
+    this.comment = null
+  }
   return this
 };
 
