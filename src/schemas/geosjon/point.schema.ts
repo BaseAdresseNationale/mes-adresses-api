@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { Validate, IsEnum } from 'class-validator'
-import { PointCoordBal } from '../../validator/point_coord.validator'
+import { PointValidator } from '../validator/coord.validator'
 
 export type PointDocument = HydratedDocument<Point>;
 
@@ -18,7 +18,7 @@ export class Point {
     required: true
   };
 
-  @Validate(PointCoordBal)
+  @Validate(PointValidator)
   @ApiProperty()
   @Prop({type: [SchemaTypes.Number]})
   coordinates: {

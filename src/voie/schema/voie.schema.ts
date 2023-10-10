@@ -20,8 +20,8 @@ export class Voie {
   @Prop({type: SchemaTypes.String})
   commune: string;
 
-  @Prop({type: [SchemaTypes.String]})
-  nomAlt: string[];
+  @Prop({type: [SchemaTypes.Map]})
+  nomAlt: Object;
 
   @Prop({type: FeaturePointSchema})
   centroid: FeaturePoint;

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Position } from '../schema/position.schema'
-import { ValidatorBal } from '../../validator/validator_bal.validator'
+import { ValidatorBal } from '../../schemas/validator/validator_bal.validator'
 import { Type } from 'class-transformer';
 import {
   MaxLength,
