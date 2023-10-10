@@ -18,6 +18,14 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     // For legacy JavaScript
-    "allowJs": true
+    "allowJs": true,
+    "paths": {
+      "@/modules/*": [
+        "src/modules/*"
+      ],
+      "@/lib/*": [
+        "src/lib/*"
+      ],
+    }
   }
 }

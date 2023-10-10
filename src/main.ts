@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common'
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module.js';
 import * as express from 'express';
 import * as cors from 'cors';
