@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import turf from '@turf/turf';
+import booleanIntersects from '@turf/boolean-intersects';
 import { range, union } from 'lodash';
 import {
   pointToTile,
@@ -10,8 +11,15 @@ import {
 } from '@mapbox/tilebelt';
 import { getPriorityPosition } from '../utils/positions.util';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
-import { Position } from '@/lib/schemas/position.schema';
+import { Voie } from '@/modules/voie/schema/voie.schema';
+import { TypeNumerotationEnum } from '@/modules/voie/schema/type_numerotation.enum';
 import { Point } from '@/lib/schemas/geosjon/point.schema';
+import {
+  LineString as LineStringTurf,
+  Position as PositionTurf,
+  BBox as BboxTurf,
+  Geometry as GeometryTurf,
+} from '@turf/helpers';
 
 const ZOOM = {
   NUMEROS_ZOOM: {
@@ -76,48 +84,51 @@ export class TilesService {
     return numero;
   }
 
-  // public async calcMetaTilesVoie(voie) {
-  //   voie.centroid = null;
-  //   voie.centroidTiles = null;
-  //   voie.traceTiles = null;
+  public async calcMetaTilesVoie(voie: Voie) {
+    voie.centroid = null;
+    voie.centroidTiles = null;
+    voie.traceTiles = null;
 
-  //   try {
-  //     if (voie.typeNumerotation === 'metrique' && voie.trace) {
-  //       voie.centroid = turf.centroid(voie.trace);
-  //       voie.centroidTiles = this.getTilesByPosition(
-  //         voie.centroid.geometry,
-  //         ZOOM.VOIE_ZOOM,
-  //       );
-  //       voie.traceTiles = this.getTilesByLineString(voie.trace);
-  //     } else {
-  //       const numeros = await mongo.db
-  //         .collection('numeros')
-  //         .find({ voie: voie._id, _deleted: null })
-  //         .project({ positions: 1, voie: 1 })
-  //         .toArray();
-  //       if (numeros.length > 0) {
-  //         const coordinatesNumeros = numeros
-  //           .filter((n) => n.positions && n.positions.length > 0)
-  //           .map((n) => getPriorityPosition(n.positions)?.point?.coordinates);
-  //         // CALC CENTROID
-  //         if (coordinatesNumeros.length > 0) {
-  //           const featureCollection = turf.featureCollection(
-  //             coordinatesNumeros.map((n) => turf.point(n)),
-  //           );
-  //           voie.centroid = turf.centroid(featureCollection);
-  //           voie.centroidTiles = this.getTilesByPosition(
-  //             voie.centroid.geometry,
-  //             ZOOM.VOIE_ZOOM,
-  //           );
-  //         }
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error(error, voie);
-  //   }
+    try {
+      if (
+        voie.typeNumerotation === TypeNumerotationEnum.METRIQUE &&
+        voie.trace
+      ) {
+        voie.centroid = turf.centroid(voie.trace);
+        voie.centroidTiles = this.getTilesByPosition(
+          voie.centroid.geometry,
+          ZOOM.VOIE_ZOOM,
+        );
+        voie.traceTiles = this.getTilesByLineString(voie.trace);
+      } else {
+        const numeros: Numero[] = [];
+        // await this.numeroModel
+        //   .find({ voie: voie._id, _deleted: null })
+        //   .select({ positions: 1, voie: 1 })
+        //   .exec();
+        if (numeros.length > 0) {
+          const coordinatesNumeros: PositionTurf[] = numeros
+            .filter((n) => n.positions && n.positions.length > 0)
+            .map((n) => getPriorityPosition(n.positions)?.point?.coordinates);
+          // CALC CENTROID
+          if (coordinatesNumeros.length > 0) {
+            const featureCollection = turf.featureCollection(
+              coordinatesNumeros.map((n) => turf.point(n)),
+            );
+            voie.centroid = turf.centroid(featureCollection);
+            voie.centroidTiles = this.getTilesByPosition(
+              voie.centroid.geometry,
+              ZOOM.VOIE_ZOOM,
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error, voie);
+    }
 
-  //   return voie;
-  // }
+    return voie;
+  }
 
   public getParentTile(tile, zoomFind) {
     return tile[2] <= zoomFind
@@ -144,33 +155,40 @@ export class TilesService {
     return tiles;
   }
 
-  // private getTilesByLineString(lineString, { zoom } = ZOOM.TRACE_MONGO_ZOOM) {
-  //   const bboxFeature = turf.bbox(lineString);
-  //   const [x, y, z] = bboxToTile(bboxFeature);
-  //   const tiles = this.getTilesByBbox([x, y, z], lineString, zoom);
-  //   return tiles;
-  // }
+  private getTilesByLineString(
+    lineString: LineStringTurf,
+    { zoom } = ZOOM.TRACE_MONGO_ZOOM,
+  ): string[] {
+    const bboxFeature: BboxTurf = turf.bbox(lineString);
+    const [x, y, z]: number[] = bboxToTile(bboxFeature);
+    const tiles: string[] = this.getTilesByBbox([x, y, z], lineString, zoom);
+    return tiles;
+  }
 
-  // private getTilesByBbox([x, y, z], geojson, zoom) {
-  //   const tiles = [];
-  //   if (z === zoom) {
-  //     return [`${z}/${x}/${y}`];
-  //   }
+  private getTilesByBbox(
+    [x, y, z]: number[],
+    geojson: GeometryTurf,
+    zoom,
+  ): string[] {
+    const tiles = [];
+    if (z === zoom) {
+      return [`${z}/${x}/${y}`];
+    }
 
-  //   if (z < zoom) {
-  //     const childTiles = getChildren([x, y, z]);
-  //     for (const childTile of childTiles) {
-  //       const childTileBbox = tileToBBOX(childTile);
-  //       const bboxPolygon = turf.bboxPolygon(childTileBbox);
-  //       if (turf.booleanIntersects(geojson, bboxPolygon)) {
-  //         tiles.push(...this.getTilesByBbox(childTile, geojson, zoom));
-  //       }
-  //     }
-  //   } else {
-  //     const parentTile = getParent([x, y, z]);
-  //     tiles.push(...this.getTilesByBbox(parentTile, geojson, zoom));
-  //   }
+    if (z < zoom) {
+      const childTiles: number[][] = getChildren([x, y, z]);
+      for (const childTile of childTiles) {
+        const childTileBbox = tileToBBOX(childTile);
+        const bboxPolygon = turf.bboxPolygon(childTileBbox);
+        if (booleanIntersects(geojson, bboxPolygon)) {
+          tiles.push(...this.getTilesByBbox(childTile, geojson, zoom));
+        }
+      }
+    } else {
+      const parentTile = getParent([x, y, z]);
+      tiles.push(...this.getTilesByBbox(parentTile, geojson, zoom));
+    }
 
-  //   return union(tiles);
-  // }
+    return union(tiles);
+  }
 }

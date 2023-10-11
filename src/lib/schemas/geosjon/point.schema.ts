@@ -1,33 +1,29 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
-import { Validate, IsEnum } from 'class-validator';
+import { Validate, Equals } from 'class-validator';
 import { PointValidator } from '../../validator/coord.validator';
+import { Point as PointTurf, Position as PositionTurf } from '@turf/helpers';
 
 export type PointDocument = HydratedDocument<Point>;
-
-export enum PointTypeEnum {
-  POINT = 'Point',
-}
 
 @Schema({
   _id: false,
 })
-export class Point {
-  @IsEnum(PointTypeEnum)
+export class Point implements PointTurf {
+  @Equals('Point')
   @ApiProperty()
   @Prop({
     type: SchemaTypes.String,
-    enum: PointTypeEnum,
     required: true,
     nullable: false,
   })
-  type: PointTypeEnum;
+  type: 'Point';
 
   @Validate(PointValidator)
   @ApiProperty()
   @Prop({ type: [SchemaTypes.Number], required: true, nullable: false })
-  coordinates: [number, number];
+  coordinates: PositionTurf;
 }
 
 export const PointSchema = SchemaFactory.createForClass(Point);

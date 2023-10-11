@@ -2,22 +2,20 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { SchemaTypes } from 'mongoose';
 import { Point, PointSchema } from '@/lib/schemas/geosjon/point.schema';
-import { ValidateNested, IsEnum } from 'class-validator';
+import { ValidateNested, Equals, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
-
-export enum FeatureTypeEnum {
-  FEATURE = 'Feature',
-}
+import { Point as PointTurf, Feature as FeatureTurf } from '@turf/helpers';
 
 @Schema({
   _id: false,
 })
-export class FeaturePoint {
-  @IsEnum(FeatureTypeEnum)
+export class FeaturePoint implements FeatureTurf<PointTurf> {
+  @Equals('Feature')
   @ApiProperty()
-  @Prop({ type: SchemaTypes.String, enum: FeatureTypeEnum })
-  type: FeatureTypeEnum;
+  @Prop({ type: SchemaTypes.String, required: true })
+  type: 'Feature';
 
+  @IsOptional()
   @ApiProperty()
   @Prop({ type: SchemaTypes.Map })
   properties: Record<string, unknown>;
@@ -26,7 +24,7 @@ export class FeaturePoint {
   @Type(() => Point)
   @ApiProperty({ type: () => Point })
   @Prop({ type: PointSchema })
-  point: Point;
+  geometry: Point;
 }
 
 export const FeaturePointSchema = SchemaFactory.createForClass(FeaturePoint);

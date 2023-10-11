@@ -11,7 +11,7 @@ import { ToponymeModule } from './modules/toponyme/toponyme.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    ScheduleModule.forRoot(),
+    // ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({

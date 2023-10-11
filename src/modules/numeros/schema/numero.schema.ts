@@ -105,20 +105,6 @@ NumeroSchema.virtual('numeroComplet').get(function () {
   return this.numero + this.displaySuffix();
 });
 
-// // MIDDLEWARES
-
-// NumeroSchema.pre('save', function () {
-//   console.log('PRE SAVE');
-// });
-
-// NumeroSchema.pre('findOneAndUpdate', function () {
-//   console.log('PRE findOneAndUpdate'); // Will not be executed
-// });
-
-// NumeroSchema.pre('updateOne', function () {
-//   console.log('Updating');
-// });
-
 // INDEXES
 
 NumeroSchema.index({ _bal: 1 });
