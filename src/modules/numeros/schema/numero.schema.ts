@@ -38,11 +38,11 @@ export class Numero extends Document {
 
   @ApiProperty()
   @Prop({ type: SchemaTypes.String })
-  toponyme?: string;
+  toponyme?: Types.ObjectId;
 
   @ApiProperty()
   @Prop({ type: SchemaTypes.String })
-  voie: string;
+  voie: Types.ObjectId;
 
   @ApiProperty()
   @Prop([SchemaTypes.String])

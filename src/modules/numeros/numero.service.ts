@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Numero } from './schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { UpdateNumeroDto } from './dto/update_numero.dto';
+import { CreateNumeroDto } from './dto/create_numero.dto';
 import { TilesService } from '@/lib/services/tiles.service';
 
 @Injectable()
@@ -16,26 +17,67 @@ export class NumeroService {
     @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
   ) {}
 
+  public async create(
+    voie: Voie,
+    createNumeroDto: CreateNumeroDto,
+  ): Promise<Numero> {
+    // CHECK IF VOIE EXIST
+    if (voie._delete) {
+      throw new HttpException('Voie is archived', HttpStatus.BAD_REQUEST);
+    }
+
+    // CHECK IF TOPO EXIST
+    if (
+      createNumeroDto.toponyme &&
+      !(await !this.isToponymeExist(createNumeroDto.toponyme))
+    ) {
+      throw new HttpException('Toponyme not found', HttpStatus.BAD_REQUEST);
+    }
+
+    // CREATE NUMERO
+    const numero: Partial<Numero> = {
+      _id: new Types.ObjectId(),
+      _bal: voie._bal,
+      commune: voie.commune,
+      voie: voie._id,
+      numero: createNumeroDto.numero,
+      suffixe: createNumeroDto.suffixe
+        ? this.normalizeSuffixe(createNumeroDto.suffixe)
+        : null,
+      toponyme: new Types.ObjectId(createNumeroDto.toponyme),
+      positions: createNumeroDto.positions || [],
+      comment: createNumeroDto.comment || null,
+      parcelles: createNumeroDto.parcelles || [],
+      certifie: createNumeroDto.certifie || false,
+    };
+    // ADD TILE TO NUMERO
+    this.tilesService.calcMetaTilesNumero(numero);
+    // CREATE NUMERO
+    const numeroCreated: Numero = await this.numeroModel.create(numero);
+    // UPDATE TILES OF VOIE
+    await this.tilesService.updateVoieTile(voie);
+
+    return numeroCreated;
+  }
+
   public async update(
     numero: Numero,
     updateNumeroDto: UpdateNumeroDto,
   ): Promise<Numero> {
-    console.log('UPDATE', updateNumeroDto);
-
     // CHECK IF VOIE EXIST
     if (
       updateNumeroDto.voie &&
-      (await !this.isVoieExist(updateNumeroDto.voie))
+      !(await this.isVoieExist(updateNumeroDto.voie))
     ) {
-      throw new Error('Voie not found');
+      throw new HttpException('Voie not found', HttpStatus.BAD_REQUEST);
     }
 
     // CHECK IF TOPO EXIST
     if (
       updateNumeroDto.toponyme &&
-      (await !this.isToponymeExist(updateNumeroDto.toponyme))
+      !(await !this.isToponymeExist(updateNumeroDto.toponyme))
     ) {
-      throw new Error('Toponyme not found');
+      throw new HttpException('Toponyme not found', HttpStatus.BAD_REQUEST);
     }
 
     // NORMALIZE SUFFIXE
@@ -49,46 +91,49 @@ export class NumeroService {
     }
 
     // UPDATE NUMERO
-    const value = await this.numeroModel.findOneAndUpdate(
+    const numeroUpdated = await this.numeroModel.findOneAndUpdate(
       { _id: numero._id, _deleted: null },
       { $set: updateNumeroDto },
       { returnDocument: 'after' },
     );
 
-    console.log(value);
+    if (!numeroUpdated) {
+      throw new HttpException('Numero not found', HttpStatus.BAD_REQUEST);
+    }
 
-    // if (!value) {
-    //   throw new Error('Numero not found');
-    // }
+    // UPDATE TILES OF VOIE IF POSITION CHANGE
+    if (numeroUpdated.voie !== numero.voie) {
+      await this.tilesService.updateVoiesTile([
+        numeroUpdated.voie.toHexString(),
+        numero.voie.toHexString(),
+      ]);
+    } else if (updateNumeroDto.positions) {
+      await this.tilesService.updateVoiesTile([
+        numeroUpdated.voie.toHexString(),
+      ]);
+    }
 
-    // // UPDATE TILES OF VOIE IF POSITION CHANGE
-    // if (value.voie.toHexString() !== originalNumero.voie.toHexString()) {
-    //   await updateVoiesTile([value.voie, originalNumero.voie]);
-    // } else if (numeroChanges.positions) {
-    //   await updateVoiesTile([value.voie]);
-    // }
-
-    return value;
+    return numeroUpdated;
   }
 
   private async isVoieExist(_id: string): Promise<boolean> {
     const voieExist = await this.voieModel
-      .find({
+      .findOne({
         _id,
         _deleted: null,
       })
       .exec();
-    return voieExist.length > 0;
+    return voieExist !== null;
   }
 
   private async isToponymeExist(_id: string): Promise<boolean> {
     const toponymeExist = await this.toponymeModel
-      .find({
+      .findOne({
         _id,
         _deleted: null,
       })
       .exec();
-    return toponymeExist.length > 0;
+    return toponymeExist !== null;
   }
 
   private normalizeSuffixe(suffixe: string): string {
