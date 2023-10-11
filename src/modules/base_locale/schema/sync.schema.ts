@@ -4,7 +4,9 @@ import { StatusSyncEnum } from './status.enum';
 
 export type SyncDocument = HydratedDocument<Sync>;
 
-@Schema()
+@Schema({
+  _id: false,
+})
 export class Sync {
   @Prop({ type: SchemaTypes.String, enum: StatusSyncEnum })
   status: StatusSyncEnum;

@@ -9,7 +9,9 @@ import { PositionTypeEnum } from './position_type.enum';
 
 export type PositionDocument = HydratedDocument<Position>;
 
-@Schema()
+@Schema({
+  _id: false,
+})
 export class Position {
   @IsEnum(PositionTypeEnum)
   @Validate(ValidatorBal, ['position'])

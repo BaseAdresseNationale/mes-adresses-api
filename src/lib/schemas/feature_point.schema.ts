@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { SchemaTypes } from 'mongoose';
-import { Point, PointSchema } from '../../schemas/geosjon/point.schema';
+import { Point, PointSchema } from '@/lib/schemas/geosjon/point.schema';
 import { ValidateNested, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -9,7 +9,9 @@ export enum FeatureTypeEnum {
   FEATURE = 'Feature',
 }
 
-@Schema()
+@Schema({
+  _id: false,
+})
 export class FeaturePoint {
   @IsEnum(FeatureTypeEnum)
   @ApiProperty()

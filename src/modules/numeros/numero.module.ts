@@ -8,6 +8,8 @@ import {
 import { NumeroService } from './numero.service';
 import { NumeroController } from './numero.controller';
 import { NumeroMiddleware } from '@/lib/middlewares/numero.middleware';
+import { TilesSchemaMiddleware } from './schema/tiles.schema.middleware';
+import { TilesService } from '@/lib/services/tiles.service';
 
 @Module({
   imports: [
@@ -16,7 +18,12 @@ import { NumeroMiddleware } from '@/lib/middlewares/numero.middleware';
       { name: BaseLocale.name, schema: BaseLocaleSchema },
     ]),
   ],
-  providers: [NumeroService, NumeroMiddleware],
+  providers: [
+    NumeroService,
+    NumeroMiddleware,
+    TilesSchemaMiddleware,
+    TilesService,
+  ],
   controllers: [NumeroController],
 })
 export class NumeroModule {

@@ -10,7 +10,9 @@ export enum LineStringTypeEnum {
   LINE_STRING = 'LineString',
 }
 
-@Schema()
+@Schema({
+  _id: false,
+})
 export class LineString {
   @IsEnum(LineStringTypeEnum)
   @ApiProperty()

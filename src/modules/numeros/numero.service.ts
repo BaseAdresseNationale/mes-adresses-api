@@ -12,12 +12,14 @@ export class NumeroService {
     numero: Numero,
     updateNumeroDto: UpdateNumeroDto,
   ): Promise<Numero> {
-    const res = await this.numeroModel
-      .findByIdAndUpdate(
-        { _id: numero._id },
-        { suffixe: updateNumeroDto.suffixe },
-      )
-      .exec();
-    return res;
+    await this.numeroModel.updateOne({ _id: numero._id }, updateNumeroDto);
+    return numero;
+    // const res = await this.numeroModel
+    //   .findByIdAndUpdate(
+    //     { _id: numero._id },
+    //     { suffixe: updateNumeroDto.suffixe },
+    //   )
+    //   .exec();
+    // return res;
   }
 }

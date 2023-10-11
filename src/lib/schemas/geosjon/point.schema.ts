@@ -10,20 +10,24 @@ export enum PointTypeEnum {
   POINT = 'Point',
 }
 
-@Schema()
+@Schema({
+  _id: false,
+})
 export class Point {
   @IsEnum(PointTypeEnum)
   @ApiProperty()
-  @Prop({ type: SchemaTypes.String, enum: PointTypeEnum })
+  @Prop({
+    type: SchemaTypes.String,
+    enum: PointTypeEnum,
+    required: true,
+    nullable: false,
+  })
   type: PointTypeEnum;
 
   @Validate(PointValidator)
   @ApiProperty()
-  @Prop({ type: [SchemaTypes.Number] })
-  coordinates: {
-    type: [number];
-    required: true;
-  };
+  @Prop({ type: [SchemaTypes.Number], required: true, nullable: false })
+  coordinates: [number, number];
 }
 
 export const PointSchema = SchemaFactory.createForClass(Point);
