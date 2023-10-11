@@ -9,6 +9,8 @@ import {
   getChildren,
   tileToBBOX,
 } from '@mapbox/tilebelt';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 import { getPriorityPosition } from '../utils/positions.util';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
@@ -41,25 +43,26 @@ const ZOOM = {
 
 @Injectable()
 export class TilesService {
-  constructor() {}
+  constructor(
+    @InjectModel(Numero.name) private numeroModel: Model<Numero>,
+    @InjectModel(Voie.name) private voieModel: Model<Voie>,
+  ) {}
 
-  // public async updateVoiesTile(voieIds: string[]) {
-  //   const voies = await mongo.db
-  //     .collection('voies')
-  //     .find({
-  //       _id: { $in: voieIds.map((id) => mongo.parseObjectID(id)) },
-  //       _deleted: null,
-  //     })
-  //     .project({ _id: 1, typeNumerotation: 1, trace: 1 })
-  //     .toArray();
-  //   return Promise.all(voies.map((v) => this.updateVoieTile(v)));
-  // }
+  public async updateVoiesTile(voieIds: string[]) {
+    const voies: Voie[] = await this.voieModel
+      .find({
+        _id: { $in: voieIds.map((id) => id) },
+        _deleted: null,
+      })
+      .select({ _id: 1, typeNumerotation: 1, trace: 1 })
+      .exec();
+    return Promise.all(voies.map((v) => this.updateVoieTile(v)));
+  }
 
-  // public async updateVoieTile(voie) {
-  //   const _id = mongo.parseObjectID(voie._id);
-  //   const voieSet = await this.calcMetaTilesVoie(voie);
-  //   return mongo.db.collection('voies').updateOne({ _id }, { $set: voieSet });
-  // }
+  public async updateVoieTile(voie: Voie) {
+    const voieSet: Voie = await this.calcMetaTilesVoie(voie);
+    return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
+  }
 
   private roundCoordinate(coordinate: number, precision: number = 6): number {
     return Number.parseFloat(coordinate.toFixed(precision));
@@ -101,11 +104,10 @@ export class TilesService {
         );
         voie.traceTiles = this.getTilesByLineString(voie.trace);
       } else {
-        const numeros: Numero[] = [];
-        // await this.numeroModel
-        //   .find({ voie: voie._id, _deleted: null })
-        //   .select({ positions: 1, voie: 1 })
-        //   .exec();
+        const numeros: Numero[] = await this.numeroModel
+          .find({ voie: voie._id, _deleted: null })
+          .select({ positions: 1, voie: 1 })
+          .exec();
         if (numeros.length > 0) {
           const coordinatesNumeros: PositionTurf[] = numeros
             .filter((n) => n.positions && n.positions.length > 0)
