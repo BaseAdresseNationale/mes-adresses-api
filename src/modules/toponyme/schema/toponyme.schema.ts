@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
+import { Position, PositionSchema } from '@/lib/schemas/position.schema';
 
 export type ToponymeDocument = HydratedDocument<Toponyme>;
 
@@ -23,7 +24,8 @@ export class Toponyme {
   @Prop([SchemaTypes.String])
   parcelles?: string[];
 
-  positions: [];
+  @Prop({ type: [PositionSchema] })
+  positions: Position[];
 
   @Prop({ type: SchemaTypes.Date })
   _created: Date;

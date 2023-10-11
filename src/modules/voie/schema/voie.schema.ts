@@ -3,7 +3,7 @@ import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import {
   FeaturePoint,
   FeaturePointSchema,
-} from '@/lib/schemas/geosjon/feature_point.schema';
+} from '@/lib/schemas/feature_point.schema';
 import {
   LineString,
   LineStringSchema,

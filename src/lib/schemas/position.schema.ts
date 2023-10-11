@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { Point, PointSchema } from '@/lib/schemas/geosjon/point.schema';
 import { ValidatorBal } from '@/lib/validator/validator_bal.validator';
-import { ValidateNested, Validate, IsEnum } from 'class-validator';
+import { ValidateNested, Validate, IsEnum, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PositionTypeEnum } from './position_type.enum';
 
@@ -17,10 +17,11 @@ export class Position {
   @Prop({ type: SchemaTypes.String, enum: PositionTypeEnum })
   type: PositionTypeEnum;
 
+  @IsOptional()
   @Validate(ValidatorBal, ['source'])
   @ApiProperty()
   @Prop({ type: SchemaTypes.String })
-  source: string;
+  source?: string;
 
   @ValidateNested()
   @Type(() => Point)

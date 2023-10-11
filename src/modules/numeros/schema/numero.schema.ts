@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes, Types, Document } from 'mongoose';
-import { Position, PositionSchema } from './position.schema';
+import { Position, PositionSchema } from '@/lib/schemas/position.schema';
 
 export type NumeroDocument = HydratedDocument<Numero>;
 
