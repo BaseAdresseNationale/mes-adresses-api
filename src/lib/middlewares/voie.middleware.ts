@@ -4,7 +4,8 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import { CustomRequest } from '../types/request.type';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Voie } from '@/modules/voie/schema/voie.schema';
@@ -17,7 +18,7 @@ export class VoieMiddleware implements NestMiddleware {
     @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
   ) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: CustomRequest, res: Response, next: NextFunction) {
     const { voieId } = req.params;
     if (voieId) {
       const voie: Voie = await this.voieModel
@@ -30,7 +31,7 @@ export class VoieMiddleware implements NestMiddleware {
         throw new HttpException('Voie not found', HttpStatus.BAD_REQUEST);
       }
 
-      res.locals.voie = voie;
+      req.voie = voie;
       const basesLocale: BaseLocale = await this.baseLocaleModel
         .findOne({ _id: voie._bal })
         .select({ token: 1 })
@@ -44,7 +45,7 @@ export class VoieMiddleware implements NestMiddleware {
       if (!basesLocale) {
         throw new HttpException('Base Local not found', HttpStatus.BAD_REQUEST);
       }
-      res.locals.isAdmin = req.headers.token === basesLocale.token;
+      req.token = basesLocale.token;
     }
     next();
   }

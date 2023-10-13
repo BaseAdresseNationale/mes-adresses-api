@@ -3,6 +3,7 @@ import {
   Post,
   UseGuards,
   Res,
+  Req,
   HttpStatus,
   Body,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import {
   ApiHeader,
   ApiBody,
 } from '@nestjs/swagger';
+import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib//guards/admin.guard';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
@@ -31,11 +33,12 @@ export class VoieController {
   @ApiHeader({ name: 'Token' })
   @UseGuards(AdminGuard)
   async createNumero(
+    @Req() req: CustomRequest,
     @Body() createNumeroDto: CreateNumeroDto,
     @Res() res: Response,
   ) {
     const result: Numero = await this.numeroService.create(
-      res.locals.voie,
+      req.voie,
       createNumeroDto,
     );
     res.status(HttpStatus.OK).json(result);

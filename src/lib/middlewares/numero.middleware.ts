@@ -4,7 +4,8 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import { CustomRequest } from '../types/request.type';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
@@ -17,7 +18,7 @@ export class NumeroMiddleware implements NestMiddleware {
     @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
   ) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: CustomRequest, res: Response, next: NextFunction) {
     const { numeroId } = req.params;
     if (numeroId) {
       const numero: Numero = await this.numeroModel
@@ -30,7 +31,7 @@ export class NumeroMiddleware implements NestMiddleware {
         throw new HttpException('Numero not found', HttpStatus.BAD_REQUEST);
       }
 
-      res.locals.numero = numero;
+      req.numero = numero;
       const basesLocale: BaseLocale = await this.baseLocaleModel
         .findOne({ _id: numero._bal })
         .select({ token: 1 })
@@ -44,7 +45,7 @@ export class NumeroMiddleware implements NestMiddleware {
       if (!basesLocale) {
         throw new HttpException('Base Local not found', HttpStatus.BAD_REQUEST);
       }
-      res.locals.isAdmin = req.headers.token === basesLocale.token;
+      req.token = basesLocale.token;
     }
     next();
   }
