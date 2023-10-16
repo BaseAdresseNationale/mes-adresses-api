@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import * as turf from '@turf/turf';
 import booleanIntersects from '@turf/boolean-intersects';
 import { range, union } from 'lodash';
@@ -10,7 +10,7 @@ import {
   tileToBBOX,
 } from '@mapbox/tilebelt';
 import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel, getModelToken } from '@nestjs/mongoose';
 import { getPriorityPosition } from '../utils/positions.util';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
@@ -44,25 +44,24 @@ const ZOOM = {
 @Injectable()
 export class TilesService {
   constructor(
-    @InjectModel(Numero.name) private numeroModel: Model<Numero>, // @InjectModel(Voie.name) private voieModel: Model<Voie>,
+    @Inject(getModelToken(Numero.name)) private numeroModel: Model<Numero>,
+    @InjectModel(Voie.name) private voieModel: Model<Voie>,
   ) {}
 
   public async updateVoiesTile(voieIds: string[]) {
-    return null;
-    // const voies: Voie[] = await this.voieModel
-    //   .find({
-    //     _id: { $in: voieIds.map((id) => id) },
-    //     _deleted: null,
-    //   })
-    //   .select({ _id: 1, typeNumerotation: 1, trace: 1 })
-    //   .exec();
-    // return Promise.all(voies.map((v) => this.updateVoieTile(v)));
+    const voies: Voie[] = await this.voieModel
+      .find({
+        _id: { $in: voieIds.map((id) => id) },
+        _deleted: null,
+      })
+      .select({ _id: 1, typeNumerotation: 1, trace: 1 })
+      .exec();
+    return Promise.all(voies.map((v) => this.updateVoieTile(v)));
   }
 
   public async updateVoieTile(voie: Voie) {
-    return null;
-    // const voieSet: Voie = await this.calcMetaTilesVoie(voie);
-    // return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
+    const voieSet: Voie = await this.calcMetaTilesVoie(voie);
+    return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
   }
 
   private roundCoordinate(coordinate: number, precision: number = 6): number {
