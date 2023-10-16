@@ -2,11 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Sync, SyncSchema } from './sync.schema';
 import { StatusBaseLocalEnum } from './status.enum';
+import { DateBase } from '@/lib/schemas/date.schema';
 
 export type BasesLocaleDocument = HydratedDocument<BaseLocale>;
 
 @Schema({ collection: 'bases_locales' })
-export class BaseLocale {
+export class BaseLocale extends DateBase {
   @Prop({ type: SchemaTypes.ObjectId })
   _id: Types.ObjectId;
 
@@ -33,15 +34,6 @@ export class BaseLocale {
 
   @Prop({ type: SyncSchema })
   sync: Sync;
-
-  @Prop({ type: SchemaTypes.Date })
-  _created: Date;
-
-  @Prop({ type: SchemaTypes.Date })
-  _updated: Date;
-
-  @Prop({ type: SchemaTypes.Date })
-  _delete: Date;
 }
 
 export const BaseLocaleSchema = SchemaFactory.createForClass(BaseLocale);

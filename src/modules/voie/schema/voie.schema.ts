@@ -9,11 +9,12 @@ import {
   LineStringSchema,
 } from '@/lib/schemas/geosjon/line_string.schema';
 import { TypeNumerotationEnum } from './type_numerotation.enum';
+import { DateBase } from '@/lib/schemas/date.schema';
 
 export type VoieDocument = HydratedDocument<Voie>;
 
 @Schema({ collection: 'voies' })
-export class Voie {
+export class Voie extends DateBase {
   @Prop({ type: SchemaTypes.ObjectId })
   _id: Types.ObjectId;
 
@@ -43,15 +44,6 @@ export class Voie {
 
   @Prop({ type: [SchemaTypes.String] })
   traceTiles: string[];
-
-  @Prop({ type: SchemaTypes.Date })
-  _created: Date;
-
-  @Prop({ type: SchemaTypes.Date })
-  _updated: Date;
-
-  @Prop({ type: SchemaTypes.Date })
-  _delete: Date;
 }
 
 // code: string;

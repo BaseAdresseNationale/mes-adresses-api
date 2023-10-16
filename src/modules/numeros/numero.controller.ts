@@ -21,6 +21,7 @@ import { AdminGuard } from '@/lib//guards/admin.guard';
 import { NumeroService } from './numero.service';
 import { Numero } from './schema/numero.schema';
 import { UpdateNumeroDto } from './dto/update_numero.dto';
+import { filterSensitiveFields } from './numero.utils';
 
 @ApiTags('numeros')
 @Controller('numeros')
@@ -32,7 +33,7 @@ export class NumeroController {
   @ApiResponse({ status: 200, type: Numero })
   @ApiHeader({ name: 'Token' })
   find(@Req() req: CustomRequest, @Res() res: Response): any {
-    const numero: Numero = req.numero.filterSensitiveFields(!req.isAdmin);
+    const numero: Numero = filterSensitiveFields(req.numero, !req.isAdmin);
     res.status(HttpStatus.OK).json(numero);
   }
 

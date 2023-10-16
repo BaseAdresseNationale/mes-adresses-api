@@ -12,7 +12,7 @@ import {
 
 export class CreateNumeroDto {
   @Validate(ValidatorBal, ['numero'])
-  @ApiProperty({ required: false, nullable: false })
+  @ApiProperty({ required: true, nullable: false })
   numero?: number;
 
   @IsOptional()

@@ -1,7 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { HydratedDocument, SchemaTypes, Types, Document } from 'mongoose';
+import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Position, PositionSchema } from '@/lib/schemas/position.schema';
+import { DateBase } from '@/lib/schemas/date.schema';
+import { displaySuffix } from '../numero.utils';
 
 export type NumeroDocument = HydratedDocument<Numero>;
 
@@ -11,7 +13,7 @@ export type NumeroDocument = HydratedDocument<Numero>;
     virtuals: true,
   },
 })
-export class Numero extends Document {
+export class Numero extends DateBase {
   @ApiProperty()
   @Prop({ type: SchemaTypes.ObjectId })
   _id: Types.ObjectId;
@@ -59,50 +61,14 @@ export class Numero extends Document {
   @ApiProperty()
   @Prop({ type: [SchemaTypes.String] })
   tiles: string[];
-
-  @ApiProperty()
-  @Prop({ type: SchemaTypes.Date })
-  _created: Date;
-
-  @ApiProperty()
-  @Prop({ type: SchemaTypes.Date })
-  _updated: Date;
-
-  @ApiProperty()
-  @Prop({ type: SchemaTypes.Date })
-  _delete?: Date;
-
-  filterSensitiveFields: (filter: boolean) => Numero;
-
-  displaySuffix: () => string;
 }
 
 export const NumeroSchema = SchemaFactory.createForClass(Numero);
 
-// METHODS
-
-NumeroSchema.methods.displaySuffix = function () {
-  if (this.suffixe) {
-    if (this.suffixe.trim().match(/^\d/)) {
-      return '-' + this.suffixe.trim();
-    }
-    return this.suffixe.trim();
-  }
-
-  return '';
-};
-
-NumeroSchema.methods.filterSensitiveFields = function (filter: boolean = true) {
-  if (filter) {
-    this.comment = null;
-  }
-  return this;
-};
-
 // VIRTUALS
 
 NumeroSchema.virtual('numeroComplet').get(function () {
-  return this.numero + this.displaySuffix();
+  return this.numero + displaySuffix(this);
 });
 
 // INDEXES
