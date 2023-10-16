@@ -1,6 +1,6 @@
-import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+import { Injectable, HttpStatus, HttpException, Inject } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel, getModelToken } from '@nestjs/mongoose';
 import { Numero } from './schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
@@ -12,7 +12,7 @@ import { TilesService } from '@/lib/services/tiles.service';
 export class NumeroService {
   constructor(
     private tilesService: TilesService,
-    @InjectModel(Numero.name) private numeroModel: Model<Numero>,
+    @Inject(getModelToken(Numero.name)) private numeroModel: Model<Numero>,
     @InjectModel(Voie.name) private voieModel: Model<Voie>,
     @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
   ) {}
@@ -44,7 +44,9 @@ export class NumeroService {
       suffixe: createNumeroDto.suffixe
         ? this.normalizeSuffixe(createNumeroDto.suffixe)
         : null,
-      toponyme: new Types.ObjectId(createNumeroDto.toponyme),
+      toponyme: createNumeroDto.toponyme
+        ? new Types.ObjectId(createNumeroDto.toponyme)
+        : null,
       positions: createNumeroDto.positions || [],
       comment: createNumeroDto.comment || null,
       parcelles: createNumeroDto.parcelles || [],

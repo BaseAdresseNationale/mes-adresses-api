@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import turf from '@turf/turf';
+import * as turf from '@turf/turf';
 import booleanIntersects from '@turf/boolean-intersects';
 import { range, union } from 'lodash';
 import {
@@ -44,24 +44,25 @@ const ZOOM = {
 @Injectable()
 export class TilesService {
   constructor(
-    @InjectModel(Numero.name) private numeroModel: Model<Numero>,
-    @InjectModel(Voie.name) private voieModel: Model<Voie>,
+    @InjectModel(Numero.name) private numeroModel: Model<Numero>, // @InjectModel(Voie.name) private voieModel: Model<Voie>,
   ) {}
 
   public async updateVoiesTile(voieIds: string[]) {
-    const voies: Voie[] = await this.voieModel
-      .find({
-        _id: { $in: voieIds.map((id) => id) },
-        _deleted: null,
-      })
-      .select({ _id: 1, typeNumerotation: 1, trace: 1 })
-      .exec();
-    return Promise.all(voies.map((v) => this.updateVoieTile(v)));
+    return null;
+    // const voies: Voie[] = await this.voieModel
+    //   .find({
+    //     _id: { $in: voieIds.map((id) => id) },
+    //     _deleted: null,
+    //   })
+    //   .select({ _id: 1, typeNumerotation: 1, trace: 1 })
+    //   .exec();
+    // return Promise.all(voies.map((v) => this.updateVoieTile(v)));
   }
 
   public async updateVoieTile(voie: Voie) {
-    const voieSet: Voie = await this.calcMetaTilesVoie(voie);
-    return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
+    return null;
+    // const voieSet: Voie = await this.calcMetaTilesVoie(voie);
+    // return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
   }
 
   private roundCoordinate(coordinate: number, precision: number = 6): number {
@@ -114,10 +115,10 @@ export class TilesService {
             .map((n) => getPriorityPosition(n.positions)?.point?.coordinates);
           // CALC CENTROID
           if (coordinatesNumeros.length > 0) {
-            const featureCollection = turf.featureCollection(
+            const collection = turf.featureCollection(
               coordinatesNumeros.map((n) => turf.point(n)),
             );
-            voie.centroid = turf.centroid(featureCollection);
+            voie.centroid = turf.centroid(collection);
             voie.centroidTiles = this.getTilesByPosition(
               voie.centroid.geometry,
               ZOOM.VOIE_ZOOM,

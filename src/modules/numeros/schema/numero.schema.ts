@@ -4,6 +4,10 @@ import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Position, PositionSchema } from '@/lib/schemas/position.schema';
 import { DateBase } from '@/lib/schemas/date.schema';
 import { displaySuffix } from '../numero.utils';
+import {
+  BaseLocale,
+  BasesLocaleDocument,
+} from '@/modules/base_locale/schema/base_locale.schema';
 
 export type NumeroDocument = HydratedDocument<Numero>;
 
@@ -19,8 +23,12 @@ export class Numero extends DateBase {
   _id: Types.ObjectId;
 
   @ApiProperty()
-  @Prop({ type: SchemaTypes.ObjectId })
-  _bal: Types.ObjectId;
+  @Prop({ type: SchemaTypes.ObjectId, ref: BaseLocale.name })
+  _bal: Types.ObjectId | BaseLocale;
+
+  // @ApiProperty()
+  // @Prop({ type: SchemaTypes.ObjectId })
+  // _bal: Types.ObjectId;
 
   @ApiProperty()
   @Prop({ type: SchemaTypes.Number })
@@ -39,11 +47,11 @@ export class Numero extends DateBase {
   comment?: string;
 
   @ApiProperty()
-  @Prop({ type: SchemaTypes.String })
+  @Prop({ type: SchemaTypes.ObjectId })
   toponyme?: Types.ObjectId;
 
   @ApiProperty()
-  @Prop({ type: SchemaTypes.String })
+  @Prop({ type: SchemaTypes.ObjectId })
   voie: Types.ObjectId;
 
   @ApiProperty()

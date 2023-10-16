@@ -1,12 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Toponyme, ToponymeSchema } from './schema/toponyme.schema';
+import { DbModelFactory } from '@/lib/model_factory/db.model.factory';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Toponyme.name, schema: ToponymeSchema },
-    ]),
-  ],
+  imports: [MongooseModule.forFeatureAsync(DbModelFactory)],
 })
 export class ToponymeModule {}
