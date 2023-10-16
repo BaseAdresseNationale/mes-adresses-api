@@ -18,6 +18,8 @@ export class TasksService {
   @Interval(30000)
   async detectOutdatedSyncTask() {
     this.logger.debug('Task start : detect outdated sync');
+    // GET TOUTES LES BALS AVEC LE sync.status = SYNCED QUI ONT UN UPDATED SUPPERIEUR AU sync.currentUpdated
+    // ET SET sync.status = OUTDATED et UNSET sync.currentUpdated DE CELLE DERNIERE
     await detectOutdated();
     this.logger.debug('Task end : detect outdated sync');
   }
@@ -26,6 +28,10 @@ export class TasksService {
   @Interval(30000)
   async detectConflictTask() {
     this.logger.debug('Task start : detect sync in conflict');
+    // RECUPERE TOUTE LES REVISIONS COURRANTE DE L'API DE DEPOT
+    // COMPARE TOUTES LES BALS DES CODES COMMUNES DES REVISIONS
+    // SET LE STATUS A published et sync.status a SYNCED SI LE sync.lastUploadedRevisionId = revision._id ET QUE SONT status = REPLACED
+    // SET LE STATUS A replaced et sync.status a CONFLICT SI LE sync.lastUploadedRevisionId != revision._id ET QUE SONT status = PUBLISHED
     await detectConflict();
     this.logger.debug('Task end : detect sync in conflict');
   }
