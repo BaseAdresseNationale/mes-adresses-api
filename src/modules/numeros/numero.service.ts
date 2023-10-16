@@ -52,12 +52,12 @@ export class NumeroService {
       parcelles: createNumeroDto.parcelles || [],
       certifie: createNumeroDto.certifie || false,
     };
-    // ADD TILE TO NUMERO
-    this.tilesService.calcMetaTilesNumero(numero);
+    // // ADD TILE TO NUMERO
+    // this.tilesService.calcMetaTilesNumero(numero);
     // CREATE NUMERO
     const numeroCreated: Numero = await this.numeroModel.create(numero);
-    // UPDATE TILES OF VOIE
-    await this.tilesService.updateVoieTile(voie);
+    // // UPDATE TILES OF VOIE
+    // await this.tilesService.updateVoieTile(voie);
 
     return numeroCreated;
   }

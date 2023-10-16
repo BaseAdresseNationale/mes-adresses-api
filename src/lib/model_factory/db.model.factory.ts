@@ -3,7 +3,7 @@ import {
   getModelToken,
   AsyncModelFactory,
 } from '@nestjs/mongoose';
-import { Numero, NumeroSchema } from '@/modules/numeros/schema/numero.schema';
+import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { Voie, VoieSchema } from '@/modules/voie/schema/voie.schema';
 import {
   Toponyme,
