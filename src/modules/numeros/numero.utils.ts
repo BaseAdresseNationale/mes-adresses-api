@@ -17,3 +17,7 @@ export function filterSensitiveFields(numero: Numero, filter: boolean = true) {
   }
   return numero;
 }
+
+export function normalizeSuffixe(suffixe: string): string {
+  return suffixe.toLowerCase().trim();
+}

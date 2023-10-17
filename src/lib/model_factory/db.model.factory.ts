@@ -3,7 +3,7 @@ import {
   getModelToken,
   AsyncModelFactory,
 } from '@nestjs/mongoose';
-import { Numero } from '@/modules/numeros/schema/numero.schema';
+import { Numero, NumeroSchema } from '@/modules/numeros/schema/numero.schema';
 import { Voie, VoieSchema } from '@/modules/voie/schema/voie.schema';
 import {
   Toponyme,
@@ -20,9 +20,15 @@ export const DbModelFactory: AsyncModelFactory[] = [
     name: Numero.name,
     useFactory: NumeroSchemaFactory,
     imports: [
-      MongooseModule.forFeature([{ name: Voie.name, schema: VoieSchema }]),
+      MongooseModule.forFeatureAsync([
+        { name: `Numero#${Voie.name}`, useFactory: () => VoieSchema },
+        { name: `Numero#${Numero.name}`, useFactory: () => NumeroSchema },
+      ]),
     ],
-    inject: [getModelToken(Voie.name)],
+    inject: [
+      getModelToken(`Numero#${Voie.name}`),
+      getModelToken(`Numero#${Numero.name}`),
+    ],
   },
   { name: BaseLocale.name, useFactory: () => BaseLocaleSchema },
   { name: Toponyme.name, useFactory: () => ToponymeSchema },

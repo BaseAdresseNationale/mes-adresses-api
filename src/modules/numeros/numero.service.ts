@@ -6,12 +6,11 @@ import { Voie } from '@/modules/voie/schema/voie.schema';
 import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { UpdateNumeroDto } from './dto/update_numero.dto';
 import { CreateNumeroDto } from './dto/create_numero.dto';
-import { TilesService } from '@/lib/services/tiles.service';
+import { normalizeSuffixe } from './numero.utils';
 
 @Injectable()
 export class NumeroService {
   constructor(
-    private tilesService: TilesService,
     @Inject(getModelToken(Numero.name)) private numeroModel: Model<Numero>,
     @InjectModel(Voie.name) private voieModel: Model<Voie>,
     @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
@@ -42,7 +41,7 @@ export class NumeroService {
       voie: voie._id,
       numero: createNumeroDto.numero,
       suffixe: createNumeroDto.suffixe
-        ? this.normalizeSuffixe(createNumeroDto.suffixe)
+        ? normalizeSuffixe(createNumeroDto.suffixe)
         : null,
       toponyme: createNumeroDto.toponyme
         ? new Types.ObjectId(createNumeroDto.toponyme)
@@ -52,12 +51,8 @@ export class NumeroService {
       parcelles: createNumeroDto.parcelles || [],
       certifie: createNumeroDto.certifie || false,
     };
-    // // ADD TILE TO NUMERO
-    // this.tilesService.calcMetaTilesNumero(numero);
-    // CREATE NUMERO
+
     const numeroCreated: Numero = await this.numeroModel.create(numero);
-    // // UPDATE TILES OF VOIE
-    // await this.tilesService.updateVoieTile(voie);
 
     return numeroCreated;
   }
@@ -84,36 +79,15 @@ export class NumeroService {
 
     // NORMALIZE SUFFIXE
     if (updateNumeroDto.suffixe) {
-      updateNumeroDto.suffixe = this.normalizeSuffixe(updateNumeroDto.suffixe);
-    }
-
-    // ADD TILE TO NUMERO IF POSITIONS CHANGE
-    if (updateNumeroDto.positions) {
-      this.tilesService.calcMetaTilesNumero(updateNumeroDto);
+      updateNumeroDto.suffixe = normalizeSuffixe(updateNumeroDto.suffixe);
     }
 
     // UPDATE NUMERO
-    const numeroUpdated = await this.numeroModel.findOneAndUpdate(
+    const numeroUpdated: Numero = await this.numeroModel.findOneAndUpdate(
       { _id: numero._id, _deleted: null },
       { $set: updateNumeroDto },
       { returnDocument: 'after' },
     );
-
-    if (!numeroUpdated) {
-      throw new HttpException('Numero not found', HttpStatus.BAD_REQUEST);
-    }
-
-    // UPDATE TILES OF VOIE IF POSITION CHANGE
-    if (numeroUpdated.voie !== numero.voie) {
-      await this.tilesService.updateVoiesTile([
-        numeroUpdated.voie.toHexString(),
-        numero.voie.toHexString(),
-      ]);
-    } else if (updateNumeroDto.positions) {
-      await this.tilesService.updateVoiesTile([
-        numeroUpdated.voie.toHexString(),
-      ]);
-    }
 
     return numeroUpdated;
   }
@@ -136,9 +110,5 @@ export class NumeroService {
       })
       .exec();
     return toponymeExist !== null;
-  }
-
-  private normalizeSuffixe(suffixe: string): string {
-    return suffixe.toLowerCase().trim();
   }
 }

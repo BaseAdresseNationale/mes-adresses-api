@@ -5,37 +5,8 @@ import { NumeroModule } from './modules/numeros/numero.module';
 import { BaseLocaleModule } from './modules/base_locale/base_locale.module';
 import { VoieModule } from './modules/voie/voie.module';
 import { ToponymeModule } from './modules/toponyme/toponyme.module';
-import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
-import {
-  MongooseModule,
-  getModelToken,
-  AsyncModelFactory,
-} from '@nestjs/mongoose';
-import { Numero, NumeroSchema } from '@/modules/numeros/schema/numero.schema';
-import { Voie, VoieSchema } from '@/modules/voie/schema/voie.schema';
-import {
-  Toponyme,
-  ToponymeSchema,
-} from '@/modules/toponyme/schema/toponyme.schema';
-import {
-  BaseLocale,
-  BaseLocaleSchema,
-} from '@/modules/base_locale/schema/base_locale.schema';
-import { NumeroSchemaFactory } from '@/modules/numeros/schema/numero.factory';
-
-const db: AsyncModelFactory[] = [
-  {
-    name: Numero.name,
-    useFactory: NumeroSchemaFactory,
-    imports: [
-      MongooseModule.forFeature([{ name: Voie.name, schema: VoieSchema }]),
-    ],
-    inject: [getModelToken(Voie.name)],
-  },
-  { name: BaseLocale.name, useFactory: () => BaseLocaleSchema },
-  { name: Toponyme.name, useFactory: () => ToponymeSchema },
-  { name: Voie.name, useFactory: () => VoieSchema },
-];
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -49,7 +20,6 @@ const db: AsyncModelFactory[] = [
       }),
       inject: [ConfigService],
     }),
-    MongooseModule.forFeatureAsync(db),
     BaseLocaleModule,
     NumeroModule,
     VoieModule,
