@@ -19,7 +19,6 @@ export const NumeroSchemaFactory = (
    * UPDATE centroid AND centroidTiles OF VOIE
    */
   NumeroSchema.pre('save', async function () {
-    console.log('save');
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const numero = this;
     // NUMERO
@@ -40,7 +39,6 @@ export const NumeroSchemaFactory = (
    * UPDATE centroid AND centroidTiles OF ONE VOIE IF positions CHANGE
    */
   NumeroSchema.pre(['updateOne', 'findOneAndUpdate'], async function () {
-    console.log('update');
     const modifiedField = this.getUpdate()['$set'];
     // NUMERO
     // UPDATE NUMERO TILES

@@ -16,13 +16,17 @@ async function validateurBAL(value, label) {
 @ValidatorConstraint({ name: 'validatorBal', async: true })
 export class ValidatorBal implements ValidatorConstraintInterface {
   async validate(value: any, args: ValidationArguments) {
-    const field = args.constraints[0];
-    if (['numero', 'suffixe', 'position', 'source'].includes(field)) {
-      const { errors } = await validateurBAL(value.toString(), field);
-      return errors.length === 0;
-    } else if (field === 'cad_parcelles') {
-      const { errors } = await validateurBAL(value.join('|'), field);
-      return errors.length === 0;
+    try {
+      const field = args.constraints[0];
+      if (['numero', 'suffixe', 'position', 'source'].includes(field)) {
+        const { errors } = await validateurBAL(value.toString(), field);
+        return errors.length === 0;
+      } else if (field === 'cad_parcelles') {
+        const { errors } = await validateurBAL(value.join('|'), field);
+        return errors.length === 0;
+      }
+    } catch {
+      return false;
     }
 
     return true;

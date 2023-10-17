@@ -12,7 +12,7 @@ export type PointDocument = HydratedDocument<Point>;
 })
 export class Point implements PointTurf {
   @Equals('Point')
-  @ApiProperty()
+  @ApiProperty({ required: true, nullable: false })
   @Prop({
     type: SchemaTypes.String,
     required: true,
@@ -21,7 +21,7 @@ export class Point implements PointTurf {
   type: 'Point';
 
   @Validate(PointValidator)
-  @ApiProperty()
+  @ApiProperty({ required: true, nullable: false })
   @Prop({ type: [SchemaTypes.Number], required: true, nullable: false })
   coordinates: PositionTurf;
 }

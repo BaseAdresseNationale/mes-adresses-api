@@ -7,6 +7,7 @@ import {
   IsMongoId,
   Validate,
   IsOptional,
+  ArrayNotEmpty,
   ValidateNested,
 } from 'class-validator';
 
@@ -39,13 +40,13 @@ export class CreateNumeroDto {
   @ApiProperty({ required: false, nullable: false })
   certifie?: boolean;
 
-  @IsOptional()
-  @ValidateNested({ each: true })
+  @ValidateNested({ each: true, message: 'positions must be an array' })
+  @ArrayNotEmpty()
   @Type(() => Position)
   @ApiProperty({
     type: () => Position,
     isArray: true,
-    required: false,
+    required: true,
     nullable: false,
   })
   positions?: Position[];
