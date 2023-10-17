@@ -25,10 +25,10 @@ export class VoieMiddleware implements NestMiddleware {
         .findOne({ _id: voieId })
         .exec()
         .catch(() => {
-          throw new HttpException('Voie not found', HttpStatus.BAD_REQUEST);
+          throw new HttpException('Voie not found', HttpStatus.NOT_FOUND);
         });
       if (!voie) {
-        throw new HttpException('Voie not found', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Voie not found', HttpStatus.NOT_FOUND);
       }
 
       req.voie = voie;
@@ -37,13 +37,10 @@ export class VoieMiddleware implements NestMiddleware {
         .select({ token: 1 })
         .exec()
         .catch(() => {
-          throw new HttpException(
-            'Base Local not found',
-            HttpStatus.BAD_REQUEST,
-          );
+          throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
         });
       if (!basesLocale) {
-        throw new HttpException('Base Local not found', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
       }
       req.token = basesLocale.token;
     }

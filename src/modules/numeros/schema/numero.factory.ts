@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { unionBy } from 'lodash';
 import { NumeroSchema, Numero } from './numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
+import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import {
   calcMetaTilesNumero,
   calcMetaTilesVoie,
@@ -11,6 +12,7 @@ import {
 export const NumeroSchemaFactory = (
   voieModel: Model<Voie>,
   numeroModel: Model<Numero>,
+  baseLocalModel: Model<BaseLocale>,
 ): Schema<Numero> => {
   /**
    * NumeroSchema MIDLEWARE SAVE (create)
@@ -29,6 +31,8 @@ export const NumeroSchemaFactory = (
     calcMetaTilesNumero(numero);
     // VOIE
     await updateTilesVoieWithNumero(numero.voie, numero);
+    // BAL
+    await updateDateVoieAndBal(numero.voie, numero._bal);
   });
 
   /**
@@ -49,10 +53,10 @@ export const NumeroSchemaFactory = (
     modifiedField._updated = new Date();
     this.setUpdate(modifiedField);
 
+    // GET OLD NUMERO
+    const numero: Numero = await numeroModel.findOne(this.getQuery());
     // VOIE
     if (modifiedField.voie || modifiedField.positions) {
-      // GET OLD NUMERO
-      const numero: Numero = await numeroModel.findOne(this.getQuery());
       // CONSTRUCT NEW NUMERO
       const newNumero: Numero = { _id: numero._id, ...modifiedField };
       if (modifiedField.voie) {
@@ -75,18 +79,37 @@ export const NumeroSchemaFactory = (
         updateTilesVoieReplaceNumero(numero.voie, newNumero);
       }
     }
+
+    // BAL
+    await updateDateVoieAndBal(numero.voie, numero._bal);
   });
 
-  const updateTilesVoie = async (
-    voie: Voie,
-    numeros: Numero[],
-    withUpdated: boolean = true,
+  /**
+   * NumeroSchema MIDLEWARE DELETE
+   * UPDATE centroid AND centroidTiles OF VOIE
+   */
+  NumeroSchema.pre('deleteOne', async function () {
+    // GET OLD NUMERO
+    const numero: Numero = await numeroModel.findOne(this.getQuery());
+    // VOIE
+    await updateTilesVoieWithoutNumero(numero.voie, numero);
+    // BAL
+    await updateDateVoieAndBal(numero.voie, numero._bal);
+  });
+
+  const updateDateVoieAndBal = async (
+    voieId: Types.ObjectId,
+    balId: Types.ObjectId,
   ) => {
+    await voieModel.updateOne({ _id: voieId }, { _updated: new Date() }).exec();
+    await baseLocalModel
+      .updateOne({ _id: balId }, { _updated: new Date() })
+      .exec();
+  };
+
+  const updateTilesVoie = async (voie: Voie, numeros: Numero[]) => {
     calcMetaTilesVoie(voie, numeros);
     // UPDATE DATE AND TILES VOIE
-    if (withUpdated) {
-      voie._updated = new Date();
-    }
     await voieModel.updateOne({ _id: voie._id }, { $set: voie }).exec();
   };
 

@@ -16,13 +16,17 @@ export class NumeroService {
     @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
   ) {}
 
+  public async findAllByVoieId(voieId: Types.ObjectId): Promise<Numero[]> {
+    return this.numeroModel.find({ voie: voieId, _deleted: null }).exec();
+  }
+
   public async create(
     voie: Voie,
     createNumeroDto: CreateNumeroDto,
   ): Promise<Numero> {
     // CHECK IF VOIE EXIST
     if (voie._delete) {
-      throw new HttpException('Voie is archived', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Voie is archived', HttpStatus.NOT_FOUND);
     }
 
     // CHECK IF TOPO EXIST
@@ -30,7 +34,7 @@ export class NumeroService {
       createNumeroDto.toponyme &&
       !(await !this.isToponymeExist(createNumeroDto.toponyme))
     ) {
-      throw new HttpException('Toponyme not found', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
 
     // CREATE NUMERO
@@ -66,7 +70,7 @@ export class NumeroService {
       updateNumeroDto.voie &&
       !(await this.isVoieExist(updateNumeroDto.voie))
     ) {
-      throw new HttpException('Voie not found', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Voie not found', HttpStatus.NOT_FOUND);
     }
 
     // CHECK IF TOPO EXIST
@@ -74,7 +78,7 @@ export class NumeroService {
       updateNumeroDto.toponyme &&
       !(await !this.isToponymeExist(updateNumeroDto.toponyme))
     ) {
-      throw new HttpException('Toponyme not found', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
 
     // NORMALIZE SUFFIXE
@@ -86,6 +90,20 @@ export class NumeroService {
     const numeroUpdated: Numero = await this.numeroModel.findOneAndUpdate(
       { _id: numero._id, _deleted: null },
       { $set: updateNumeroDto },
+      { returnDocument: 'after' },
+    );
+
+    return numeroUpdated;
+  }
+
+  public async delete(numero: Numero) {
+    await this.numeroModel.deleteOne({ _id: numero._id });
+  }
+
+  public async softDelete(numero: Numero) {
+    const numeroUpdated: Numero = await this.numeroModel.findOneAndUpdate(
+      { _id: numero._id },
+      { $set: { _delete: new Date() } },
       { returnDocument: 'after' },
     );
 

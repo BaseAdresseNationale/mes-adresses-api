@@ -26,10 +26,10 @@ export class NumeroMiddleware implements NestMiddleware {
         .findOne({ _id: numeroId })
         .exec()
         .catch(() => {
-          throw new HttpException('Numero not found', HttpStatus.BAD_REQUEST);
+          throw new HttpException('Numero not found', HttpStatus.NOT_FOUND);
         });
       if (!numero) {
-        throw new HttpException('Numero not found', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Numero not found', HttpStatus.NOT_FOUND);
       }
 
       req.numero = numero;
@@ -38,13 +38,10 @@ export class NumeroMiddleware implements NestMiddleware {
         .select({ token: 1 })
         .exec()
         .catch(() => {
-          throw new HttpException(
-            'Base Local not found',
-            HttpStatus.BAD_REQUEST,
-          );
+          throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
         });
       if (!basesLocale) {
-        throw new HttpException('Base Local not found', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
       }
       req.token = basesLocale.token;
     }

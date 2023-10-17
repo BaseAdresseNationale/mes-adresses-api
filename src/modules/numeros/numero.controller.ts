@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Put,
+  Delete,
   UseGuards,
   Res,
   Req,
@@ -32,7 +33,7 @@ export class NumeroController {
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: 200, type: Numero })
   @ApiHeader({ name: 'Token' })
-  find(@Req() req: CustomRequest, @Res() res: Response): any {
+  find(@Req() req: CustomRequest, @Res() res: Response) {
     const numero: Numero = filterSensitiveFields(req.numero, !req.isAdmin);
     res.status(HttpStatus.OK).json(numero);
   }
@@ -53,5 +54,25 @@ export class NumeroController {
       updateNumeroDto,
     );
     res.status(HttpStatus.OK).json(result);
+  }
+
+  @Put(':numeroId/soft-delete')
+  @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiResponse({ status: 200, type: Numero })
+  @ApiHeader({ name: 'Token' })
+  @UseGuards(AdminGuard)
+  async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
+    const result = await this.numeroService.softDelete(req.numero);
+    res.status(HttpStatus.OK).json(result);
+  }
+
+  @Delete(':numeroId')
+  @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiResponse({ status: 204 })
+  @ApiHeader({ name: 'Token' })
+  @UseGuards(AdminGuard)
+  async delete(@Req() req: CustomRequest, @Res() res: Response) {
+    await this.numeroService.delete(req.numero);
+    res.status(HttpStatus.NO_CONTENT).send();
   }
 }

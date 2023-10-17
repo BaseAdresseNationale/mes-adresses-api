@@ -23,11 +23,16 @@ export const DbModelFactory: AsyncModelFactory[] = [
       MongooseModule.forFeatureAsync([
         { name: `Numero#${Voie.name}`, useFactory: () => VoieSchema },
         { name: `Numero#${Numero.name}`, useFactory: () => NumeroSchema },
+        {
+          name: `Numero#${BaseLocale.name}`,
+          useFactory: () => BaseLocaleSchema,
+        },
       ]),
     ],
     inject: [
       getModelToken(`Numero#${Voie.name}`),
       getModelToken(`Numero#${Numero.name}`),
+      getModelToken(`Numero#${BaseLocale.name}`),
     ],
   },
   { name: BaseLocale.name, useFactory: () => BaseLocaleSchema },
