@@ -8,7 +8,6 @@ export class AdminGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const req: CustomRequest = context.getArgByIndex(0);
-    req.isAdmin = req.headers.token === req.token;
     return req.isAdmin;
   }
 }

@@ -64,19 +64,19 @@ export const NumeroSchemaFactory = (
           // IF VOIE CHANGE AND POSITIONS NUMERO CHANGE
           // CALC OLD VOIE WITHOUT OLD NUMERO
           // CALC NEW vOIE WITH NEW NUMERO
-          updateTilesVoieWithoutNumero(numero.voie, numero);
-          updateTilesVoieWithNumero(modifiedField.voie, newNumero);
+          await updateTilesVoieWithoutNumero(numero.voie, numero);
+          await updateTilesVoieWithNumero(modifiedField.voie, newNumero);
         } else {
           // IF VOIE CHANGE BUT NOT POSITIONS NUMERO
           // CALC OLD VOIE WITHOUT OLD NUMERO
           // CALC NEW VOIE WITH OLD NUMERO
-          updateTilesVoieWithoutNumero(numero.voie, numero);
-          updateTilesVoieWithNumero(modifiedField.voie, numero);
+          await updateTilesVoieWithoutNumero(numero.voie, numero);
+          await updateTilesVoieWithNumero(modifiedField.voie, numero);
         }
       } else if (modifiedField.positions) {
         // IF ONLY POSITIONS NUMERO CHANGE
         // CALC VOIE WITH NEW NUMERO INSTEAD OF OLD NUMERO
-        updateTilesVoieReplaceNumero(numero.voie, newNumero);
+        await updateTilesVoieReplaceNumero(numero.voie, newNumero);
       }
     }
 
@@ -141,8 +141,7 @@ export const NumeroSchemaFactory = (
     if (withNumero) {
       numeros.push(withNumero);
     }
-
-    updateTilesVoie(voie, numeros);
+    await updateTilesVoie(voie, numeros);
   };
 
   const updateTilesVoieWithoutNumero = async (
@@ -152,13 +151,13 @@ export const NumeroSchemaFactory = (
     // GET VOIE
     const voie: Voie = await getVoieByVoieId(voieId);
     // GET NUMEROS
-    const numeros: Numero[] = await getNumerosByVoieId(voieId);
-
+    let numeros: Numero[] = await getNumerosByVoieId(voieId);
     if (withoutNumero) {
-      numeros.filter(({ _id }) => _id !== withoutNumero._id);
+      numeros = numeros.filter(
+        ({ _id }) => _id.toString() !== withoutNumero._id.toString(),
+      );
     }
-
-    updateTilesVoie(voie, numeros);
+    await updateTilesVoie(voie, numeros);
   };
 
   const updateTilesVoieReplaceNumero = async (
@@ -168,13 +167,12 @@ export const NumeroSchemaFactory = (
     // GET VOIE
     const voie: Voie = await getVoieByVoieId(voieId);
     // GET NUMEROS
-    const numeros: Numero[] = await getNumerosByVoieId(voieId);
+    let numeros: Numero[] = await getNumerosByVoieId(voieId);
 
     if (replaceNumero) {
-      unionBy([replaceNumero], numeros, '_id');
+      numeros = unionBy([replaceNumero], numeros, '_id');
     }
-
-    updateTilesVoie(voie, numeros);
+    await updateTilesVoie(voie, numeros);
   };
 
   return NumeroSchema;

@@ -10,6 +10,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
+import { isAdmin } from './isAdmin.util';
 
 @Injectable()
 export class ToponymeMiddleware implements NestMiddleware {
@@ -32,17 +33,7 @@ export class ToponymeMiddleware implements NestMiddleware {
       }
 
       req.toponyme = toponyme;
-      const basesLocale: BaseLocale = await this.baseLocaleModel
-        .findOne({ _id: toponyme._bal })
-        .select({ token: 1 })
-        .exec()
-        .catch(() => {
-          throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
-        });
-      if (!basesLocale) {
-        throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
-      }
-      req.token = basesLocale.token;
+      await isAdmin(toponyme._bal, this.baseLocaleModel, req);
     }
     next();
   }

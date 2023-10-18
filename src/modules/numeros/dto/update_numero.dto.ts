@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Position } from '@/lib/schemas/position.schema';
 import { ValidatorBal } from '@/lib/validator/validator_bal.validator';
 import { Type } from 'class-transformer';
+import { Types } from 'mongoose';
 import {
   MaxLength,
   IsMongoId,
@@ -30,12 +31,12 @@ export class UpdateNumeroDto {
   @IsOptional()
   @IsMongoId()
   @ApiProperty({ required: false, nullable: true })
-  toponyme?: string;
+  toponyme?: Types.ObjectId;
 
   @IsOptional()
   @IsMongoId()
   @ApiProperty({ required: false, nullable: false })
-  voie?: string;
+  voie?: Types.ObjectId;
 
   @IsOptional()
   @Validate(ValidatorBal, ['cad_parcelles'])

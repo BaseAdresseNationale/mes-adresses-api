@@ -12,7 +12,7 @@ export function displaySuffix(numero: Numero) {
 }
 
 export function filterSensitiveFields(numero: Numero, filter: boolean = true) {
-  if (filter) {
+  if (filter && numero.comment) {
     numero.comment = null;
   }
   return numero;

@@ -112,7 +112,11 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@/lib/(.*)$": "<rootDir>/lib/$1",
+      "^@/modules/(.*)$": "<rootDir>/modules/$1"
+    }
   },
   "engines": {
     "node": ">= 16"

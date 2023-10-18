@@ -18,7 +18,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { CustomRequest } from '@/lib/types/request.type';
-import { AdminGuard } from '@/lib//guards/admin.guard';
+import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from './numero.service';
 import { Numero } from './schema/numero.schema';
 import { UpdateNumeroDto } from './dto/update_numero.dto';

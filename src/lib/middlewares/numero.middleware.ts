@@ -11,6 +11,7 @@ import { Model } from 'mongoose';
 import { InjectModel, getModelToken } from '@nestjs/mongoose';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
+import { isAdmin } from './isAdmin.util';
 
 @Injectable()
 export class NumeroMiddleware implements NestMiddleware {
@@ -33,17 +34,7 @@ export class NumeroMiddleware implements NestMiddleware {
       }
 
       req.numero = numero;
-      const basesLocale: BaseLocale = await this.baseLocaleModel
-        .findOne({ _id: numero._bal })
-        .select({ token: 1 })
-        .exec()
-        .catch(() => {
-          throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
-        });
-      if (!basesLocale) {
-        throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
-      }
-      req.token = basesLocale.token;
+      await isAdmin(numero._bal, this.baseLocaleModel, req);
     }
     next();
   }

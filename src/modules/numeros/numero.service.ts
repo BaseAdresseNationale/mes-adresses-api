@@ -118,7 +118,7 @@ export class NumeroService {
     return numeroUpdated;
   }
 
-  private async isVoieExist(_id: string): Promise<boolean> {
+  private async isVoieExist(_id: Types.ObjectId): Promise<boolean> {
     const voieExist = await this.voieModel
       .findOne({
         _id,
@@ -128,7 +128,7 @@ export class NumeroService {
     return voieExist !== null;
   }
 
-  private async isToponymeExist(_id: string): Promise<boolean> {
+  private async isToponymeExist(_id: Types.ObjectId): Promise<boolean> {
     const toponymeExist = await this.toponymeModel
       .findOne({
         _id,
