@@ -8,6 +8,7 @@ import {
   calcMetaTilesNumero,
   calcMetaTilesVoie,
 } from '@/lib//utils/tiles.utils';
+import { normalizeSuffixe } from '../numero.utils';
 
 export const NumeroSchemaFactory = (
   voieModel: Model<Voie>,
@@ -24,9 +25,19 @@ export const NumeroSchemaFactory = (
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const numero = this;
     // NUMERO
+    numero.suffixe = numero.suffixe ? normalizeSuffixe(numero.suffixe) : null;
+    numero.toponyme = numero.toponyme
+      ? new Types.ObjectId(numero.toponyme)
+      : null;
+    numero.positions = numero.positions || [];
+    numero.comment = numero.comment || null;
+    numero.parcelles = numero.parcelles || [];
+    numero.certifie = numero.certifie || false;
+
     // SET DATE NUMERO
     numero._updated = new Date();
     numero._created = new Date();
+    numero._delete = null;
     // SET TILE NUMERO
     calcMetaTilesNumero(numero);
     // VOIE
@@ -50,6 +61,9 @@ export const NumeroSchemaFactory = (
       calcMetaTilesNumero(modifiedField);
     }
     // UPDATE NUMERO DATE
+    if (modifiedField.suffixe) {
+      modifiedField.suffixe = normalizeSuffixe(modifiedField.suffixe);
+    }
     modifiedField._updated = new Date();
     this.setUpdate(modifiedField);
 

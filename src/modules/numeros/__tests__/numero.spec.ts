@@ -6,7 +6,6 @@ import {
   Module,
   NestModule,
   MiddlewareConsumer,
-  RequestMethod,
 } from '@nestjs/common';
 import { NumeroController } from '../numero.controller';
 import { NumeroService } from '../numero.service';
@@ -46,9 +45,7 @@ describe('Numero', () => {
     })
     class TestModule implements NestModule {
       configure(consumer: MiddlewareConsumer) {
-        consumer
-          .apply(NumeroMiddleware)
-          .forRoutes({ path: 'numeros/:numeroId', method: RequestMethod.ALL });
+        consumer.apply(NumeroMiddleware).forRoutes(NumeroController);
       }
     }
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -230,12 +227,82 @@ describe('Numero', () => {
       expect(response.body.voie).toEqual(voieId.toString());
     });
 
-    it('Update 404 Not Found', async () => {
+    it('Update 404 Numero Not Found', async () => {
       const updatedNumero: UpdateNumeroDto = {
         numero: 100,
       };
 
       const numeroId = new Types.ObjectId();
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send(updatedNumero)
+        .set('token', 'xxxx')
+        .expect(404);
+    });
+
+    it('Update 404 Voie Not Found', async () => {
+      const balId = new Types.ObjectId();
+      const bal: Partial<BaseLocale> = {
+        _id: balId,
+        token: 'xxxx',
+      };
+      await balModel.create(bal);
+
+      const voieId = new Types.ObjectId();
+      const voie: Partial<Voie> = {
+        _id: voieId,
+        nom: 'rue de la paix',
+      };
+      await voieModel.create(voie);
+
+      const numeroId = new Types.ObjectId();
+      const numero: Partial<Numero> = {
+        _id: numeroId,
+        _bal: balId,
+        numero: 99,
+        voie: voieId,
+      };
+      await numeroModel.create(numero);
+
+      const updatedNumero: UpdateNumeroDto = {
+        voie: new Types.ObjectId(),
+      };
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send(updatedNumero)
+        .set('token', 'xxxx')
+        .expect(404);
+    });
+
+    it('Update 404 Toponyme Not Found', async () => {
+      const balId = new Types.ObjectId();
+      const bal: Partial<BaseLocale> = {
+        _id: balId,
+        token: 'xxxx',
+      };
+      await balModel.create(bal);
+
+      const voieId = new Types.ObjectId();
+      const voie: Partial<Voie> = {
+        _id: voieId,
+        nom: 'rue de la paix',
+      };
+      await voieModel.create(voie);
+
+      const numeroId = new Types.ObjectId();
+      const numero: Partial<Numero> = {
+        _id: numeroId,
+        _bal: balId,
+        numero: 99,
+        voie: voieId,
+      };
+      await numeroModel.create(numero);
+
+      const updatedNumero: UpdateNumeroDto = {
+        toponyme: new Types.ObjectId(),
+      };
+
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
@@ -483,6 +550,168 @@ describe('Numero', () => {
       expect(voie1DbAfter.centroidTiles).toBe(null);
       expect(voie2DbAfter.centroid).not.toBe(null);
       expect(voie2DbAfter.centroidTiles).not.toBe(null);
+    });
+  });
+
+  describe('DELETE /numero', () => {
+    it('Delete 204 numero', async () => {
+      const balId = new Types.ObjectId();
+      const bal: Partial<BaseLocale> = {
+        _id: balId,
+        token: 'xxxx',
+      };
+      await balModel.create(bal);
+
+      const voieId = new Types.ObjectId();
+      const voie: Partial<Voie> = {
+        _id: voieId,
+        nom: 'rue de la paix',
+      };
+      await voieModel.create(voie);
+
+      const numeroId = new Types.ObjectId();
+      const numero: Partial<Numero> = {
+        _id: numeroId,
+        _bal: balId,
+        numero: 99,
+        voie: voieId,
+      };
+      await numeroModel.create(numero);
+
+      await request(app.getHttpServer())
+        .delete(`/numeros/${numeroId}`)
+        .set('token', 'xxxx')
+        .expect(204);
+
+      const numeroDeleted: Numero = await numeroModel.findOne({
+        _id: numeroId,
+      });
+
+      expect(numeroDeleted).toBe(null);
+    });
+
+    it('Delete 404 NOT FOUND', async () => {
+      const numeroId = new Types.ObjectId();
+      await request(app.getHttpServer())
+        .delete(`/numeros/${numeroId}`)
+        .set('token', 'xxxx')
+        .expect(404);
+    });
+
+    it('Delete 403 FORBIDEN', async () => {
+      const balId = new Types.ObjectId();
+      const bal: Partial<BaseLocale> = {
+        _id: balId,
+        token: 'xxxx',
+      };
+      await balModel.create(bal);
+
+      const voieId = new Types.ObjectId();
+      const voie: Partial<Voie> = {
+        _id: voieId,
+        nom: 'rue de la paix',
+      };
+      await voieModel.create(voie);
+
+      const numeroId = new Types.ObjectId();
+      const numero: Partial<Numero> = {
+        _id: numeroId,
+        _bal: balId,
+        numero: 99,
+        voie: voieId,
+      };
+      await numeroModel.create(numero);
+
+      await request(app.getHttpServer())
+        .delete(`/numeros/${numeroId}`)
+        .expect(403);
+
+      const numeroDeleted: Numero = await numeroModel.findOne({
+        _id: numeroId,
+      });
+
+      expect(numeroDeleted).not.toBe(null);
+    });
+  });
+
+  describe('SOFT DELETE /numero', () => {
+    it('Soft Delete 200 numero', async () => {
+      const balId = new Types.ObjectId();
+      const bal: Partial<BaseLocale> = {
+        _id: balId,
+        token: 'xxxx',
+      };
+      await balModel.create(bal);
+
+      const voieId = new Types.ObjectId();
+      const voie: Partial<Voie> = {
+        _id: voieId,
+        nom: 'rue de la paix',
+      };
+      await voieModel.create(voie);
+
+      const numeroId = new Types.ObjectId();
+      const numero: Partial<Numero> = {
+        _id: numeroId,
+        _bal: balId,
+        numero: 99,
+        voie: voieId,
+      };
+      await numeroModel.create(numero);
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}/soft-delete`)
+        .set('token', 'xxxx')
+        .expect(200);
+
+      const numeroDeleted: Numero = await numeroModel.findOne({
+        _id: numeroId,
+      });
+
+      expect(numeroDeleted._delete).not.toBe(null);
+    });
+
+    it('Delete 404 NOT FOUND', async () => {
+      const numeroId = new Types.ObjectId();
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}/soft-delete`)
+        .set('token', 'xxxx')
+        .expect(404);
+    });
+
+    it('Delete 403 FORBIDEN', async () => {
+      const balId = new Types.ObjectId();
+      const bal: Partial<BaseLocale> = {
+        _id: balId,
+        token: 'xxxx',
+      };
+      await balModel.create(bal);
+
+      const voieId = new Types.ObjectId();
+      const voie: Partial<Voie> = {
+        _id: voieId,
+        nom: 'rue de la paix',
+      };
+      await voieModel.create(voie);
+
+      const numeroId = new Types.ObjectId();
+      const numero: Partial<Numero> = {
+        _id: numeroId,
+        _bal: balId,
+        numero: 99,
+        voie: voieId,
+      };
+      await numeroModel.create(numero);
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}/soft-delete`)
+        .expect(403);
+
+      const numeroDeleted: Numero = await numeroModel.findOne({
+        _id: numeroId,
+      });
+
+      expect(numeroDeleted._delete).toBe(null);
     });
   });
 });

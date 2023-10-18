@@ -6,7 +6,6 @@ import { Voie } from '@/modules/voie/schema/voie.schema';
 import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { UpdateNumeroDto } from './dto/update_numero.dto';
 import { CreateNumeroDto } from './dto/create_numero.dto';
-import { normalizeSuffixe } from './numero.utils';
 
 @Injectable()
 export class NumeroService {
@@ -51,17 +50,7 @@ export class NumeroService {
       _bal: voie._bal,
       commune: voie.commune,
       voie: voie._id,
-      numero: createNumeroDto.numero,
-      suffixe: createNumeroDto.suffixe
-        ? normalizeSuffixe(createNumeroDto.suffixe)
-        : null,
-      toponyme: createNumeroDto.toponyme
-        ? new Types.ObjectId(createNumeroDto.toponyme)
-        : null,
-      positions: createNumeroDto.positions || [],
-      comment: createNumeroDto.comment || null,
-      parcelles: createNumeroDto.parcelles || [],
-      certifie: createNumeroDto.certifie || false,
+      ...createNumeroDto,
     };
 
     const numeroCreated: Numero = await this.numeroModel.create(numero);
@@ -87,11 +76,6 @@ export class NumeroService {
       !(await !this.isToponymeExist(updateNumeroDto.toponyme))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
-    }
-
-    // NORMALIZE SUFFIXE
-    if (updateNumeroDto.suffixe) {
-      updateNumeroDto.suffixe = normalizeSuffixe(updateNumeroDto.suffixe);
     }
 
     // UPDATE NUMERO

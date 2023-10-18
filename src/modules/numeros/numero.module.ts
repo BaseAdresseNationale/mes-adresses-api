@@ -1,4 +1,4 @@
-import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NumeroService } from './numero.service';
 import { NumeroController } from './numero.controller';
@@ -12,8 +12,6 @@ import { DbModelFactory } from '@/lib/model_factory/db.model.factory';
 })
 export class NumeroModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(NumeroMiddleware)
-      .forRoutes({ path: 'numeros/:numeroId', method: RequestMethod.ALL });
+    consumer.apply(NumeroMiddleware).forRoutes(NumeroController);
   }
 }
