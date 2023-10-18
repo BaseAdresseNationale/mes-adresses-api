@@ -30,7 +30,7 @@ export class VoieController {
 
   @Get(':voieId/numeros')
   @ApiParam({ name: 'numeroId', required: true, type: String })
-  @ApiResponse({ status: 201, type: Numero })
+  @ApiResponse({ status: 200, type: Numero, isArray: true })
   @ApiHeader({ name: 'Token' })
   async find(@Req() req: CustomRequest, @Res() res: Response) {
     const numeros: Numero[] = await this.numeroService.findAllByVoieId(

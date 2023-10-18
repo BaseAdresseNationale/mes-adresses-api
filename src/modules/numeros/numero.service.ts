@@ -20,6 +20,14 @@ export class NumeroService {
     return this.numeroModel.find({ voie: voieId, _deleted: null }).exec();
   }
 
+  public async findAllByToponymeId(
+    toponymeId: Types.ObjectId,
+  ): Promise<Numero[]> {
+    return this.numeroModel
+      .find({ toponyme: toponymeId, _deleted: null })
+      .exec();
+  }
+
   public async create(
     voie: Voie,
     createNumeroDto: CreateNumeroDto,
