@@ -27,6 +27,7 @@ describe('Numero', () => {
   let numeroModel: Model<Numero>;
   let voieModel: Model<Voie>;
   let balModel: Model<BaseLocale>;
+  const token = 'xxxx';
 
   beforeAll(async () => {
     // INIT DB
@@ -75,30 +76,47 @@ describe('Numero', () => {
     }
   });
 
+  async function createBal() {
+    const balId = new Types.ObjectId();
+    const bal: Partial<BaseLocale> = {
+      _id: balId,
+      token,
+    };
+    await balModel.create(bal);
+    return balId;
+  }
+
+  async function createVoie(props: Partial<Voie> = {}) {
+    const voieId = new Types.ObjectId();
+    const voie: Partial<Voie> = {
+      _id: voieId,
+      ...props,
+    };
+    await voieModel.create(voie);
+    return voieId;
+  }
+
+  async function createNumero(
+    _bal: Types.ObjectId,
+    voie: Types.ObjectId,
+    props: Partial<Numero> = {},
+  ) {
+    const numeroId = new Types.ObjectId();
+    const numero: Partial<Numero> = {
+      _id: numeroId,
+      _bal,
+      voie,
+      ...props,
+    };
+    await numeroModel.create(numero);
+    return numeroId;
+  }
+
   describe('GET /numero', () => {
     it('Return 200 numero', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       const response = await request(app.getHttpServer())
         .get(`/numeros/${numeroId}`)
@@ -113,29 +131,12 @@ describe('Numero', () => {
     });
 
     it('Return 200 numero without comment', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, {
         numero: 99,
-        voie: voieId,
         comment: 'coucou',
-      };
-      await numeroModel.create(numero);
+      });
 
       const response = await request(app.getHttpServer())
         .get(`/numeros/${numeroId}`)
@@ -144,33 +145,16 @@ describe('Numero', () => {
     });
 
     it('Return 200 numero without comment', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, {
         numero: 99,
-        voie: voieId,
         comment: 'coucou',
-      };
-      await numeroModel.create(numero);
+      });
 
       const response = await request(app.getHttpServer())
         .get(`/numeros/${numeroId}`)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(200);
       expect(response.body.comment).toEqual('coucou');
     });
@@ -185,28 +169,9 @@ describe('Numero', () => {
 
   describe('PUT /numero', () => {
     it('Update 200 numero', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       const updatedNumero: UpdateNumeroDto = {
         numero: 100,
@@ -215,7 +180,7 @@ describe('Numero', () => {
       const response = await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(200);
 
       expect(response.body._id).toEqual(numeroId.toString());
@@ -236,33 +201,14 @@ describe('Numero', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(404);
     });
 
     it('Update 404 Voie Not Found', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       const updatedNumero: UpdateNumeroDto = {
         voie: new Types.ObjectId(),
@@ -271,33 +217,14 @@ describe('Numero', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(404);
     });
 
     it('Update 404 Toponyme Not Found', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       const updatedNumero: UpdateNumeroDto = {
         toponyme: new Types.ObjectId(),
@@ -306,33 +233,14 @@ describe('Numero', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(404);
     });
 
     it('Update 403 Forbiden', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       const updatedNumero: UpdateNumeroDto = {
         numero: 100,
@@ -345,28 +253,9 @@ describe('Numero', () => {
     });
 
     it('Update 200 check field _updated of voie and bal', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       const voieDbBefore = await voieModel.findOne({ _id: voieId });
       const balDbBefore = await balModel.findOne({ _id: balId });
@@ -378,7 +267,7 @@ describe('Numero', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(200);
 
       const voieDbAfter = await voieModel.findOne({ _id: voieId });
@@ -389,28 +278,9 @@ describe('Numero', () => {
     });
 
     it('Update 200 check field _updated is UPDATE', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       const numeroDbBefore = await numeroModel.findOne({ _id: numeroId });
       const voieDbBefore = await voieModel.findOne({ _id: voieId });
@@ -423,7 +293,7 @@ describe('Numero', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(200);
 
       const numeroDbAfter = await numeroModel.findOne({ _id: numeroId });
@@ -436,28 +306,9 @@ describe('Numero', () => {
     });
 
     it('Update 200 check field tiles Numero is UPDATE and centroid, centroidTiles voie is UPDATE', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       const numeroDbBefore = await numeroModel.findOne({ _id: numeroId });
       const voieDbBefore = await voieModel.findOne({ _id: voieId });
@@ -478,7 +329,7 @@ describe('Numero', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(200);
 
       const numeroDbAfter = await numeroModel.findOne({ _id: numeroId });
@@ -489,33 +340,11 @@ describe('Numero', () => {
     });
 
     it('Update 200 replace voie', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId1 = new Types.ObjectId();
-      const voie1: Partial<Voie> = {
-        _id: voieId1,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie1);
-
-      const voieId2 = new Types.ObjectId();
-      const voie2: Partial<Voie> = {
-        _id: voieId2,
-        nom: 'rue de Paris',
-      };
-      await voieModel.create(voie2);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
+      const balId = await createBal();
+      const voieId1 = await createVoie({ nom: 'rue de la paix' });
+      const voieId2 = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId1, {
         numero: 99,
-        voie: voieId1,
         positions: [
           {
             type: PositionTypeEnum.ICONNUE,
@@ -526,8 +355,7 @@ describe('Numero', () => {
             },
           },
         ],
-      };
-      await numeroModel.create(numero);
+      });
 
       const voie1DbBefore: Voie = await voieModel.findOne({ _id: voieId1 });
 
@@ -538,7 +366,7 @@ describe('Numero', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(200);
 
       const voie1DbAfter: Voie = await voieModel.findOne({ _id: voieId1 });
@@ -555,32 +383,13 @@ describe('Numero', () => {
 
   describe('DELETE /numero', () => {
     it('Delete 204 numero', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       await request(app.getHttpServer())
         .delete(`/numeros/${numeroId}`)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(204);
 
       const numeroDeleted: Numero = await numeroModel.findOne({
@@ -594,33 +403,14 @@ describe('Numero', () => {
       const numeroId = new Types.ObjectId();
       await request(app.getHttpServer())
         .delete(`/numeros/${numeroId}`)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(404);
     });
 
     it('Delete 403 FORBIDEN', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       await request(app.getHttpServer())
         .delete(`/numeros/${numeroId}`)
@@ -636,32 +426,13 @@ describe('Numero', () => {
 
   describe('SOFT DELETE /numero', () => {
     it('Soft Delete 200 numero', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}/soft-delete`)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(200);
 
       const numeroDeleted: Numero = await numeroModel.findOne({
@@ -675,33 +446,14 @@ describe('Numero', () => {
       const numeroId = new Types.ObjectId();
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}/soft-delete`)
-        .set('token', 'xxxx')
+        .set('token', token)
         .expect(404);
     });
 
     it('Delete 403 FORBIDEN', async () => {
-      const balId = new Types.ObjectId();
-      const bal: Partial<BaseLocale> = {
-        _id: balId,
-        token: 'xxxx',
-      };
-      await balModel.create(bal);
-
-      const voieId = new Types.ObjectId();
-      const voie: Partial<Voie> = {
-        _id: voieId,
-        nom: 'rue de la paix',
-      };
-      await voieModel.create(voie);
-
-      const numeroId = new Types.ObjectId();
-      const numero: Partial<Numero> = {
-        _id: numeroId,
-        _bal: balId,
-        numero: 99,
-        voie: voieId,
-      };
-      await numeroModel.create(numero);
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 99 });
 
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}/soft-delete`)
