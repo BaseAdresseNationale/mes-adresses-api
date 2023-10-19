@@ -10,6 +10,8 @@ import {
 } from '@/lib//utils/tiles.utils';
 import { normalizeSuffixe } from '../numero.utils';
 
+// UPDATE DATE TOPONYME
+
 export const NumeroSchemaFactory = (
   voieModel: Model<Voie>,
   numeroModel: Model<Numero>,
@@ -41,7 +43,7 @@ export const NumeroSchemaFactory = (
     // SET TILE NUMERO
     calcMetaTilesNumero(numero);
     // VOIE
-    await updateTilesVoieWithNumero(numero.voie, numero);
+    await updateTilesVoie(numero.voie, 'with', [numero]);
     // BAL
     await updateDateVoieAndBal(numero.voie, numero._bal);
   });
@@ -78,19 +80,19 @@ export const NumeroSchemaFactory = (
           // IF VOIE CHANGE AND POSITIONS NUMERO CHANGE
           // CALC OLD VOIE WITHOUT OLD NUMERO
           // CALC NEW vOIE WITH NEW NUMERO
-          await updateTilesVoieWithoutNumero(numero.voie, numero);
-          await updateTilesVoieWithNumero(modifiedField.voie, newNumero);
+          await updateTilesVoie(numero.voie, 'without', [numero]);
+          await updateTilesVoie(modifiedField.voie, 'with', [newNumero]);
         } else {
           // IF VOIE CHANGE BUT NOT POSITIONS NUMERO
           // CALC OLD VOIE WITHOUT OLD NUMERO
           // CALC NEW VOIE WITH OLD NUMERO
-          await updateTilesVoieWithoutNumero(numero.voie, numero);
-          await updateTilesVoieWithNumero(modifiedField.voie, numero);
+          await updateTilesVoie(numero.voie, 'without', [numero]);
+          await updateTilesVoie(modifiedField.voie, 'with', [numero]);
         }
       } else if (modifiedField.positions) {
         // IF ONLY POSITIONS NUMERO CHANGE
         // CALC VOIE WITH NEW NUMERO INSTEAD OF OLD NUMERO
-        await updateTilesVoieReplaceNumero(numero.voie, newNumero);
+        await updateTilesVoie(numero.voie, 'replace', [newNumero]);
       }
     }
 
@@ -106,9 +108,37 @@ export const NumeroSchemaFactory = (
     // GET OLD NUMERO
     const numero: Numero = await numeroModel.findOne(this.getQuery());
     // VOIE
-    await updateTilesVoieWithoutNumero(numero.voie, numero);
+    await updateTilesVoie(numero.voie, 'without', [numero]);
     // BAL
     await updateDateVoieAndBal(numero.voie, numero._bal);
+  });
+
+  NumeroSchema.pre('updateMany', async function () {
+    const modifiedField = this.getUpdate()['$set'];
+    const numeros: Numero[] = await numeroModel.find(this.getQuery());
+
+    // UPDATE DATE
+    modifiedField._updated = new Date();
+    await voieModel
+      .updateOne({ _id: numeros[0].voie }, { _updated: new Date() })
+      .exec();
+
+    // UPDATE TILES
+    if (modifiedField.voie) {
+      const voieIds: Types.ObjectId[] = [
+        ...new Set(numeros.map(({ voie }) => voie)),
+      ];
+      await voieModel
+        .updateMany({ _id: { $in: voieIds } }, { _updated: new Date() })
+        .exec();
+      const promises = [];
+      promises.push(updateTilesVoie(modifiedField.voie, 'with', numeros));
+
+      for (const voieId of voieIds) {
+        promises.push(updateTilesVoie(voieId, 'without', numeros));
+      }
+      await Promise.all(promises);
+    }
   });
 
   const updateDateVoieAndBal = async (
@@ -121,72 +151,39 @@ export const NumeroSchemaFactory = (
       .exec();
   };
 
-  const updateTilesVoie = async (voie: Voie, numeros: Numero[]) => {
-    calcMetaTilesVoie(voie, numeros);
-    // UPDATE DATE AND TILES VOIE
-    await voieModel.updateOne({ _id: voie._id }, { $set: voie }).exec();
-  };
-
-  const getVoieByVoieId = async (voieId: Types.ObjectId) => {
-    return voieModel.findOne({ _id: voieId }).select({
+  const updateTilesVoie = async (
+    voieId: Types.ObjectId,
+    action: 'with' | 'without' | 'replace' | 'none' = 'none',
+    numeros: Numero[] = [],
+  ) => {
+    const voie: Voie = await voieModel.findOne({ _id: voieId }).select({
       centroid: 1,
       centroidTiles: 1,
       typeNumerotation: 1,
       trace: 1,
       traceTiles: 1,
     });
-  };
-
-  const getNumerosByVoieId = async (voieId: Types.ObjectId) => {
-    return numeroModel.find({ voie: voieId }).select({
-      positions: 1,
-    });
-  };
-
-  const updateTilesVoieWithNumero = async (
-    voieId: Types.ObjectId,
-    withNumero: Numero = null,
-  ) => {
-    // GET VOIE
-    const voie: Voie = await getVoieByVoieId(voieId);
     // GET NUMEROS
-    const numeros: Numero[] = await getNumerosByVoieId(voieId);
+    let numerosVoie: Numero[] = await numeroModel
+      .find({ voie: voieId })
+      .select({
+        positions: 1,
+      });
 
-    if (withNumero) {
-      numeros.push(withNumero);
-    }
-    await updateTilesVoie(voie, numeros);
-  };
-
-  const updateTilesVoieWithoutNumero = async (
-    voieId: Types.ObjectId,
-    withoutNumero: Numero = null,
-  ) => {
-    // GET VOIE
-    const voie: Voie = await getVoieByVoieId(voieId);
-    // GET NUMEROS
-    let numeros: Numero[] = await getNumerosByVoieId(voieId);
-    if (withoutNumero) {
-      numeros = numeros.filter(
-        ({ _id }) => _id.toString() !== withoutNumero._id.toString(),
+    if (action === 'with') {
+      numerosVoie.push(...numeros);
+    } else if (action === 'without') {
+      const numerosIds = numeros.map(({ _id }) => _id.toString());
+      numerosVoie = numerosVoie.filter(
+        ({ _id }) => !numerosIds.includes(_id.toString()),
       );
+    } else if (action === 'replace') {
+      numerosVoie = unionBy(numeros, numerosVoie, '_id');
     }
-    await updateTilesVoie(voie, numeros);
-  };
 
-  const updateTilesVoieReplaceNumero = async (
-    voieId: Types.ObjectId,
-    replaceNumero: Numero = null,
-  ) => {
-    // GET VOIE
-    const voie: Voie = await getVoieByVoieId(voieId);
-    // GET NUMEROS
-    let numeros: Numero[] = await getNumerosByVoieId(voieId);
-
-    if (replaceNumero) {
-      numeros = unionBy([replaceNumero], numeros, '_id');
-    }
-    await updateTilesVoie(voie, numeros);
+    calcMetaTilesVoie(voie, numerosVoie);
+    // UPDATE DATE AND TILES VOIE
+    await voieModel.updateOne({ _id: voie._id }, { $set: voie }).exec();
   };
 
   return NumeroSchema;

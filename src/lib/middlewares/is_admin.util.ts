@@ -10,7 +10,6 @@ export async function isAdmin(
 ) {
   const basesLocale: BaseLocale = await baseLocaleModel
     .findOne({ _id: balId })
-    .select({ token: 1 })
     .exec()
     .catch(() => {
       throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
@@ -18,5 +17,6 @@ export async function isAdmin(
   if (!basesLocale) {
     throw new HttpException('Base Local not found', HttpStatus.NOT_FOUND);
   }
+  req.baseLocale = basesLocale;
   req.isAdmin = req.headers.token === basesLocale.token;
 }

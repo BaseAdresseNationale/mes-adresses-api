@@ -11,7 +11,7 @@ import { Model } from 'mongoose';
 import { InjectModel, getModelToken } from '@nestjs/mongoose';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
-import { isAdmin } from './isAdmin.util';
+import { isAdmin } from './is_admin.util';
 
 @Injectable()
 export class NumeroMiddleware implements NestMiddleware {

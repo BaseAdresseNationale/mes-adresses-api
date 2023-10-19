@@ -10,7 +10,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
-import { isAdmin } from './isAdmin.util';
+import { isAdmin } from './is_admin.util';
 
 @Injectable()
 export class ToponymeMiddleware implements NestMiddleware {
