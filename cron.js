@@ -3,9 +3,12 @@ require('dotenv').config()
 const ms = require('ms')
 const {detectOutdated, detectConflict, syncOutdated} = require('./lib/sync')
 const {removeSoftDeletedBALsOlderThanOneYear, removeDemoBALsOlderThanAMonth} = require('./lib/models/base-locale')
+const {TaskQueue} = require('./lib/util/tasks-queue')
 const mongo = require('./lib/util/mongo')
 
-const jobs = [
+const queue = new TaskQueue()
+
+const tasks = [
   {
     name: 'detect outdated sync',
     every: '30s',
@@ -27,31 +30,31 @@ const jobs = [
       await syncOutdated()
     }
   },
-  {
-    name: 'purge old deleted BALs',
-    every: '1h',
-    async handler() {
-      await removeSoftDeletedBALsOlderThanOneYear()
-    }
-  },
-  {
-    name: 'purge demo BALs',
-    every: '24h',
-    async handler() {
-      await removeDemoBALsOlderThanAMonth()
-    }
-  }
+
+  // A faire une fois par jour
+  // {
+  //   name: 'purge old deleted BALs',
+  //   every: '1h',
+  //   async handler() {
+  //     await removeSoftDeletedBALsOlderThanOneYear()
+  //   }
+  // },
+  // {
+  //   name: 'purge demo BALs',
+  //   every: '24h',
+  //   async handler() {
+  //     await removeDemoBALsOlderThanAMonth()
+  //   }
+  // }
 ]
 
 async function main() {
   await mongo.connect()
 
-  jobs.forEach(job => {
+  tasks.forEach(task => {
     setInterval(() => {
-      const now = new Date()
-      console.log(`${now.toISOString().slice(0, 19)} | running job : ${job.name}`)
-      job.handler()
-    }, ms(job.every))
+      queue.pushTask(task)
+    }, ms(task.every))
   })
 }
 
