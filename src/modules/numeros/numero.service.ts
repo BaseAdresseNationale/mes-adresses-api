@@ -128,6 +128,7 @@ export class NumeroService {
     const { modifiedCount } = await this.numeroModel.updateMany(
       {
         _id: { $in: numerosIds },
+        _bal: baseLocale._id,
         _deleted: null,
       },
       { $set: { ...batchChanges } },
