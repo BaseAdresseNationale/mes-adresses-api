@@ -18,7 +18,9 @@
     "test-unit": "nyc ava --serial",
     "test": "yarn lint && yarn test-unit",
     "start": "node server",
+    "start-cron": "node cron",
     "dev": "npx nodemon server",
+    "dev-cron": "npx nodemon cron",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
     "push-staging": "./scripts/push-staging.sh"
   },
@@ -32,6 +34,7 @@
     "@turf/turf": "^6.5.0",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
+    "cron": "^3.1.1",
     "csv-write-stream": "^2.0.0",
     "date-fns": "^2.28.0",
     "dotenv": "^16.0.1",
