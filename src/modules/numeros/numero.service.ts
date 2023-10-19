@@ -94,19 +94,28 @@ export class NumeroService {
     baseLocale: BaseLocale,
     { numerosIds, changes }: UpdateBatchNumeroDto,
   ): Promise<any> {
-    if (changes.voie && !(await this.isVoieExist(changes.voie))) {
+    // CHECK IF VOIE EXIST (IN BAL)
+    if (
+      changes.voie &&
+      !(await this.isVoieExist(changes.voie, baseLocale._id))
+    ) {
       throw new HttpException('Voie not found', HttpStatus.NOT_FOUND);
     }
 
-    // CHECK IF TOPO EXIST
-    if (changes.toponyme && !(await !this.isToponymeExist(changes.toponyme))) {
+    // CHECK IF TOPO EXIST (IN BAL)
+    if (
+      changes.toponyme &&
+      !(await !this.isToponymeExist(changes.toponyme, baseLocale._id))
+    ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
 
+    // CHECK REQUEST NOT EMPTY
     if (Object.keys(changes).length === 0 || numerosIds.length === 0) {
       return { changes: {}, modifiedCount: 0 };
     }
 
+    // CREATE BATCH CHANGES
     const batchChanges: Partial<Numero> = {
       ...omit(changes, 'positionType'),
     };
@@ -115,6 +124,7 @@ export class NumeroService {
       batchChanges['positions.0.type'] = changes.positionType;
     }
 
+    // UPDATE NUMEROS
     const { modifiedCount } = await this.numeroModel.updateMany(
       {
         _id: { $in: numerosIds },
@@ -140,23 +150,27 @@ export class NumeroService {
     return numeroUpdated;
   }
 
-  private async isVoieExist(_id: Types.ObjectId): Promise<boolean> {
-    const voieExist = await this.voieModel
-      .findOne({
-        _id,
-        _deleted: null,
-      })
-      .exec();
+  private async isVoieExist(
+    _id: Types.ObjectId,
+    _bal: Types.ObjectId = null,
+  ): Promise<boolean> {
+    const query = { _id, _deleted: null };
+    if (_bal) {
+      query['_bal'] = _bal;
+    }
+    const voieExist = await this.voieModel.findOne(query).exec();
     return voieExist !== null;
   }
 
-  private async isToponymeExist(_id: Types.ObjectId): Promise<boolean> {
-    const toponymeExist = await this.toponymeModel
-      .findOne({
-        _id,
-        _deleted: null,
-      })
-      .exec();
+  private async isToponymeExist(
+    _id: Types.ObjectId,
+    _bal: Types.ObjectId = null,
+  ): Promise<boolean> {
+    const query = { _id, _deleted: null };
+    if (_bal) {
+      query['_bal'] = _bal;
+    }
+    const toponymeExist = await this.toponymeModel.findOne(query).exec();
     return toponymeExist !== null;
   }
 }
