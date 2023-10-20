@@ -7,7 +7,7 @@ import { UpdateBatchNumeroChnageDto } from './update_batch_numero_change.dto';
 export class UpdateBatchNumeroDto {
   @ArrayNotEmpty()
   @IsMongoId({ each: true })
-  @ApiProperty({ required: false, nullable: false, isArray: true })
+  @ApiProperty({ required: true, nullable: false, isArray: true })
   numerosIds?: Types.ObjectId[];
 
   @ValidateNested()

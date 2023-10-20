@@ -1,9 +1,7 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
-import { Position, PositionSchema } from '@/lib/schemas/position.schema';
+import { Types } from 'mongoose';
+import { Position } from '@/lib/schemas/position.schema';
 import { DateBase } from '@/lib/schemas/date.schema';
-import { displaySuffix } from '../numero.utils';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 
 export class NumeroPopulate extends DateBase {
