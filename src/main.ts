@@ -9,7 +9,6 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 
 import * as apiLegacy from '../legacy-api/routes';
 import * as mongo from '../legacy-api/util/mongo';
-// import { prepareContoursCommunes } from '../legacy-api/util/contours-communes';
 
 const getLegacyExpressApp = async () => {
   const expressApp = express();
@@ -18,8 +17,6 @@ const getLegacyExpressApp = async () => {
     expressApp.use(morgan('dev'));
   }
   await mongo.connect();
-
-  // await prepareContoursCommunes();
 
   expressApp.use('/public', express.static('public'));
   expressApp.use('/v1', apiLegacy);

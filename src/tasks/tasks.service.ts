@@ -44,7 +44,7 @@ export class TasksService {
     this.logger.debug('Task end : sync outdated');
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async removeSoftDeletedBALsOlderThanOneYearTask() {
     this.logger.debug('Task start : purge old deleted BALs');
     await removeSoftDeletedBALsOlderThanOneYear();

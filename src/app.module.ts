@@ -11,7 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    // ScheduleModule.forRoot(),
+    ...(process.env.DISABLE_TASKS === 'true' ? [] : [ScheduleModule.forRoot()]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
