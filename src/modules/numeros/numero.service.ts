@@ -3,12 +3,14 @@ import { Model, Types } from 'mongoose';
 import { InjectModel, getModelToken } from '@nestjs/mongoose';
 import { omit } from 'lodash';
 import { Numero } from './schema/numero.schema';
+import { NumeroPopulate } from './schema/numero.populate';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { UpdateNumeroDto } from './dto/update_numero.dto';
 import { CreateNumeroDto } from './dto/create_numero.dto';
 import { UpdateBatchNumeroDto } from './dto/update_batch_numero.dto';
+
 @Injectable()
 export class NumeroService {
   constructor(
@@ -23,10 +25,13 @@ export class NumeroService {
 
   public async findAllByToponymeId(
     toponymeId: Types.ObjectId,
-  ): Promise<Numero[]> {
-    return this.numeroModel
+  ): Promise<NumeroPopulate[]> {
+    const numeros: NumeroPopulate[] = await this.numeroModel
       .find({ toponyme: toponymeId, _deleted: null })
+      .populate<Pick<NumeroPopulate, 'voie'>>('voie')
       .exec();
+
+    return numeros;
   }
 
   public async create(

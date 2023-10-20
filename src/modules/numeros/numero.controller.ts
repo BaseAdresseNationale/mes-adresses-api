@@ -34,7 +34,9 @@ export class NumeroController {
   @ApiResponse({ status: 200, type: Numero })
   @ApiHeader({ name: 'Token' })
   find(@Req() req: CustomRequest, @Res() res: Response) {
-    const numero: Numero = filterSensitiveFields(req.numero, !req.isAdmin);
+    const numero: Numero = <Numero>(
+      filterSensitiveFields(req.numero, !req.isAdmin)
+    );
     res.status(HttpStatus.OK).json(numero);
   }
 

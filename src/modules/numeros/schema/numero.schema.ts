@@ -4,6 +4,7 @@ import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Position, PositionSchema } from '@/lib/schemas/position.schema';
 import { DateBase } from '@/lib/schemas/date.schema';
 import { displaySuffix } from '../numero.utils';
+import { Voie } from '@/modules/voie/schema/voie.schema';
 
 export type NumeroDocument = HydratedDocument<Numero>;
 
@@ -43,7 +44,7 @@ export class Numero extends DateBase {
   toponyme?: Types.ObjectId;
 
   @ApiProperty()
-  @Prop({ type: SchemaTypes.ObjectId })
+  @Prop({ type: SchemaTypes.ObjectId, ref: Voie.name })
   voie: Types.ObjectId;
 
   @ApiProperty()
