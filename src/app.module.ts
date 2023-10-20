@@ -7,6 +7,7 @@ import { VoieModule } from './modules/voie/voie.module';
 import { ToponymeModule } from './modules/toponyme/toponyme.module';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { HabilitationModule } from './modules/habilitation/habilitation.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       inject: [ConfigService],
     }),
     BaseLocaleModule,
+    HabilitationModule,
     NumeroModule,
     VoieModule,
     ToponymeModule,
