@@ -10,6 +10,7 @@ import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { UpdateNumeroDto } from './dto/update_numero.dto';
 import { CreateNumeroDto } from './dto/create_numero.dto';
 import { UpdateBatchNumeroDto } from './dto/update_batch_numero.dto';
+import { DeleteBatchNumeroDto } from './dto/delete_batch_numero.dto';
 
 @Injectable()
 export class NumeroService {
@@ -95,6 +96,20 @@ export class NumeroService {
     return numeroUpdated;
   }
 
+  public async delete(numero: Numero) {
+    await this.numeroModel.deleteOne({ _id: numero._id });
+  }
+
+  public async softDelete(numero: Numero): Promise<Numero> {
+    const numeroUpdated: Numero = await this.numeroModel.findOneAndUpdate(
+      { _id: numero._id },
+      { $set: { _delete: new Date() } },
+      { returnDocument: 'after' },
+    );
+
+    return numeroUpdated;
+  }
+
   public async updateBatch(
     baseLocale: BaseLocale,
     { numerosIds, changes }: UpdateBatchNumeroDto,
@@ -142,18 +157,30 @@ export class NumeroService {
     return { modifiedCount, changes };
   }
 
-  public async delete(numero: Numero) {
-    await this.numeroModel.deleteOne({ _id: numero._id });
-  }
-
-  public async softDelete(numero: Numero): Promise<Numero> {
-    const numeroUpdated: Numero = await this.numeroModel.findOneAndUpdate(
-      { _id: numero._id },
+  public async softDeleteBatch(
+    baseLocale: BaseLocale,
+    { numerosIds }: DeleteBatchNumeroDto,
+  ): Promise<any> {
+    const { modifiedCount } = await this.numeroModel.updateMany(
+      {
+        _id: { $in: numerosIds },
+        _bal: baseLocale._id,
+      },
       { $set: { _delete: new Date() } },
-      { returnDocument: 'after' },
     );
 
-    return numeroUpdated;
+    return { modifiedCount };
+  }
+
+  public async deleteBatch(
+    baseLocale: BaseLocale,
+    { numerosIds }: DeleteBatchNumeroDto,
+  ): Promise<any> {
+    const { deletedCount } = await this.numeroModel.deleteMany({
+      _id: { $in: numerosIds },
+      _bal: baseLocale._id,
+    });
+    return { deletedCount };
   }
 
   private async isVoieExist(

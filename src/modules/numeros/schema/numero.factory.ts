@@ -26,7 +26,7 @@ export const NumeroSchemaFactory = (
   NumeroSchema.pre('save', async function () {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const numero = this;
-    // NUMERO
+    // POPULATE NUMERO BEFORE CREATE
     numero.suffixe = numero.suffixe ? normalizeSuffixe(numero.suffixe) : null;
     numero.toponyme = numero.toponyme
       ? new Types.ObjectId(numero.toponyme)
@@ -35,14 +35,12 @@ export const NumeroSchemaFactory = (
     numero.comment = numero.comment || null;
     numero.parcelles = numero.parcelles || [];
     numero.certifie = numero.certifie || false;
-
-    // SET DATE NUMERO
     numero._updated = new Date();
     numero._created = new Date();
     numero._delete = null;
     // SET TILE NUMERO
     calcMetaTilesNumero(numero);
-    // VOIE
+    // SET tiles, centroidTiles VOIE
     await updateTilesVoie(numero.voie, 'with', [numero]);
     // BAL
     await updateDateVoieAndBal(numero.voie, numero._bal);
@@ -116,28 +114,57 @@ export const NumeroSchemaFactory = (
   NumeroSchema.pre('updateMany', async function () {
     const modifiedField = this.getUpdate()['$set'];
     const numeros: Numero[] = await numeroModel.find(this.getQuery());
+    const voieIds: Types.ObjectId[] = [
+      ...new Set(numeros.map(({ voie }) => voie)),
+    ];
 
     // UPDATE DATE
     modifiedField._updated = new Date();
     await voieModel
-      .updateOne({ _id: numeros[0].voie }, { _updated: new Date() })
+      .updateMany({ _id: { $in: voieIds } }, { _updated: new Date() })
       .exec();
 
-    // UPDATE TILES
-    if (modifiedField.voie) {
-      const voieIds: Types.ObjectId[] = [
-        ...new Set(numeros.map(({ voie }) => voie)),
-      ];
-      await voieModel
-        .updateMany({ _id: { $in: voieIds } }, { _updated: new Date() })
-        .exec();
+    // UPDATE IF CHANGE VOIE OR DELETE
+    if (modifiedField.voie || modifiedField._delete) {
+      // UPDATE TILES
       const promises = [];
-      promises.push(updateTilesVoie(modifiedField.voie, 'with', numeros));
+      if (modifiedField.voie) {
+        await voieModel
+          .updateOne({ _id: modifiedField.voie }, { _updated: new Date() })
+          .exec();
 
-      for (const voieId of voieIds) {
-        promises.push(updateTilesVoie(voieId, 'without', numeros));
+        promises.push(updateTilesVoie(modifiedField.voie, 'with', numeros));
+
+        for (const voieId of voieIds) {
+          promises.push(updateTilesVoie(voieId, 'without', numeros));
+        }
+      } else {
+        if (modifiedField._delete === null) {
+          for (const voieId of voieIds) {
+            promises.push(updateTilesVoie(voieId, 'without', numeros));
+          }
+        } else {
+          for (const voieId of voieIds) {
+            promises.push(updateTilesVoie(voieId, 'with', numeros));
+          }
+        }
       }
       await Promise.all(promises);
+    }
+  });
+
+  NumeroSchema.pre('deleteMany', async function () {
+    const numeros: Numero[] = await numeroModel.find(this.getQuery());
+    const voieIds: Types.ObjectId[] = [
+      ...new Set(numeros.map(({ voie }) => voie)),
+    ];
+    // UPDATE DATE
+    await voieModel
+      .updateMany({ _id: { $in: voieIds } }, { _updated: new Date() })
+      .exec();
+    // UPDATE TILES
+    for (const voieId of voieIds) {
+      await updateTilesVoie(voieId, 'without', numeros);
     }
   });
 

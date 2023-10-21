@@ -32,7 +32,7 @@ export class UpdateBatchNumeroChnageDto {
   @IsNotEmpty()
   @IsEnum(PositionTypeEnum)
   @Validate(ValidatorBal, ['position'])
-  @ApiProperty()
+  @ApiProperty({ required: false, nullable: false })
   positionType?: PositionTypeEnum;
 
   @IsOptional()
