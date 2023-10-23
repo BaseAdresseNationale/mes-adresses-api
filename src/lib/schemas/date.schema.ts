@@ -13,5 +13,5 @@ export class DateBase {
 
   @ApiProperty()
   @Prop({ type: SchemaTypes.Date })
-  _delete?: Date;
+  _deleted?: Date;
 }

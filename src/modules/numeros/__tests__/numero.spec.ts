@@ -439,7 +439,7 @@ describe('Numero', () => {
         _id: numeroId,
       });
 
-      expect(numeroDeleted._delete).not.toBe(null);
+      expect(numeroDeleted._deleted).not.toBe(null);
     });
 
     it('Delete 404 NOT FOUND', async () => {
@@ -463,7 +463,7 @@ describe('Numero', () => {
         _id: numeroId,
       });
 
-      expect(numeroDeleted._delete).toBe(null);
+      expect(numeroDeleted._deleted).toBe(null);
     });
   });
 });

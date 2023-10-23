@@ -40,7 +40,7 @@ export class NumeroService {
     createNumeroDto: CreateNumeroDto,
   ): Promise<Numero> {
     // CHECK IF VOIE EXIST
-    if (voie._delete) {
+    if (voie._deleted) {
       throw new HttpException('Voie is archived', HttpStatus.NOT_FOUND);
     }
 
@@ -103,7 +103,7 @@ export class NumeroService {
   public async softDelete(numero: Numero): Promise<Numero> {
     const numeroUpdated: Numero = await this.numeroModel.findOneAndUpdate(
       { _id: numero._id },
-      { $set: { _delete: new Date() } },
+      { $set: { _deleted: new Date() } },
       { returnDocument: 'after' },
     );
 
@@ -166,7 +166,7 @@ export class NumeroService {
         _id: { $in: numerosIds },
         _bal: baseLocale._id,
       },
-      { $set: { _delete: new Date() } },
+      { $set: { _deleted: new Date() } },
     );
 
     return { modifiedCount };

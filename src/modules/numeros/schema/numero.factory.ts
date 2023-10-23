@@ -37,7 +37,7 @@ export const NumeroSchemaFactory = (
     numero.certifie = numero.certifie || false;
     numero._updated = new Date();
     numero._created = new Date();
-    numero._delete = null;
+    numero._deleted = null;
     // SET TILE NUMERO
     calcMetaTilesNumero(numero);
     // SET tiles, centroidTiles VOIE
@@ -139,7 +139,7 @@ export const NumeroSchemaFactory = (
           promises.push(updateTilesVoie(voieId, 'without', numeros));
         }
       } else {
-        if (modifiedField._delete === null) {
+        if (modifiedField._deleted === null) {
           for (const voieId of voieIds) {
             promises.push(updateTilesVoie(voieId, 'without', numeros));
           }
