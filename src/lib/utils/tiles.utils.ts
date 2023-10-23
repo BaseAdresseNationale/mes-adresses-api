@@ -38,10 +38,6 @@ const ZOOM = {
   },
 };
 
-function roundCoordinate(coordinate: number, precision: number = 6): number {
-  return Number.parseFloat(coordinate.toFixed(precision));
-}
-
 export function calcMetaTilesNumero(
   numero: Numero | Record<string, any>,
 ): Numero | Record<string, any> {
@@ -154,4 +150,8 @@ function getTilesByBbox(
   }
 
   return union(tiles);
+}
+
+function roundCoordinate(coordinate: number, precision: number = 6): number {
+  return Number.parseFloat(coordinate.toFixed(precision));
 }
