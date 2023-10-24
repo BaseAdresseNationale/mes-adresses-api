@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { BaseLocale } from './schema/base_locale.schema';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { Habilitation } from '../habilitation/types/habilitation.type';
 import { MailerService } from '@/lib/mailer/mailer.service';
+import { CreateBaseLocaleDTO } from './dto/create_base_locale.dto';
+import { generateBase62String } from '@/lib/utils/token.utils';
+import { formatEmail as createBalCreationNotificationEmail } from '@/lib/mailer/templates/bal-creation-notification';
 
 @Injectable()
 export class BaseLocaleService {
@@ -12,33 +15,27 @@ export class BaseLocaleService {
     private readonly mailerService: MailerService,
   ) {}
 
-  findOne(): Promise<BaseLocale> {}
-
-  findMany(): Promise<BaseLocale[]> {
-    return this.baseLocaleModel.find({});
+  findOne(filter?: FilterQuery<BaseLocale>): Promise<BaseLocale> {
+    return this.baseLocaleModel.findOne(filter);
   }
 
-  async createOne(): Promise<BaseLocale> {
-    const { nom, emails, commune } = await validPayload(payload, createSchema);
+  findMany(filter?: FilterQuery<BaseLocale>): Promise<BaseLocale[]> {
+    return this.baseLocaleModel.find(filter);
+  }
 
-    const baseLocale = {
-      _id: new mongo.ObjectId(),
-      nom,
-      emails,
-      commune,
+  async createOne(createInput: CreateBaseLocaleDTO): Promise<BaseLocale> {
+    const newBaseLocale = await this.baseLocaleModel.create({
+      ...createInput,
       token: generateBase62String(20),
       status: 'draft',
-    };
+    });
 
-    mongo.decorateCreation(baseLocale, true);
+    const email = createBalCreationNotificationEmail({
+      baseLocale: newBaseLocale,
+    });
+    await this.mailerService.sendMail(email, newBaseLocale.emails);
 
-    await mongo.db.collection('bases_locales').insertOne(baseLocale);
-    await this.baseLocaleModel.create(baseLocale);
-
-    const email = createBalCreationNotificationEmail({ baseLocale });
-    await this.mailerService.sendMail(email, baseLocale.emails);
-
-    return baseLocale;
+    return newBaseLocale;
   }
 
   async updateHabilitation(
