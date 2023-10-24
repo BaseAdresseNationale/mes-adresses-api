@@ -124,31 +124,28 @@ export const NumeroSchemaFactory = (
       .exec();
 
     // UPDATE IF CHANGE VOIE OR DELETE
-    if (modifiedField.voie || modifiedField._deleted) {
-      // UPDATE TILES
-      const promises = [];
-      if (modifiedField.voie) {
-        await voieModel
-          .updateOne({ _id: modifiedField.voie }, { _updated: new Date() })
-          .exec();
+    if (modifiedField.voie) {
+      await voieModel
+        .updateOne({ _id: modifiedField.voie }, { _updated: new Date() })
+        .exec();
 
-        promises.push(updateTilesVoie(modifiedField.voie, 'with', numeros));
+      await updateTilesVoie(modifiedField.voie, 'with', numeros);
 
+      for (const voieId of voieIds) {
+        await updateTilesVoie(voieId, 'without', numeros);
+      }
+    } else if (modifiedField._deleted) {
+      if (modifiedField._deleted === null) {
         for (const voieId of voieIds) {
-          promises.push(updateTilesVoie(voieId, 'without', numeros));
+          const voieNumeros = numeros.filter(({ voie }) => voie === voieId);
+          await updateTilesVoie(voieId, 'without', voieNumeros);
         }
-      } else if (modifiedField._deleted) {
-        if (modifiedField._deleted === null) {
-          for (const voieId of voieIds) {
-            promises.push(updateTilesVoie(voieId, 'without', numeros));
-          }
-        } else {
-          for (const voieId of voieIds) {
-            promises.push(updateTilesVoie(voieId, 'with', numeros));
-          }
+      } else {
+        for (const voieId of voieIds) {
+          const voieNumeros = numeros.filter(({ voie }) => voie === voieId);
+          await updateTilesVoie(voieId, 'with', voieNumeros);
         }
       }
-      await Promise.all(promises);
     }
   });
 
