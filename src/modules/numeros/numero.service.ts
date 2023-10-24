@@ -14,15 +14,17 @@ import { DeleteBatchNumeroDto } from './dto/delete_batch_numero.dto';
 import { normalizeSuffixe } from './numero.utils';
 import { TilesService } from '@/lib/services/tiles.services';
 import { DbService } from '@/lib/services/db.service';
+import { VoieService } from '../voie/voie.service';
+import { ToponymeService } from '../toponyme/toponyme.service';
 
 @Injectable()
 export class NumeroService {
   constructor(
     @InjectModel(Numero.name) private numeroModel: Model<Numero>,
-    @InjectModel(Voie.name) private voieModel: Model<Voie>,
-    @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
     private tilesService: TilesService,
     private dbService: DbService,
+    private voieService: VoieService,
+    private toponymeService: ToponymeService,
   ) {}
 
   public async findAllByVoieId(voieId: Types.ObjectId): Promise<Numero[]> {
@@ -52,7 +54,7 @@ export class NumeroService {
     // CHECK IF TOPO EXIST
     if (
       createNumeroDto.toponyme &&
-      !(await !this.isToponymeExist(createNumeroDto.toponyme))
+      !(await !this.toponymeService.isToponymeExist(createNumeroDto.toponyme))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
@@ -96,7 +98,7 @@ export class NumeroService {
     // CHECK IF VOIE EXIST
     if (
       updateNumeroDto.voie &&
-      !(await this.isVoieExist(updateNumeroDto.voie))
+      !(await this.voieService.isVoieExist(updateNumeroDto.voie))
     ) {
       throw new HttpException('Voie not found', HttpStatus.NOT_FOUND);
     }
@@ -104,7 +106,7 @@ export class NumeroService {
     // CHECK IF TOPO EXIST
     if (
       updateNumeroDto.toponyme &&
-      !(await !this.isToponymeExist(updateNumeroDto.toponyme))
+      !(await !this.toponymeService.isToponymeExist(updateNumeroDto.toponyme))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
@@ -183,14 +185,17 @@ export class NumeroService {
     // CHECK IF VOIE EXIST (IN BAL)
     if (
       changes.voie &&
-      !(await this.isVoieExist(changes.voie, baseLocale._id))
+      !(await this.voieService.isVoieExist(changes.voie, baseLocale._id))
     ) {
       throw new HttpException('Voie not found', HttpStatus.NOT_FOUND);
     }
     // CHECK IF TOPO EXIST (IN BAL)
     if (
       changes.toponyme &&
-      !(await !this.isToponymeExist(changes.toponyme, baseLocale._id))
+      !(await !this.toponymeService.isToponymeExist(
+        changes.toponyme,
+        baseLocale._id,
+      ))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
@@ -335,29 +340,5 @@ export class NumeroService {
     ).map(({ _id }) => _id);
 
     return { voieIds, toponymeIds };
-  }
-
-  private async isVoieExist(
-    _id: Types.ObjectId,
-    _bal: Types.ObjectId = null,
-  ): Promise<boolean> {
-    const query = { _id, _deleted: null };
-    if (_bal) {
-      query['_bal'] = _bal;
-    }
-    const voieExist = await this.voieModel.findOne(query).exec();
-    return voieExist !== null;
-  }
-
-  private async isToponymeExist(
-    _id: Types.ObjectId,
-    _bal: Types.ObjectId = null,
-  ): Promise<boolean> {
-    const query = { _id, _deleted: null };
-    if (_bal) {
-      query['_bal'] = _bal;
-    }
-    const toponymeExist = await this.toponymeModel.findOne(query).exec();
-    return toponymeExist !== null;
   }
 }

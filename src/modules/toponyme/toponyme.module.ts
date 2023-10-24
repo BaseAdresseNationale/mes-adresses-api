@@ -2,10 +2,11 @@ import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
 import { ToponymeController } from './toponyme.controller';
 import { DbModule } from '@/lib/modules/db.module';
+import { ToponymeService } from './toponyme.service';
 
 @Module({
   imports: [DbModule],
-  providers: [ToponymeMiddleware],
+  providers: [ToponymeService, ToponymeMiddleware],
   controllers: [ToponymeController],
 })
 export class ToponymeModule {
