@@ -6,12 +6,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
 import { BaseLocaleModule } from '../base_locale/base_locale.module';
-import { MongooseModule } from '@nestjs/mongoose';
-import { DbModelFactory } from '@/lib/model_factory/db.model.factory';
+import { DbModule } from '@/lib/modules/db.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeatureAsync(DbModelFactory),
+    DbModule,
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

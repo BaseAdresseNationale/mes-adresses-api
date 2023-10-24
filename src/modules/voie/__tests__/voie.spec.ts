@@ -16,10 +16,12 @@ import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DbModelFactory } from '@/lib/model_factory/db.model.factory';
+import { DbModule } from '@/lib/modules/db.module';
 import { getModelToken } from '@nestjs/mongoose';
 import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
 import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
+import { TilesService } from '@/lib/services/tiles.services';
+import { DbService } from '@/lib/services/db.service';
 
 describe('Numero', () => {
   let app: INestApplication;
@@ -38,12 +40,9 @@ describe('Numero', () => {
 
     // INIT MODULE
     @Module({
-      imports: [
-        MongooseModule.forRoot(uri),
-        MongooseModule.forFeatureAsync(DbModelFactory),
-      ],
+      imports: [MongooseModule.forRoot(uri), DbModule],
       controllers: [VoieController],
-      providers: [VoieMiddleware, NumeroService],
+      providers: [VoieMiddleware, NumeroService, TilesService, DbService],
     })
     class TestModule implements NestModule {
       configure(consumer: MiddlewareConsumer) {

@@ -6,19 +6,24 @@ import {
   Module,
   NestModule,
   MiddlewareConsumer,
+  RequestMethod,
 } from '@nestjs/common';
 import { NumeroController } from '../numero.controller';
 import { NumeroService } from '../numero.service';
 import { Connection, connect, Model, Types } from 'mongoose';
 import { Numero } from '../schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
+import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DbModelFactory } from '@/lib/model_factory/db.model.factory';
 import { getModelToken } from '@nestjs/mongoose';
 import { NumeroMiddleware } from '@/lib/middlewares/numero.middleware';
+import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
 import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
 import { UpdateNumeroDto } from '../dto/update_numero.dto';
+import { DbModule } from '@/lib/modules/db.module';
+import { TilesService } from '@/lib/services/tiles.services';
+import { DbService } from '@/lib/services/db.service';
 
 describe('Numero', () => {
   let app: INestApplication;
@@ -27,6 +32,7 @@ describe('Numero', () => {
   let numeroModel: Model<Numero>;
   let voieModel: Model<Voie>;
   let balModel: Model<BaseLocale>;
+  let toponymeModel: Model<Toponyme>;
   const token = 'xxxx';
 
   beforeAll(async () => {
@@ -37,16 +43,28 @@ describe('Numero', () => {
 
     // INIT MODULE
     @Module({
-      imports: [
-        MongooseModule.forRoot(uri),
-        MongooseModule.forFeatureAsync(DbModelFactory),
-      ],
+      imports: [MongooseModule.forRoot(uri), DbModule],
       controllers: [NumeroController],
-      providers: [NumeroMiddleware, NumeroService],
+      providers: [NumeroMiddleware, NumeroService, TilesService, DbService],
     })
     class TestModule implements NestModule {
       configure(consumer: MiddlewareConsumer) {
-        consumer.apply(NumeroMiddleware).forRoutes(NumeroController);
+        consumer
+          .apply(NumeroMiddleware)
+          .forRoutes(
+            { path: 'numeros/:numeroId', method: RequestMethod.GET },
+            { path: 'numeros/:numeroId', method: RequestMethod.PUT },
+            { path: 'numeros/:numeroId', method: RequestMethod.DELETE },
+            {
+              path: 'numeros/:numeroId/soft-delete',
+              method: RequestMethod.PUT,
+            },
+          )
+          .apply(ToponymeMiddleware)
+          .forRoutes({
+            path: 'toponymes/:toponymeId/numeros',
+            method: RequestMethod.GET,
+          });
       }
     }
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -61,6 +79,7 @@ describe('Numero', () => {
     numeroModel = app.get<Model<Numero>>(getModelToken(Numero.name));
     voieModel = app.get<Model<Voie>>(getModelToken(Voie.name));
     balModel = app.get<Model<BaseLocale>>(getModelToken(BaseLocale.name));
+    toponymeModel = app.get<Model<Toponyme>>(getModelToken(Toponyme.name));
   });
   afterAll(async () => {
     await mongoConnection.dropDatabase();
@@ -94,6 +113,16 @@ describe('Numero', () => {
     };
     await voieModel.create(voie);
     return voieId;
+  }
+
+  async function createToponyme(props: Partial<Toponyme> = {}) {
+    const toponymeId = new Types.ObjectId();
+    const toponyme: Partial<Toponyme> = {
+      _id: toponymeId,
+      ...props,
+    };
+    await toponymeModel.create(toponyme);
+    return toponymeId;
   }
 
   async function createNumero(
@@ -442,7 +471,7 @@ describe('Numero', () => {
       expect(numeroDeleted._deleted).not.toBe(null);
     });
 
-    it('Delete 404 NOT FOUND', async () => {
+    it('Soft Delete 404 NOT FOUND', async () => {
       const numeroId = new Types.ObjectId();
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}/soft-delete`)
@@ -450,10 +479,13 @@ describe('Numero', () => {
         .expect(404);
     });
 
-    it('Delete 403 FORBIDEN', async () => {
+    it('Soft Delete 403 FORBIDEN', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero(balId, voieId, { numero: 99 });
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 99,
+        _deleted: null,
+      });
 
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}/soft-delete`)
@@ -462,8 +494,66 @@ describe('Numero', () => {
       const numeroDeleted: Numero = await numeroModel.findOne({
         _id: numeroId,
       });
-
       expect(numeroDeleted._deleted).toBe(null);
+    });
+  });
+
+  describe('GET /toponymes/numeros', () => {
+    it('Return 200 numero without comment', async () => {
+      const balId = await createBal();
+      const toponymeId = await createToponyme({ nom: 'allée', _bal: balId });
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      await createNumero(balId, voieId, {
+        numero: 1,
+        comment: 'coucou',
+        toponyme: toponymeId,
+      });
+      await createNumero(balId, voieId, {
+        numero: 1,
+        comment: 'coucou',
+        toponyme: toponymeId,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/toponymes/${toponymeId}/numeros`)
+        .expect(200);
+
+      expect(response.body.length).toEqual(2);
+      expect(response.body[0].numero).toEqual(1);
+      expect(response.body[1].numero).toEqual(1);
+      expect(response.body[0].comment).toBeNull();
+      expect(response.body[1].comment).toBeNull();
+      expect(response.body[0].voie._id).toEqual(voieId.toString());
+      expect(response.body[1].voie._id).toEqual(voieId.toString());
+    });
+
+    it('Return 200 numero with comment', async () => {
+      const balId = await createBal();
+      const toponymeId = await createToponyme({ nom: 'allée', _bal: balId });
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      await createNumero(balId, voieId, {
+        numero: 1,
+        comment: 'coucou',
+        toponyme: toponymeId,
+      });
+      await createNumero(balId, voieId, {
+        numero: 1,
+        comment: 'coucou',
+        toponyme: toponymeId,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/toponymes/${toponymeId}/numeros`)
+        .set('Token', token)
+        .expect(200);
+
+      expect(response.body.length).toEqual(2);
+      expect(response.body[0].numero).toEqual(1);
+      expect(response.body[1].numero).toEqual(1);
+      expect(response.body[0].comment).toEqual('coucou');
+      expect(response.body[1].comment).toEqual('coucou');
+      expect(response.body[0].voie._id).toEqual(voieId.toString());
+      expect(response.body[1].voie._id).toEqual(voieId.toString());
     });
   });
 });

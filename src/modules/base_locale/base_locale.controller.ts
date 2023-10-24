@@ -25,56 +25,57 @@ import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.
 @ApiTags('base_locale')
 @Controller('base_locale')
 export class BaseLocaleController {
-  constructor(private numeroService: NumeroService) {}
+  constructor() {}
+  // constructor(private numeroService: NumeroService) {}
 
-  @Put(':baseLocaleId/numeros/batch')
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: UpdateBatchNumeroDto, required: true })
-  @ApiResponse({ status: HttpStatus.OK })
-  @ApiHeader({ name: 'Token' })
-  @UseGuards(AdminGuard)
-  async batchNumeros(
-    @Req() req: CustomRequest,
-    @Body() updateBatchNumeroDto: UpdateBatchNumeroDto,
-    @Res() res: Response,
-  ) {
-    const result: any = await this.numeroService.updateBatch(
-      req.baseLocale,
-      updateBatchNumeroDto,
-    );
-    res.status(HttpStatus.OK).json(result);
-  }
+  // @Put(':baseLocaleId/numeros/batch')
+  // @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  // @ApiBody({ type: UpdateBatchNumeroDto, required: true })
+  // @ApiResponse({ status: HttpStatus.OK })
+  // @ApiHeader({ name: 'Token' })
+  // @UseGuards(AdminGuard)
+  // async batchNumeros(
+  //   @Req() req: CustomRequest,
+  //   @Body() updateBatchNumeroDto: UpdateBatchNumeroDto,
+  //   @Res() res: Response,
+  // ) {
+  //   const result: any = await this.numeroService.updateBatch(
+  //     req.baseLocale,
+  //     updateBatchNumeroDto,
+  //   );
+  //   res.status(HttpStatus.OK).json(result);
+  // }
 
-  @Put(':baseLocaleId/numeros/batch/soft-delete')
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: DeleteBatchNumeroDto, required: true })
-  @ApiResponse({ status: HttpStatus.OK })
-  @ApiHeader({ name: 'Token' })
-  @UseGuards(AdminGuard)
-  async softDeleteNumeros(
-    @Req() req: CustomRequest,
-    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDto,
-    @Res() res: Response,
-  ) {
-    const result: any = await this.numeroService.softDeleteBatch(
-      req.baseLocale,
-      deleteBatchNumeroDto,
-    );
-    res.status(HttpStatus.OK).json(result);
-  }
+  // @Put(':baseLocaleId/numeros/batch/soft-delete')
+  // @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  // @ApiBody({ type: DeleteBatchNumeroDto, required: true })
+  // @ApiResponse({ status: HttpStatus.OK })
+  // @ApiHeader({ name: 'Token' })
+  // @UseGuards(AdminGuard)
+  // async softDeleteNumeros(
+  //   @Req() req: CustomRequest,
+  //   @Body() deleteBatchNumeroDto: DeleteBatchNumeroDto,
+  //   @Res() res: Response,
+  // ) {
+  //   const result: any = await this.numeroService.softDeleteBatch(
+  //     req.baseLocale,
+  //     deleteBatchNumeroDto,
+  //   );
+  //   res.status(HttpStatus.OK).json(result);
+  // }
 
-  @Delete(':baseLocaleId/numeros/batch')
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: DeleteBatchNumeroDto, required: true })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT })
-  @ApiHeader({ name: 'Token' })
-  @UseGuards(AdminGuard)
-  async deleteNumeros(
-    @Req() req: CustomRequest,
-    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDto,
-    @Res() res: Response,
-  ) {
-    await this.numeroService.deleteBatch(req.baseLocale, deleteBatchNumeroDto);
-    res.status(HttpStatus.NO_CONTENT).send();
-  }
+  // @Delete(':baseLocaleId/numeros/batch')
+  // @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  // @ApiBody({ type: DeleteBatchNumeroDto, required: true })
+  // @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  // @ApiHeader({ name: 'Token' })
+  // @UseGuards(AdminGuard)
+  // async deleteNumeros(
+  //   @Req() req: CustomRequest,
+  //   @Body() deleteBatchNumeroDto: DeleteBatchNumeroDto,
+  //   @Res() res: Response,
+  // ) {
+  //   await this.numeroService.deleteBatch(req.baseLocale, deleteBatchNumeroDto);
+  //   res.status(HttpStatus.NO_CONTENT).send();
+  // }
 }

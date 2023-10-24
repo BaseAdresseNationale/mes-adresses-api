@@ -1,17 +1,31 @@
-import { Module, MiddlewareConsumer } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { NumeroService } from './numero.service';
 import { NumeroController } from './numero.controller';
 import { NumeroMiddleware } from '@/lib/middlewares/numero.middleware';
-import { DbModelFactory } from '@/lib/model_factory/db.model.factory';
+import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
+import { DbModule } from '@/lib/modules/db.module';
+import { TilesService } from '@/lib/services/tiles.services';
+import { DbService } from '@/lib/services/db.service';
 
 @Module({
-  imports: [MongooseModule.forFeatureAsync(DbModelFactory)],
-  providers: [NumeroService, NumeroMiddleware],
+  imports: [DbModule],
+  providers: [NumeroService, NumeroMiddleware, TilesService, DbService],
   controllers: [NumeroController],
 })
 export class NumeroModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(NumeroMiddleware).forRoutes(NumeroController);
+    consumer
+      .apply(NumeroMiddleware)
+      .forRoutes(
+        { path: 'numeros/:voieId', method: RequestMethod.GET },
+        { path: 'numeros/:voieId', method: RequestMethod.PUT },
+        { path: 'numeros/:voieId', method: RequestMethod.DELETE },
+        { path: 'numeros/:voieId/soft-delete', method: RequestMethod.PUT },
+      )
+      .apply(ToponymeMiddleware)
+      .forRoutes({
+        path: 'toponymes/:toponymeId/numeros',
+        method: RequestMethod.GET,
+      });
   }
 }

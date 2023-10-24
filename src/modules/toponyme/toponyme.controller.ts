@@ -9,16 +9,16 @@ import { filterSensitiveFields } from '@/modules/numeros/numero.utils';
 @ApiTags('toponymes')
 @Controller('toponymes')
 export class ToponymeController {
-  constructor(private numeroService: NumeroService) {}
+  constructor() {}
 
-  @Get(':toponymeId/numeros')
-  @ApiParam({ name: 'toponymeId', required: true, type: String })
-  @ApiResponse({ status: 201, type: NumeroPopulate, isArray: true })
-  @ApiHeader({ name: 'Token' })
-  async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const numeros: NumeroPopulate[] =
-      await this.numeroService.findAllByToponymeId(req.toponyme._id);
-    const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
-    res.status(HttpStatus.OK).json(result);
-  }
+  // @Get(':toponymeId/numeros')
+  // @ApiParam({ name: 'toponymeId', required: true, type: String })
+  // @ApiResponse({ status: 201, type: NumeroPopulate, isArray: true })
+  // @ApiHeader({ name: 'Token' })
+  // async find(@Req() req: CustomRequest, @Res() res: Response) {
+  //   const numeros: NumeroPopulate[] =
+  //     await this.numeroService.findAllByToponymeId(req.toponyme._id);
+  //   const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
+  //   res.status(HttpStatus.OK).json(result);
+  // }
 }

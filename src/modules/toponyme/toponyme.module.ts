@@ -1,13 +1,11 @@
 import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { DbModelFactory } from '@/lib/model_factory/db.model.factory';
 import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
 import { ToponymeController } from './toponyme.controller';
-import { NumeroService } from '@/modules/numeros/numero.service';
+import { DbModule } from '@/lib/modules/db.module';
 
 @Module({
-  imports: [MongooseModule.forFeatureAsync(DbModelFactory)],
-  providers: [ToponymeMiddleware, NumeroService],
+  imports: [DbModule],
+  providers: [ToponymeMiddleware],
   controllers: [ToponymeController],
 })
 export class ToponymeModule {
