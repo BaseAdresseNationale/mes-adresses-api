@@ -1,6 +1,6 @@
 import { Schema, Model } from 'mongoose';
 import { Types } from 'mongoose';
-import { unionBy } from 'lodash';
+import { unionBy, defaults } from 'lodash';
 import { NumeroSchema, Numero } from './numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
@@ -68,25 +68,24 @@ export const NumeroSchemaFactory = (
     this.setUpdate(modifiedField);
 
     // GET OLD NUMERO
-    const numero: Numero = await numeroModel.findOne(this.getQuery());
+    const numero: Numero = await numeroModel.findOne(this.getQuery()).exec();
     // VOIE
     if (modifiedField.voie || modifiedField.positions) {
       // CONSTRUCT NEW NUMERO
-      const newNumero: Numero = { _id: numero._id, ...modifiedField };
+      const newNumero: Numero = {
+        _id: numero._id,
+        ...modifiedField,
+        positions: modifiedField.positions
+          ? modifiedField.positions
+          : numero.positions,
+      };
       if (modifiedField.voie) {
-        if (modifiedField.positions) {
-          // IF VOIE CHANGE AND POSITIONS NUMERO CHANGE
-          // CALC OLD VOIE WITHOUT OLD NUMERO
-          // CALC NEW vOIE WITH NEW NUMERO
-          await updateTilesVoie(numero.voie, 'without', [numero]);
-          await updateTilesVoie(modifiedField.voie, 'with', [newNumero]);
-        } else {
-          // IF VOIE CHANGE BUT NOT POSITIONS NUMERO
-          // CALC OLD VOIE WITHOUT OLD NUMERO
-          // CALC NEW VOIE WITH OLD NUMERO
-          await updateTilesVoie(numero.voie, 'without', [numero]);
-          await updateTilesVoie(modifiedField.voie, 'with', [numero]);
-        }
+        // IF VOIE CHANGE AND POSITIONS NUMERO CHANGE
+        // CALC OLD VOIE WITHOUT OLD NUMERO
+        // CALC NEW vOIE WITH NEW NUMERO
+        await updateTilesVoie(numero.voie, 'without', [numero]);
+        await updateTilesVoie(modifiedField.voie, 'with', [newNumero]);
+        await updateDateVoieAndBal(modifiedField.voie, numero._bal);
       } else if (modifiedField.positions) {
         // IF ONLY POSITIONS NUMERO CHANGE
         // CALC VOIE WITH NEW NUMERO INSTEAD OF OLD NUMERO
@@ -125,7 +124,7 @@ export const NumeroSchemaFactory = (
       .exec();
 
     // UPDATE IF CHANGE VOIE OR DELETE
-    if (modifiedField.voie || modifiedField._delete) {
+    if (modifiedField.voie || modifiedField._deleted) {
       // UPDATE TILES
       const promises = [];
       if (modifiedField.voie) {
@@ -138,7 +137,7 @@ export const NumeroSchemaFactory = (
         for (const voieId of voieIds) {
           promises.push(updateTilesVoie(voieId, 'without', numeros));
         }
-      } else {
+      } else if (modifiedField._deleted) {
         if (modifiedField._deleted === null) {
           for (const voieId of voieIds) {
             promises.push(updateTilesVoie(voieId, 'without', numeros));
