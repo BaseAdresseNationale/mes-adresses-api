@@ -235,6 +235,11 @@ describe('Numero', () => {
       expect(response.body.parcelles).toEqual([]);
       expect(response.body.positions).toEqual([]);
       expect(response.body.voie).toEqual(voieId.toString());
+
+      const voieDbAfter = await voieModel.findOne({ _id: voieId });
+      const balDbAfter = await balModel.findOne({ _id: balId });
+      expect(voieDbAfter._updated).not.toBeNull();
+      expect(balDbAfter._updated).not.toBeNull();
     });
 
     it('Update 404 Numero Not Found', async () => {
@@ -295,6 +300,11 @@ describe('Numero', () => {
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
         .expect(403);
+
+      const voieDbAfter = await voieModel.findOne({ _id: voieId });
+      const balDbAfter = await balModel.findOne({ _id: balId });
+      expect(voieDbAfter._updated).toBeUndefined();
+      expect(balDbAfter._updated).toBeUndefined();
     });
 
     it('Update 200 check field _updated of voie and bal', async () => {
@@ -317,7 +327,6 @@ describe('Numero', () => {
 
       const voieDbAfter = await voieModel.findOne({ _id: voieId });
       const balDbAfter = await balModel.findOne({ _id: balId });
-
       expect(voieDbBefore._updated).not.toEqual(voieDbAfter._updated);
       expect(balDbBefore._updated).not.toEqual(balDbAfter._updated);
     });
@@ -423,6 +432,9 @@ describe('Numero', () => {
       expect(voie1DbAfter.centroidTiles).toBe(null);
       expect(voie2DbAfter.centroid).not.toBe(null);
       expect(voie2DbAfter.centroidTiles).not.toBe(null);
+
+      expect(voie1DbAfter._updated).not.toBeNull();
+      expect(voie2DbAfter._updated).not.toBeNull();
     });
   });
 
@@ -442,6 +454,10 @@ describe('Numero', () => {
       });
 
       expect(numeroDeleted).toBe(null);
+      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
+      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
+      expect(voieAfter._updated).not.toBeNull();
+      expect(balAfter._updated).not.toBeNull();
     });
 
     it('Delete 404 NOT FOUND', async () => {
@@ -466,6 +482,10 @@ describe('Numero', () => {
       });
 
       expect(numeroDeleted).not.toBe(null);
+      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
+      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
+      expect(voieAfter._updated).toBeUndefined();
+      expect(balAfter._updated).toBeUndefined();
     });
   });
 
@@ -485,6 +505,11 @@ describe('Numero', () => {
       });
 
       expect(numeroDeleted._deleted).not.toBe(null);
+
+      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
+      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
+      expect(voieAfter._updated).not.toBeNull();
+      expect(balAfter._updated).not.toBeNull();
     });
 
     it('Soft Delete 404 NOT FOUND', async () => {
@@ -511,6 +536,10 @@ describe('Numero', () => {
         _id: numeroId,
       });
       expect(numeroDeleted._deleted).toBe(null);
+      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
+      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
+      expect(voieAfter._updated).toBeUndefined();
+      expect(balAfter._updated).toBeUndefined();
     });
   });
 
@@ -644,6 +673,11 @@ describe('Numero', () => {
       expect(response.body._updated).not.toBeNull();
       expect(response.body._created).not.toBeNull();
       expect(response.body._deleted).toEqual(null);
+
+      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
+      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
+      expect(voieAfter._updated).not.toBeNull();
+      expect(balAfter._updated).not.toBeNull();
     });
 
     it('Create 201 numero with meta', async () => {
@@ -686,6 +720,11 @@ describe('Numero', () => {
       expect(response.body._updated).not.toBeNull();
       expect(response.body._created).not.toBeNull();
       expect(response.body._deleted).toEqual(null);
+
+      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
+      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
+      expect(voieAfter._updated).not.toBeNull();
+      expect(balAfter._updated).not.toBeNull();
     });
 
     it('Create 404 voie is deleted', async () => {
@@ -721,6 +760,11 @@ describe('Numero', () => {
           message: 'Voie is archived',
         }),
       );
+
+      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
+      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
+      expect(voieAfter._updated).toBeUndefined();
+      expect(balAfter._updated).toBeUndefined();
     });
 
     it('Create 404 toponyme not exist', async () => {
@@ -756,65 +800,70 @@ describe('Numero', () => {
           message: 'Toponyme not found',
         }),
       );
+
+      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
+      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
+      expect(voieAfter._updated).toBeUndefined();
+      expect(balAfter._updated).toBeUndefined();
     });
 
-    // it('Create 404 bad payload', async () => {
-    //   const balId = await createBal();
-    //   const voieId = await createVoie({
-    //     nom: 'rue de la paix',
-    //     _bal: balId,
-    //   });
-    //   const createdNumero: CreateNumeroDto = {
-    //     numero: 1,
-    //   };
+    it('Create 404 bad payload', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+      });
+      const createdNumero: CreateNumeroDto = {
+        numero: 1,
+      };
 
-    //   const response = await request(app.getHttpServer())
-    //     .post(`/voies/${voieId}/numeros`)
-    //     .send(createdNumero)
-    //     .set('token', token)
-    //     .expect(400);
+      const response = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send(createdNumero)
+        .set('token', token)
+        .expect(400);
 
-    //   expect(response.text).toEqual(
-    //     JSON.stringify({
-    //       message: ['positions should not be empty'],
-    //       error: 'Bad Request',
-    //       statusCode: 400,
-    //     }),
-    //   );
-    // });
+      expect(response.text).toEqual(
+        JSON.stringify({
+          message: ['positions should not be empty'],
+          error: 'Bad Request',
+          statusCode: 400,
+        }),
+      );
+    });
 
-    // it('Create 404 bad payload', async () => {
-    //   const balId = await createBal();
-    //   const voieId = await createVoie({
-    //     nom: 'rue de la paix',
-    //     _bal: balId,
-    //   });
-    //   const createdNumero: CreateNumeroDto = {
-    //     positions: [
-    //       {
-    //         type: PositionTypeEnum.ENTREE,
-    //         source: 'ban',
-    //         point: {
-    //           type: 'Point',
-    //           coordinates: [8, 42],
-    //         },
-    //       },
-    //     ],
-    //   };
+    it('Create 404 bad payload', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+      });
+      const createdNumero: CreateNumeroDto = {
+        positions: [
+          {
+            type: PositionTypeEnum.ENTREE,
+            source: 'ban',
+            point: {
+              type: 'Point',
+              coordinates: [8, 42],
+            },
+          },
+        ],
+      };
 
-    //   const response = await request(app.getHttpServer())
-    //     .post(`/voies/${voieId}/numeros`)
-    //     .send(createdNumero)
-    //     .set('token', token)
-    //     .expect(400);
+      const response = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send(createdNumero)
+        .set('token', token)
+        .expect(400);
 
-    //   expect(response.text).toEqual(
-    //     JSON.stringify({
-    //       message: ["Le champ numero : undefined n'est pas valide"],
-    //       error: 'Bad Request',
-    //       statusCode: 400,
-    //     }),
-    //   );
-    // });
+      expect(response.text).toEqual(
+        JSON.stringify({
+          message: ["Le champ numero : undefined n'est pas valide"],
+          error: 'Bad Request',
+          statusCode: 400,
+        }),
+      );
+    });
   });
 });
