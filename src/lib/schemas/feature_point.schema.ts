@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { SchemaTypes } from 'mongoose';
-import { Point, PointSchema } from '@/lib/schemas/geosjon/point.schema';
+import { Point, PointSchema } from '@/lib/schemas/geometry/point.schema';
 import { ValidateNested, Equals, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Point as PointTurf, Feature as FeatureTurf } from '@turf/helpers';

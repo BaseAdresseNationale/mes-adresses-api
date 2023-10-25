@@ -8,7 +8,7 @@ import {
 import {
   LineString,
   LineStringSchema,
-} from '@/lib/schemas/geosjon/line_string.schema';
+} from '@/lib/schemas/geometry/line_string.schema';
 import { TypeNumerotationEnum } from './type_numerotation.enum';
 import { DateBase } from '@/lib/schemas/date.schema';
 

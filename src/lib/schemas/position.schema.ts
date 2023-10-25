@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
-import { Point, PointSchema } from '@/lib/schemas/geosjon/point.schema';
+import { Point, PointSchema } from '@/lib/schemas/geometry/point.schema';
 import { ValidatorBal } from '@/lib/validator/validator_bal.validator';
 import { ValidateNested, Validate, IsEnum, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';

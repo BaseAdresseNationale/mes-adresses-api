@@ -15,7 +15,7 @@ import { getPriorityPosition } from '../utils/positions.util';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { TypeNumerotationEnum } from '@/modules/voie/schema/type_numerotation.enum';
-import { Point } from '@/lib/schemas/geosjon/point.schema';
+import { Point } from '@/lib/schemas/geometry/point.schema';
 import {
   LineString as LineStringTurf,
   Position as PositionTurf,

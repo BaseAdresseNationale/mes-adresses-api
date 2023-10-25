@@ -8,7 +8,7 @@ import {
   IsNotEmptyObject,
   IsEnum,
 } from 'class-validator';
-import { LineString } from '@/lib/schemas/geosjon/line_string.schema';
+import { LineString } from '@/lib/schemas/geometry/line_string.schema';
 import { TypeNumerotationEnum } from '../schema/type_numerotation.enum';
 
 export class CreateVoieDto {
