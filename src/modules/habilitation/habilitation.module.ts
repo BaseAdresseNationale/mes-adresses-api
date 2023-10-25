@@ -5,6 +5,7 @@ import { HabilitationService } from './habilitation.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
+import { MailerService } from '@/lib/mailer/mailer.service';
 import { BaseLocaleModule } from '../base_locale/base_locale.module';
 import { DbModule } from '@/lib/modules/db.module';
 
@@ -25,7 +26,12 @@ import { DbModule } from '@/lib/modules/db.module';
     }),
     BaseLocaleModule,
   ],
-  providers: [HabilitationService, BaseLocaleMiddleware, BaseLocaleService],
+  providers: [
+    HabilitationService,
+    BaseLocaleMiddleware,
+    BaseLocaleService,
+    MailerService,
+  ],
   controllers: [HabilitationController],
 })
 export class HabilitationModule {

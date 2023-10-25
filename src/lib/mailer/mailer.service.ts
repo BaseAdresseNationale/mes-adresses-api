@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import { Email } from './mailer.types';
 
 @Injectable()
@@ -10,7 +10,6 @@ export class MailerService {
     if (!process.env.SMTP_HOST && process.env.NODE_ENV === 'production') {
       throw new Error('SMTP_HOST must be provided in production mode');
     }
-
     this.transport = process.env.SMTP_HOST
       ? nodemailer.createTransport({
           host: process.env.SMTP_HOST,
