@@ -4,6 +4,7 @@ import { NumeroController } from './numero.controller';
 import { NumeroMiddleware } from '@/lib/middlewares/numero.middleware';
 import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
 import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
+import { BaseLocaleMiddleware } from '@/lib/middlewares/base_locale.middleware';
 import { DbModule } from '@/lib/modules/db.module';
 import { TilesService } from '@/lib/services/tiles.services';
 import { DbService } from '@/lib/services/db.service';
@@ -14,11 +15,14 @@ import { ToponymeService } from '../toponyme/toponyme.service';
   imports: [DbModule],
   providers: [
     NumeroService,
-    NumeroMiddleware,
-    TilesService,
-    DbService,
     VoieService,
     ToponymeService,
+    NumeroMiddleware,
+    ToponymeMiddleware,
+    VoieMiddleware,
+    BaseLocaleMiddleware,
+    TilesService,
+    DbService,
   ],
   controllers: [NumeroController],
 })
@@ -41,6 +45,21 @@ export class NumeroModule {
       .forRoutes({
         path: 'toponymes/:toponymeId/numeros',
         method: RequestMethod.GET,
-      });
+      })
+      .apply(BaseLocaleMiddleware)
+      .forRoutes(
+        {
+          path: 'bases_locales/:baseLocaleId/numeros/batch',
+          method: RequestMethod.PUT,
+        },
+        {
+          path: 'bases_locales/:baseLocaleId/numeros/batch/soft-delete',
+          method: RequestMethod.PUT,
+        },
+        {
+          path: 'bases_locales/:baseLocaleId/numeros/batch',
+          method: RequestMethod.DELETE,
+        },
+      );
   }
 }

@@ -17,6 +17,7 @@ import {
   ApiResponse,
   ApiHeader,
   ApiBody,
+  ApiOperation,
 } from '@nestjs/swagger';
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
@@ -26,6 +27,8 @@ import { UpdateNumeroDto } from './dto/update_numero.dto';
 import { filterSensitiveFields } from './numero.utils';
 import { NumeroPopulate } from '@/modules/numeros/schema/numero.populate';
 import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
+import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
+import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
 
 @ApiTags('numeros')
 @Controller()
@@ -33,6 +36,7 @@ export class NumeroController {
   constructor(private numeroService: NumeroService) {}
 
   @Get('numeros/:numeroId')
+  @ApiOperation({ summary: 'Find the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
   @ApiHeader({ name: 'Token' })
@@ -44,6 +48,7 @@ export class NumeroController {
   }
 
   @Put('numeros/:numeroId')
+  @ApiOperation({ summary: 'Update the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
   @ApiBody({ type: UpdateNumeroDto, required: true })
@@ -62,6 +67,7 @@ export class NumeroController {
   }
 
   @Put('numeros/:numeroId/soft-delete')
+  @ApiOperation({ summary: 'Soft delete the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
   @ApiHeader({ name: 'Token' })
@@ -72,6 +78,7 @@ export class NumeroController {
   }
 
   @Delete('numeros/:numeroId')
+  @ApiOperation({ summary: 'Delete the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @ApiHeader({ name: 'Token' })
@@ -82,6 +89,7 @@ export class NumeroController {
   }
 
   @Get('toponymes/:toponymeId/numeros')
+  @ApiOperation({ summary: 'Find all numeros which belong to the toponyme' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: NumeroPopulate, isArray: true })
   @ApiHeader({ name: 'Token' })
@@ -93,6 +101,7 @@ export class NumeroController {
   }
 
   @Get('voies/:voieId/numeros')
+  @ApiOperation({ summary: 'Find all numeros which belong to the voie' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiHeader({ name: 'Token' })
@@ -105,6 +114,7 @@ export class NumeroController {
   }
 
   @Post('voies/:voieId/numeros')
+  @ApiOperation({ summary: 'Create numero on the voie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiBody({ type: CreateNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Numero })
@@ -120,5 +130,59 @@ export class NumeroController {
       createNumeroDto,
     );
     res.status(HttpStatus.CREATED).json(result);
+  }
+
+  @Put('bases_locales/:baseLocaleId/numeros/batch')
+  @ApiOperation({ summary: 'Multi update numeros' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: UpdateBatchNumeroDto, required: true })
+  @ApiResponse({ status: HttpStatus.OK })
+  @ApiHeader({ name: 'Token' })
+  @UseGuards(AdminGuard)
+  async batchNumeros(
+    @Req() req: CustomRequest,
+    @Body() updateBatchNumeroDto: UpdateBatchNumeroDto,
+    @Res() res: Response,
+  ) {
+    const result: any = await this.numeroService.updateBatch(
+      req.baseLocale,
+      updateBatchNumeroDto,
+    );
+    res.status(HttpStatus.OK).json(result);
+  }
+
+  @Put('bases_locales/:baseLocaleId/numeros/batch/soft-delete')
+  @ApiOperation({ summary: 'Multi soft delete numeros' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: DeleteBatchNumeroDto, required: true })
+  @ApiResponse({ status: HttpStatus.OK })
+  @ApiHeader({ name: 'Token' })
+  @UseGuards(AdminGuard)
+  async softDeleteNumeros(
+    @Req() req: CustomRequest,
+    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDto,
+    @Res() res: Response,
+  ) {
+    const result: any = await this.numeroService.softDeleteBatch(
+      req.baseLocale,
+      deleteBatchNumeroDto,
+    );
+    res.status(HttpStatus.OK).json(result);
+  }
+
+  @Delete('bases_locales/:baseLocaleId/numeros/batch')
+  @ApiOperation({ summary: 'Multi delete numeros' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: DeleteBatchNumeroDto, required: true })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  @ApiHeader({ name: 'Token' })
+  @UseGuards(AdminGuard)
+  async deleteNumeros(
+    @Req() req: CustomRequest,
+    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDto,
+    @Res() res: Response,
+  ) {
+    await this.numeroService.deleteBatch(req.baseLocale, deleteBatchNumeroDto);
+    res.status(HttpStatus.NO_CONTENT).send();
   }
 }
