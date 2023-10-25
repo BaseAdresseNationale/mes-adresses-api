@@ -15,6 +15,8 @@ import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
 import { TilesService } from '@/lib/tiles/tiles.services';
 import { DbService } from '@/lib/db/db.service';
 import { BaseLocale } from '../base_locale/schema/base_locale.schema';
+import { Position } from '@/lib/schemas/position.schema';
+import { Feature as FeatureTurf } from '@turf/helpers';
 
 @Injectable()
 export class VoieService {
@@ -59,12 +61,15 @@ export class VoieService {
     voieExtended.commentedNumeros = numeros.filter(
       (n) => n.comment !== undefined && n.comment !== null && n.comment !== '',
     );
-
-    const positions = numeros
+    const allPositions: Position[] = numeros
       .filter((n) => n.positions && n.positions.length > 0)
       .reduce((acc, n) => [...acc, ...n.positions], []);
-    if (positions.length > 0) {
-      const featuresCollection = turf.featureCollection(positions);
+
+    if (allPositions.length > 0) {
+      const features: FeatureTurf[] = allPositions.map(({ point }) =>
+        turf.feature(point),
+      );
+      const featuresCollection = turf.featureCollection(features);
       voieExtended.bbox = bbox(featuresCollection);
     } else if (
       voieExtended.trace &&
