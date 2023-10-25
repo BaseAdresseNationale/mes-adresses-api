@@ -67,11 +67,7 @@ export class TilesService {
   }
 
   public async updateVoieTiles(voie: Voie) {
-    const numeros: Numero[] = await this.numeroModel
-      .find({ voie: voie._id, _deleted: null })
-      .select({ positions: 1 })
-      .exec();
-    const voieSet = await this.calcMetaTilesVoie(voie, numeros);
+    const voieSet = await this.calcMetaTilesVoie(voie);
     return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
   }
 
@@ -94,7 +90,7 @@ export class TilesService {
     return numero;
   }
 
-  public async calcMetaTilesVoie(voie: Voie, numeros: Numero[]) {
+  public async calcMetaTilesVoie(voie: Voie) {
     voie.centroid = null;
     voie.centroidTiles = null;
     voie.traceTiles = null;
@@ -111,6 +107,10 @@ export class TilesService {
         );
         voie.traceTiles = this.getTilesByLineString(voie.trace);
       } else {
+        const numeros: Numero[] = await this.numeroModel
+          .find({ voie: voie._id, _deleted: null })
+          .select({ positions: 1 })
+          .exec();
         if (numeros.length > 0) {
           const coordinatesNumeros: PositionTurf[] = numeros
             .filter((n) => n.positions && n.positions.length > 0)
