@@ -65,6 +65,7 @@ export class NumeroService {
       _bal: voie._bal,
       commune: voie.commune,
       voie: voie._id,
+      numero: createNumeroDto.numero,
       suffixe: createNumeroDto.suffixe
         ? normalizeSuffixe(createNumeroDto.suffixe)
         : null,

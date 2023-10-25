@@ -3,6 +3,7 @@ import { NumeroService } from './numero.service';
 import { NumeroController } from './numero.controller';
 import { NumeroMiddleware } from '@/lib/middlewares/numero.middleware';
 import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
+import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
 import { DbModule } from '@/lib/modules/db.module';
 import { TilesService } from '@/lib/services/tiles.services';
 import { DbService } from '@/lib/services/db.service';
@@ -26,10 +27,15 @@ export class NumeroModule {
     consumer
       .apply(NumeroMiddleware)
       .forRoutes(
-        { path: 'numeros/:voieId', method: RequestMethod.GET },
-        { path: 'numeros/:voieId', method: RequestMethod.PUT },
-        { path: 'numeros/:voieId', method: RequestMethod.DELETE },
-        { path: 'numeros/:voieId/soft-delete', method: RequestMethod.PUT },
+        { path: 'numeros/:numeroId', method: RequestMethod.GET },
+        { path: 'numeros/:numeroId', method: RequestMethod.PUT },
+        { path: 'numeros/:numeroId', method: RequestMethod.DELETE },
+        { path: 'numeros/:numeroId/soft-delete', method: RequestMethod.PUT },
+      )
+      .apply(VoieMiddleware)
+      .forRoutes(
+        { path: 'voies/:voieId/numeros', method: RequestMethod.GET },
+        { path: 'voies/:voieId/numeros', method: RequestMethod.POST },
       )
       .apply(ToponymeMiddleware)
       .forRoutes({

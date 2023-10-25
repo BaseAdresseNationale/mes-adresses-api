@@ -19,11 +19,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { getModelToken } from '@nestjs/mongoose';
 import { NumeroMiddleware } from '@/lib/middlewares/numero.middleware';
 import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
+import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
 import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
 import { UpdateNumeroDto } from '../dto/update_numero.dto';
 import { DbModule } from '@/lib/modules/db.module';
 import { TilesService } from '@/lib/services/tiles.services';
+import { VoieService } from '@/modules/voie/voie.service';
+import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { DbService } from '@/lib/services/db.service';
+import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
 
 describe('Numero', () => {
   let app: INestApplication;
@@ -45,7 +49,14 @@ describe('Numero', () => {
     @Module({
       imports: [MongooseModule.forRoot(uri), DbModule],
       controllers: [NumeroController],
-      providers: [NumeroMiddleware, NumeroService, TilesService, DbService],
+      providers: [
+        NumeroMiddleware,
+        NumeroService,
+        TilesService,
+        DbService,
+        VoieService,
+        ToponymeService,
+      ],
     })
     class TestModule implements NestModule {
       configure(consumer: MiddlewareConsumer) {
@@ -64,7 +75,12 @@ describe('Numero', () => {
           .forRoutes({
             path: 'toponymes/:toponymeId/numeros',
             method: RequestMethod.GET,
-          });
+          })
+          .apply(VoieMiddleware)
+          .forRoutes(
+            { path: 'voies/:voieId/numeros', method: RequestMethod.GET },
+            { path: 'voies/:voieId/numeros', method: RequestMethod.POST },
+          );
       }
     }
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -555,5 +571,250 @@ describe('Numero', () => {
       expect(response.body[0].voie._id).toEqual(voieId.toString());
       expect(response.body[1].voie._id).toEqual(voieId.toString());
     });
+  });
+
+  describe('GET /voies/numeros', () => {
+    it('Return 200 numero without comment', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const numeroId1 = await createNumero(balId, voieId, {
+        numero: 1,
+        comment: 'coucou',
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/voies/${voieId}/numeros`)
+        .expect(200);
+      expect(response.body.length).toEqual(1);
+      expect(response.body[0]._id).toEqual(numeroId1.toString());
+      expect(response.body[0].comment).toEqual(null);
+    });
+
+    it('Return 200 numero with comment', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const numeroId1 = await createNumero(balId, voieId, {
+        numero: 1,
+        comment: 'coucou',
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/voies/${voieId}/numeros`)
+        .set('token', token)
+        .expect(200);
+      expect(response.body.length).toEqual(1);
+      expect(response.body[0]._id).toEqual(numeroId1.toString());
+      expect(response.body[0].comment).toEqual('coucou');
+    });
+  });
+
+  describe('POST /voies/numeros', () => {
+    it('Create 201 numero', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const createdNumero: CreateNumeroDto = {
+        numero: 1,
+        positions: [
+          {
+            type: PositionTypeEnum.ENTREE,
+            source: 'ban',
+            point: {
+              type: 'Point',
+              coordinates: [8, 42],
+            },
+          },
+        ],
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send(createdNumero)
+        .set('token', token)
+        .expect(201);
+      expect(response.body.numero).toEqual(1);
+      expect(response.body._bal).toEqual(balId.toString());
+      expect(response.body.voie).toEqual(voieId.toString());
+      expect(response.body.parcelles).toEqual([]);
+      expect(response.body.positions).not.toBeNull();
+      expect(response.body.tiles).not.toBeNull();
+      expect(response.body.suffixe).toEqual(null);
+      expect(response.body.toponyme).toEqual(null);
+      expect(response.body.comment).toEqual(null);
+      expect(response.body.certifie).toEqual(false);
+      expect(response.body._updated).not.toBeNull();
+      expect(response.body._created).not.toBeNull();
+      expect(response.body._deleted).toEqual(null);
+    });
+
+    it('Create 201 numero with meta', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const createdNumero: CreateNumeroDto = {
+        numero: 1,
+        suffixe: 'bis',
+        parcelles: ['97613000AS0120'],
+        comment: 'coucou',
+        certifie: true,
+        positions: [
+          {
+            type: PositionTypeEnum.ENTREE,
+            source: 'ban',
+            point: {
+              type: 'Point',
+              coordinates: [8, 42],
+            },
+          },
+        ],
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send(createdNumero)
+        .set('token', token)
+        .expect(201);
+
+      expect(response.body.numero).toEqual(1);
+      expect(response.body._bal).toEqual(balId.toString());
+      expect(response.body.voie).toEqual(voieId.toString());
+      expect(response.body.parcelles).toEqual(['97613000AS0120']);
+      expect(response.body.positions).not.toBeNull();
+      expect(response.body.tiles).not.toBeNull();
+      expect(response.body.suffixe).toEqual('bis');
+      expect(response.body.toponyme).toEqual(null);
+      expect(response.body.comment).toEqual('coucou');
+      expect(response.body.certifie).toEqual(true);
+      expect(response.body._updated).not.toBeNull();
+      expect(response.body._created).not.toBeNull();
+      expect(response.body._deleted).toEqual(null);
+    });
+
+    it('Create 404 voie is deleted', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+        _deleted: new Date(),
+      });
+      const createdNumero: CreateNumeroDto = {
+        numero: 1,
+        positions: [
+          {
+            type: PositionTypeEnum.ENTREE,
+            source: 'ban',
+            point: {
+              type: 'Point',
+              coordinates: [8, 42],
+            },
+          },
+        ],
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send(createdNumero)
+        .set('token', token)
+        .expect(404);
+
+      expect(response.text).toEqual(
+        JSON.stringify({
+          statusCode: 404,
+          message: 'Voie is archived',
+        }),
+      );
+    });
+
+    it('Create 404 toponyme not exist', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+      });
+      const createdNumero: CreateNumeroDto = {
+        numero: 1,
+        toponyme: new Types.ObjectId(),
+        positions: [
+          {
+            type: PositionTypeEnum.ENTREE,
+            source: 'ban',
+            point: {
+              type: 'Point',
+              coordinates: [8, 42],
+            },
+          },
+        ],
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send(createdNumero)
+        .set('token', token)
+        .expect(404);
+
+      expect(response.text).toEqual(
+        JSON.stringify({
+          statusCode: 404,
+          message: 'Toponyme not found',
+        }),
+      );
+    });
+
+    // it('Create 404 bad payload', async () => {
+    //   const balId = await createBal();
+    //   const voieId = await createVoie({
+    //     nom: 'rue de la paix',
+    //     _bal: balId,
+    //   });
+    //   const createdNumero: CreateNumeroDto = {
+    //     numero: 1,
+    //   };
+
+    //   const response = await request(app.getHttpServer())
+    //     .post(`/voies/${voieId}/numeros`)
+    //     .send(createdNumero)
+    //     .set('token', token)
+    //     .expect(400);
+
+    //   expect(response.text).toEqual(
+    //     JSON.stringify({
+    //       message: ['positions should not be empty'],
+    //       error: 'Bad Request',
+    //       statusCode: 400,
+    //     }),
+    //   );
+    // });
+
+    // it('Create 404 bad payload', async () => {
+    //   const balId = await createBal();
+    //   const voieId = await createVoie({
+    //     nom: 'rue de la paix',
+    //     _bal: balId,
+    //   });
+    //   const createdNumero: CreateNumeroDto = {
+    //     positions: [
+    //       {
+    //         type: PositionTypeEnum.ENTREE,
+    //         source: 'ban',
+    //         point: {
+    //           type: 'Point',
+    //           coordinates: [8, 42],
+    //         },
+    //       },
+    //     ],
+    //   };
+
+    //   const response = await request(app.getHttpServer())
+    //     .post(`/voies/${voieId}/numeros`)
+    //     .send(createdNumero)
+    //     .set('token', token)
+    //     .expect(400);
+
+    //   expect(response.text).toEqual(
+    //     JSON.stringify({
+    //       message: ["Le champ numero : undefined n'est pas valide"],
+    //       error: 'Bad Request',
+    //       statusCode: 400,
+    //     }),
+    //   );
+    // });
   });
 });
