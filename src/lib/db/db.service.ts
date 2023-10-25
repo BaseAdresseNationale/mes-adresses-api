@@ -31,7 +31,7 @@ export class DbService {
     voieIds: Types.ObjectId[],
     _updated: Date = new Date(),
   ) {
-    return this.voieModel.updateOne(
+    return this.voieModel.updateMany(
       { _id: { $in: voieIds } },
       { $set: { _updated } },
     );
@@ -51,7 +51,7 @@ export class DbService {
     toponymeIds: Types.ObjectId[],
     _updated: Date = new Date(),
   ) {
-    return this.toponymeModel.updateOne(
+    return this.toponymeModel.updateMany(
       { _id: { $in: toponymeIds } },
       { $set: { _updated } },
     );

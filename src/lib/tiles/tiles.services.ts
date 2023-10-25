@@ -62,6 +62,7 @@ export class TilesService {
         trace: 1,
         traceTiles: 1,
       });
+
     return Promise.all(voies.map((v) => this.updateVoieTiles(v)));
   }
 

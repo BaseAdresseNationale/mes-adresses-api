@@ -17,7 +17,7 @@ export class ToponymeService {
     if (_bal) {
       query['_bal'] = _bal;
     }
-    const toponymeExist = await this.toponymeModel.findOne(query).exec();
+    const toponymeExist = await this.toponymeModel.exists(query).exec();
     return toponymeExist !== null;
   }
 }

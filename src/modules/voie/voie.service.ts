@@ -15,7 +15,7 @@ export class VoieService {
     if (_bal) {
       query['_bal'] = _bal;
     }
-    const voieExist = await this.voieModel.findOne(query).exec();
+    const voieExist = await this.voieModel.exists(query).exec();
     return voieExist !== null;
   }
 }

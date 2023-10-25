@@ -5,7 +5,6 @@ import { omit } from 'lodash';
 import { Numero } from './schema/numero.schema';
 import { NumeroPopulate } from './schema/numero.populate';
 import { Voie } from '@/modules/voie/schema/voie.schema';
-import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { UpdateNumeroDto } from './dto/update_numero.dto';
 import { CreateNumeroDto } from './dto/create_numero.dto';
@@ -54,7 +53,7 @@ export class NumeroService {
     // CHECK IF TOPO EXIST
     if (
       createNumeroDto.toponyme &&
-      !(await !this.toponymeService.isToponymeExist(createNumeroDto.toponyme))
+      !(await this.toponymeService.isToponymeExist(createNumeroDto.toponyme))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
@@ -107,7 +106,7 @@ export class NumeroService {
     // CHECK IF TOPO EXIST
     if (
       updateNumeroDto.toponyme &&
-      !(await !this.toponymeService.isToponymeExist(updateNumeroDto.toponyme))
+      !(await this.toponymeService.isToponymeExist(updateNumeroDto.toponyme))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
@@ -182,7 +181,6 @@ export class NumeroService {
         numerosIds,
         baseLocale._id,
       );
-
     // CHECK IF VOIE EXIST (IN BAL)
     if (
       changes.voie &&
@@ -193,17 +191,12 @@ export class NumeroService {
     // CHECK IF TOPO EXIST (IN BAL)
     if (
       changes.toponyme &&
-      !(await !this.toponymeService.isToponymeExist(
+      !(await this.toponymeService.isToponymeExist(
         changes.toponyme,
         baseLocale._id,
       ))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
-    }
-
-    // CHECK REQUEST NOT EMPTY
-    if (Object.keys(changes).length === 0 || numerosIds.length === 0) {
-      return { changes: {}, modifiedCount: 0 };
     }
 
     // CREATE BATCH CHANGES
@@ -222,7 +215,7 @@ export class NumeroService {
         _bal: baseLocale._id,
         _deleted: null,
       },
-      { $set: { ...batchChanges } },
+      { $set: { ...batchChanges, _updated: new Date() } },
     );
 
     if (modifiedCount > 0) {
@@ -266,11 +259,12 @@ export class NumeroService {
         _id: { $in: numerosIds },
         _bal: baseLocale._id,
       },
-      { $set: { _deleted: new Date() } },
+      { $set: { _updated: new Date(), _deleted: new Date() } },
     );
 
     // UPDATE VOIE AND TOPONYME IF NUMEROS WERE SOFT DELETE
     if (modifiedCount > 0) {
+      await this.dbService.touchBal(baseLocale._id);
       // SET _updated AND tiles OF VOIES
       if (voieIds.length > 0) {
         await this.dbService.touchVoies(voieIds);
@@ -303,6 +297,7 @@ export class NumeroService {
 
     // UPDATE VOIE AND TOPONYME IF NUMEROS WERE SOFT DELETE
     if (deletedCount > 0) {
+      await this.dbService.touchBal(baseLocale._id);
       // SET _updated AND tiles OF VOIES
       if (voieIds.length > 0) {
         await this.dbService.touchVoies(voieIds);
@@ -321,23 +316,19 @@ export class NumeroService {
     _bal: Types.ObjectId,
   ): Promise<{ voieIds: Types.ObjectId[]; toponymeIds: Types.ObjectId[] }> {
     const voieIds = (
-      await this.numeroModel
-        .distinct(Voie.name, {
-          _id: { $in: numeroIds },
-          _bal,
-          _deleted: null,
-        })
-        .select({ _id: 1 })
+      await this.numeroModel.distinct('voie', {
+        _id: { $in: numeroIds },
+        _bal,
+        _deleted: null,
+      })
     ).map(({ _id }) => _id);
 
     const toponymeIds = (
-      await this.numeroModel
-        .distinct(Toponyme.name, {
-          _id: { $in: numeroIds },
-          _bal,
-          _deleted: null,
-        })
-        .select({ _id: 1 })
+      await this.numeroModel.distinct('toponyme', {
+        _id: { $in: numeroIds },
+        _bal,
+        _deleted: null,
+      })
     ).map(({ _id }) => _id);
 
     return { voieIds, toponymeIds };

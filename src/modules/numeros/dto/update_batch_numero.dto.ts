@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { Types } from 'mongoose';
-import { IsMongoId, ValidateNested, ArrayNotEmpty } from 'class-validator';
+import {
+  IsMongoId,
+  ValidateNested,
+  ArrayNotEmpty,
+  IsNotEmptyObject,
+} from 'class-validator';
 import { UpdateBatchNumeroChnageDto } from './update_batch_numero_change.dto';
 
 export class UpdateBatchNumeroDto {
@@ -10,6 +15,7 @@ export class UpdateBatchNumeroDto {
   @ApiProperty({ required: true, nullable: false, isArray: true })
   numerosIds?: Types.ObjectId[];
 
+  @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => UpdateBatchNumeroChnageDto)
   @ApiProperty({
