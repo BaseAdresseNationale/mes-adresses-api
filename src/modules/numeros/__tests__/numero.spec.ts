@@ -8,6 +8,7 @@ import {
   MiddlewareConsumer,
   RequestMethod,
 } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NumeroController } from '../numero.controller';
 import { NumeroService } from '../numero.service';
 import { Connection, connect, Model, Types } from 'mongoose';
@@ -89,6 +90,7 @@ describe('Numero', () => {
 
     // INIT APP
     app = moduleRef.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
     // INIT MODEL
@@ -361,7 +363,7 @@ describe('Numero', () => {
       const updatedNumero: UpdateNumeroDto = {
         positions: [
           {
-            type: PositionTypeEnum.ICONNUE,
+            type: PositionTypeEnum.ENTREE,
             source: 'ban',
             point: {
               type: 'Point',

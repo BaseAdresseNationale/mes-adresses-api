@@ -47,6 +47,7 @@ export class UpdateNumeroDto {
   @ApiProperty({ required: false, nullable: false })
   certifie?: boolean;
 
+  @IsOptional()
   @ValidateNested({ each: true, message: 'positions must be an array' })
   @ArrayNotEmpty()
   @Type(() => Position)
