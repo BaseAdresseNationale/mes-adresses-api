@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { CustomRequest } from '../types/request.type';
+import { CustomRequest } from '@/lib/middlewares/types/request.type';
 
 @Injectable()
 export class AdminGuard implements CanActivate {

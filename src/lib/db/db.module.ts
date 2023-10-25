@@ -10,6 +10,7 @@ import {
   BaseLocale,
   BaseLocaleSchema,
 } from '@/modules/base_locale/schema/base_locale.schema';
+import { DbService } from './db.service';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import {
       { name: Numero.name, schema: NumeroSchema },
     ]),
   ],
-  exports: [MongooseModule],
+  providers: [DbService],
+  exports: [DbService, MongooseModule],
 })
 export class DbModule {}

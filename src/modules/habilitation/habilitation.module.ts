@@ -7,7 +7,7 @@ import { HttpModule } from '@nestjs/axios';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
 import { MailerService } from '@/lib/mailer/mailer.service';
 import { BaseLocaleModule } from '../base_locale/base_locale.module';
-import { DbModule } from '@/lib/modules/db.module';
+import { DbModule } from '@/lib/db/db.module';
 
 @Module({
   imports: [

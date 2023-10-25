@@ -9,19 +9,15 @@ import {
   MiddlewareConsumer,
 } from '@nestjs/common';
 import { VoieController } from '../voie.controller';
-import { NumeroService } from '@/modules/numeros/numero.service';
-import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
 import { Connection, connect, Model, Types } from 'mongoose';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DbModule } from '@/lib/modules/db.module';
+import { DbModule } from '@/lib/db/db.module';
 import { getModelToken } from '@nestjs/mongoose';
 import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
 import { VoieService } from '@/modules/voie/voie.service';
-import { TilesService } from '@/lib/services/tiles.services';
-import { DbService } from '@/lib/services/db.service';
 
 describe('Numero', () => {
   let app: INestApplication;

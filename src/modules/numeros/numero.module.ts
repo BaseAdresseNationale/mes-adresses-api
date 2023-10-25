@@ -5,11 +5,10 @@ import { NumeroMiddleware } from '@/lib/middlewares/numero.middleware';
 import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
 import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
 import { BaseLocaleMiddleware } from '@/lib/middlewares/base_locale.middleware';
-import { DbModule } from '@/lib/modules/db.module';
-import { TilesService } from '@/lib/services/tiles.services';
-import { DbService } from '@/lib/services/db.service';
+import { TilesService } from '@/lib/tiles/tiles.services';
 import { VoieService } from '../voie/voie.service';
 import { ToponymeService } from '../toponyme/toponyme.service';
+import { DbModule } from '@/lib/db/db.module';
 
 @Module({
   imports: [DbModule],
@@ -22,7 +21,6 @@ import { ToponymeService } from '../toponyme/toponyme.service';
     VoieMiddleware,
     BaseLocaleMiddleware,
     TilesService,
-    DbService,
   ],
   controllers: [NumeroController],
 })

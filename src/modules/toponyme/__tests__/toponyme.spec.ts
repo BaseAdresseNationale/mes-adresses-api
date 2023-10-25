@@ -15,7 +15,7 @@ import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DbModule } from '@/lib/modules/db.module';
+import { DbModule } from '@/lib/db/db.module';
 import { getModelToken } from '@nestjs/mongoose';
 import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';

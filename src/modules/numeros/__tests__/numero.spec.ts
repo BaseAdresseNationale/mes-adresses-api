@@ -23,11 +23,10 @@ import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
 import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
 import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
 import { UpdateNumeroDto } from '../dto/update_numero.dto';
-import { DbModule } from '@/lib/modules/db.module';
-import { TilesService } from '@/lib/services/tiles.services';
+import { DbModule } from '@/lib/db/db.module';
+import { TilesService } from '@/lib/tiles/tiles.services';
 import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
-import { DbService } from '@/lib/services/db.service';
 import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
 
 describe('Numero', () => {
@@ -54,7 +53,6 @@ describe('Numero', () => {
         NumeroMiddleware,
         NumeroService,
         TilesService,
-        DbService,
         VoieService,
         ToponymeService,
       ],

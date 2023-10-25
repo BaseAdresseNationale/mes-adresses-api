@@ -12,8 +12,8 @@ import { CreateNumeroDto } from './dto/create_numero.dto';
 import { UpdateBatchNumeroDto } from './dto/update_batch_numero.dto';
 import { DeleteBatchNumeroDto } from './dto/delete_batch_numero.dto';
 import { normalizeSuffixe } from './numero.utils';
-import { TilesService } from '@/lib/services/tiles.services';
-import { DbService } from '@/lib/services/db.service';
+import { TilesService } from '@/lib/tiles/tiles.services';
+import { DbService } from '@/lib/db/db.service';
 import { VoieService } from '../voie/voie.service';
 import { ToponymeService } from '../toponyme/toponyme.service';
 
@@ -21,8 +21,8 @@ import { ToponymeService } from '../toponyme/toponyme.service';
 export class NumeroService {
   constructor(
     @InjectModel(Numero.name) private numeroModel: Model<Numero>,
-    private tilesService: TilesService,
     private dbService: DbService,
+    private tilesService: TilesService,
     private voieService: VoieService,
     private toponymeService: ToponymeService,
   ) {}

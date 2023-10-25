@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { VoieController } from './voie.controller';
-import { DbModule } from '@/lib/modules/db.module';
+import { DbModule } from '@/lib/db/db.module';
 import { VoieService } from './voie.service';
 
 @Module({
