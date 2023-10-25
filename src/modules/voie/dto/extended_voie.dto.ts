@@ -3,7 +3,7 @@ import { BBox as BboxTurf } from '@turf/helpers';
 import { Voie } from '../schema/voie.schema';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 
-export class VoieExtends extends Voie {
+export class ExtentedVoie extends Voie {
   @ApiProperty()
   nbNumeros?: number;
 
