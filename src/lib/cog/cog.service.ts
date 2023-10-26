@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { groupBy, keyBy } from 'lodash';
-// import communes from '@etalab/decoupage-administratif/data/communes.json';
-// import departements from '@etalab/decoupage-administratif/data/departements.json';
+import communes from '@etalab/decoupage-administratif/data/communes.json';
+import departements from '@etalab/decoupage-administratif/data/departements.json';
 import { CommuneCOG, DepartementCOG } from './cog.types';
 
-const communes = [];
-const departements = [];
 @Injectable()
 export class COGService {
   private filteredCommunes: CommuneCOG[];
