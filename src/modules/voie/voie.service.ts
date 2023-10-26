@@ -14,7 +14,7 @@ import { RestoreVoieDto } from './dto/restore_voie.dto';
 import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
 import { TilesService } from '@/lib/tiles/tiles.services';
 import { DbService } from '@/lib/db/db.service';
-import { BaseLocale } from '../base_locale/schema/base_locale.schema';
+import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { Position } from '@/lib/schemas/position.schema';
 import { Feature as FeatureTurf } from '@turf/helpers';
 
