@@ -95,7 +95,9 @@ export class NumeroController {
   @ApiHeader({ name: 'Token' })
   async findByToponyme(@Req() req: CustomRequest, @Res() res: Response) {
     const numeros: NumeroPopulate[] =
-      await this.numeroService.findAllByToponymeId(req.toponyme._id);
+      await this.numeroService.findManyPopulateVoie({
+        toponyme: req.toponyme._id,
+      });
     const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
   }
@@ -106,9 +108,9 @@ export class NumeroController {
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiHeader({ name: 'Token' })
   async findByVoie(@Req() req: CustomRequest, @Res() res: Response) {
-    const numeros: Numero[] = await this.numeroService.findAllByVoieId(
-      req.voie._id,
-    );
+    const numeros: Numero[] = await this.numeroService.findMany({
+      voie: req.voie._id,
+    });
     const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
   }

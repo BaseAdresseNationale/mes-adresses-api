@@ -34,19 +34,13 @@ export class NumeroService {
     private toponymeService: ToponymeService,
   ) {}
 
-  public async findAllByVoieId(voieId: Types.ObjectId): Promise<Numero[]> {
-    return this.numeroModel.find({ voie: voieId, _deleted: null }).exec();
-  }
-
-  public async findAllByToponymeId(
-    toponymeId: Types.ObjectId,
+  public async findManyPopulateVoie(
+    filters: FilterQuery<Numero>,
   ): Promise<NumeroPopulate[]> {
-    const numeros: NumeroPopulate[] = await this.numeroModel
-      .find({ toponyme: toponymeId, _deleted: null })
+    return this.numeroModel
+      .find({ ...filters, _deleted: null })
       .populate<Pick<NumeroPopulate, 'voie'>>('voie')
       .exec();
-
-    return numeros;
   }
 
   public async findMany(filters: FilterQuery<Numero>): Promise<Numero[]> {
