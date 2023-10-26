@@ -1,15 +1,22 @@
-import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import {
+  Module,
+  MiddlewareConsumer,
+  RequestMethod,
+  forwardRef,
+} from '@nestjs/common';
 import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
 import { BaseLocaleMiddleware } from '@/lib/middlewares/base_locale.middleware';
 import { VoieController } from './voie.controller';
 import { DbModule } from '@/lib/db/db.module';
 import { VoieService } from './voie.service';
 import { TilesService } from '@/lib/tiles/tiles.services';
+import { NumeroModule } from '../numeros/numero.module';
 
 @Module({
-  imports: [DbModule],
+  imports: [DbModule, forwardRef(() => NumeroModule)],
   providers: [VoieService, TilesService],
   controllers: [VoieController],
+  exports: [VoieService],
 })
 export class VoieModule {
   configure(consumer: MiddlewareConsumer) {

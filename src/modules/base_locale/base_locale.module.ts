@@ -9,6 +9,7 @@ import { MailerService } from '@/lib/mailer/mailer.service';
   imports: [DbModule],
   providers: [BaseLocaleMiddleware, BaseLocaleService, MailerService],
   controllers: [BaseLocaleController],
+  exports: [BaseLocaleService],
 })
 export class BaseLocaleModule {
   configure(consumer: MiddlewareConsumer) {

@@ -1,5 +1,11 @@
-import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
+import {
+  Injectable,
+  HttpStatus,
+  HttpException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { omit } from 'lodash';
 import { Numero } from './schema/numero.schema';
@@ -22,7 +28,9 @@ export class NumeroService {
     @InjectModel(Numero.name) private numeroModel: Model<Numero>,
     private dbService: DbService,
     private tilesService: TilesService,
+    @Inject(forwardRef(() => VoieService))
     private voieService: VoieService,
+    @Inject(forwardRef(() => ToponymeService))
     private toponymeService: ToponymeService,
   ) {}
 
@@ -39,6 +47,21 @@ export class NumeroService {
       .exec();
 
     return numeros;
+  }
+
+  public async findMany(filters: FilterQuery<Numero>): Promise<Numero[]> {
+    return this.numeroModel.find({ ...filters, _deleted: null }).exec();
+  }
+
+  public async updateMany(
+    filters: FilterQuery<Numero>,
+    update: Partial<Numero>,
+  ): Promise<any> {
+    return this.numeroModel.updateMany(filters, { $set: update });
+  }
+
+  public deleteMany(filters: FilterQuery<Numero>): Promise<any> {
+    return this.numeroModel.deleteMany(filters);
   }
 
   public async create(

@@ -8,7 +8,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { BaseLocaleService } from './base_locale.service';
 import { CreateBaseLocaleDTO } from './dto/create_base_locale.dto';
 

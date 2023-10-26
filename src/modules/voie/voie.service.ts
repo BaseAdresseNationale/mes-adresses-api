@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import bbox from '@turf/bbox';
@@ -17,22 +17,22 @@ import { DbService } from '@/lib/db/db.service';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { Position } from '@/lib/schemas/position.schema';
 import { Feature as FeatureTurf } from '@turf/helpers';
+import { NumeroService } from '../numeros/numero.service';
 
 @Injectable()
 export class VoieService {
   constructor(
     @InjectModel(Voie.name) private voieModel: Model<Voie>,
-    // BUG DEPENDANCE CIRCULAR
-    @InjectModel(Numero.name) private numeroModel: Model<Numero>,
+    @Inject(forwardRef(() => NumeroService))
+    private numeroService: NumeroService,
     private tilesService: TilesService,
     private dbService: DbService,
   ) {}
 
   async extendVoies(voies: Voie[]): Promise<ExtentedVoie[]> {
-    // BUG DEPENDANCE CIRCULAR
-    const numeros = await this.numeroModel
-      .find({ voie: { $in: voies.map(({ _id }) => _id) }, _deleted: null })
-      .exec();
+    const numeros = await this.numeroService.findMany({
+      voie: { $in: voies.map(({ _id }) => _id) },
+    });
 
     const numerosByVoies = groupBy(numeros, 'voie');
     return voies.map((voie) =>
@@ -41,10 +41,10 @@ export class VoieService {
   }
 
   async extendVoie(voie: Voie): Promise<ExtentedVoie> {
-    // BUG DEPENDANCE CIRCULAR
-    const numeros = await this.numeroModel
-      .find({ voie: voie._id, _deleted: null })
-      .exec();
+    const numeros = await this.numeroService.findMany({
+      voie: voie._id,
+    });
+
     return this.getExtendVoie(voie, numeros);
   }
 
@@ -156,7 +156,7 @@ export class VoieService {
       // SET _updated OF VOIE
       await this.dbService.touchBal(voie._bal);
       // DELETE NUMEROS OF VOIE
-      await this.numeroModel.deleteMany({
+      await this.numeroService.deleteMany({
         voie: voie._id,
         _bal: voie._bal,
       });
@@ -174,13 +174,11 @@ export class VoieService {
     // SET _updated OF VOIE
     await this.dbService.touchBal(voie._bal);
     // SET _deleted NUMERO FROM VOIE
-    await this.numeroModel.updateMany(
+    await this.numeroService.updateMany(
       { voie: voie._id },
       {
-        $set: {
-          _deleted: voieUpdated._updated,
-          _updated: voieUpdated._updated,
-        },
+        _deleted: voieUpdated._updated,
+        _updated: voieUpdated._updated,
       },
     );
     return voieUpdated;
@@ -199,9 +197,9 @@ export class VoieService {
     await this.dbService.touchBal(voie._bal);
     if (numerosIds.length > 0) {
       // SET _updated NUMERO FROM VOIE
-      const { modifiedCount } = await this.numeroModel.updateMany(
+      const { modifiedCount } = await this.numeroService.updateMany(
         { voie: voie._id, _id: { $in: numerosIds } },
-        { $set: { _deleted: null, _updated: updatedVoie._updated } },
+        { _deleted: null, _updated: updatedVoie._updated },
       );
       if (modifiedCount > 0) {
         await this.tilesService.updateVoieTiles(updatedVoie);

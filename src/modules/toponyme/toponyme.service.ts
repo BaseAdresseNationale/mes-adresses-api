@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import bbox from '@turf/bbox';
@@ -14,24 +14,22 @@ import { UpdateToponymeDto } from './dto/update_toponyme.dto';
 import { CreateToponymeDto } from './dto/create_toponyme.dto';
 import { DbService } from '@/lib/db/db.service';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
+import { NumeroService } from '../numeros/numero.service';
 
 @Injectable()
 export class ToponymeService {
   constructor(
     @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
     private dbService: DbService,
-    // BUG DEPENDANCE CIRCULAR
-    @InjectModel(Numero.name) private numeroModel: Model<Numero>,
+    @Inject(forwardRef(() => NumeroService))
+    private numeroService: NumeroService,
   ) {}
 
   async extendToponymes(toponymes: Toponyme[]): Promise<ExtentedToponyme[]> {
-    // BUG DEPENDANCE CIRCULAR
-    const numeros = await this.numeroModel
-      .find({
-        toponyme: { $in: toponymes.map(({ _id }) => _id) },
-        _deleted: null,
-      })
-      .exec();
+    const numeros = await this.numeroService.findMany({
+      toponyme: { $in: toponymes.map(({ _id }) => _id) },
+      _deleted: null,
+    });
 
     const numerosByToponymes = groupBy(numeros, 'toponyme');
     return toponymes.map((t) =>
@@ -40,10 +38,11 @@ export class ToponymeService {
   }
 
   async extendToponyme(toponyme: Toponyme): Promise<ExtentedToponyme> {
-    // BUG DEPENDANCE CIRCULAR
-    const numeros = await this.numeroModel
-      .find({ toponyme: toponyme._id, _deleted: null })
-      .exec();
+    const numeros = await this.numeroService.findMany({
+      toponyme: toponyme._id,
+      _deleted: null,
+    });
+
     return this.getExtendToponyme(toponyme, numeros);
   }
 

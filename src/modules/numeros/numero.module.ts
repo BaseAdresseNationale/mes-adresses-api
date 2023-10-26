@@ -1,4 +1,9 @@
-import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import {
+  Module,
+  MiddlewareConsumer,
+  RequestMethod,
+  forwardRef,
+} from '@nestjs/common';
 import { NumeroService } from './numero.service';
 import { NumeroController } from './numero.controller';
 import { NumeroMiddleware } from '@/lib/middlewares/numero.middleware';
@@ -6,16 +11,18 @@ import { ToponymeMiddleware } from '@/lib/middlewares/toponyme.middleware';
 import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
 import { BaseLocaleMiddleware } from '@/lib/middlewares/base_locale.middleware';
 import { TilesService } from '@/lib/tiles/tiles.services';
-import { VoieService } from '../voie/voie.service';
-import { ToponymeService } from '../toponyme/toponyme.service';
 import { DbModule } from '@/lib/db/db.module';
+import { VoieModule } from '../voie/voie.module';
+import { ToponymeModule } from '../toponyme/toponyme.module';
 
 @Module({
-  imports: [DbModule],
+  imports: [
+    DbModule,
+    forwardRef(() => VoieModule),
+    forwardRef(() => ToponymeModule),
+  ],
   providers: [
     NumeroService,
-    VoieService,
-    ToponymeService,
     NumeroMiddleware,
     ToponymeMiddleware,
     VoieMiddleware,
@@ -23,6 +30,7 @@ import { DbModule } from '@/lib/db/db.module';
     TilesService,
   ],
   controllers: [NumeroController],
+  exports: [NumeroService],
 })
 export class NumeroModule {
   configure(consumer: MiddlewareConsumer) {

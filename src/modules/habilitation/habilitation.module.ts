@@ -1,10 +1,9 @@
-import { Module, MiddlewareConsumer } from '@nestjs/common';
+import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
 import { HabilitationController } from './habilitation.controller';
 import { BaseLocaleMiddleware } from '@/lib/middlewares/base_locale.middleware';
 import { HabilitationService } from './habilitation.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
-import { BaseLocaleService } from '../base_locale/base_locale.service';
 import { MailerService } from '@/lib/mailer/mailer.service';
 import { BaseLocaleModule } from '../base_locale/base_locale.module';
 import { DbModule } from '@/lib/db/db.module';
@@ -24,15 +23,11 @@ import { DbModule } from '@/lib/db/db.module';
       }),
       inject: [ConfigService],
     }),
-    BaseLocaleModule,
+    forwardRef(() => BaseLocaleModule),
   ],
-  providers: [
-    HabilitationService,
-    BaseLocaleMiddleware,
-    BaseLocaleService,
-    MailerService,
-  ],
+  providers: [HabilitationService, BaseLocaleMiddleware, MailerService],
   controllers: [HabilitationController],
+  exports: [HabilitationService],
 })
 export class HabilitationModule {
   configure(consumer: MiddlewareConsumer) {
