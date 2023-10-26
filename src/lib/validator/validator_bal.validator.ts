@@ -4,7 +4,7 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { getLabel, readValue } from '@ban-team/validateur-bal';
-// const languesRegionales = require('@ban-team/shared-data/langues-regionales.json')
+// import languesRegionales from '@ban-team/shared-data/langues-regionales.json';
 const languesRegionales = [];
 const supportedNomAlt = new Set(languesRegionales.map((l) => l.code));
 
