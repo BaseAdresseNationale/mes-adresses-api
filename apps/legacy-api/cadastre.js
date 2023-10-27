@@ -1,4 +1,4 @@
-const cadastre = require('../cadastre-communes.json')
+const cadastre = require('../../cadastre-communes.json')
 
 function checkHasCadastre(communeCode) {
   return cadastre.includes(communeCode)

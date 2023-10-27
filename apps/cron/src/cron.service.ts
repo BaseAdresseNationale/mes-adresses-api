@@ -4,11 +4,11 @@ import {
   detectOutdated,
   detectConflict,
   syncOutdated,
-} from '../../../legacy-api/sync';
+} from '../../legacy-api/sync';
 import {
   removeSoftDeletedBALsOlderThanOneYear,
   removeDemoBALsOlderThanAMonth,
-} from '../../../legacy-api/models/base-locale';
+} from '../../legacy-api/models/base-locale';
 
 @Injectable()
 export class CronService {

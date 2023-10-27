@@ -7,8 +7,8 @@ import * as morgan from 'morgan';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ExpressAdapter } from '@nestjs/platform-express';
 
-import * as apiLegacy from '../../../legacy-api/routes';
-import * as mongo from '../../../legacy-api/util/mongo';
+import * as apiLegacy from '../../legacy-api/routes';
+import * as mongo from '../../legacy-api/util/mongo';
 
 const getLegacyExpressApp = async () => {
   const expressApp = express();

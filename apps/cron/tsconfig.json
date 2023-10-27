@@ -8,7 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "target": "ES2021",
     "sourceMap": true,
-    "outDir": "./dist",
+    "outDir": "../../dist/apps/cron",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -20,14 +20,6 @@
     "resolveJsonModule": true,
     // For legacy JavaScript
     "allowJs": true,
-    "paths": {
-      "@/modules/*": [
-        "src/modules/*"
-      ],
-      "@/lib/*": [
-        "src/lib/*"
-      ]
-    }
   },
   "include": [
     "src/**/*"
