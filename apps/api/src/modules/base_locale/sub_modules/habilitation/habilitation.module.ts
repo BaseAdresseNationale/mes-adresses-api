@@ -4,7 +4,7 @@ import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middlewa
 import { HabilitationService } from './habilitation.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
-import { MailerService } from '@/lib/mailer/mailer.service';
+import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.service';
 import { BaseLocaleModule } from '../../base_locale.module';
 
 @Module({

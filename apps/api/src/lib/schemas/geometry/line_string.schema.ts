@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { Equals, Validate } from 'class-validator';
-import { LineStringValidator } from '../../validator/coord.validator';
+import { LineStringValidator } from '../../validators/coord.validator';
 import {
   LineString as LineStringTurf,
   Position as PositionTurf,

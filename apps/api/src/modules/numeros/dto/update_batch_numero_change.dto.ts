@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
-import { ValidatorBal } from '@/lib/validator/validator_bal.validator';
+import { ValidatorBal } from '@/lib/validators/validator_bal.validator';
 import { Types } from 'mongoose';
 import {
   MaxLength,

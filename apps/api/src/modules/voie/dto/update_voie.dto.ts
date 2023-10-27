@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ValidatorBal } from '@/lib/validator/validator_bal.validator';
+import { ValidatorBal } from '@/lib/validators/validator_bal.validator';
 import { Type } from 'class-transformer';
 import {
   Validate,

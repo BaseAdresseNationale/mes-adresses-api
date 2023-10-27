@@ -1,4 +1,4 @@
-import { Email } from '@/lib/mailer/mailer.types';
+import { Email } from '@/modules/base_locale/sub_modules/mailer/mailer.types';
 import { template } from 'lodash';
 import { getEditorUrl, getApiUrl, getApiRecoveryUrl } from '../mailer.utils';
 import { format } from 'date-fns';

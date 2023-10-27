@@ -113,7 +113,7 @@ export class VoieController {
 
   @Get('voies/:voieId/numeros')
   @ApiOperation({ summary: 'Find all numeros which belong to the voie' })
-  @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiHeader({ name: 'Token' })
   async findByVoie(@Req() req: CustomRequest, @Res() res: Response) {

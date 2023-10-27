@@ -3,10 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { BaseLocale } from './schema/base_locale.schema';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { Habilitation } from './sub_modules/habilitation/types/habilitation.type';
-import { MailerService } from '@/lib/mailer/mailer.service';
+import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.service';
 import { CreateBaseLocaleDTO } from './dto/create_base_locale.dto';
 import { generateBase62String } from '@/lib/utils/token.utils';
-import { formatEmail as createBalCreationNotificationEmail } from '@/lib/mailer/templates/bal-creation-notification';
+import { formatEmail as createBalCreationNotificationEmail } from '@/modules/base_locale/sub_modules/mailer/templates/bal-creation-notification';
 
 @Injectable()
 export class BaseLocaleService {

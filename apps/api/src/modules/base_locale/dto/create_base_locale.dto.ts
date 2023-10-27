@@ -1,5 +1,6 @@
+import { ValidatorCogCommune } from '@/lib/validators/cog.validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayNotEmpty, IsNotEmpty } from 'class-validator';
+import { ArrayNotEmpty, IsEmail, IsNotEmpty, Validate } from 'class-validator';
 
 export class CreateBaseLocaleDTO {
   @IsNotEmpty()
@@ -8,8 +9,10 @@ export class CreateBaseLocaleDTO {
 
   @ApiProperty({ required: true, nullable: false })
   @ArrayNotEmpty()
+  @IsEmail({}, { each: true })
   emails: Array<string>;
 
   @ApiProperty({ required: true, nullable: false })
+  @Validate(ValidatorCogCommune, ['commune'])
   commune: string;
 }

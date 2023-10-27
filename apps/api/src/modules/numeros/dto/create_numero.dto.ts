@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Position } from '@/lib/schemas/position.schema';
-import { ValidatorBal } from '@/lib/validator/validator_bal.validator';
+import { ValidatorBal } from '@/lib/validators/validator_bal.validator';
 import { Type } from 'class-transformer';
 import { Types } from 'mongoose';
 import {
