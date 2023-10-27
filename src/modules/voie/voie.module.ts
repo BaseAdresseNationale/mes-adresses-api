@@ -1,44 +1,26 @@
-import {
-  Module,
-  MiddlewareConsumer,
-  RequestMethod,
-  forwardRef,
-} from '@nestjs/common';
-import { VoieMiddleware } from '@/lib/middlewares/voie.middleware';
-import { BaseLocaleMiddleware } from '@/lib/middlewares/base_locale.middleware';
+import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
+import { VoieMiddleware } from '@/modules/voie/voie.middleware';
 import { VoieController } from './voie.controller';
-import { DbModule } from '@/lib/db/db.module';
 import { VoieService } from './voie.service';
-import { TilesService } from '@/lib/tiles/tiles.services';
 import { NumeroModule } from '../numeros/numero.module';
+import { BaseLocaleModule } from '../base_locale/base_locale.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Voie, VoieSchema } from './schema/voie.schema';
+import { TilesModule } from '../base_locale/sub_modules/tiles/tiles.module';
 
 @Module({
-  imports: [DbModule, forwardRef(() => NumeroModule)],
-  providers: [VoieService, TilesService],
+  imports: [
+    MongooseModule.forFeature([{ name: Voie.name, schema: VoieSchema }]),
+    forwardRef(() => NumeroModule),
+    forwardRef(() => BaseLocaleModule),
+    forwardRef(() => TilesModule),
+  ],
+  providers: [VoieService, VoieMiddleware],
   controllers: [VoieController],
   exports: [VoieService],
 })
 export class VoieModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(VoieMiddleware)
-      .forRoutes(
-        { path: 'voies/:voieId', method: RequestMethod.GET },
-        { path: 'voies/:voieId', method: RequestMethod.PUT },
-        { path: 'voies/:voieId', method: RequestMethod.DELETE },
-        { path: 'voies/:voieId/soft-delete', method: RequestMethod.PUT },
-        { path: 'voies/:voieId/restore', method: RequestMethod.PUT },
-      )
-      .apply(BaseLocaleMiddleware)
-      .forRoutes(
-        {
-          path: '/bases_locales/:baseLocaleId/voies',
-          method: RequestMethod.POST,
-        },
-        {
-          path: '/bases_locales/:baseLocaleId/voies',
-          method: RequestMethod.GET,
-        },
-      );
+    consumer.apply(VoieMiddleware).forRoutes(VoieController);
   }
 }

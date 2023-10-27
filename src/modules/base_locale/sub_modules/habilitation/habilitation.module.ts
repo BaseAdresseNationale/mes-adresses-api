@@ -1,16 +1,14 @@
 import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
 import { HabilitationController } from './habilitation.controller';
-import { BaseLocaleMiddleware } from '@/lib/middlewares/base_locale.middleware';
+import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
 import { HabilitationService } from './habilitation.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { MailerService } from '@/lib/mailer/mailer.service';
-import { BaseLocaleModule } from '../base_locale/base_locale.module';
-import { DbModule } from '@/lib/db/db.module';
+import { BaseLocaleModule } from '../../base_locale.module';
 
 @Module({
   imports: [
-    DbModule,
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

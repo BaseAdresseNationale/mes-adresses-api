@@ -1,35 +1,72 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import bbox from '@turf/bbox';
 import * as turf from '@turf/turf';
 import { groupBy } from 'lodash';
 import { Voie } from './schema/voie.schema';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { TypeNumerotationEnum } from './schema/type_numerotation.enum';
-import { ExtentedVoie } from './dto/extended_voie.dto';
+import { ExtendedVoie } from './dto/extended_voie.dto';
 import { UpdateVoieDto } from './dto/update_voie.dto';
 import { CreateVoieDto } from './dto/create_voie.dto';
 import { RestoreVoieDto } from './dto/restore_voie.dto';
 import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
-import { TilesService } from '@/lib/tiles/tiles.services';
-import { DbService } from '@/lib/db/db.service';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { Position } from '@/lib/schemas/position.schema';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import { NumeroService } from '../numeros/numero.service';
+import { TilesService } from '../base_locale/sub_modules/tiles/tiles.service';
+import { BaseLocaleService } from '../base_locale/base_locale.service';
 
 @Injectable()
 export class VoieService {
   constructor(
     @InjectModel(Voie.name) private voieModel: Model<Voie>,
+    @Inject(forwardRef(() => BaseLocaleService))
+    private baseLocaleService: BaseLocaleService,
     @Inject(forwardRef(() => NumeroService))
     private numeroService: NumeroService,
+    @Inject(forwardRef(() => TilesService))
     private tilesService: TilesService,
-    private dbService: DbService,
   ) {}
 
-  async extendVoies(voies: Voie[]): Promise<ExtentedVoie[]> {
+  async findOneOrFail(
+    voieId: string,
+    isDelete: boolean = false,
+  ): Promise<Voie> {
+    const filter = {
+      _id: voieId,
+      _deleted: isDelete ? { $ne: null } : null,
+    };
+    const voie = this.voieModel.findOne(filter).exec();
+
+    if (!voie) {
+      throw new HttpException(`Voie ${voieId} not found`, HttpStatus.NOT_FOUND);
+    }
+
+    return voie;
+  }
+
+  async findMany(
+    filter: FilterQuery<Voie>,
+    projection?: ProjectionType<Voie>,
+  ): Promise<Voie[]> {
+    const query = this.voieModel.find(filter);
+    if (projection) {
+      query.projection(projection);
+    }
+
+    return query.exec();
+  }
+
+  async extendVoies(voies: Voie[]): Promise<ExtendedVoie[]> {
     const numeros = await this.numeroService.findMany({
       voie: { $in: voies.map(({ _id }) => _id) },
     });
@@ -40,7 +77,7 @@ export class VoieService {
     );
   }
 
-  async extendVoie(voie: Voie): Promise<ExtentedVoie> {
+  async extendVoie(voie: Voie): Promise<ExtendedVoie> {
     const numeros = await this.numeroService.findMany({
       voie: voie._id,
     });
@@ -48,8 +85,8 @@ export class VoieService {
     return this.getExtendVoie(voie, numeros);
   }
 
-  private getExtendVoie(voie: Voie, numeros: Numero[]): ExtentedVoie {
-    const voieExtended: ExtentedVoie = voie;
+  private getExtendVoie(voie: Voie, numeros: Numero[]): ExtendedVoie {
+    const voieExtended: ExtendedVoie = voie;
 
     voieExtended.nbNumeros = numeros.length;
     voieExtended.nbNumerosCertifies = numeros.filter(
@@ -119,7 +156,7 @@ export class VoieService {
     // REQUEST CREATE VOIE
     const voieCreated: Voie = await this.voieModel.create(voie);
     // SET _updated BAL
-    await this.dbService.touchBal(bal._id, voieCreated._updated);
+    await this.baseLocaleService.touch(bal._id, voieCreated._updated);
 
     return voieCreated;
   }
@@ -142,7 +179,7 @@ export class VoieService {
     // SET TILES OF VOIES
     await this.tilesService.updateVoieTiles(voieUpdated);
     // SET _updated BAL
-    await this.dbService.touchBal(voieUpdated._bal, voieUpdated._updated);
+    await this.baseLocaleService.touch(voieUpdated._bal, voieUpdated._updated);
     return voieUpdated;
   }
 
@@ -154,7 +191,7 @@ export class VoieService {
 
     if (deletedCount >= 1) {
       // SET _updated OF VOIE
-      await this.dbService.touchBal(voie._bal);
+      await this.baseLocaleService.touch(voie._bal);
       // DELETE NUMEROS OF VOIE
       await this.numeroService.deleteMany({
         voie: voie._id,
@@ -172,7 +209,7 @@ export class VoieService {
     );
 
     // SET _updated OF VOIE
-    await this.dbService.touchBal(voie._bal);
+    await this.baseLocaleService.touch(voie._bal);
     // SET _deleted NUMERO FROM VOIE
     await this.numeroService.updateMany(
       { voie: voie._id },
@@ -194,7 +231,7 @@ export class VoieService {
       { returnDocument: 'after' },
     );
     // SET _updated OF VOIE
-    await this.dbService.touchBal(voie._bal);
+    await this.baseLocaleService.touch(voie._bal);
     if (numerosIds.length > 0) {
       // SET _updated NUMERO FROM VOIE
       const { modifiedCount } = await this.numeroService.updateMany(
@@ -219,5 +256,9 @@ export class VoieService {
     }
     const voieExist = await this.voieModel.exists(query).exec();
     return voieExist !== null;
+  }
+
+  touch(voieId: Types.ObjectId, _updated: Date = new Date()) {
+    return this.voieModel.updateOne({ _id: voieId }, { $set: { _updated } });
   }
 }

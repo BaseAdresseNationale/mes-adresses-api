@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Types } from 'mongoose';
 import * as turf from '@turf/turf';
 import booleanIntersects from '@turf/boolean-intersects';
 import { range, union } from 'lodash';
@@ -11,7 +10,6 @@ import {
   getChildren,
   tileToBBOX,
 } from '@mapbox/tilebelt';
-import { getPriorityPosition } from '../utils/positions.util';
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { TypeNumerotationEnum } from '@/modules/voie/schema/type_numerotation.enum';
@@ -22,6 +20,9 @@ import {
   BBox as BboxTurf,
   Geometry as GeometryTurf,
 } from '@turf/helpers';
+import { VoieService } from '@/modules/voie/voie.service';
+import { NumeroService } from '@/modules/numeros/numero.service';
+import { getPriorityPosition } from '@/lib/utils/positions.util';
 
 const ZOOM = {
   NUMEROS_ZOOM: {
@@ -44,31 +45,34 @@ const ZOOM = {
 @Injectable()
 export class TilesService {
   constructor(
-    @InjectModel(Numero.name) private numeroModel: Model<Numero>,
-    @InjectModel(Voie.name) private voieModel: Model<Voie>,
+    @Inject(forwardRef(() => VoieService))
+    private voieService: VoieService,
+    @Inject(forwardRef(() => NumeroService))
+    private numeroService: NumeroService,
   ) {}
 
   public async updateVoiesTiles(voieIds: Types.ObjectId[]) {
-    const voies = await this.voieModel
-      .find({
+    const voies = await this.voieService.findMany(
+      {
         _id: { $in: voieIds },
         _deleted: null,
-      })
-      .select({
+      },
+      {
         _id: 1,
         centroid: 1,
         centroidTiles: 1,
         typeNumerotation: 1,
         trace: 1,
         traceTiles: 1,
-      });
+      },
+    );
 
     return Promise.all(voies.map((v) => this.updateVoieTiles(v)));
   }
 
   public async updateVoieTiles(voie: Voie) {
     const voieSet = await this.calcMetaTilesVoie(voie);
-    return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
+    return this.voieService.update(voie, voieSet);
   }
 
   public calcMetaTilesNumero(
@@ -107,10 +111,16 @@ export class TilesService {
         );
         voie.traceTiles = this.getTilesByLineString(voie.trace);
       } else {
-        const numeros: Numero[] = await this.numeroModel
-          .find({ voie: voie._id, _deleted: null })
-          .select({ positions: 1 })
-          .exec();
+        const numeros: Numero[] = await this.numeroService.findMany(
+          {
+            voie: voie._id,
+            _deleted: null,
+          },
+          {
+            positions: 1,
+          },
+        );
+
         if (numeros.length > 0) {
           const coordinatesNumeros: PositionTurf[] = numeros
             .filter((n) => n.positions && n.positions.length > 0)

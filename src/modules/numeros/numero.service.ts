@@ -5,7 +5,7 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { FilterQuery, Model, Types } from 'mongoose';
+import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { omit } from 'lodash';
 import { Numero } from './schema/numero.schema';
@@ -17,22 +17,44 @@ import { CreateNumeroDto } from './dto/create_numero.dto';
 import { UpdateBatchNumeroDto } from './dto/update_batch_numero.dto';
 import { DeleteBatchNumeroDto } from './dto/delete_batch_numero.dto';
 import { normalizeSuffixe } from './numero.utils';
-import { TilesService } from '@/lib/tiles/tiles.services';
-import { DbService } from '@/lib/db/db.service';
 import { VoieService } from '../voie/voie.service';
 import { ToponymeService } from '../toponyme/toponyme.service';
+import { TilesService } from '../base_locale/sub_modules/tiles/tiles.service';
+import { BaseLocaleService } from '../base_locale/base_locale.service';
 
 @Injectable()
 export class NumeroService {
   constructor(
     @InjectModel(Numero.name) private numeroModel: Model<Numero>,
-    private dbService: DbService,
+    @Inject(forwardRef(() => TilesService))
     private tilesService: TilesService,
     @Inject(forwardRef(() => VoieService))
     private voieService: VoieService,
     @Inject(forwardRef(() => ToponymeService))
     private toponymeService: ToponymeService,
+    @Inject(forwardRef(() => BaseLocaleService))
+    private baseLocaleService: BaseLocaleService,
   ) {}
+
+  async findOneOrFail(
+    numeroId: string,
+    isDelete: boolean = false,
+  ): Promise<Numero> {
+    const filter = {
+      _id: numeroId,
+      _deleted: isDelete ? { $ne: null } : null,
+    };
+    const numero = this.numeroModel.findOne(filter).exec();
+
+    if (!numero) {
+      throw new HttpException(
+        `Numero ${numeroId} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return numero;
+  }
 
   public async findManyPopulateVoie(
     filters: FilterQuery<Numero>,
@@ -43,8 +65,16 @@ export class NumeroService {
       .exec();
   }
 
-  public async findMany(filters: FilterQuery<Numero>): Promise<Numero[]> {
-    return this.numeroModel.find({ ...filters, _deleted: null }).exec();
+  async findMany(
+    filter: FilterQuery<Numero>,
+    projection?: ProjectionType<Numero>,
+  ): Promise<Numero[]> {
+    const query = this.numeroModel.find(filter);
+    if (projection) {
+      query.projection(projection);
+    }
+
+    return query.exec();
   }
 
   public async updateMany(
@@ -103,7 +133,7 @@ export class NumeroService {
     // UPDATE TILES VOIE
     await this.tilesService.updateVoieTiles(voie);
     // SET _updated VOIE, TOPONYME AND BAL
-    await this.dbService.touchNumero(numeroCreated, numeroCreated._updated);
+    await this.touch(numeroCreated, numeroCreated._updated);
 
     return numeroCreated;
   }
@@ -151,13 +181,13 @@ export class NumeroService {
         numero.voie,
         numeroUpdated.voie,
       ]);
-      await this.dbService.touchVoie(numero.voie, numeroUpdated._updated);
+      await this.voieService.touch(numero.voie, numeroUpdated._updated);
     } else if (updateNumeroDto.positions) {
       await this.tilesService.updateVoiesTiles([numero.voie]);
     }
 
     // SET _updated VOIE, TOPONYME AND BAL
-    await this.dbService.touchNumero(numeroUpdated, numeroUpdated._updated);
+    await this.touch(numeroUpdated, numeroUpdated._updated);
 
     return numeroUpdated;
   }
@@ -170,7 +200,7 @@ export class NumeroService {
       // UPDATE TILES VOIE
       await this.tilesService.updateVoiesTiles([numero.voie]);
       // SET _updated VOIE, TOPONYME AND BAL
-      await this.dbService.touchNumero(numero);
+      await this.touch(numero);
     }
   }
 
@@ -184,7 +214,7 @@ export class NumeroService {
     // UPDATE TILES VOIE
     await this.tilesService.updateVoiesTiles([numeroUpdated.voie]);
     // SET _updated VOIE, TOPONYME AND BAL
-    await this.dbService.touchNumero(numero);
+    await this.touch(numero);
 
     return numeroUpdated;
   }
@@ -236,24 +266,30 @@ export class NumeroService {
     );
 
     if (modifiedCount > 0) {
-      await this.dbService.touchBal(baseLocale._id);
+      await this.baseLocaleService.touch(baseLocale._id);
       // UPDATES VOIE DOCUMENTS
       if (voieIds.length > 0) {
         // SET _updated VOIES
-        await this.dbService.touchVoies(voieIds);
+        await Promise.all(
+          voieIds.map((voieId) => this.voieService.touch(voieId)),
+        );
       }
       if (changes.voie) {
-        await this.dbService.touchVoie(changes.voie);
+        await this.voieService.touch(changes.voie);
         // UPDATE TILES OF VOIES IF VOIE OF NUMERO CHANGE
         await this.tilesService.updateVoiesTiles([...voieIds, changes.voie]);
       }
       // UPDATE DOCUMENTS TOPONYMES
       if (toponymeIds.length > 0) {
         // SET _updated TOPONYMES
-        await this.dbService.touchToponymes(toponymeIds);
+        await Promise.all(
+          toponymeIds.map((toponymeId) =>
+            this.toponymeService.touch(toponymeId),
+          ),
+        );
       }
       if (changes.toponyme) {
-        await this.dbService.touchToponyme(changes.toponyme);
+        await this.toponymeService.touch(changes.toponyme);
       }
     }
 
@@ -281,15 +317,21 @@ export class NumeroService {
 
     // UPDATE VOIE AND TOPONYME IF NUMEROS WERE SOFT DELETE
     if (modifiedCount > 0) {
-      await this.dbService.touchBal(baseLocale._id);
+      await this.baseLocaleService.touch(baseLocale._id);
       // SET _updated AND tiles OF VOIES
       if (voieIds.length > 0) {
-        await this.dbService.touchVoies(voieIds);
+        await Promise.all(
+          voieIds.map((voieId) => this.voieService.touch(voieId)),
+        );
         await this.tilesService.updateVoiesTiles(voieIds);
       }
       // SET _updated OF TOPONYMES
       if (toponymeIds.length > 0) {
-        await this.dbService.touchToponymes(toponymeIds);
+        await Promise.all(
+          toponymeIds.map((toponymeId) =>
+            this.toponymeService.touch(toponymeId),
+          ),
+        );
       }
     }
 
@@ -314,15 +356,21 @@ export class NumeroService {
 
     // UPDATE VOIE AND TOPONYME IF NUMEROS WERE SOFT DELETE
     if (deletedCount > 0) {
-      await this.dbService.touchBal(baseLocale._id);
+      await this.baseLocaleService.touch(baseLocale._id);
       // SET _updated AND tiles OF VOIES
       if (voieIds.length > 0) {
-        await this.dbService.touchVoies(voieIds);
+        await Promise.all(
+          voieIds.map((voieId) => this.voieService.touch(voieId)),
+        );
         await this.tilesService.updateVoiesTiles(voieIds);
       }
       // SET _updated OF TOPONYMES
       if (toponymeIds.length > 0) {
-        await this.dbService.touchToponymes(toponymeIds);
+        await Promise.all(
+          toponymeIds.map((toponymeId) =>
+            this.toponymeService.touch(toponymeId),
+          ),
+        );
       }
     }
     return { deletedCount };
@@ -349,5 +397,13 @@ export class NumeroService {
     ).map(({ _id }) => _id);
 
     return { voieIds, toponymeIds };
+  }
+
+  async touch(numero: Numero, _updated: Date = new Date()) {
+    await this.voieService.touch(numero.voie, _updated);
+    if (numero.toponyme) {
+      await this.toponymeService.touch(numero.toponyme, _updated);
+    }
+    await this.baseLocaleService.touch(numero._bal, _updated);
   }
 }

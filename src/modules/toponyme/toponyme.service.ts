@@ -1,4 +1,10 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import bbox from '@turf/bbox';
@@ -12,18 +18,39 @@ import { Feature as FeatureTurf } from '@turf/helpers';
 import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
 import { UpdateToponymeDto } from './dto/update_toponyme.dto';
 import { CreateToponymeDto } from './dto/create_toponyme.dto';
-import { DbService } from '@/lib/db/db.service';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { NumeroService } from '../numeros/numero.service';
+import { BaseLocaleService } from '../base_locale/base_locale.service';
 
 @Injectable()
 export class ToponymeService {
   constructor(
     @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
-    private dbService: DbService,
+    @Inject(forwardRef(() => BaseLocaleService))
+    private baseLocaleService: BaseLocaleService,
     @Inject(forwardRef(() => NumeroService))
     private numeroService: NumeroService,
   ) {}
+
+  async findOneOrFail(
+    toponymeId: string,
+    isDelete: boolean = false,
+  ): Promise<Toponyme> {
+    const filter = {
+      _id: toponymeId,
+      _deleted: isDelete ? { $ne: null } : null,
+    };
+    const toponyme = this.toponymeModel.findOne(filter).exec();
+
+    if (!toponyme) {
+      throw new HttpException(
+        `Toponyme ${toponymeId} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return toponyme;
+  }
 
   async extendToponymes(toponymes: Toponyme[]): Promise<ExtentedToponyme[]> {
     const numeros = await this.numeroService.findMany({
@@ -78,7 +105,7 @@ export class ToponymeService {
     // REQUEST CREATE TOPONYME
     const toponymeCreated: Toponyme = await this.toponymeModel.create(toponyme);
     // SET _updated BAL
-    await this.dbService.touchBal(bal._id, toponymeCreated._updated);
+    await this.baseLocaleService.touch(bal._id, toponymeCreated._updated);
 
     return toponymeCreated;
   }
@@ -102,7 +129,7 @@ export class ToponymeService {
     );
 
     // SET _updated BAL
-    await this.dbService.touchBal(
+    await this.baseLocaleService.touch(
       toponymeUpdated._bal,
       toponymeUpdated._updated,
     );
@@ -118,7 +145,7 @@ export class ToponymeService {
     );
 
     // SET _updated OF TOPONYME
-    await this.dbService.touchBal(toponyme._bal);
+    await this.baseLocaleService.touch(toponyme._bal);
     return toponymeUpdated;
   }
 
@@ -129,7 +156,7 @@ export class ToponymeService {
       { returnDocument: 'after' },
     );
     // SET _updated OF TOPONYME
-    await this.dbService.touchBal(toponyme._bal);
+    await this.baseLocaleService.touch(toponyme._bal);
 
     return updatedToponyme;
   }
@@ -142,7 +169,7 @@ export class ToponymeService {
 
     if (deletedCount >= 1) {
       // SET _updated OF TOPONYME
-      await this.dbService.touchBal(toponyme._bal);
+      await this.baseLocaleService.touch(toponyme._bal);
     }
   }
 
@@ -196,5 +223,12 @@ export class ToponymeService {
     }
     const toponymeExist = await this.toponymeModel.exists(query).exec();
     return toponymeExist !== null;
+  }
+
+  touch(toponymeId: Types.ObjectId, _updated: Date = new Date()) {
+    return this.toponymeModel.updateOne(
+      { _id: toponymeId },
+      { $set: { _updated } },
+    );
   }
 }

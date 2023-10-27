@@ -7,7 +7,6 @@ import { VoieModule } from './modules/voie/voie.module';
 import { ToponymeModule } from './modules/toponyme/toponyme.module';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { HabilitationModule } from './modules/habilitation/habilitation.module';
 
 @Module({
   imports: [
@@ -23,7 +22,6 @@ import { HabilitationModule } from './modules/habilitation/habilitation.module';
     }),
     NumeroModule,
     BaseLocaleModule,
-    HabilitationModule,
     VoieModule,
     ToponymeModule,
   ],

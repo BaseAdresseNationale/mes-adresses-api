@@ -9,13 +9,13 @@ import {
   Req,
   HttpStatus,
   Body,
-  Query,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
   ApiParam,
   ApiTags,
-  ApiQuery,
   ApiResponse,
   ApiHeader,
   ApiBody,
@@ -25,23 +25,30 @@ import { CustomRequest } from '@/lib/middlewares/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { VoieService } from './voie.service';
 import { Voie } from './schema/voie.schema';
-import { ExtentedVoie } from './dto/extended_voie.dto';
+import { ExtendedVoie } from './dto/extended_voie.dto';
 import { UpdateVoieDto } from './dto/update_voie.dto';
-import { CreateVoieDto } from './dto/create_voie.dto';
 import { RestoreVoieDto } from './dto/restore_voie.dto';
+import { CreateNumeroDto } from '../numeros/dto/create_numero.dto';
+import { Numero } from '../numeros/schema/numero.schema';
+import { NumeroService } from '../numeros/numero.service';
+import { filterSensitiveFields } from '../numeros/numero.utils';
 
 @ApiTags('voies')
 @Controller()
 export class VoieController {
-  constructor(private voieService: VoieService) {}
+  constructor(
+    private voieService: VoieService,
+    @Inject(forwardRef(() => NumeroService))
+    private numeroService: NumeroService,
+  ) {}
 
   @Get('voies/:voieId')
   @ApiOperation({ summary: 'Find Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: ExtentedVoie })
+  @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoie })
   @ApiHeader({ name: 'Token' })
   async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const voieExtended: ExtentedVoie = await this.voieService.extendVoie(
+    const voieExtended: ExtendedVoie = await this.voieService.extendVoie(
       req.voie,
     );
     res.status(HttpStatus.OK).json(voieExtended);
@@ -104,41 +111,35 @@ export class VoieController {
     res.status(HttpStatus.NO_CONTENT).send();
   }
 
-  @Get('/bases_locales/:baseLocaleId/voies')
-  @ApiOperation({ summary: 'Find all Voie in Bal' })
-  @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: ExtentedVoie, isArray: true })
+  @Get('voies/:voieId/numeros')
+  @ApiOperation({ summary: 'Find all numeros which belong to the voie' })
+  @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiHeader({ name: 'Token' })
-  async findByBal(
-    @Req() req: CustomRequest,
-    @Query() isDeleted: boolean = false,
-    @Res() res: Response,
-  ) {
-    const voies: Voie[] = await this.voieService.findAllByBalId(
-      req.baseLocale._id,
-      isDeleted,
-    );
-    const extendedVoie: ExtentedVoie[] =
-      await this.voieService.extendVoies(voies);
-    res.status(HttpStatus.OK).json(extendedVoie);
+  async findByVoie(@Req() req: CustomRequest, @Res() res: Response) {
+    const numeros: Numero[] = await this.numeroService.findMany({
+      voie: req.voie._id,
+    });
+    const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
+    res.status(HttpStatus.OK).json(result);
   }
 
-  @Post('/bases_locales/:baseLocaleId/voies')
-  @ApiOperation({ summary: 'Create Voie in Bal' })
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: CreateVoieDto, required: true })
-  @ApiResponse({ status: HttpStatus.CREATED, type: Voie, isArray: true })
+  @Post('voies/:voieId/numeros')
+  @ApiOperation({ summary: 'Create numero on the voie' })
+  @ApiParam({ name: 'voieId', required: true, type: String })
+  @ApiBody({ type: CreateNumeroDto, required: true })
+  @ApiResponse({ status: HttpStatus.CREATED, type: Numero })
   @ApiHeader({ name: 'Token' })
-  async create(
+  @UseGuards(AdminGuard)
+  async createNumero(
     @Req() req: CustomRequest,
-    @Body() createVoieDto: CreateVoieDto,
+    @Body() createNumeroDto: CreateNumeroDto,
     @Res() res: Response,
   ) {
-    const voie: Voie = await this.voieService.create(
-      req.baseLocale,
-      createVoieDto,
+    const result: Numero = await this.numeroService.create(
+      req.voie,
+      createNumeroDto,
     );
-    res.status(HttpStatus.CREATED).json(voie);
+    res.status(HttpStatus.CREATED).json(result);
   }
 }

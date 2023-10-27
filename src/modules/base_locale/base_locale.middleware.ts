@@ -1,25 +1,20 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
-import { CustomRequest } from './types/request.type';
-import { Model, Types } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { CustomRequest } from '../../lib/middlewares/types/request.type';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
-import { isAdmin } from './utils/is_admin.util';
+import { BaseLocaleService } from './base_locale.service';
 
 @Injectable()
 export class BaseLocaleMiddleware implements NestMiddleware {
-  constructor(
-    @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
-  ) {}
+  constructor(private baseLocaleService: BaseLocaleService) {}
 
   async use(req: CustomRequest, res: Response, next: NextFunction) {
     const { baseLocaleId } = req.params;
     if (baseLocaleId) {
-      await isAdmin(
-        new Types.ObjectId(baseLocaleId),
-        this.baseLocaleModel,
-        req,
-      );
+      const basesLocale: BaseLocale =
+        await this.baseLocaleService.findOneOrFail(baseLocaleId);
+      req.baseLocale = basesLocale;
+      req.isAdmin = req.headers.token === basesLocale.token;
     }
     next();
   }
