@@ -1,4 +1,4 @@
-const mapsStyles = require('../../com-maps-styles.json')
+const mapsStyles = require('../com-maps-styles.json')
 
 function checkIsCOM(communeCode) {
   const prefix2 = communeCode.slice(0, 2)

@@ -1,6 +1,4 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
-import { TasksService } from './tasks/tasks.service';
 import { NumeroModule } from './modules/numeros/numero.module';
 import { BaseLocaleModule } from './modules/base_locale/base_locale.module';
 import { VoieModule } from './modules/voie/voie.module';
@@ -11,7 +9,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    ...(process.env.DISABLE_TASKS === 'true' ? [] : [ScheduleModule.forRoot()]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
@@ -26,6 +23,6 @@ import { MongooseModule } from '@nestjs/mongoose';
     ToponymeModule,
   ],
   controllers: [],
-  providers: [TasksService],
+  providers: [],
 })
-export class AppModule {}
+export class ApiModule {}

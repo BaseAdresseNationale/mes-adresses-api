@@ -26,7 +26,7 @@
       ],
       "@/lib/*": [
         "src/lib/*"
-      ],
+      ]
     }
   },
   "include": [
@@ -35,6 +35,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "src/**/*.spec.ts",
-  ],
+    "src/**/*.spec.ts"
+  ]
 }

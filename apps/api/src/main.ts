@@ -1,14 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { AppModule } from './app.module.js';
+import { ApiModule } from './api.module';
 import * as express from 'express';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ExpressAdapter } from '@nestjs/platform-express';
 
-import * as apiLegacy from '../legacy-api/routes';
-import * as mongo from '../legacy-api/util/mongo';
+import * as apiLegacy from '../../../legacy-api/routes';
+import * as mongo from '../../../legacy-api/util/mongo';
 
 const getLegacyExpressApp = async () => {
   const expressApp = express();
@@ -28,7 +28,7 @@ async function bootstrap() {
   const expressApp = await getLegacyExpressApp();
   const adapter = new ExpressAdapter(expressApp);
 
-  const app = await NestFactory.create(AppModule, adapter);
+  const app = await NestFactory.create(ApiModule, adapter);
 
   const config = new DocumentBuilder()
     .setTitle('Mes adresses API')

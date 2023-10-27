@@ -4,15 +4,15 @@ import {
   detectOutdated,
   detectConflict,
   syncOutdated,
-} from '../../legacy-api/sync';
+} from '../../../legacy-api/sync';
 import {
   removeSoftDeletedBALsOlderThanOneYear,
   removeDemoBALsOlderThanAMonth,
-} from '../../legacy-api/models/base-locale';
+} from '../../../legacy-api/models/base-locale';
 
 @Injectable()
-export class TasksService {
-  private readonly logger = new Logger(TasksService.name);
+export class CronService {
+  private readonly logger = new Logger(CronService.name);
 
   // Every 30 seconds
   @Interval(30000)
