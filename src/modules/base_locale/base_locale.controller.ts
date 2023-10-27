@@ -26,7 +26,7 @@ import { Request, Response } from 'express';
 import { BaseLocaleService } from './base_locale.service';
 import { CreateBaseLocaleDTO } from './dto/create_base_locale.dto';
 import { AdminGuard } from '@/lib/guards/admin.guard';
-import { CustomRequest } from '@/lib/middlewares/types/request.type';
+import { CustomRequest } from '@/lib/types/request.type';
 import { UpdateBatchNumeroDto } from '../numeros/dto/update_batch_numero.dto';
 import { NumeroService } from '../numeros/numero.service';
 import { DeleteBatchNumeroDto } from '../numeros/dto/delete_batch_numero.dto';

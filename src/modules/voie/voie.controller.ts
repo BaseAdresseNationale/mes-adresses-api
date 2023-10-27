@@ -21,7 +21,7 @@ import {
   ApiBody,
   ApiOperation,
 } from '@nestjs/swagger';
-import { CustomRequest } from '@/lib/middlewares/types/request.type';
+import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { VoieService } from './voie.service';
 import { Voie } from './schema/voie.schema';

@@ -7,7 +7,7 @@ import {
   ApiHeader,
   ApiOperation,
 } from '@nestjs/swagger';
-import { CustomRequest } from '@/lib/middlewares/types/request.type';
+import { CustomRequest } from '@/lib/types/request.type';
 import { TilesService } from './tiles.service';
 
 @ApiTags('tiles')
