@@ -4,8 +4,8 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { getLabel, readValue } from '@ban-team/validateur-bal';
-// import languesRegionales from '@ban-team/shared-data/langues-regionales.json';
-const languesRegionales = [];
+import * as languesRegionales from '@ban-team/shared-data/langues-regionales.json';
+
 const supportedNomAlt = new Set(languesRegionales.map((l) => l.code));
 
 async function validateurBAL(value, label) {
