@@ -11,8 +11,8 @@ import {
   tileToBBOX,
 } from '@mapbox/tilebelt';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Voie } from '@/modules/voie/schema/voie.schema';
-import { TypeNumerotationEnum } from '@/modules/voie/schema/type_numerotation.enum';
+import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { Point } from '@/lib/schemas/geometry/point.schema';
 import {
   LineString as LineStringTurf,

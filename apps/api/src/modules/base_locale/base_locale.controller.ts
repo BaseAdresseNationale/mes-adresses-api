@@ -33,7 +33,7 @@ import { DeleteBatchNumeroDto } from '../numeros/dto/delete_batch_numero.dto';
 import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
 import { VoieService } from '../voie/voie.service';
 import { ToponymeService } from '../toponyme/toponyme.service';
-import { Voie } from '../voie/schema/voie.schema';
+import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { CreateVoieDto } from '../voie/dto/create_voie.dto';
 import { ExtentedToponyme } from '../toponyme/dto/extended_toponyme.dto';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';

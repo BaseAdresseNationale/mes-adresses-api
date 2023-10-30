@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware, Inject, forwardRef } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../../lib/types/request.type';
-import { Voie } from '@/modules/voie/schema/voie.schema';
+import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { VoieService } from './voie.service';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
 import { BaseLocale } from '../base_locale/schema/base_locale.schema';

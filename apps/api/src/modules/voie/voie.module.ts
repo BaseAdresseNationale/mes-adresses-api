@@ -5,7 +5,7 @@ import { VoieService } from './voie.service';
 import { NumeroModule } from '../numeros/numero.module';
 import { BaseLocaleModule } from '../base_locale/base_locale.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Voie, VoieSchema } from './schema/voie.schema';
+import { Voie, VoieSchema } from '@/shared/schemas/voie/voie.schema';
 import { TilesModule } from '../base_locale/sub_modules/tiles/tiles.module';
 
 @Module({
