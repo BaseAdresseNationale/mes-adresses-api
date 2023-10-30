@@ -7,7 +7,7 @@ import { Connection, connect, Model, Types } from 'mongoose';
 
 import { Numero } from '@/modules/numeros/schema/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
-import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
+import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { NumeroModule } from '@/modules/numeros/numero.module';
 

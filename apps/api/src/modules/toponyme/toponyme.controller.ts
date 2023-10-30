@@ -22,7 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
-import { Toponyme } from './schema/toponyme.schema';
+import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ToponymeService } from './toponyme.service';
 import { ExtentedToponyme } from './dto/extended_toponyme.dto';
 import { UpdateToponymeDto } from './dto/update_toponyme.dto';

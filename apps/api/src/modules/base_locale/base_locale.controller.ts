@@ -36,7 +36,7 @@ import { ToponymeService } from '../toponyme/toponyme.service';
 import { Voie } from '../voie/schema/voie.schema';
 import { CreateVoieDto } from '../voie/dto/create_voie.dto';
 import { ExtentedToponyme } from '../toponyme/dto/extended_toponyme.dto';
-import { Toponyme } from '../toponyme/schema/toponyme.schema';
+import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { CreateToponymeDto } from '../toponyme/dto/create_toponyme.dto';
 
 @ApiTags('bases_locales')

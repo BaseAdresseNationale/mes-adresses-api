@@ -10,7 +10,7 @@ import { Model, Types } from 'mongoose';
 import bbox from '@turf/bbox';
 import * as turf from '@turf/turf';
 import { groupBy } from 'lodash';
-import { Toponyme } from './schema/toponyme.schema';
+import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ExtentedToponyme } from './dto/extended_toponyme.dto';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Position } from '@/lib/schemas/position.schema';
