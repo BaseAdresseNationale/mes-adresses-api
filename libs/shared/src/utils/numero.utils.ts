@@ -1,5 +1,5 @@
-import { Numero } from './schema/numero.schema';
-import { NumeroPopulate } from './schema/numero.populate';
+import { Numero } from '../schemas/numero/numero.schema';
+import { NumeroPopulate } from '../schemas/numero/numero.populate';
 
 export function displaySuffix(numero: Numero): string {
   if (numero.suffixe) {

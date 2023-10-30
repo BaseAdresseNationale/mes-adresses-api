@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
-import { Position, PositionSchema } from '@/lib/schemas/position.schema';
-import { DateBase } from '@/lib/schemas/date.schema';
-import { displaySuffix } from '../numero.utils';
-import { Voie } from '@/modules/voie/schema/voie.schema';
+import { Position, PositionSchema } from '../position.schema';
+import { DateBase } from '../date.schema';
+import { displaySuffix } from '../../utils/numero.utils';
+import { Voie } from '../voie/voie.schema';
 
 export type NumeroDocument = HydratedDocument<Numero>;
 

@@ -12,7 +12,7 @@ import * as turf from '@turf/turf';
 import { groupBy } from 'lodash';
 import { Toponyme } from './schema/toponyme.schema';
 import { ExtentedToponyme } from './dto/extended_toponyme.dto';
-import { Numero } from '@/modules/numeros/schema/numero.schema';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Position } from '@/lib/schemas/position.schema';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';

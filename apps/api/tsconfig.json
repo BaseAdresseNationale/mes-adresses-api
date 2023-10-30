@@ -26,6 +26,9 @@
       ],
       "@/lib/*": [
         "src/lib/*"
+      ],
+      "@/shared/*": [
+        "../../libs/shared/src/*"
       ]
     }
   },

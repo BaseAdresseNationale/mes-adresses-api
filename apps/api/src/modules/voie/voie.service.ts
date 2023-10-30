@@ -11,7 +11,7 @@ import bbox from '@turf/bbox';
 import * as turf from '@turf/turf';
 import { groupBy } from 'lodash';
 import { Voie } from './schema/voie.schema';
-import { Numero } from '@/modules/numeros/schema/numero.schema';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { TypeNumerotationEnum } from './schema/type_numerotation.enum';
 import { ExtendedVoie } from './dto/extended_voie.dto';
 import { UpdateVoieDto } from './dto/update_voie.dto';

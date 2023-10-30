@@ -26,8 +26,8 @@ import { Toponyme } from './schema/toponyme.schema';
 import { ToponymeService } from './toponyme.service';
 import { ExtentedToponyme } from './dto/extended_toponyme.dto';
 import { UpdateToponymeDto } from './dto/update_toponyme.dto';
-import { NumeroPopulate } from '../numeros/schema/numero.populate';
-import { filterSensitiveFields } from '../numeros/numero.utils';
+import { NumeroPopulate } from '@/shared/schemas/numero/numero.populate';
+import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 import { NumeroService } from '../numeros/numero.service';
 
 @ApiTags('toponymes')

@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { Numero } from '@/modules/numeros/schema/numero.schema';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { Toponyme } from '@/modules/toponyme/schema/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BBox as BboxTurf } from '@turf/helpers';
 import { Toponyme } from '../schema/toponyme.schema';
-import { Numero } from '@/modules/numeros/schema/numero.schema';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
 
 export class ExtentedToponyme extends Toponyme {
   @ApiProperty()

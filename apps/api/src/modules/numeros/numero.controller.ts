@@ -21,9 +21,9 @@ import {
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from './numero.service';
-import { Numero } from './schema/numero.schema';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { UpdateNumeroDto } from './dto/update_numero.dto';
-import { filterSensitiveFields } from './numero.utils';
+import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 
 @ApiTags('numeros')
 @Controller('numeros')

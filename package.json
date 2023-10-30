@@ -122,10 +122,12 @@
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^@/lib/(.*)$": "<rootDir>/lib/$1",
-      "^@/modules/(.*)$": "<rootDir>/modules/$1"
+      "^@/modules/(.*)$": "<rootDir>/modules/$1",
+      "^@app/shared(|/.*)$": "<rootDir>/libs/shared/src/$1"
     },
     "roots": [
-      "<rootDir>/apps/"
+      "<rootDir>/apps/",
+      "<rootDir>/libs/"
     ]
   },
   "engines": {

@@ -29,9 +29,9 @@ import { ExtendedVoie } from './dto/extended_voie.dto';
 import { UpdateVoieDto } from './dto/update_voie.dto';
 import { RestoreVoieDto } from './dto/restore_voie.dto';
 import { CreateNumeroDto } from '../numeros/dto/create_numero.dto';
-import { Numero } from '../numeros/schema/numero.schema';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { NumeroService } from '../numeros/numero.service';
-import { filterSensitiveFields } from '../numeros/numero.utils';
+import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 
 @ApiTags('voies')
 @Controller('voies')

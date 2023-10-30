@@ -6,7 +6,7 @@ import { VoieModule } from '../voie/voie.module';
 import { ToponymeModule } from '../toponyme/toponyme.module';
 import { BaseLocaleModule } from '../base_locale/base_locale.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Numero, NumeroSchema } from './schema/numero.schema';
+import { Numero, NumeroSchema } from '@/shared/schemas/numero/numero.schema';
 import { TilesModule } from '../base_locale/sub_modules/tiles/tiles.module';
 
 @Module({

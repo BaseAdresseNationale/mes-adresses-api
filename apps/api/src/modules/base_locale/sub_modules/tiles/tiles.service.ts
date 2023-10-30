@@ -10,7 +10,7 @@ import {
   getChildren,
   tileToBBOX,
 } from '@mapbox/tilebelt';
-import { Numero } from '@/modules/numeros/schema/numero.schema';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/modules/voie/schema/voie.schema';
 import { TypeNumerotationEnum } from '@/modules/voie/schema/type_numerotation.enum';
 import { Point } from '@/lib/schemas/geometry/point.schema';
