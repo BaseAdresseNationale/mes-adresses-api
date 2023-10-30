@@ -72,7 +72,7 @@ export class TilesService {
 
   public async updateVoieTiles(voie: Voie) {
     const voieSet = await this.calcMetaTilesVoie(voie);
-    return this.voieService.update(voie, voieSet);
+    return this.voieService.updateOne(voie._id, voieSet);
   }
 
   public calcMetaTilesNumero(

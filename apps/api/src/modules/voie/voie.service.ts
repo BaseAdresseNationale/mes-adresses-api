@@ -161,6 +161,15 @@ export class VoieService {
     return voieCreated;
   }
 
+  async updateOne(
+    voieId: Types.ObjectId,
+    update: Partial<Voie>,
+  ): Promise<Voie> {
+    return this.voieModel
+      .findOneAndUpdate({ _id: voieId }, { $set: update })
+      .exec();
+  }
+
   async update(voie: Voie, updateVoieDto: UpdateVoieDto): Promise<Voie> {
     if (updateVoieDto.nom) {
       updateVoieDto.nom = cleanNom(updateVoieDto.nom);
@@ -175,7 +184,6 @@ export class VoieService {
       { $set: { ...updateVoieDto, _upated: new Date() } },
       { returnDocument: 'after' },
     );
-
     // SET TILES OF VOIES
     await this.tilesService.updateVoieTiles(voieUpdated);
     // SET _updated BAL
