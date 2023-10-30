@@ -39,8 +39,8 @@ import { ExtentedToponyme } from '../toponyme/dto/extended_toponyme.dto';
 import { Toponyme } from '../toponyme/schema/toponyme.schema';
 import { CreateToponymeDto } from '../toponyme/dto/create_toponyme.dto';
 
-@ApiTags('base_locale')
-@Controller('base_locale')
+@ApiTags('bases_locales')
+@Controller('bases_locales')
 export class BaseLocaleController {
   constructor(
     private baseLocaleService: BaseLocaleService,
@@ -52,7 +52,7 @@ export class BaseLocaleController {
     private toponymeService: ToponymeService,
   ) {}
 
-  @Get('/bases-locales')
+  @Get('')
   @ApiResponse({ status: 200 })
   async getBasesLocales(@Req() req: Request, @Res() res: Response) {
     const basesLocales = await this.baseLocaleService.findMany();
@@ -60,7 +60,7 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(basesLocales);
   }
 
-  @Post('/bases-locales')
+  @Post('')
   @ApiBody({ type: CreateBaseLocaleDTO, required: true })
   @ApiResponse({ status: 200 })
   async createBaseLocale(
@@ -74,7 +74,7 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(newBaseLocale);
   }
 
-  @Put('bases_locales/:baseLocaleId/numeros/batch')
+  @Put(':baseLocaleId/numeros/batch')
   @ApiOperation({ summary: 'Multi update numeros' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBatchNumeroDto, required: true })
@@ -93,7 +93,7 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put('bases_locales/:baseLocaleId/numeros/batch/soft-delete')
+  @Put(':baseLocaleId/numeros/batch/soft-delete')
   @ApiOperation({ summary: 'Multi soft delete numeros' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: DeleteBatchNumeroDto, required: true })
@@ -112,7 +112,7 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Delete('bases_locales/:baseLocaleId/numeros/batch')
+  @Delete(':baseLocaleId/numeros/batch')
   @ApiOperation({ summary: 'Multi delete numeros' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: DeleteBatchNumeroDto, required: true })
@@ -128,7 +128,7 @@ export class BaseLocaleController {
     res.status(HttpStatus.NO_CONTENT).send();
   }
 
-  @Get('/bases_locales/:baseLocaleId/voies')
+  @Get(':baseLocaleId/voies')
   @ApiOperation({ summary: 'Find all Voie in Bal' })
   @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
@@ -148,7 +148,7 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(extendedVoie);
   }
 
-  @Post('/bases_locales/:baseLocaleId/voies')
+  @Post(':baseLocaleId/voies')
   @ApiOperation({ summary: 'Create Voie in Bal' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateVoieDto, required: true })
@@ -166,7 +166,7 @@ export class BaseLocaleController {
     res.status(HttpStatus.CREATED).json(voie);
   }
 
-  @Get('/bases_locales/:baseLocaleId/toponymes')
+  @Get(':baseLocaleId/toponymes')
   @ApiOperation({ summary: 'Find all Toponymes in Bal' })
   @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
@@ -186,7 +186,7 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(extendedToponyme);
   }
 
-  @Post('/bases_locales/:baseLocaleId/toponymes')
+  @Post(':baseLocaleId/toponymes')
   @ApiOperation({ summary: 'Create Toponyme in Bal' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateToponymeDto, required: true })

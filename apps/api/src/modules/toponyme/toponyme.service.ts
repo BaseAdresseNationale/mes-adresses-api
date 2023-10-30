@@ -32,13 +32,9 @@ export class ToponymeService {
     private numeroService: NumeroService,
   ) {}
 
-  async findOneOrFail(
-    toponymeId: string,
-    isDelete: boolean = false,
-  ): Promise<Toponyme> {
+  async findOneOrFail(toponymeId: string): Promise<Toponyme> {
     const filter = {
       _id: toponymeId,
-      _deleted: isDelete ? { $ne: null } : null,
     };
     const toponyme = this.toponymeModel.findOne(filter).exec();
 

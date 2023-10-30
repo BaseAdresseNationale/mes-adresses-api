@@ -15,10 +15,9 @@ export class BaseLocaleService {
     private readonly mailerService: MailerService,
   ) {}
 
-  findOneOrFail(id: string, isDelete: boolean = false): Promise<BaseLocale> {
+  findOneOrFail(id: string): Promise<BaseLocale> {
     const filter = {
       _id: id,
-      _deleted: isDelete ? { $ne: null } : null,
     };
     const baseLocale = this.baseLocaleModel.findOne(filter).exec();
 

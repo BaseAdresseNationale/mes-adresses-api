@@ -12,7 +12,6 @@ import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { NumeroModule } from '@/modules/numeros/numero.module';
 
 import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
-import { Position } from '@/lib/schemas/position.schema';
 import { UpdateNumeroDto } from '@/modules/numeros/dto/update_numero.dto';
 
 describe('NUMERO', () => {
@@ -84,16 +83,6 @@ describe('NUMERO', () => {
     return voieId;
   }
 
-  async function createToponyme(props: Partial<Toponyme> = {}) {
-    const toponymeId = new Types.ObjectId();
-    const toponyme: Partial<Toponyme> = {
-      _id: toponymeId,
-      ...props,
-    };
-    await toponymeModel.create(toponyme);
-    return toponymeId;
-  }
-
   async function createNumero(props: Partial<Numero> = {}) {
     const numeroId = new Types.ObjectId();
     const numero: Partial<Numero> = {
@@ -102,19 +91,6 @@ describe('NUMERO', () => {
     };
     await numeroModel.create(numero);
     return numeroId;
-  }
-
-  function createPositions(coordinates: number[] = [8, 42]): Position[] {
-    return [
-      {
-        type: PositionTypeEnum.ICONNUE,
-        source: 'ban',
-        point: {
-          type: 'Point',
-          coordinates,
-        },
-      },
-    ];
   }
 
   describe('GET /numero', () => {
