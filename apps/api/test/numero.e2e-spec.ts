@@ -15,7 +15,7 @@ import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
 import { Position } from '@/lib/schemas/position.schema';
 import { UpdateNumeroDto } from '@/modules/numeros/dto/update_numero.dto';
 
-describe('AppController (e2e)', () => {
+describe('NUMERO', () => {
   let app: INestApplication;
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
@@ -206,6 +206,7 @@ describe('AppController (e2e)', () => {
       expect(balDbAfter._updated).not.toBeNull();
     });
 
+    
     it('Update 404 Numero Not Found', async () => {
       const updatedNumero: UpdateNumeroDto = {
         numero: 100,
@@ -228,7 +229,7 @@ describe('AppController (e2e)', () => {
         voie: new Types.ObjectId(),
       };
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
         .set('token', token)

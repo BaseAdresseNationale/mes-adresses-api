@@ -37,15 +37,11 @@ export class VoieService {
     private tilesService: TilesService,
   ) {}
 
-  async findOneOrFail(
-    voieId: string,
-    isDelete: boolean = false,
-  ): Promise<Voie> {
+  async findOneOrFail(voieId: string): Promise<Voie> {
     const filter = {
       _id: voieId,
-      _deleted: isDelete ? { $ne: null } : null,
     };
-    const voie = this.voieModel.findOne(filter).exec();
+    const voie = await this.voieModel.findOne(filter).exec();
 
     if (!voie) {
       throw new HttpException(`Voie ${voieId} not found`, HttpStatus.NOT_FOUND);

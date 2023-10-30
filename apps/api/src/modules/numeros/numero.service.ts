@@ -36,13 +36,9 @@ export class NumeroService {
     private baseLocaleService: BaseLocaleService,
   ) {}
 
-  async findOneOrFail(
-    numeroId: string,
-    isDelete: boolean = false,
-  ): Promise<Numero> {
+  async findOneOrFail(numeroId: string): Promise<Numero> {
     const filter = {
       _id: numeroId,
-      _deleted: isDelete ? { $ne: null } : null,
     };
     const numero = await this.numeroModel.findOne(filter).exec();
     if (!numero) {
@@ -174,19 +170,21 @@ export class NumeroService {
       { returnDocument: 'after' },
     );
 
-    // UPDATE TILES VOIE IF VOIE OR POSITIONS CHANGE
-    if (updateNumeroDto.voie) {
-      await this.tilesService.updateVoiesTiles([
-        numero.voie,
-        numeroUpdated.voie,
-      ]);
-      await this.voieService.touch(numero.voie, numeroUpdated._updated);
-    } else if (updateNumeroDto.positions) {
-      await this.tilesService.updateVoiesTiles([numero.voie]);
-    }
+    if (numeroUpdated) {
+      // UPDATE TILES VOIE IF VOIE OR POSITIONS CHANGE
+      if (updateNumeroDto.voie) {
+        await this.tilesService.updateVoiesTiles([
+          numero.voie,
+          numeroUpdated.voie,
+        ]);
+        await this.voieService.touch(numero.voie, numeroUpdated._updated);
+      } else if (updateNumeroDto.positions) {
+        await this.tilesService.updateVoiesTiles([numero.voie]);
+      }
 
-    // SET _updated VOIE, TOPONYME AND BAL
-    await this.touch(numeroUpdated, numeroUpdated._updated);
+      // SET _updated VOIE, TOPONYME AND BAL
+      await this.touch(numeroUpdated, numeroUpdated._updated);
+    }
 
     return numeroUpdated;
   }
