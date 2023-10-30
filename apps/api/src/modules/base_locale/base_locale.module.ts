@@ -7,7 +7,11 @@ import { HabilitationModule } from './sub_modules/habilitation/habilitation.modu
 import { TilesModule } from './sub_modules/tiles/tiles.module';
 import { NumeroModule } from '../numeros/numero.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BaseLocale, BaseLocaleSchema } from './schema/base_locale.schema';
+import {
+  BaseLocale,
+  BaseLocaleSchema,
+} from '@/shared/schemas/base_locale/base_locale.schema';
+
 import { VoieModule } from '../voie/voie.module';
 import { ToponymeModule } from '../toponyme/toponyme.module';
 

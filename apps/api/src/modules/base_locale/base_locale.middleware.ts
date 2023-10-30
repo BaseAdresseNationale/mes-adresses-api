@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../../lib/types/request.type';
-import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { BaseLocaleService } from './base_locale.service';
 
 @Injectable()

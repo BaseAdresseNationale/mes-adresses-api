@@ -4,7 +4,7 @@ import { CustomRequest } from '../../lib/types/request.type';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { NumeroService } from './numero.service';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
-import { BaseLocale } from '../base_locale/schema/base_locale.schema';
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
 @Injectable()
 export class NumeroMiddleware implements NestMiddleware {

@@ -7,7 +7,7 @@ import {
   IsNotEmptyObject,
   ArrayNotEmpty,
 } from 'class-validator';
-import { ValidatorBal } from '@/lib/validators/validator_bal.validator';
+import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { Position } from '@/lib/schemas/position.schema';
 
 export class CreateToponymeDto {

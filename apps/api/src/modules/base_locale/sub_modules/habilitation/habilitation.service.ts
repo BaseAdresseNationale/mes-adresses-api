@@ -3,7 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { catchError, firstValueFrom } from 'rxjs';
 import { Habilitation } from './types/habilitation.type';
-import { BaseLocale } from '../../schema/base_locale.schema';
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { BaseLocaleService } from '../../base_locale.service';
 
 @Injectable()

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { Validate, Equals } from 'class-validator';
-import { PointValidator } from '../../validators/coord.validator';
+import { PointValidator } from '@/shared/validators/coord.validator';
 import { Point as PointTurf, Position as PositionTurf } from '@turf/helpers';
 
 export type PointDocument = HydratedDocument<Point>;

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { Point, PointSchema } from '@/lib/schemas/geometry/point.schema';
-import { ValidatorBal } from '@/lib/validators/validator_bal.validator';
+import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { ValidateNested, Validate, IsEnum, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PositionTypeEnum } from './position_type.enum';

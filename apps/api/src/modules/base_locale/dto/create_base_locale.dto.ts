@@ -1,4 +1,4 @@
-import { ValidatorCogCommune } from '@/lib/validators/cog.validator';
+import { ValidatorCogCommune } from '@/shared/validators/cog.validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsEmail, IsNotEmpty, Validate } from 'class-validator';
 

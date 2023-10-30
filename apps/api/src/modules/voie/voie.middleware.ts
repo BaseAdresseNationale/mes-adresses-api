@@ -4,7 +4,7 @@ import { CustomRequest } from '../../lib/types/request.type';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { VoieService } from './voie.service';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
-import { BaseLocale } from '../base_locale/schema/base_locale.schema';
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
 @Injectable()
 export class VoieMiddleware implements NestMiddleware {

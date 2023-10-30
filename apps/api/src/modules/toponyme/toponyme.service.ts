@@ -18,7 +18,7 @@ import { Feature as FeatureTurf } from '@turf/helpers';
 import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
 import { UpdateToponymeDto } from './dto/update_toponyme.dto';
 import { CreateToponymeDto } from './dto/create_toponyme.dto';
-import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { NumeroService } from '../numeros/numero.service';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
 

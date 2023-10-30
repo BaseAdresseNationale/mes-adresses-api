@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { BaseLocale } from './schema/base_locale.schema';
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { Habilitation } from './sub_modules/habilitation/types/habilitation.type';
 import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.service';
