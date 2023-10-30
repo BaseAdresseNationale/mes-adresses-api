@@ -8,6 +8,7 @@
   },
   "moduleNameMapper": {
     "^@/lib/(.*)$": "<rootDir>/../src/lib/$1",
-    "^@/modules/(.*)$": "<rootDir>/../src/modules/$1"
+    "^@/modules/(.*)$": "<rootDir>/../src/modules/$1",
+    "^@/shared/(.*)$": "<rootDir>/../../../libs/shared/src/$1"
   }
 }

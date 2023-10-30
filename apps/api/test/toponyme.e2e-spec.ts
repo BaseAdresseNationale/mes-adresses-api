@@ -5,10 +5,11 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model, Types } from 'mongoose';
 
-import { Numero } from '@/modules/numeros/schema/numero.schema';
-import { Voie } from '@/modules/voie/schema/voie.schema';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 
 describe('TOPONYME MODULE', () => {
