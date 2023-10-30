@@ -44,8 +44,7 @@ export class NumeroService {
       _id: numeroId,
       _deleted: isDelete ? { $ne: null } : null,
     };
-    const numero = this.numeroModel.findOne(filter).exec();
-
+    const numero = await this.numeroModel.findOne(filter).exec();
     if (!numero) {
       throw new HttpException(
         `Numero ${numeroId} not found`,
