@@ -19,7 +19,7 @@ import { CreateVoieDto } from './dto/create_voie.dto';
 import { RestoreVoieDto } from './dto/restore_voie.dto';
 import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { Position } from '@/lib/schemas/position.schema';
+import { Position } from '@/shared/schemas/position.schema';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import { NumeroService } from '../numeros/numero.service';
 import { TilesService } from '../base_locale/sub_modules/tiles/tiles.service';

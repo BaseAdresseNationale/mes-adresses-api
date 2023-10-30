@@ -8,7 +8,7 @@ import {
   IsNotEmptyObject,
   IsEnum,
 } from 'class-validator';
-import { LineString } from '@/lib/schemas/geometry/line_string.schema';
+import { LineString } from '@/shared/schemas/geometry/line_string.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 
 export class UpdateVoieDto {

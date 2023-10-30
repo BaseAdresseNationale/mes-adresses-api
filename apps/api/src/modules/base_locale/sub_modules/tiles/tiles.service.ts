@@ -13,7 +13,7 @@ import {
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
-import { Point } from '@/lib/schemas/geometry/point.schema';
+import { Point } from '@/shared/schemas/geometry/point.schema';
 import {
   LineString as LineStringTurf,
   Position as PositionTurf,

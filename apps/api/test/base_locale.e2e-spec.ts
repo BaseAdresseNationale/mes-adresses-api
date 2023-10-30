@@ -11,8 +11,8 @@ import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 
-import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
-import { Position } from '@/lib/schemas/position.schema';
+import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
+import { Position } from '@/shared/schemas/position.schema';
 import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
 import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
 

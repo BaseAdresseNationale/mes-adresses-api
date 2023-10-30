@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
+import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { Types } from 'mongoose';
 import {

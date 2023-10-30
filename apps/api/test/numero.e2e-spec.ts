@@ -11,7 +11,7 @@ import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { NumeroModule } from '@/modules/numeros/numero.module';
 
-import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
+import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 import { UpdateNumeroDto } from '@/modules/numeros/dto/update_numero.dto';
 
 describe('NUMERO', () => {

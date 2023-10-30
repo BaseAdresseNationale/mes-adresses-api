@@ -11,7 +11,7 @@ import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/modules/base_locale/schema/base_locale.schema';
 import { VoieModule } from '@/modules/voie/voie.module';
 
-import { PositionTypeEnum } from '@/lib/schemas/position_type.enum';
+import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
 
 describe('VOIE MODULE', () => {

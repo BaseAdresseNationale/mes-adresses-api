@@ -8,7 +8,7 @@ import {
   ArrayNotEmpty,
 } from 'class-validator';
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
-import { Position } from '@/lib/schemas/position.schema';
+import { Position } from '@/shared/schemas/position.schema';
 
 export class CreateToponymeDto {
   @Validate(ValidatorBal, ['nom_voie'])

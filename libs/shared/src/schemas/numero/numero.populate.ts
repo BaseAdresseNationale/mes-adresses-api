@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { Position } from '@/lib/schemas/position.schema';
-import { DateBase } from '@/lib/schemas/date.schema';
+import { Position } from '../position.schema';
+import { DateBase } from '../date.schema';
 
 export class NumeroPopulate extends DateBase {
   @ApiProperty()

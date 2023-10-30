@@ -13,7 +13,7 @@ import { groupBy } from 'lodash';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ExtentedToponyme } from './dto/extended_toponyme.dto';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Position } from '@/lib/schemas/position.schema';
+import { Position } from '@/shared/schemas/position.schema';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
 import { UpdateToponymeDto } from './dto/update_toponyme.dto';
