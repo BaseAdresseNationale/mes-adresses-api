@@ -31,7 +31,7 @@ import { filterSensitiveFields } from '../numeros/numero.utils';
 import { NumeroService } from '../numeros/numero.service';
 
 @ApiTags('toponymes')
-@Controller()
+@Controller('toponymes')
 export class ToponymeController {
   constructor(
     private toponymeService: ToponymeService,
@@ -39,7 +39,7 @@ export class ToponymeController {
     private numeroService: NumeroService,
   ) {}
 
-  @Get('toponymes/:toponymeId')
+  @Get(':toponymeId')
   @ApiOperation({ summary: 'Find Toponyme by id' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme })
@@ -50,7 +50,7 @@ export class ToponymeController {
     res.status(HttpStatus.OK).json(toponymeExtended);
   }
 
-  @Put('toponymes/:toponymeId')
+  @Put(':toponymeId')
   @ApiOperation({ summary: 'Update Toponyme by id' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
@@ -69,7 +69,7 @@ export class ToponymeController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put('toponymes/:toponymeId/soft-delete')
+  @Put(':toponymeId/soft-delete')
   @ApiOperation({ summary: 'Soft delete Tpponyme by id' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
@@ -82,7 +82,7 @@ export class ToponymeController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put('toponymes/:toponymeId/restore')
+  @Put(':toponymeId/restore')
   @ApiOperation({ summary: 'Restore Toponyme by id' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
@@ -93,7 +93,7 @@ export class ToponymeController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Delete('toponymes/:toponymeId')
+  @Delete(':toponymeId')
   @ApiOperation({ summary: 'Delete Toponyme by id' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
@@ -104,7 +104,7 @@ export class ToponymeController {
     res.status(HttpStatus.NO_CONTENT).send();
   }
 
-  @Get('toponymes/:toponymeId/numeros')
+  @Get(':toponymeId/numeros')
   @ApiOperation({ summary: 'Find all numeros which belong to the toponyme' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: NumeroPopulate, isArray: true })

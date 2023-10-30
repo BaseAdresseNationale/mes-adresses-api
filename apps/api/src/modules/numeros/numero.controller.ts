@@ -26,11 +26,11 @@ import { UpdateNumeroDto } from './dto/update_numero.dto';
 import { filterSensitiveFields } from './numero.utils';
 
 @ApiTags('numeros')
-@Controller()
+@Controller('numeros')
 export class NumeroController {
   constructor(private numeroService: NumeroService) {}
 
-  @Get('numeros/:numeroId')
+  @Get(':numeroId')
   @ApiOperation({ summary: 'Find the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
@@ -42,7 +42,7 @@ export class NumeroController {
     res.status(HttpStatus.OK).json(numero);
   }
 
-  @Put('numeros/:numeroId')
+  @Put(':numeroId')
   @ApiOperation({ summary: 'Update the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
@@ -61,7 +61,7 @@ export class NumeroController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put('numeros/:numeroId/soft-delete')
+  @Put(':numeroId/soft-delete')
   @ApiOperation({ summary: 'Soft delete the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
@@ -72,7 +72,7 @@ export class NumeroController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Delete('numeros/:numeroId')
+  @Delete(':numeroId')
   @ApiOperation({ summary: 'Delete the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })

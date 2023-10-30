@@ -34,7 +34,7 @@ import { NumeroService } from '../numeros/numero.service';
 import { filterSensitiveFields } from '../numeros/numero.utils';
 
 @ApiTags('voies')
-@Controller()
+@Controller('voies')
 export class VoieController {
   constructor(
     private voieService: VoieService,
@@ -42,7 +42,7 @@ export class VoieController {
     private numeroService: NumeroService,
   ) {}
 
-  @Get('voies/:voieId')
+  @Get(':voieId')
   @ApiOperation({ summary: 'Find Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoie })
@@ -54,7 +54,7 @@ export class VoieController {
     res.status(HttpStatus.OK).json(voieExtended);
   }
 
-  @Put('voies/:voieId')
+  @Put(':voieId')
   @ApiOperation({ summary: 'Update Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
@@ -70,7 +70,7 @@ export class VoieController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put('voies/:voieId/soft-delete')
+  @Put(':voieId/soft-delete')
   @ApiOperation({ summary: 'Soft delete Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
@@ -81,7 +81,7 @@ export class VoieController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put('voies/:voieId/restore')
+  @Put(':voieId/restore')
   @ApiOperation({ summary: 'Restore Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiBody({ type: RestoreVoieDto, required: true })
@@ -100,7 +100,7 @@ export class VoieController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Delete('voies/:voieId')
+  @Delete(':voieId')
   @ApiOperation({ summary: 'Delete Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
@@ -111,7 +111,7 @@ export class VoieController {
     res.status(HttpStatus.NO_CONTENT).send();
   }
 
-  @Get('voies/:voieId/numeros')
+  @Get(':voieId/numeros')
   @ApiOperation({ summary: 'Find all numeros which belong to the voie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
@@ -124,7 +124,7 @@ export class VoieController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Post('voies/:voieId/numeros')
+  @Post(':voieId/numeros')
   @ApiOperation({ summary: 'Create numero on the voie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiBody({ type: CreateNumeroDto, required: true })
