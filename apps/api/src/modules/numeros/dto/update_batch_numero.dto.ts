@@ -7,7 +7,8 @@ import {
   ArrayNotEmpty,
   IsNotEmptyObject,
 } from 'class-validator';
-import { UpdateBatchNumeroChnageDto } from './update_batch_numero_change.dto';
+
+import { UpdateBatchNumeroChnageDto } from '@/modules/numeros/dto/update_batch_numero_change.dto';
 
 export class UpdateBatchNumeroDto {
   @ArrayNotEmpty()

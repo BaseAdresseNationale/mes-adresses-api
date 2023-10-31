@@ -1,10 +1,12 @@
 import { Injectable, NestMiddleware, Inject, forwardRef } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
-import { CustomRequest } from '../../lib/types/request.type';
+
 import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { NumeroService } from './numero.service';
-import { BaseLocaleService } from '../base_locale/base_locale.service';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+
+import { CustomRequest } from '@/lib/types/request.type';
+import { NumeroService } from '@/modules/numeros/numero.service';
+import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 
 @Injectable()
 export class NumeroMiddleware implements NestMiddleware {

@@ -8,19 +8,21 @@ import {
 import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { omit } from 'lodash';
+
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { NumeroPopulate } from '@/shared/schemas/numero/numero.populate';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { UpdateNumeroDto } from './dto/update_numero.dto';
-import { CreateNumeroDto } from './dto/create_numero.dto';
-import { UpdateBatchNumeroDto } from './dto/update_batch_numero.dto';
-import { DeleteBatchNumeroDto } from './dto/delete_batch_numero.dto';
 import { normalizeSuffixe } from '@/shared/utils/numero.utils';
-import { VoieService } from '../voie/voie.service';
-import { ToponymeService } from '../toponyme/toponyme.service';
-import { TilesService } from '../base_locale/sub_modules/tiles/tiles.service';
-import { BaseLocaleService } from '../base_locale/base_locale.service';
+
+import { UpdateNumeroDto } from '@/modules/numeros/dto/update_numero.dto';
+import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
+import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
+import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
+import { VoieService } from '@/modules/voie/voie.service';
+import { ToponymeService } from '@/modules/toponyme/toponyme.service';
+import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
+import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 
 @Injectable()
 export class NumeroService {

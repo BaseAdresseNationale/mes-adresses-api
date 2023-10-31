@@ -1,6 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Position } from '@/shared/schemas/position.schema';
-import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { Type } from 'class-transformer';
 import { Types } from 'mongoose';
 import {
@@ -11,6 +9,9 @@ import {
   ValidateNested,
   ArrayNotEmpty,
 } from 'class-validator';
+
+import { Position } from '@/shared/schemas/position.schema';
+import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 
 export class UpdateNumeroDto {
   @IsOptional()

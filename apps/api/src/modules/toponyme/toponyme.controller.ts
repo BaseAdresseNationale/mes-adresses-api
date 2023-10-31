@@ -20,15 +20,17 @@ import {
   ApiBody,
   ApiOperation,
 } from '@nestjs/swagger';
-import { CustomRequest } from '@/lib/types/request.type';
-import { AdminGuard } from '@/lib/guards/admin.guard';
+
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { ToponymeService } from './toponyme.service';
-import { ExtentedToponyme } from './dto/extended_toponyme.dto';
-import { UpdateToponymeDto } from './dto/update_toponyme.dto';
 import { NumeroPopulate } from '@/shared/schemas/numero/numero.populate';
 import { filterSensitiveFields } from '@/shared/utils/numero.utils';
-import { NumeroService } from '../numeros/numero.service';
+
+import { CustomRequest } from '@/lib/types/request.type';
+import { AdminGuard } from '@/lib/guards/admin.guard';
+import { ToponymeService } from '@/modules/toponyme/toponyme.service';
+import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
+import { UpdateToponymeDto } from '@/modules/toponyme/dto/update_toponyme.dto';
+import { NumeroService } from '@/modules/numeros/numero.service';
 
 @ApiTags('toponymes')
 @Controller('toponymes')

@@ -1,6 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
-import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { Types } from 'mongoose';
 import {
   MaxLength,
@@ -10,6 +8,9 @@ import {
   IsEnum,
   IsNotEmpty,
 } from 'class-validator';
+
+import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
+import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 
 export class UpdateBatchNumeroChnageDto {
   @IsOptional()

@@ -1,12 +1,13 @@
 import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
-import { VoieMiddleware } from '@/modules/voie/voie.middleware';
-import { VoieController } from './voie.controller';
-import { VoieService } from './voie.service';
-import { NumeroModule } from '../numeros/numero.module';
-import { BaseLocaleModule } from '../base_locale/base_locale.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Voie, VoieSchema } from '@/shared/schemas/voie/voie.schema';
-import { TilesModule } from '../base_locale/sub_modules/tiles/tiles.module';
+
+import { VoieMiddleware } from '@/modules/voie/voie.middleware';
+import { VoieController } from '@/modules/voie/voie.controller';
+import { VoieService } from '@/modules/voie/voie.service';
+import { NumeroModule } from '@/modules/numeros/numero.module';
+import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
+import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.module';
 
 @Module({
   imports: [

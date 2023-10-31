@@ -7,20 +7,22 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { Feature as FeatureTurf } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import * as turf from '@turf/turf';
 import { groupBy } from 'lodash';
+
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { ExtentedToponyme } from './dto/extended_toponyme.dto';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Position } from '@/shared/schemas/position.schema';
-import { Feature as FeatureTurf } from '@turf/helpers';
-import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
-import { UpdateToponymeDto } from './dto/update_toponyme.dto';
-import { CreateToponymeDto } from './dto/create_toponyme.dto';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { NumeroService } from '../numeros/numero.service';
-import { BaseLocaleService } from '../base_locale/base_locale.service';
+
+import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
+import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
+import { UpdateToponymeDto } from '@/modules/toponyme/dto/update_toponyme.dto';
+import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
+import { NumeroService } from '@/modules/numeros/numero.service';
+import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 
 @Injectable()
 export class ToponymeService {

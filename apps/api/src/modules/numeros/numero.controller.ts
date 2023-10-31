@@ -18,12 +18,14 @@ import {
   ApiBody,
   ApiOperation,
 } from '@nestjs/swagger';
+
+import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { filterSensitiveFields } from '@/shared/utils/numero.utils';
+
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
-import { NumeroService } from './numero.service';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { UpdateNumeroDto } from './dto/update_numero.dto';
-import { filterSensitiveFields } from '@/shared/utils/numero.utils';
+import { NumeroService } from '@/modules/numeros/numero.service';
+import { UpdateNumeroDto } from '@/modules/numeros/dto/update_numero.dto';
 
 @ApiTags('numeros')
 @Controller('numeros')

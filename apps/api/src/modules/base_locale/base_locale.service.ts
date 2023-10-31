@@ -1,10 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { FilterQuery, Model, Types } from 'mongoose';
-import { Habilitation } from './sub_modules/habilitation/types/habilitation.type';
+
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+
+import { Habilitation } from '@/modules/base_locale/sub_modules/habilitation/types/habilitation.type';
 import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.service';
-import { CreateBaseLocaleDTO } from './dto/create_base_locale.dto';
+import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { generateBase62String } from '@/lib/utils/token.utils';
 import { formatEmail as createBalCreationNotificationEmail } from '@/modules/base_locale/sub_modules/mailer/templates/bal-creation-notification';
 

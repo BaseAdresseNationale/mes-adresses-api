@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { ApiModule } from './api.module';
 import * as express from 'express';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ExpressAdapter } from '@nestjs/platform-express';
 
+import { ApiModule } from './api.module';
 import * as apiLegacy from '../../legacy-api/routes';
 import * as mongo from '../../legacy-api/util/mongo';
 

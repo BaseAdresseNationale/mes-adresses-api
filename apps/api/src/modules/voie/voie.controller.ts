@@ -21,17 +21,19 @@ import {
   ApiBody,
   ApiOperation,
 } from '@nestjs/swagger';
+
+import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { filterSensitiveFields } from '@/shared/utils/numero.utils';
+
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
-import { VoieService } from './voie.service';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { ExtendedVoie } from './dto/extended_voie.dto';
-import { UpdateVoieDto } from './dto/update_voie.dto';
-import { RestoreVoieDto } from './dto/restore_voie.dto';
-import { CreateNumeroDto } from '../numeros/dto/create_numero.dto';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { NumeroService } from '../numeros/numero.service';
-import { filterSensitiveFields } from '@/shared/utils/numero.utils';
+import { VoieService } from '@/modules/voie/voie.service';
+import { ExtendedVoie } from '@/modules/voie/dto/extended_voie.dto';
+import { UpdateVoieDto } from '@/modules/voie/dto/update_voie.dto';
+import { RestoreVoieDto } from '@/modules/voie/dto/restore_voie.dto';
+import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
+import { NumeroService } from '@/modules/numeros/numero.service';
 
 @ApiTags('voies')
 @Controller('voies')

@@ -23,21 +23,23 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { BaseLocaleService } from './base_locale.service';
-import { CreateBaseLocaleDTO } from './dto/create_base_locale.dto';
+
+import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
+import { Voie } from '@/shared/schemas/voie/voie.schema';
+
+import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { CustomRequest } from '@/lib/types/request.type';
-import { UpdateBatchNumeroDto } from '../numeros/dto/update_batch_numero.dto';
-import { NumeroService } from '../numeros/numero.service';
-import { DeleteBatchNumeroDto } from '../numeros/dto/delete_batch_numero.dto';
-import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
-import { VoieService } from '../voie/voie.service';
-import { ToponymeService } from '../toponyme/toponyme.service';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { CreateVoieDto } from '../voie/dto/create_voie.dto';
-import { ExtentedToponyme } from '../toponyme/dto/extended_toponyme.dto';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { CreateToponymeDto } from '../toponyme/dto/create_toponyme.dto';
+import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
+import { NumeroService } from '@/modules/numeros/numero.service';
+import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
+import { ExtendedVoie } from '@/modules/voie/dto/extended_voie.dto';
+import { VoieService } from '@/modules/voie/voie.service';
+import { ToponymeService } from '@/modules/toponyme/toponyme.service';
+import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
+import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
+import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
 
 @ApiTags('bases_locales')
 @Controller('bases_locales')

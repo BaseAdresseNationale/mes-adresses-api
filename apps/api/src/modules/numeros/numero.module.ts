@@ -1,13 +1,15 @@
 import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
-import { NumeroService } from './numero.service';
-import { NumeroController } from './numero.controller';
-import { NumeroMiddleware } from '@/modules/numeros/numero.middleware';
-import { VoieModule } from '../voie/voie.module';
-import { ToponymeModule } from '../toponyme/toponyme.module';
-import { BaseLocaleModule } from '../base_locale/base_locale.module';
 import { MongooseModule } from '@nestjs/mongoose';
+
 import { Numero, NumeroSchema } from '@/shared/schemas/numero/numero.schema';
-import { TilesModule } from '../base_locale/sub_modules/tiles/tiles.module';
+
+import { NumeroService } from '@/modules/numeros/numero.service';
+import { NumeroController } from '@/modules/numeros/numero.controller';
+import { NumeroMiddleware } from '@/modules/numeros/numero.middleware';
+import { VoieModule } from '@/modules/voie/voie.module';
+import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
+import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
+import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.module';
 
 @Module({
   imports: [

@@ -7,6 +7,7 @@ import {
   IsNotEmptyObject,
   ArrayNotEmpty,
 } from 'class-validator';
+
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { Position } from '@/shared/schemas/position.schema';
 

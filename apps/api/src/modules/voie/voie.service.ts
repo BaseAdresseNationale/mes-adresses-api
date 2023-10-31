@@ -10,20 +10,22 @@ import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import bbox from '@turf/bbox';
 import * as turf from '@turf/turf';
 import { groupBy } from 'lodash';
+import { Feature as FeatureTurf } from '@turf/helpers';
+
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
-import { ExtendedVoie } from './dto/extended_voie.dto';
-import { UpdateVoieDto } from './dto/update_voie.dto';
-import { CreateVoieDto } from './dto/create_voie.dto';
-import { RestoreVoieDto } from './dto/restore_voie.dto';
-import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { Position } from '@/shared/schemas/position.schema';
-import { Feature as FeatureTurf } from '@turf/helpers';
-import { NumeroService } from '../numeros/numero.service';
-import { TilesService } from '../base_locale/sub_modules/tiles/tiles.service';
-import { BaseLocaleService } from '../base_locale/base_locale.service';
+
+import { ExtendedVoie } from '@/modules/voie/dto/extended_voie.dto';
+import { UpdateVoieDto } from '@/modules/voie/dto/update_voie.dto';
+import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
+import { RestoreVoieDto } from '@/modules/voie/dto/restore_voie.dto';
+import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
+import { NumeroService } from '@/modules/numeros/numero.service';
+import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
+import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 
 @Injectable()
 export class VoieService {

@@ -1,19 +1,20 @@
 import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
-import { BaseLocaleController } from './base_locale.controller';
-import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
-import { BaseLocaleService } from './base_locale.service';
-import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.service';
-import { HabilitationModule } from './sub_modules/habilitation/habilitation.module';
-import { TilesModule } from './sub_modules/tiles/tiles.module';
-import { NumeroModule } from '../numeros/numero.module';
 import { MongooseModule } from '@nestjs/mongoose';
+
 import {
   BaseLocale,
   BaseLocaleSchema,
 } from '@/shared/schemas/base_locale/base_locale.schema';
 
-import { VoieModule } from '../voie/voie.module';
-import { ToponymeModule } from '../toponyme/toponyme.module';
+import { BaseLocaleController } from '@/modules/base_locale/base_locale.controller';
+import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
+import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.service';
+import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
+import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.module';
+import { NumeroModule } from '@/modules/numeros/numero.module';
+import { VoieModule } from '@/modules/voie/voie.module';
+import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 
 @Module({
   imports: [
