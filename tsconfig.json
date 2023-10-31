@@ -8,7 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "target": "ES2021",
     "sourceMap": true,
-    "outDir": "../../dist/apps/cron",
+    "outDir": "dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -20,13 +20,26 @@
     "resolveJsonModule": true,
     // For legacy JavaScript
     "allowJs": true,
+    "paths": {
+      "@/modules/*": [
+        "apps/api/src/modules/*"
+      ],
+      "@/lib/*": [
+        "apps/api/src/lib/*"
+      ],
+      "@/shared/*": [
+        "libs/shared/src/*"
+      ]
+    }
   },
   "include": [
-    "src/**/*"
+    "apps/**/*",
+    "libs/**/*",
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "src/**/*.spec.ts"
+    "apps/**/*.spec.ts",
+    "libs/**/*.spec.ts",
   ]
 }
