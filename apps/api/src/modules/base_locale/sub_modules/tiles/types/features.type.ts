@@ -1,24 +1,17 @@
-export type EmailStrategy = {
-  pinCode: string;
-  type: 'email';
-  pinCodeExpiration: Date;
-  remainingAttempts: number;
-  createdAt: Date;
+import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { FeatureCollection } from 'geojson';
+
+export type GeoJsonCollectionType = {
+  numeroPoints: FeatureCollection;
+  voiePoints: FeatureCollection;
+  voieLineStrings: FeatureCollection;
 };
 
-export type FranceConnectStrategy = {
-  type: 'franceconnect';
+export type ModelsInTileType = {
+  numeros: Numero[];
+  voies: Voie[];
+  traces: Voie[];
 };
 
-export type Habilitation = {
-  _id: string;
-  codeCommune: string;
-  emailCommune: string;
-  franceconnectAuthenticationUrl: string;
-  strategy: EmailStrategy | FranceConnectStrategy;
-  client: string;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  expiresAt?: Date;
-};
+export type TileType = { z: number; x: number; y: number };

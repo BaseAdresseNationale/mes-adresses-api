@@ -26,6 +26,8 @@ import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { TileType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
+import { ZOOM } from '@/modules/base_locale/sub_modules/tiles/const/zoom.const';
 
 @Injectable()
 export class VoieService {
@@ -38,6 +40,34 @@ export class VoieService {
     @Inject(forwardRef(() => TilesService))
     private tilesService: TilesService,
   ) {}
+
+  async fetchByCentroidTile(
+    balId: Types.ObjectId,
+    { z, x, y }: TileType,
+  ): Promise<Voie[]> {
+    return this.voieModel.find({
+      _bal: balId,
+      centroidTiles: `${z}/${x}/${y}`,
+      _deleted: null,
+    });
+  }
+
+  async fetchByTraceTile(
+    balId: Types.ObjectId,
+    tile: TileType,
+  ): Promise<Voie[]> {
+    const [x, y, z] = this.tilesService.getParentTile(
+      tile,
+      ZOOM.TRACE_MONGO_ZOOM.zoom,
+    );
+    return this.voieModel.find({
+      _bal: balId,
+      typeNumerotation: 'metrique',
+      trace: { $ne: null },
+      traceTiles: `${z}/${x}/${y}`,
+      _deleted: null,
+    });
+  }
 
   async findOneOrFail(voieId: string): Promise<Voie> {
     const filter = {

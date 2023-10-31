@@ -1,4 +1,12 @@
-import { Controller, Res, Req, Get, Query, Param } from '@nestjs/common';
+import {
+  Controller,
+  Res,
+  Req,
+  Get,
+  Query,
+  Param,
+  HttpStatus,
+} from '@nestjs/common';
 import { Response } from 'express';
 import {
   ApiParam,
@@ -7,9 +15,15 @@ import {
   ApiHeader,
   ApiOperation,
 } from '@nestjs/swagger';
+import * as geojsonvt from 'geojson-vt';
+import vtpbf from 'vt-pbf';
 
 import { CustomRequest } from '@/lib/types/request.type';
-import { TilesService } from './tiles.service';
+import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
+import {
+  GeoJsonCollectionType,
+  TileType,
+} from '@/modules/base_locale/sub_modules/tiles/types/features.type';
 
 @ApiTags('tiles')
 @Controller()
@@ -24,29 +38,52 @@ export class TilesController {
   @ApiParam({ name: 'y', required: true, type: Number })
   @ApiQuery({ name: 'colorblindMode', type: Boolean })
   @ApiHeader({ name: 'Token' })
-  find(
+  async getTiles(
     @Req() req: CustomRequest,
-    @Param() z: number,
-    @Param() x: number,
-    @Param() y: number,
+    @Param('z') z: number,
+    @Param('x') x: number,
+    @Param('y') y: number,
     @Query() colorblindMode: boolean,
     @Res() res: Response,
   ) {
-    // const geoJson = await BaseLocale.getGeoJsonByTile(
-    //   req.baseLocale._id,
-    //   { z, x, y },
-    //   colorblindMode,
+    const tile: TileType = { z, x, y };
+    const geoJson: GeoJsonCollectionType =
+      await this.tilesService.getGeoJsonByTile(
+        req.baseLocale._id,
+        tile,
+        colorblindMode,
+      );
+    const options = { maxZoom: 20 };
+    const tileIndex = geojsonvt(geoJson.numeroPoints, options);
+    console.log('tileIndex', tileIndex);
+    const numerosTiles = tileIndex.getTile(z, x, y);
+    // const voieTiles = geojsonvt(geoJson.voiePoints, options).getTile(z, x, y);
+    // const voieTraceTiles = geojsonvt(geoJson.voieLineStrings, options).getTile(
+    //   z,
+    //   x,
+    //   y,
     // );
-    // const tiles = BaseLocale.getTiles(geoJson, { z, x, y });
-    // if (tiles === null) {
-    //   return res.status(204).send();
+    if (!numerosTiles) {
+      console.log('SEND NO CONTENT');
+      return res.status(HttpStatus.NO_CONTENT).send();
+    }
+    // if (!numerosTiles && !voieTiles && !voieTraceTiles) {
+    //   console.log('SEND NO CONTENT');
+    //   return res.status(HttpStatus.NO_CONTENT).send();
     // }
-    // const pbf = vtpbf.fromGeojsonVt(tiles);
-    // res
-    //   .set({
-    //     'Content-Type': 'application/x-protobuf',
-    //     'Content-Encoding': 'gzip',
-    //   })
-    //   .send(await gzip(Buffer.from(pbf)));
+
+    const sourcesLayers = {
+      ...(numerosTiles && { 'numeros-points': numerosTiles }),
+      // ...(voieTiles && { 'voies-points': voieTiles }),
+      // ...(voieTraceTiles && { 'voies-linestrings': voieTraceTiles }),
+    };
+    console.log(sourcesLayers);
+    const pbf = vtpbf.fromGeojsonVt(sourcesLayers);
+    return res
+      .set({
+        'Content-Type': 'application/x-protobuf',
+        'Content-Encoding': 'gzip',
+      })
+      .send(pbf);
   }
 }

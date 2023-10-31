@@ -4,43 +4,34 @@ import * as turf from '@turf/turf';
 import booleanIntersects from '@turf/boolean-intersects';
 import { range, union } from 'lodash';
 import {
+  LineString as LineStringTurf,
+  Position as PositionTurf,
+  BBox as BboxTurf,
+  Geometry as GeometryTurf,
+} from '@turf/helpers';
+import {
   pointToTile,
   bboxToTile,
   getParent,
   getChildren,
   tileToBBOX,
 } from '@mapbox/tilebelt';
+
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { Point } from '@/shared/schemas/geometry/point.schema';
-import {
-  LineString as LineStringTurf,
-  Position as PositionTurf,
-  BBox as BboxTurf,
-  Geometry as GeometryTurf,
-} from '@turf/helpers';
+
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { getPriorityPosition } from '@/lib/utils/positions.util';
-
-const ZOOM = {
-  NUMEROS_ZOOM: {
-    minZoom: 13,
-    maxZoom: 19,
-  },
-  VOIE_ZOOM: {
-    minZoom: 13,
-    maxZoom: 19,
-  },
-  TRACE_DISPLAY_ZOOM: {
-    minZoom: 13,
-    maxZoom: 19,
-  },
-  TRACE_MONGO_ZOOM: {
-    zoom: 13,
-  },
-};
+import {
+  TileType,
+  ModelsInTileType,
+  GeoJsonCollectionType,
+} from '@/modules/base_locale/sub_modules/tiles/types/features.type';
+import { ZOOM } from '@/modules/base_locale/sub_modules/tiles/const/zoom.const';
+import { getGeoJson } from '@/modules/base_locale/sub_modules/tiles/utils/geojson.utils';
 
 @Injectable()
 export class TilesService {
@@ -50,6 +41,49 @@ export class TilesService {
     @Inject(forwardRef(() => NumeroService))
     private numeroService: NumeroService,
   ) {}
+
+  private async fetchModelsInTile(
+    balId: Types.ObjectId,
+    tile: TileType,
+  ): Promise<ModelsInTileType> {
+    const fetchs: ModelsInTileType = {
+      numeros: [],
+      voies: [],
+      traces: [],
+    };
+
+    if (
+      tile.z >= ZOOM.NUMEROS_ZOOM.minZoom &&
+      tile.z <= ZOOM.NUMEROS_ZOOM.maxZoom
+    ) {
+      fetchs.numeros = await this.numeroService.fetchByTile(balId, tile);
+    }
+
+    if (tile.z >= ZOOM.VOIE_ZOOM.minZoom && tile.z <= ZOOM.VOIE_ZOOM.maxZoom) {
+      fetchs.voies = await this.voieService.fetchByCentroidTile(balId, tile);
+    }
+
+    // if (
+    //   tile.z >= ZOOM.TRACE_DISPLAY_ZOOM.minZoom &&
+    //   tile.z <= ZOOM.TRACE_DISPLAY_ZOOM.maxZoom
+    // ) {
+    //   fetchs.traces = await this.voieService.fetchByTraceTile(balId, tile);
+    // }
+
+    return fetchs;
+  }
+
+  public async getGeoJsonByTile(
+    balId: Types.ObjectId,
+    tile: TileType,
+    colorblindMode: boolean,
+  ): Promise<GeoJsonCollectionType> {
+    const modelsInTile: ModelsInTileType = await this.fetchModelsInTile(
+      balId,
+      tile,
+    );
+    return getGeoJson(modelsInTile, colorblindMode);
+  }
 
   public async updateVoiesTiles(voieIds: Types.ObjectId[]) {
     const voies = await this.voieService.findMany(
