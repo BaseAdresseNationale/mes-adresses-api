@@ -711,10 +711,6 @@ async function removeDemoBALsOlderThanAMonth() {
 
 function getTiles(geojson, {z, x, y}) {
   const options = {maxZoom: 20}
-  console.log(geojson.numerosPoints.features[0])
-  const tabIndex = geojsonvt(geojson.numerosPoints, options)
-  console.log(tabIndex)
-  console.log(tabIndex.getTile(z, x, y))
   const tiles = {
     'numeros-points': geojsonvt(geojson.numerosPoints, options).getTile(z, x, y),
     'voies-points': geojsonvt(geojson.voiesPoints, options).getTile(z, x, y),
