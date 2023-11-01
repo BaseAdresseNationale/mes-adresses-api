@@ -217,15 +217,18 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).attachment('bal.csv').type('csv').send(csvFile);
   }
 
-  //   app.route('/bases-locales/:baseLocaleId/csv')
-  //   .get(w(async (req, res) => {
-  //     const csvFile = await BaseLocale.exportAsCsv(req.baseLocale._id)
-  //     res.attachment('bal.csv').type('csv').send(csvFile)
-  //   }))
-
-  // app.route('/bases-locales/:baseLocaleId/voies/csv')
-  //   .get(w(async (req, res) => {
-  //     const csvFile = await BaseLocale.exportVoiesAsCsv(req.baseLocale._id)
-  //     res.status(200).attachment('liste-des-voies.csv').type('csv').send(csvFile)
-  //   }))
+  @Get(':baseLocaleId/voies/csv')
+  @ApiOperation({ summary: 'Get voies csv file' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK })
+  async getCsvVoies(@Req() req: CustomRequest, @Res() res: Response) {
+    const csvFile: string = await this.baseLocaleService.exportVoiesToCsv(
+      req.baseLocale,
+    );
+    res
+      .status(HttpStatus.OK)
+      .attachment('liste-des-voies.csv')
+      .type('csv')
+      .send(csvFile);
+  }
 }

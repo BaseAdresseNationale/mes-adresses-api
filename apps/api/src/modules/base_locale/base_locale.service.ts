@@ -26,6 +26,7 @@ import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_local
 import { generateBase62String } from '@/lib/utils/token.utils';
 import { formatEmail as createBalCreationNotificationEmail } from '@/modules/base_locale/sub_modules/mailer/templates/bal-creation-notification';
 import { exportBalToCsv } from '@/lib/utils/csv_bal.utils';
+import { exportVoiesToCsv } from '@/modules/base_locale/utils/csv_voies.utils';
 
 @Injectable()
 export class BaseLocaleService {
@@ -94,6 +95,22 @@ export class BaseLocaleService {
       _deleted: null,
     });
     return exportBalToCsv(voies, toponymes, numeros);
+  }
+
+  async exportVoiesToCsv(baseLocale: BaseLocale): Promise<string> {
+    const voies = await this.voieService.findMany({
+      _bal: baseLocale._id,
+      _deleted: null,
+    });
+    const toponymes = await this.toponymeService.findMany({
+      _bal: baseLocale._id,
+      _deleted: null,
+    });
+    const numeros = await this.numeroService.findMany({
+      _bal: baseLocale._id,
+      _deleted: null,
+    });
+    return exportVoiesToCsv(voies, toponymes, numeros);
   }
 
   async createOne(createInput: CreateBaseLocaleDTO): Promise<BaseLocale> {

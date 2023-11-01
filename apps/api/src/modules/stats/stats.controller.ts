@@ -7,7 +7,13 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
@@ -27,6 +33,7 @@ export class StatsController {
   constructor(private statsService: StatsService) {}
 
   @Post('bals')
+  @ApiOperation({ summary: 'Find all Bals (filtered by codeCommune)' })
   @ApiQuery({ name: 'fields', type: String, required: false, isArray: true })
   @ApiBody({ type: CodeCommuneDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale, isArray: true })
@@ -45,6 +52,7 @@ export class StatsController {
   }
 
   @Get('bals/status')
+  @ApiOperation({ summary: 'Find all Bals status' })
   @ApiResponse({
     status: HttpStatus.OK,
     type: BasesLocalesStatusDto,
@@ -57,6 +65,7 @@ export class StatsController {
   }
 
   @Get('bals/creations')
+  @ApiOperation({ summary: 'Find all created Bals between date' })
   @ApiQuery({ name: 'from', type: String, required: true })
   @ApiQuery({ name: 'to', type: String, required: true })
   @ApiResponse({
