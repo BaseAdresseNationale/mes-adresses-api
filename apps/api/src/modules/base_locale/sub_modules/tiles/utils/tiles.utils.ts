@@ -18,20 +18,23 @@ import { Point } from '@/shared/schemas/geometry/point.schema';
 
 import { ZOOM } from '@/modules/base_locale/sub_modules/tiles/const/zoom.const';
 
-export function getParentTile(tile, zoomFind) {
+export function getParentTile(tile: number[], zoomFind: number) {
   return tile[2] <= zoomFind ? tile : getParentTile(getParent(tile), zoomFind);
 }
 
 export function getTilesByPosition(
   point: Point,
-  { minZoom, maxZoom } = ZOOM.NUMEROS_ZOOM,
+  {
+    minZoom,
+    maxZoom,
+  }: { minZoom: number; maxZoom: number } = ZOOM.NUMEROS_ZOOM,
 ): string[] {
   if (!point || !minZoom || !maxZoom) {
     return null;
   }
 
-  const lon: number = this.roundCoordinate(point.coordinates[0], 6);
-  const lat: number = this.roundCoordinate(point.coordinates[1], 6);
+  const lon: number = roundCoordinate(point.coordinates[0], 6);
+  const lat: number = roundCoordinate(point.coordinates[1], 6);
 
   const tiles: string[] = range(minZoom, maxZoom + 1).map((zoom) => {
     const [x, y, z]: number[] = pointToTile(lon, lat, zoom);
@@ -43,18 +46,18 @@ export function getTilesByPosition(
 
 export function getTilesByLineString(
   lineString: LineStringTurf,
-  { zoom } = ZOOM.TRACE_MONGO_ZOOM,
+  { zoom }: { zoom: number } = ZOOM.TRACE_MONGO_ZOOM,
 ): string[] {
   const bboxFeature: BboxTurf = turf.bbox(lineString);
   const [x, y, z]: number[] = bboxToTile(bboxFeature);
-  const tiles: string[] = this.getTilesByBbox([x, y, z], lineString, zoom);
+  const tiles: string[] = getTilesByBbox([x, y, z], lineString, zoom);
   return tiles;
 }
 
 export function getTilesByBbox(
   [x, y, z]: number[],
   geojson: GeometryTurf,
-  zoom,
+  zoom: number,
 ): string[] {
   const tiles = [];
   if (z === zoom) {
@@ -67,12 +70,12 @@ export function getTilesByBbox(
       const childTileBbox = tileToBBOX(childTile);
       const bboxPolygon = turf.bboxPolygon(childTileBbox);
       if (booleanIntersects(geojson, bboxPolygon)) {
-        tiles.push(...this.getTilesByBbox(childTile, geojson, zoom));
+        tiles.push(...getTilesByBbox(childTile, geojson, zoom));
       }
     }
   } else {
     const parentTile = getParent([x, y, z]);
-    tiles.push(...this.getTilesByBbox(parentTile, geojson, zoom));
+    tiles.push(...getTilesByBbox(parentTile, geojson, zoom));
   }
 
   return union(tiles);
