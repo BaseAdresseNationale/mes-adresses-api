@@ -64,7 +64,7 @@ export class NumeroService {
 
   async findMany(
     filter: FilterQuery<Numero>,
-    projection?: ProjectionType<Numero>,
+    projection: ProjectionType<Numero> = null,
   ): Promise<Numero[]> {
     const query = this.numeroModel.find(filter);
     if (projection) {

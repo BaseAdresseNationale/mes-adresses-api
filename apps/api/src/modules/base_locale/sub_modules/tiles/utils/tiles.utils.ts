@@ -17,6 +17,7 @@ import {
 import { Point } from '@/shared/schemas/geometry/point.schema';
 
 import { ZOOM } from '@/modules/base_locale/sub_modules/tiles/const/zoom.const';
+import { roundCoordinate } from '@/lib/utils/coor.utils';
 
 export function getParentTile(tile: number[], zoomFind: number) {
   return tile[2] <= zoomFind ? tile : getParentTile(getParent(tile), zoomFind);
@@ -79,11 +80,4 @@ export function getTilesByBbox(
   }
 
   return union(tiles);
-}
-
-export function roundCoordinate(
-  coordinate: number,
-  precision: number = 6,
-): number {
-  return Number.parseFloat(coordinate.toFixed(precision));
 }

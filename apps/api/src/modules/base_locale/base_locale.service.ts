@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   FilterQuery,
@@ -11,20 +17,30 @@ import {
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
+import { ToponymeService } from '@/modules/toponyme/toponyme.service';
+import { VoieService } from '@/modules/voie/voie.service';
+import { NumeroService } from '@/modules/numeros/numero.service';
 import { Habilitation } from '@/modules/base_locale/sub_modules/habilitation/types/habilitation.type';
 import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { generateBase62String } from '@/lib/utils/token.utils';
 import { formatEmail as createBalCreationNotificationEmail } from '@/modules/base_locale/sub_modules/mailer/templates/bal-creation-notification';
+import { exportBalToCsv } from '@/lib/utils/csv_bal.utils';
 
 @Injectable()
 export class BaseLocaleService {
   constructor(
     @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
     private readonly mailerService: MailerService,
+    @Inject(forwardRef(() => VoieService))
+    private voieService: VoieService,
+    @Inject(forwardRef(() => ToponymeService))
+    private toponymeService: ToponymeService,
+    @Inject(forwardRef(() => NumeroService))
+    private numeroService: NumeroService,
   ) {}
 
-  findOneOrFail(id: string): Promise<BaseLocale> {
+  async findOneOrFail(id: string): Promise<BaseLocale> {
     const filter = {
       _id: id,
     };
@@ -40,7 +56,7 @@ export class BaseLocaleService {
     return baseLocale;
   }
 
-  findOne(filter?: FilterQuery<BaseLocale>): Promise<BaseLocale> {
+  async findOne(filter?: FilterQuery<BaseLocale>): Promise<BaseLocale> {
     return this.baseLocaleModel.findOne(filter);
   }
 
@@ -62,6 +78,22 @@ export class BaseLocaleService {
 
   async aggregate(aggregation?: PipelineStage[]): Promise<Aggregate<any>> {
     return this.baseLocaleModel.aggregate(aggregation);
+  }
+
+  async exportToCsv(baseLocale: BaseLocale): Promise<string> {
+    const voies = await this.voieService.findMany({
+      _bal: baseLocale._id,
+      _deleted: null,
+    });
+    const toponymes = await this.toponymeService.findMany({
+      _bal: baseLocale._id,
+      _deleted: null,
+    });
+    const numeros = await this.numeroService.findMany({
+      _bal: baseLocale._id,
+      _deleted: null,
+    });
+    return exportBalToCsv(voies, toponymes, numeros);
   }
 
   async createOne(createInput: CreateBaseLocaleDTO): Promise<BaseLocale> {

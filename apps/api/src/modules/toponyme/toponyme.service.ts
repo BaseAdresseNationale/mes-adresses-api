@@ -5,8 +5,8 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
+import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import * as turf from '@turf/turf';
@@ -48,6 +48,18 @@ export class ToponymeService {
     }
 
     return toponyme;
+  }
+
+  async findMany(
+    filter: FilterQuery<Toponyme>,
+    projection: ProjectionType<Toponyme> = null,
+  ): Promise<Toponyme[]> {
+    const query = this.toponymeModel.find(filter);
+    if (projection) {
+      query.projection(projection);
+    }
+
+    return query.exec();
   }
 
   async extendToponymes(toponymes: Toponyme[]): Promise<ExtentedToponyme[]> {

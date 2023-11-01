@@ -3,23 +3,14 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
-import { keyBy } from 'lodash';
-import * as communes from '@etalab/decoupage-administratif/data/communes.json';
-import { CommuneCOG } from '../types/cog.type';
+import { getCommune } from '../utils/cog.utils';
 
 @ValidatorConstraint({ name: 'validatorCogCommune' })
 export class ValidatorCogCommune implements ValidatorConstraintInterface {
-  private filteredCommunes: CommuneCOG[];
-  private communesIndex: Record<string, CommuneCOG>;
+  constructor() {}
 
-  constructor() {
-    this.filteredCommunes = (communes as Array<any>).filter((c) =>
-      ['commune-actuelle', 'arrondissement-municipal'].includes(c.type),
-    );
-    this.communesIndex = keyBy(this.filteredCommunes, 'code');
-  }
   validate(commune: string) {
-    return Boolean(this.communesIndex[commune]);
+    return Boolean(getCommune(commune));
   }
 
   defaultMessage(args: ValidationArguments) {
