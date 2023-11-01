@@ -23,7 +23,6 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { TileType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
 
 @Injectable()
 export class NumeroService {
@@ -38,14 +37,6 @@ export class NumeroService {
     @Inject(forwardRef(() => BaseLocaleService))
     private baseLocaleService: BaseLocaleService,
   ) {}
-
-  async fetchByTile(balId: Types.ObjectId, { z, x, y }: TileType) {
-    return this.numeroModel.find({
-      _bal: balId,
-      tiles: `${z}/${x}/${y}`,
-      _deleted: null,
-    });
-  }
 
   async findOneOrFail(numeroId: string): Promise<Numero> {
     const filter = {

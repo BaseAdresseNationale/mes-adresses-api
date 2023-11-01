@@ -1,26 +1,11 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { Types, FilterQuery } from 'mongoose';
 import * as turf from '@turf/turf';
-import booleanIntersects from '@turf/boolean-intersects';
-import { range, union } from 'lodash';
-import {
-  LineString as LineStringTurf,
-  Position as PositionTurf,
-  BBox as BboxTurf,
-  Geometry as GeometryTurf,
-} from '@turf/helpers';
-import {
-  pointToTile,
-  bboxToTile,
-  getParent,
-  getChildren,
-  tileToBBOX,
-} from '@mapbox/tilebelt';
+import { Position as PositionTurf } from '@turf/helpers';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
-import { Point } from '@/shared/schemas/geometry/point.schema';
 
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
@@ -32,6 +17,11 @@ import {
 } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
 import { ZOOM } from '@/modules/base_locale/sub_modules/tiles/const/zoom.const';
 import { getGeoJson } from '@/modules/base_locale/sub_modules/tiles/utils/geojson.utils';
+import {
+  getTilesByPosition,
+  getTilesByLineString,
+  getParentTile,
+} from '@/modules/base_locale/sub_modules/tiles/utils/tiles.utils';
 
 @Injectable()
 export class TilesService {
@@ -44,7 +34,7 @@ export class TilesService {
 
   private async fetchModelsInTile(
     balId: Types.ObjectId,
-    tile: TileType,
+    { x, y, z }: TileType,
   ): Promise<ModelsInTileType> {
     const fetchs: ModelsInTileType = {
       numeros: [],
@@ -52,23 +42,38 @@ export class TilesService {
       traces: [],
     };
 
+    if (z >= ZOOM.NUMEROS_ZOOM.minZoom && z <= ZOOM.NUMEROS_ZOOM.maxZoom) {
+      const filter: FilterQuery<Numero> = {
+        _bal: balId,
+        tiles: `${z}/${x}/${y}`,
+        _deleted: null,
+      };
+      fetchs.numeros = await this.numeroService.findMany(filter);
+    }
+
+    if (z >= ZOOM.VOIE_ZOOM.minZoom && z <= ZOOM.VOIE_ZOOM.maxZoom) {
+      const filter: FilterQuery<Voie> = {
+        _bal: balId,
+        centroidTiles: `${z}/${x}/${y}`,
+        _deleted: null,
+      };
+      fetchs.voies = await this.voieService.findMany(filter);
+    }
+
     if (
-      tile.z >= ZOOM.NUMEROS_ZOOM.minZoom &&
-      tile.z <= ZOOM.NUMEROS_ZOOM.maxZoom
+      z >= ZOOM.TRACE_DISPLAY_ZOOM.minZoom &&
+      z <= ZOOM.TRACE_DISPLAY_ZOOM.maxZoom
     ) {
-      fetchs.numeros = await this.numeroService.fetchByTile(balId, tile);
+      const [xx, yy, zz] = getParentTile([x, y, z], ZOOM.TRACE_MONGO_ZOOM.zoom);
+      const filter: FilterQuery<Voie> = {
+        _bal: balId,
+        typeNumerotation: TypeNumerotationEnum.METRIQUE,
+        trace: { $ne: null },
+        traceTiles: `${zz}/${xx}/${yy}`,
+        _deleted: null,
+      };
+      fetchs.traces = await this.voieService.findMany(filter);
     }
-
-    if (tile.z >= ZOOM.VOIE_ZOOM.minZoom && tile.z <= ZOOM.VOIE_ZOOM.maxZoom) {
-      fetchs.voies = await this.voieService.fetchByCentroidTile(balId, tile);
-    }
-
-    // if (
-    //   tile.z >= ZOOM.TRACE_DISPLAY_ZOOM.minZoom &&
-    //   tile.z <= ZOOM.TRACE_DISPLAY_ZOOM.maxZoom
-    // ) {
-    //   fetchs.traces = await this.voieService.fetchByTraceTile(balId, tile);
-    // }
 
     return fetchs;
   }
@@ -116,10 +121,7 @@ export class TilesService {
     try {
       if (numero.positions && numero.positions.length > 0) {
         const position = getPriorityPosition(numero.positions);
-        numero.tiles = this.getTilesByPosition(
-          position.point,
-          ZOOM.NUMEROS_ZOOM,
-        );
+        numero.tiles = getTilesByPosition(position.point, ZOOM.NUMEROS_ZOOM);
       }
     } catch (error) {
       console.error(error, numero);
@@ -138,12 +140,7 @@ export class TilesService {
         voie.typeNumerotation === TypeNumerotationEnum.METRIQUE &&
         voie.trace
       ) {
-        voie.centroid = turf.centroid(voie.trace);
-        voie.centroidTiles = this.getTilesByPosition(
-          voie.centroid.geometry,
-          ZOOM.VOIE_ZOOM,
-        );
-        voie.traceTiles = this.getTilesByLineString(voie.trace);
+        this.calcMetaTilesVoieWithTrace(voie);
       } else {
         const numeros: Numero[] = await this.numeroService.findMany(
           {
@@ -154,23 +151,7 @@ export class TilesService {
             positions: 1,
           },
         );
-
-        if (numeros.length > 0) {
-          const coordinatesNumeros: PositionTurf[] = numeros
-            .filter((n) => n.positions && n.positions.length > 0)
-            .map((n) => getPriorityPosition(n.positions)?.point?.coordinates);
-          // CALC CENTROID
-          if (coordinatesNumeros.length > 0) {
-            const collection = turf.featureCollection(
-              coordinatesNumeros.map((n) => turf.point(n)),
-            );
-            voie.centroid = turf.centroid(collection);
-            voie.centroidTiles = this.getTilesByPosition(
-              voie.centroid.geometry,
-              ZOOM.VOIE_ZOOM,
-            );
-          }
-        }
+        this.calcMetaTilesVoieWithNumeros(voie, numeros);
       }
     } catch (error) {
       console.error(error, voie);
@@ -179,69 +160,33 @@ export class TilesService {
     return voie;
   }
 
-  public getParentTile(tile, zoomFind) {
-    return tile[2] <= zoomFind
-      ? tile
-      : this.getParentTile(getParent(tile), zoomFind);
-  }
-
-  private getTilesByPosition(
-    point: Point,
-    { minZoom, maxZoom } = ZOOM.NUMEROS_ZOOM,
-  ): string[] {
-    if (!point || !minZoom || !maxZoom) {
-      return null;
-    }
-
-    const lon: number = this.roundCoordinate(point.coordinates[0], 6);
-    const lat: number = this.roundCoordinate(point.coordinates[1], 6);
-
-    const tiles: string[] = range(minZoom, maxZoom + 1).map((zoom) => {
-      const [x, y, z]: number[] = pointToTile(lon, lat, zoom);
-      return `${z}/${x}/${y}`;
-    });
-
-    return tiles;
-  }
-
-  private getTilesByLineString(
-    lineString: LineStringTurf,
-    { zoom } = ZOOM.TRACE_MONGO_ZOOM,
-  ): string[] {
-    const bboxFeature: BboxTurf = turf.bbox(lineString);
-    const [x, y, z]: number[] = bboxToTile(bboxFeature);
-    const tiles: string[] = this.getTilesByBbox([x, y, z], lineString, zoom);
-    return tiles;
-  }
-
-  private getTilesByBbox(
-    [x, y, z]: number[],
-    geojson: GeometryTurf,
-    zoom,
-  ): string[] {
-    const tiles = [];
-    if (z === zoom) {
-      return [`${z}/${x}/${y}`];
-    }
-
-    if (z < zoom) {
-      const childTiles: number[][] = getChildren([x, y, z]);
-      for (const childTile of childTiles) {
-        const childTileBbox = tileToBBOX(childTile);
-        const bboxPolygon = turf.bboxPolygon(childTileBbox);
-        if (booleanIntersects(geojson, bboxPolygon)) {
-          tiles.push(...this.getTilesByBbox(childTile, geojson, zoom));
-        }
+  public calcMetaTilesVoieWithNumeros(voie: Voie, numeros: Numero[]): Voie {
+    if (numeros.length > 0) {
+      const coordinatesNumeros: PositionTurf[] = numeros
+        .filter((n) => n.positions && n.positions.length > 0)
+        .map((n) => getPriorityPosition(n.positions)?.point?.coordinates);
+      // CALC CENTROID
+      if (coordinatesNumeros.length > 0) {
+        const collection = turf.featureCollection(
+          coordinatesNumeros.map((n) => turf.point(n)),
+        );
+        voie.centroid = turf.centroid(collection);
+        voie.centroidTiles = getTilesByPosition(
+          voie.centroid.geometry,
+          ZOOM.VOIE_ZOOM,
+        );
       }
-    } else {
-      const parentTile = getParent([x, y, z]);
-      tiles.push(...this.getTilesByBbox(parentTile, geojson, zoom));
     }
-
-    return union(tiles);
+    return voie;
   }
 
-  private roundCoordinate(coordinate: number, precision: number = 6): number {
-    return Number.parseFloat(coordinate.toFixed(precision));
+  public calcMetaTilesVoieWithTrace(voie: Voie): Voie {
+    voie.centroid = turf.centroid(voie.trace);
+    voie.centroidTiles = getTilesByPosition(
+      voie.centroid.geometry,
+      ZOOM.VOIE_ZOOM,
+    );
+    voie.traceTiles = getTilesByLineString(voie.trace);
+    return voie;
   }
 }

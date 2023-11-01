@@ -5,7 +5,6 @@ import { TilesService } from './tiles.service';
 import { VoieModule } from '@/modules/voie/voie.module';
 import { NumeroModule } from '@/modules/numeros/numero.module';
 import { BaseLocaleModule } from '../../base_locale.module';
-import * as compression from 'compression';
 
 @Module({
   imports: [
@@ -20,6 +19,5 @@ import * as compression from 'compression';
 export class TilesModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(BaseLocaleMiddleware).forRoutes(TilesController);
-    // consumer.apply(compression).forRoutes(TilesController);
   }
 }
