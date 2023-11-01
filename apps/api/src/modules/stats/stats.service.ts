@@ -25,8 +25,9 @@ export class StatsService {
       _deleted: null,
       ...(codeCommunes && { commune: { $in: codeCommunes } }),
     };
-    const selector: Record<string, number> = null;
+    let selector: Record<string, number> = null;
     if (fields.length > 0) {
+      selector = {};
       fields.forEach((f) => {
         selector[f] = 1;
       });

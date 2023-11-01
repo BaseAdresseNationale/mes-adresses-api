@@ -35,7 +35,6 @@ export class StatsController {
     @Body() codeCommeDto: CodeCommuneDTO,
     @Res() res: Response,
   ) {
-    console.log(fields, codeCommeDto);
     const result: BaseLocale[] =
       await this.statsService.findBalInCodeCommuneWithFields(
         fields,

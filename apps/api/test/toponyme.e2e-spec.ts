@@ -29,10 +29,7 @@ describe('TOPONYME MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        MongooseModule.forRoot(uri),
-        ToponymeModule
-      ],
+      imports: [MongooseModule.forRoot(uri), ToponymeModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -54,11 +51,10 @@ describe('TOPONYME MODULE', () => {
   });
 
   afterEach(async () => {
-    const collections = mongoConnection.collections;
-    for (const key in collections) {
-      const collection = collections[key];
-      await collection.deleteMany({});
-    }
+    await toponymeModel.deleteMany({});
+    await voieModel.deleteMany({});
+    await balModel.deleteMany({});
+    await numeroModel.deleteMany({});
   });
 
   async function createBal() {

@@ -20,25 +20,26 @@ export function checkFromIsBeforeTo(from: string, to: string): boolean {
 }
 
 export function checkQueryDateFromTo(from: string, to: string) {
-  if (!from || !to) {
+  if ((!from && to) || (!to && from)) {
     throw new HttpException(
       'Il manque une date from ou to',
       HttpStatus.BAD_REQUEST,
     );
   }
+  if (from && to) {
+    if (!isValidDate(from) || !isValidDate(to)) {
+      throw new HttpException(
+        'Les dates ne sont pas valides',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
-  if (!isValidDate(from) || !isValidDate(to)) {
-    throw new HttpException(
-      'Les dates ne sont pas valides',
-      HttpStatus.BAD_REQUEST,
-    );
-  }
-
-  if (!checkFromIsBeforeTo(from, to)) {
-    throw new HttpException(
-      'La date from est plus vielle que la date to',
-      HttpStatus.BAD_REQUEST,
-    );
+    if (!checkFromIsBeforeTo(from, to)) {
+      throw new HttpException(
+        'La date from est plus vielle que la date to',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
 

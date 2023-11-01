@@ -7,7 +7,6 @@ import { Connection, connect, Model, Types } from 'mongoose';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 
@@ -21,7 +20,6 @@ describe('NUMERO', () => {
   let numeroModel: Model<Numero>;
   let voieModel: Model<Voie>;
   let balModel: Model<BaseLocale>;
-  let toponymeModel: Model<Toponyme>;
   const token = 'xxxx';
 
   beforeAll(async () => {
@@ -31,10 +29,7 @@ describe('NUMERO', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        MongooseModule.forRoot(uri),
-        NumeroModule
-      ],
+      imports: [MongooseModule.forRoot(uri), NumeroModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -45,7 +40,6 @@ describe('NUMERO', () => {
     numeroModel = app.get<Model<Numero>>(getModelToken(Numero.name));
     voieModel = app.get<Model<Voie>>(getModelToken(Voie.name));
     balModel = app.get<Model<BaseLocale>>(getModelToken(BaseLocale.name));
-    toponymeModel = app.get<Model<Toponyme>>(getModelToken(Toponyme.name));
   });
 
   afterAll(async () => {
@@ -56,11 +50,9 @@ describe('NUMERO', () => {
   });
 
   afterEach(async () => {
-    const collections = mongoConnection.collections;
-    for (const key in collections) {
-      const collection = collections[key];
-      await collection.deleteMany({});
-    }
+    await voieModel.deleteMany({});
+    await balModel.deleteMany({});
+    await numeroModel.deleteMany({});
   });
 
   async function createBal() {
@@ -97,7 +89,11 @@ describe('NUMERO', () => {
     it('Return 200 numero', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({_bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       const response = await request(app.getHttpServer())
         .get(`/numeros/${numeroId}`)
@@ -156,7 +152,11 @@ describe('NUMERO', () => {
     it('Update 200 numero', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({_bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       const updatedNumero: UpdateNumeroDto = {
         numero: 100,
@@ -182,7 +182,6 @@ describe('NUMERO', () => {
       expect(balDbAfter._updated).not.toBeNull();
     });
 
-    
     it('Update 404 Numero Not Found', async () => {
       const updatedNumero: UpdateNumeroDto = {
         numero: 100,
@@ -199,13 +198,17 @@ describe('NUMERO', () => {
     it('Update 404 Voie Not Found', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({ _bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       const updatedNumero: UpdateNumeroDto = {
         voie: new Types.ObjectId(),
       };
 
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
         .set('token', token)
@@ -215,7 +218,11 @@ describe('NUMERO', () => {
     it('Update 404 Toponyme Not Found', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({ _bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       const updatedNumero: UpdateNumeroDto = {
         toponyme: new Types.ObjectId(),
@@ -231,7 +238,11 @@ describe('NUMERO', () => {
     it('Update 403 Forbiden', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({ _bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       const updatedNumero: UpdateNumeroDto = {
         numero: 100,
@@ -251,7 +262,11 @@ describe('NUMERO', () => {
     it('Update 200 check field _updated of voie and bal', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({ _bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       const voieDbBefore = await voieModel.findOne({ _id: voieId });
       const balDbBefore = await balModel.findOne({ _id: balId });
@@ -275,7 +290,11 @@ describe('NUMERO', () => {
     it('Update 200 check field _updated is UPDATE', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({ _bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       const numeroDbBefore = await numeroModel.findOne({ _id: numeroId });
       const voieDbBefore = await voieModel.findOne({ _id: voieId });
@@ -303,7 +322,11 @@ describe('NUMERO', () => {
     it('Update 200 check field tiles Numero is UPDATE and centroid, centroidTiles voie is UPDATE', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({ _bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       const numeroDbBefore = await numeroModel.findOne({ _id: numeroId });
       const voieDbBefore = await voieModel.findOne({ _id: voieId });
@@ -340,7 +363,7 @@ describe('NUMERO', () => {
       const voieId2 = await createVoie({ nom: 'rue de la paix' });
       const numeroId = await createNumero({
         _bal: balId,
-        voie: voieId1, 
+        voie: voieId1,
         numero: 99,
         positions: [
           {
@@ -385,7 +408,11 @@ describe('NUMERO', () => {
     it('Delete 204 numero', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({ _bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       await request(app.getHttpServer())
         .delete(`/numeros/${numeroId}`)
@@ -414,7 +441,11 @@ describe('NUMERO', () => {
     it('Delete 403 FORBIDEN', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({ _bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       await request(app.getHttpServer())
         .delete(`/numeros/${numeroId}`)
@@ -436,7 +467,11 @@ describe('NUMERO', () => {
     it('Soft Delete 200 numero', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix' });
-      const numeroId = await createNumero({ _bal: balId, voie: voieId, numero: 99 });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+      });
 
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}/soft-delete`)
@@ -468,7 +503,7 @@ describe('NUMERO', () => {
       const voieId = await createVoie({ nom: 'rue de la paix' });
       const numeroId = await createNumero({
         _bal: balId,
-        voie: voieId, 
+        voie: voieId,
         numero: 99,
         _deleted: null,
       });
