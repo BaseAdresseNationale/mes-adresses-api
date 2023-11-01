@@ -26,6 +26,7 @@ function checkQueryDateFromTo(req) {
   }
 }
 
+// NOT USE
 app.route('/')
   .get(w(async (req, res) => {
     const stats = await useCache('bal-stats', 300, async () => {
@@ -69,6 +70,7 @@ app.route('/creations')
     res.send(stats)
   }))
 
+// NOT USE
 app.route('/departements/:codeDepartement')
   .get(w(async (req, res) => {
     const {codeDepartement} = req.params

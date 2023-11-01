@@ -1,6 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, Types } from 'mongoose';
+import {
+  FilterQuery,
+  Model,
+  Types,
+  QueryWithHelpers,
+  Aggregate,
+  PipelineStage,
+} from 'mongoose';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
@@ -37,8 +44,24 @@ export class BaseLocaleService {
     return this.baseLocaleModel.findOne(filter);
   }
 
-  findMany(filter?: FilterQuery<BaseLocale>): Promise<BaseLocale[]> {
-    return this.baseLocaleModel.find(filter);
+  async findMany(
+    filter?: FilterQuery<BaseLocale>,
+    selector: Record<string, number> = null,
+  ): Promise<BaseLocale[]> {
+    const query: QueryWithHelpers<
+      Array<BaseLocale>,
+      BaseLocale
+    > = this.baseLocaleModel.find(filter);
+
+    if (selector) {
+      query.select(selector);
+    }
+
+    return query.exec();
+  }
+
+  async aggregate(aggregation?: PipelineStage[]): Promise<Aggregate<any>> {
+    return this.baseLocaleModel.aggregate(aggregation);
   }
 
   async createOne(createInput: CreateBaseLocaleDTO): Promise<BaseLocale> {
