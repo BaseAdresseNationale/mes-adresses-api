@@ -64,6 +64,10 @@ export class VoieService {
     return query.exec();
   }
 
+  public deleteMany(filters: FilterQuery<Voie>): Promise<any> {
+    return this.voieModel.deleteMany(filters);
+  }
+
   async extendVoies(voies: Voie[]): Promise<ExtendedVoie[]> {
     const numeros = await this.numeroService.findMany({
       voie: { $in: voies.map(({ _id }) => _id) },

@@ -1,14 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  FeaturePoint,
-  FeaturePointSchema,
-} from '../feature_point.schema';
-import {
-  LineString,
-  LineStringSchema,
-} from '../geometry/line_string.schema';
+import { FeaturePoint, FeaturePointSchema } from '../feature_point.schema';
+import { LineString, LineStringSchema } from '../geometry/line_string.schema';
 import { TypeNumerotationEnum } from './type_numerotation.enum';
 import { DateBase } from '../date.schema';
 
@@ -56,9 +50,5 @@ export class Voie extends DateBase {
   @Prop({ type: [SchemaTypes.String] })
   traceTiles: string[];
 }
-
-// code: string;
-// positions: [],
-// complement: null,
 
 export const VoieSchema = SchemaFactory.createForClass(Voie);

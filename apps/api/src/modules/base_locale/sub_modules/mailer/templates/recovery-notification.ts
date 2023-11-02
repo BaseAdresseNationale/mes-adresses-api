@@ -163,8 +163,7 @@ const STATUS = {
   replaced: 'Remplacée',
 };
 
-export function formatEmail(data): Email {
-  const { basesLocales } = data;
+export function formatEmail({ basesLocales }): Email {
   const apiUrl = getApiUrl();
   const basesLocalesRecovery = basesLocales.map((baseLocale) => {
     return {

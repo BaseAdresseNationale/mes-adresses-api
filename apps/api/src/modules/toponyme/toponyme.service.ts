@@ -38,7 +38,7 @@ export class ToponymeService {
     const filter = {
       _id: toponymeId,
     };
-    const toponyme = this.toponymeModel.findOne(filter).exec();
+    const toponyme = await this.toponymeModel.findOne(filter).exec();
 
     if (!toponyme) {
       throw new HttpException(
@@ -60,6 +60,17 @@ export class ToponymeService {
     }
 
     return query.exec();
+  }
+
+  async findDistinct(
+    filter: FilterQuery<Toponyme>,
+    field: string,
+  ): Promise<string[]> {
+    return this.toponymeModel.distinct(field, filter).exec();
+  }
+
+  public deleteMany(filters: FilterQuery<Toponyme>): Promise<any> {
+    return this.toponymeModel.deleteMany(filters);
   }
 
   async extendToponymes(toponymes: Toponyme[]): Promise<ExtentedToponyme[]> {

@@ -74,6 +74,13 @@ export class NumeroService {
     return query.exec();
   }
 
+  async findDistinct(
+    filter: FilterQuery<Numero>,
+    field: string,
+  ): Promise<string[]> {
+    return this.numeroModel.distinct(field, filter).exec();
+  }
+
   public async updateMany(
     filters: FilterQuery<Numero>,
     update: Partial<Numero>,
@@ -83,6 +90,10 @@ export class NumeroService {
 
   public deleteMany(filters: FilterQuery<Numero>): Promise<any> {
     return this.numeroModel.deleteMany(filters);
+  }
+
+  public async count(filters: FilterQuery<Numero>): Promise<number> {
+    return this.numeroModel.countDocuments(filters);
   }
 
   public async create(

@@ -34,15 +34,19 @@ import { CustomRequest } from '@/lib/types/request.type';
 import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
-import { ExtendedVoie } from '@/modules/voie/dto/extended_voie.dto';
 import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
 import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
+import { filterSensitiveFields } from '@/shared/utils/base-locale.utils';
+import { ExtendedBaseLocale } from './dto/extended_base_locale';
+import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
+import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
-@ApiTags('bases_locales')
-@Controller('bases_locales')
+@ApiTags('bases-locales')
+@Controller('bases-locales')
 export class BaseLocaleController {
   constructor(
     private baseLocaleService: BaseLocaleService,
@@ -53,18 +57,10 @@ export class BaseLocaleController {
     @Inject(forwardRef(() => ToponymeService))
     private toponymeService: ToponymeService,
   ) {}
-
-  @Get('')
-  @ApiResponse({ status: 200 })
-  async getBasesLocales(@Req() req: Request, @Res() res: Response) {
-    const basesLocales = await this.baseLocaleService.findMany();
-
-    res.status(HttpStatus.OK).json(basesLocales);
-  }
-
   @Post('')
+  @ApiOperation({ summary: 'Create a base locale' })
   @ApiBody({ type: CreateBaseLocaleDTO, required: true })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   async createBaseLocale(
     @Req() req: Request,
     @Body() createBaseLocaleDTO: CreateBaseLocaleDTO,
@@ -74,6 +70,69 @@ export class BaseLocaleController {
       await this.baseLocaleService.createOne(createBaseLocaleDTO);
 
     res.status(HttpStatus.OK).json(newBaseLocale);
+  }
+
+  @Get(':baseLocaleId')
+  @ApiOperation({ summary: 'Find Base_Locale by id' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: ExtendedBaseLocale,
+  })
+  @ApiHeader({ name: 'Token' })
+  async findOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+    const baseLocale = await this.baseLocaleService.extendWithNumeros(
+      req.baseLocale,
+    );
+    const response = req.isAdmin
+      ? baseLocale
+      : filterSensitiveFields(baseLocale);
+
+    res.status(HttpStatus.OK).json(response);
+  }
+
+  @Put(':baseLocaleId')
+  @ApiOperation({ summary: 'Update one base locale' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: UpdateBaseLocaleDTO, required: true })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiHeader({ name: 'Token' })
+  @UseGuards(AdminGuard)
+  async updateOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+    const updatedBaseLocale = await this.baseLocaleService.updateOne(
+      req.baseLocale,
+      req.body,
+    );
+
+    res.status(HttpStatus.OK).json(updatedBaseLocale);
+  }
+
+  @Delete(':baseLocaleId')
+  @ApiOperation({ summary: 'Delete one base locale' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  @ApiHeader({ name: 'Token' })
+  @UseGuards(AdminGuard)
+  async deleteOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+    const baseLocale = await this.baseLocaleService.deleteOne(req.baseLocale);
+    res.status(HttpStatus.OK).json(baseLocale);
+  }
+
+  @Get(':baseLocaleId/parcelles')
+  @ApiOperation({ summary: 'Find Base_Locale parcelles' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    isArray: true,
+  })
+  @ApiHeader({ name: 'Token' })
+  async getBaseLocaleParcelles(
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+  ) {
+    const parcelles = await this.baseLocaleService.getParcelles(req.baseLocale);
+
+    res.status(HttpStatus.OK).json(parcelles);
   }
 
   @Put(':baseLocaleId/numeros/batch')
@@ -134,7 +193,10 @@ export class BaseLocaleController {
   @ApiOperation({ summary: 'Find all Voie in Bal' })
   @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoie, isArray: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    isArray: true,
+  })
   @ApiHeader({ name: 'Token' })
   async findVoieByBal(
     @Req() req: CustomRequest,

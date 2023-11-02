@@ -95,8 +95,7 @@ const bodyTemplate = template(`
 </html>
 `);
 
-export function formatEmail(data): Email {
-  const { baseLocale } = data;
+export function formatEmail({ baseLocale }): Email {
   const editorUrl = getEditorUrl(baseLocale);
   const apiUrl = getApiUrl();
 

@@ -15,6 +15,7 @@ import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.modul
 import { NumeroModule } from '@/modules/numeros/numero.module';
 import { VoieModule } from '@/modules/voie/voie.module';
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
+import { CommuneModule } from './sub_modules/commune/commune.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
     forwardRef(() => NumeroModule),
     forwardRef(() => VoieModule),
     forwardRef(() => ToponymeModule),
+    forwardRef(() => CommuneModule),
   ],
   providers: [BaseLocaleMiddleware, BaseLocaleService, MailerService],
   controllers: [BaseLocaleController],

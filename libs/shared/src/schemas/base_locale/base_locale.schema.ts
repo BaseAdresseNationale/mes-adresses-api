@@ -11,8 +11,8 @@ export class BaseLocale extends DateBase {
   @Prop({ type: SchemaTypes.ObjectId })
   _id: Types.ObjectId;
 
-  @Prop({ type: SchemaTypes.Number })
-  nom: number;
+  @Prop({ type: SchemaTypes.String })
+  nom: string;
 
   @Prop({ type: [SchemaTypes.String] })
   emails: string[];
