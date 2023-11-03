@@ -7,6 +7,7 @@ import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { CustomRequest } from '@/lib/types/request.type';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { isAdmin } from '@/shared/utils/is-admin.utils';
 
 @Injectable()
 export class NumeroMiddleware implements NestMiddleware {
@@ -25,7 +26,7 @@ export class NumeroMiddleware implements NestMiddleware {
 
       req.baseLocale = basesLocale;
       req.numero = numero;
-      req.isAdmin = req.headers.token === basesLocale.token;
+      req.isAdmin = isAdmin(req, basesLocale);
     }
     next();
   }

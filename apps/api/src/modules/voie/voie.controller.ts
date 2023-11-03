@@ -48,11 +48,13 @@ export class VoieController {
   @ApiOperation({ summary: 'Find Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoie })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const voieExtended: ExtendedVoie = await this.voieService.extendVoie(
-      req.voie,
-    );
+    const voieExtended: ExtendedVoie =
+      await this.voieService.extendVoieWithNumeros(req.voie);
     res.status(HttpStatus.OK).json(voieExtended);
   }
 
@@ -61,7 +63,10 @@ export class VoieController {
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
   @ApiBody({ type: UpdateVoieDto, required: true })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
@@ -76,7 +81,10 @@ export class VoieController {
   @ApiOperation({ summary: 'Soft delete Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Voie = await this.voieService.softDelete(req.voie);
@@ -88,7 +96,10 @@ export class VoieController {
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiBody({ type: RestoreVoieDto, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async restore(
     @Req() req: CustomRequest,
@@ -106,7 +117,10 @@ export class VoieController {
   @ApiOperation({ summary: 'Delete Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async delete(@Req() req: CustomRequest, @Res() res: Response) {
     await this.voieService.delete(req.voie);
@@ -117,7 +131,10 @@ export class VoieController {
   @ApiOperation({ summary: 'Find all numeros which belong to the voie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async findByVoie(@Req() req: CustomRequest, @Res() res: Response) {
     const numeros: Numero[] = await this.numeroService.findMany({
       voie: req.voie._id,
@@ -131,7 +148,10 @@ export class VoieController {
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiBody({ type: CreateNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Numero })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async createNumero(
     @Req() req: CustomRequest,

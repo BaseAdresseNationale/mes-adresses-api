@@ -45,7 +45,10 @@ export class ToponymeController {
   @ApiOperation({ summary: 'Find Toponyme by id' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async find(@Req() req: CustomRequest, @Res() res: Response) {
     const toponymeExtended: ExtentedToponyme =
       await this.toponymeService.extendToponyme(req.toponyme);
@@ -57,7 +60,10 @@ export class ToponymeController {
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
   @ApiBody({ type: UpdateToponymeDto, required: true })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
@@ -75,7 +81,10 @@ export class ToponymeController {
   @ApiOperation({ summary: 'Soft delete Tpponyme by id' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Toponyme = await this.toponymeService.softDelete(
@@ -88,7 +97,10 @@ export class ToponymeController {
   @ApiOperation({ summary: 'Restore Toponyme by id' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async restore(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Toponyme = await this.toponymeService.restore(req.toponyme);
@@ -99,7 +111,10 @@ export class ToponymeController {
   @ApiOperation({ summary: 'Delete Toponyme by id' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async delete(@Req() req: CustomRequest, @Res() res: Response) {
     await this.toponymeService.delete(req.toponyme);
@@ -110,7 +125,10 @@ export class ToponymeController {
   @ApiOperation({ summary: 'Find all numeros which belong to the toponyme' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: NumeroPopulate, isArray: true })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async findByToponyme(@Req() req: CustomRequest, @Res() res: Response) {
     const numeros: NumeroPopulate[] =
       await this.numeroService.findManyPopulateVoie({

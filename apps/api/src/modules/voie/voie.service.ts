@@ -7,16 +7,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
-import bbox from '@turf/bbox';
-import * as turf from '@turf/turf';
 import { groupBy } from 'lodash';
-import { Feature as FeatureTurf } from '@turf/helpers';
 
 import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { Position } from '@/shared/schemas/position.schema';
 
 import { ExtendedVoie } from '@/modules/voie/dto/extended_voie.dto';
 import { UpdateVoieDto } from '@/modules/voie/dto/update_voie.dto';
@@ -26,6 +21,7 @@ import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { extendWithNumeros } from '@/shared/utils/numero.utils';
 
 @Injectable()
 export class VoieService {
@@ -68,55 +64,23 @@ export class VoieService {
     return this.voieModel.deleteMany(filters);
   }
 
-  async extendVoies(voies: Voie[]): Promise<ExtendedVoie[]> {
+  async extendVoiesWithNumeros(voies: Voie[]): Promise<ExtendedVoie[]> {
     const numeros = await this.numeroService.findMany({
       voie: { $in: voies.map(({ _id }) => _id) },
     });
 
     const numerosByVoies = groupBy(numeros, 'voie');
     return voies.map((voie) =>
-      this.getExtendVoie(voie, numerosByVoies[voie._id]),
+      extendWithNumeros(voie, numerosByVoies[voie._id] || [], 'voie'),
     );
   }
 
-  async extendVoie(voie: Voie): Promise<ExtendedVoie> {
+  async extendVoieWithNumeros(voie: Voie): Promise<ExtendedVoie> {
     const numeros = await this.numeroService.findMany({
       voie: voie._id,
     });
 
-    return this.getExtendVoie(voie, numeros);
-  }
-
-  private getExtendVoie(voie: Voie, numeros: Numero[]): ExtendedVoie {
-    const voieExtended: ExtendedVoie = voie;
-
-    voieExtended.nbNumeros = numeros.length;
-    voieExtended.nbNumerosCertifies = numeros.filter(
-      (n) => n.certifie === true,
-    ).length;
-    voieExtended.isAllCertified =
-      voieExtended.nbNumeros > 0 &&
-      voieExtended.nbNumeros === voieExtended.nbNumerosCertifies;
-    voieExtended.commentedNumeros = numeros.filter(
-      (n) => n.comment !== undefined && n.comment !== null && n.comment !== '',
-    );
-    const allPositions: Position[] = numeros
-      .filter((n) => n.positions && n.positions.length > 0)
-      .reduce((acc, n) => [...acc, ...n.positions], []);
-
-    if (allPositions.length > 0) {
-      const features: FeatureTurf[] = allPositions.map(({ point }) =>
-        turf.feature(point),
-      );
-      const featuresCollection = turf.featureCollection(features);
-      voieExtended.bbox = bbox(featuresCollection);
-    } else if (
-      voieExtended.trace &&
-      voieExtended.typeNumerotation === TypeNumerotationEnum.NUMERIQUE
-    ) {
-      voieExtended.bbox = bbox(voieExtended.trace);
-    }
-    return voieExtended;
+    return extendWithNumeros(voie, numeros, 'voie');
   }
 
   public async findAllByBalId(

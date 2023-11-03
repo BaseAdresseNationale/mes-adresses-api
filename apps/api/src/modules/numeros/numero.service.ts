@@ -50,7 +50,7 @@ export class NumeroService {
       );
     }
 
-    return numero;
+    return numero.toObject();
   }
 
   public async findManyPopulateVoie(

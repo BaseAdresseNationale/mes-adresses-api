@@ -34,6 +34,7 @@ import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { formatEmail as createNewAdminNotificationEmail } from './sub_modules/mailer/templates/new-admin-notification';
+import { extendWithNumeros } from '@/shared/utils/numero.utils';
 
 @Injectable()
 export class BaseLocaleService {
@@ -223,8 +224,6 @@ export class BaseLocaleService {
   }
 
   async extendWithNumeros(baseLocale: BaseLocale): Promise<ExtendedBaseLocale> {
-    const extendedBaseLocale: ExtendedBaseLocale = baseLocale;
-
     const numeros = await this.numeroService.findMany(
       {
         _bal: baseLocale._id,
@@ -233,19 +232,7 @@ export class BaseLocaleService {
       { certifie: 1, numero: 1, comment: 1 },
     );
 
-    const nbNumerosCertifies = numeros.filter(
-      (n) => n.certifie === true,
-    ).length;
-
-    extendedBaseLocale.nbNumeros = numeros.length;
-    extendedBaseLocale.nbNumerosCertifies = nbNumerosCertifies;
-    extendedBaseLocale.isAllCertified =
-      numeros.length > 0 && numeros.length === nbNumerosCertifies;
-    extendedBaseLocale.commentedNumeros = numeros.filter(
-      (n) => n.comment !== undefined && n.comment !== null && n.comment !== '',
-    );
-
-    return extendedBaseLocale;
+    return extendWithNumeros(baseLocale, numeros);
   }
 
   async getParcelles(basesLocale: BaseLocale): Promise<(Toponyme | Numero)[]> {

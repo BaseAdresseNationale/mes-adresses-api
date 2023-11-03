@@ -79,7 +79,10 @@ export class BaseLocaleController {
     status: HttpStatus.OK,
     type: ExtendedBaseLocale,
   })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async findOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     const baseLocale = await this.baseLocaleService.extendWithNumeros(
       req.baseLocale,
@@ -96,7 +99,10 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBaseLocaleDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async updateOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     const updatedBaseLocale = await this.baseLocaleService.updateOne(
@@ -111,7 +117,10 @@ export class BaseLocaleController {
   @ApiOperation({ summary: 'Delete one base locale' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async deleteOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     const baseLocale = await this.baseLocaleService.deleteOne(req.baseLocale);
@@ -125,7 +134,10 @@ export class BaseLocaleController {
     status: HttpStatus.OK,
     isArray: true,
   })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async getBaseLocaleParcelles(
     @Req() req: CustomRequest,
     @Res() res: Response,
@@ -140,7 +152,10 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBatchNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.OK })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async batchNumeros(
     @Req() req: CustomRequest,
@@ -159,7 +174,10 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: DeleteBatchNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.OK })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async softDeleteNumeros(
     @Req() req: CustomRequest,
@@ -178,7 +196,10 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: DeleteBatchNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async deleteNumeros(
     @Req() req: CustomRequest,
@@ -197,10 +218,13 @@ export class BaseLocaleController {
     status: HttpStatus.OK,
     isArray: true,
   })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async findVoieByBal(
     @Req() req: CustomRequest,
-    @Query() isDeleted: boolean = false,
+    @Query('isDeleted') isDeleted: boolean = false,
     @Res() res: Response,
   ) {
     const voies: Voie[] = await this.voieService.findAllByBalId(
@@ -208,7 +232,7 @@ export class BaseLocaleController {
       isDeleted,
     );
     const extendedVoie: ExtendedVoie[] =
-      await this.voieService.extendVoies(voies);
+      await this.voieService.extendVoiesWithNumeros(voies);
     res.status(HttpStatus.OK).json(extendedVoie);
   }
 
@@ -217,7 +241,10 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateVoieDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Voie, isArray: true })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async createVoie(
     @Req() req: CustomRequest,
     @Body() createVoieDto: CreateVoieDto,
@@ -235,10 +262,13 @@ export class BaseLocaleController {
   @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme, isArray: true })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async findToponymeByBal(
     @Req() req: CustomRequest,
-    @Query() isDeleted: boolean = false,
+    @Query('isDeleted') isDeleted: boolean = false,
     @Res() res: Response,
   ) {
     const toponymes: Toponyme[] = await this.toponymeService.findAllByBalId(
@@ -255,7 +285,10 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateToponymeDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme, isArray: true })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   async create(
     @Req() req: CustomRequest,
     @Body() createToponymeDto: CreateToponymeDto,

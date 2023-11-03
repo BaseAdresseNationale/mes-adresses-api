@@ -46,7 +46,7 @@ export class TilesController {
     @Param('z') z: string,
     @Param('x') x: string,
     @Param('y') y: string,
-    @Query() colorblindMode: boolean,
+    @Query('colorblindMode') colorblindMode: boolean,
     @Res() res: Response,
   ) {
     const tile: TileType = { z: parseInt(z), x: parseInt(x), y: parseInt(y) };

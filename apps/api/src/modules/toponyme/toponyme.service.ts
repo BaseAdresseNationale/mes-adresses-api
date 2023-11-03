@@ -7,14 +7,9 @@ import {
 } from '@nestjs/common';
 import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Feature as FeatureTurf } from '@turf/helpers';
-import bbox from '@turf/bbox';
-import * as turf from '@turf/turf';
 import { groupBy } from 'lodash';
 
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Position } from '@/shared/schemas/position.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
 import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
@@ -23,6 +18,7 @@ import { UpdateToponymeDto } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { extendWithNumeros } from '@/shared/utils/numero.utils';
 
 @Injectable()
 export class ToponymeService {
@@ -81,7 +77,7 @@ export class ToponymeService {
 
     const numerosByToponymes = groupBy(numeros, 'toponyme');
     return toponymes.map((t) =>
-      this.getExtendToponyme(t, numerosByToponymes[t._id]),
+      extendWithNumeros(t, numerosByToponymes[t._id] || [], 'toponyme'),
     );
   }
 
@@ -91,7 +87,7 @@ export class ToponymeService {
       _deleted: null,
     });
 
-    return this.getExtendToponyme(toponyme, numeros);
+    return extendWithNumeros(toponyme, numeros, 'toponyme');
   }
 
   public async findAllByBalId(
@@ -192,46 +188,6 @@ export class ToponymeService {
       // SET _updated OF TOPONYME
       await this.baseLocaleService.touch(toponyme._bal);
     }
-  }
-
-  private getExtendToponyme(
-    toponyme: Toponyme,
-    numeros: Numero[],
-  ): ExtentedToponyme {
-    const toponymeExtended: ExtentedToponyme = toponyme;
-
-    toponymeExtended.nbNumeros = numeros.length;
-    toponymeExtended.nbNumerosCertifies = numeros.filter(
-      (n) => n.certifie === true,
-    ).length;
-    toponymeExtended.isAllCertified =
-      toponymeExtended.nbNumeros > 0 &&
-      toponymeExtended.nbNumeros === toponymeExtended.nbNumerosCertifies;
-    toponymeExtended.commentedNumeros = numeros.filter(
-      (n) => n.comment !== undefined && n.comment !== null && n.comment !== '',
-    );
-
-    const allPositions: Position[] = numeros
-      .filter((n) => n.positions && n.positions.length > 0)
-      .reduce((acc, n) => [...acc, ...n.positions], []);
-
-    if (allPositions.length > 0) {
-      const features: FeatureTurf[] = allPositions.map(({ point }) =>
-        turf.feature(point),
-      );
-      const featuresCollection = turf.featureCollection(features);
-      toponymeExtended.bbox = bbox(featuresCollection);
-    } else if (
-      toponymeExtended.positions &&
-      toponymeExtended.positions.length > 0
-    ) {
-      const features: FeatureTurf[] = toponymeExtended.positions.map(
-        ({ point }) => turf.feature(point),
-      );
-      const featuresCollection = turf.featureCollection(features);
-      toponymeExtended.bbox = bbox(featuresCollection);
-    }
-    return toponymeExtended;
   }
 
   async isToponymeExist(

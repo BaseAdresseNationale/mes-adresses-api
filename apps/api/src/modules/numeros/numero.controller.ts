@@ -36,7 +36,10 @@ export class NumeroController {
   @ApiOperation({ summary: 'Find the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   find(@Req() req: CustomRequest, @Res() res: Response) {
     const numero: Numero = <Numero>(
       filterSensitiveFields(req.numero, !req.isAdmin)
@@ -49,7 +52,10 @@ export class NumeroController {
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
   @ApiBody({ type: UpdateNumeroDto, required: true })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
@@ -67,7 +73,10 @@ export class NumeroController {
   @ApiOperation({ summary: 'Soft delete the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
     const result = await this.numeroService.softDelete(req.numero);
@@ -78,7 +87,10 @@ export class NumeroController {
   @ApiOperation({ summary: 'Delete the numero by id' })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
-  @ApiHeader({ name: 'Token' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
   @UseGuards(AdminGuard)
   async delete(@Req() req: CustomRequest, @Res() res: Response) {
     await this.numeroService.delete(req.numero);

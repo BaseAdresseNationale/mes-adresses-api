@@ -5,6 +5,7 @@ import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { isAdmin } from '@/shared/utils/is-admin.utils';
 
 @Injectable()
 export class BaseLocaleMiddleware implements NestMiddleware {
@@ -16,7 +17,7 @@ export class BaseLocaleMiddleware implements NestMiddleware {
       const basesLocale: BaseLocale =
         await this.baseLocaleService.findOneOrFail(baseLocaleId);
       req.baseLocale = basesLocale;
-      req.isAdmin = req.headers.token === basesLocale.token;
+      req.isAdmin = isAdmin(req, basesLocale);
     }
     next();
   }
