@@ -22,6 +22,12 @@ import { NumeroService } from '@/modules/numeros/numero.service';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
+import { Position } from '@/shared/schemas/position.schema';
+import * as turf from '@turf/turf';
+import bbox from '@turf/bbox';
+import { Feature as FeatureTurf } from '@turf/helpers';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { BBox as BboxTurf } from '@turf/helpers';
 
 @Injectable()
 export class VoieService {
@@ -64,23 +70,28 @@ export class VoieService {
     return this.voieModel.deleteMany(filters);
   }
 
-  async extendVoiesWithNumeros(voies: Voie[]): Promise<ExtendedVoie[]> {
+  async extendVoies(voies: Voie[]): Promise<ExtendedVoie[]> {
     const numeros = await this.numeroService.findMany({
       voie: { $in: voies.map(({ _id }) => _id) },
     });
 
     const numerosByVoies = groupBy(numeros, 'voie');
-    return voies.map((voie) =>
-      extendWithNumeros(voie, numerosByVoies[voie._id] || [], 'voie'),
-    );
+
+    return voies.map((voie) => ({
+      ...extendWithNumeros(voie, numerosByVoies[voie._id] || []),
+      bbox: this.getBBOX(voie, numerosByVoies[voie._id] || []),
+    }));
   }
 
-  async extendVoieWithNumeros(voie: Voie): Promise<ExtendedVoie> {
+  async extendVoie(voie: Voie): Promise<ExtendedVoie> {
     const numeros = await this.numeroService.findMany({
       voie: voie._id,
     });
 
-    return extendWithNumeros(voie, numeros, 'voie');
+    return {
+      ...extendWithNumeros(voie, numeros),
+      bbox: this.getBBOX(voie, numeros),
+    };
   }
 
   public async findAllByBalId(
@@ -230,6 +241,25 @@ export class VoieService {
     }
     const voieExist = await this.voieModel.exists(query).exec();
     return voieExist !== null;
+  }
+
+  getBBOX(voie: Voie, numeros: Numero[]): BboxTurf {
+    const allPositions: Position[] = numeros
+      .filter((n) => n.positions && n.positions.length > 0)
+      .reduce((acc, n) => [...acc, ...n.positions], []);
+
+    if (allPositions.length > 0) {
+      const features: FeatureTurf[] = allPositions.map(({ point }) =>
+        turf.feature(point),
+      );
+      const featuresCollection = turf.featureCollection(features);
+      return bbox(featuresCollection);
+    } else if (
+      voie.trace &&
+      voie.typeNumerotation === TypeNumerotationEnum.NUMERIQUE
+    ) {
+      return bbox(voie.trace);
+    }
   }
 
   touch(voieId: Types.ObjectId, _updated: Date = new Date()) {

@@ -19,6 +19,12 @@ import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
+import { Position } from '@/shared/schemas/position.schema';
+import * as turf from '@turf/turf';
+import bbox from '@turf/bbox';
+import { Feature as FeatureTurf } from '@turf/helpers';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { BBox as BboxTurf } from '@turf/helpers';
 
 @Injectable()
 export class ToponymeService {
@@ -76,9 +82,11 @@ export class ToponymeService {
     });
 
     const numerosByToponymes = groupBy(numeros, 'toponyme');
-    return toponymes.map((t) =>
-      extendWithNumeros(t, numerosByToponymes[t._id] || [], 'toponyme'),
-    );
+
+    return toponymes.map((voie) => ({
+      ...extendWithNumeros(voie, numerosByToponymes[voie._id] || []),
+      bbox: this.getBBOX(voie, numerosByToponymes[voie._id] || []),
+    }));
   }
 
   async extendToponyme(toponyme: Toponyme): Promise<ExtentedToponyme> {
@@ -87,7 +95,10 @@ export class ToponymeService {
       _deleted: null,
     });
 
-    return extendWithNumeros(toponyme, numeros, 'toponyme');
+    return {
+      ...extendWithNumeros(toponyme, numeros),
+      bbox: this.getBBOX(toponyme, numeros),
+    };
   }
 
   public async findAllByBalId(
@@ -200,6 +211,28 @@ export class ToponymeService {
     }
     const toponymeExist = await this.toponymeModel.exists(query).exec();
     return toponymeExist !== null;
+  }
+
+  getBBOX(toponyme: Toponyme, numeros: Numero[]): BboxTurf {
+    const allPositions: Position[] = numeros
+      .filter((n) => n.positions && n.positions.length > 0)
+      .reduce((acc, n) => [...acc, ...n.positions], []);
+
+    if (allPositions.length > 0) {
+      const features: FeatureTurf[] = allPositions.map(({ point }) =>
+        turf.feature(point),
+      );
+      const featuresCollection = turf.featureCollection(features);
+
+      return bbox(featuresCollection);
+    } else if (toponyme.positions && toponyme.positions.length > 0) {
+      const features: FeatureTurf[] = toponyme.positions.map(({ point }) =>
+        turf.feature(point),
+      );
+      const featuresCollection = turf.featureCollection(features);
+
+      return bbox(featuresCollection);
+    }
   }
 
   touch(toponymeId: Types.ObjectId, _updated: Date = new Date()) {

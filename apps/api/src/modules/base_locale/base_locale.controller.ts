@@ -232,7 +232,7 @@ export class BaseLocaleController {
       isDeleted,
     );
     const extendedVoie: ExtendedVoie[] =
-      await this.voieService.extendVoiesWithNumeros(voies);
+      await this.voieService.extendVoies(voies);
     res.status(HttpStatus.OK).json(extendedVoie);
   }
 

@@ -53,8 +53,9 @@ export class VoieController {
     description: 'Base locale token (Token xxx)',
   })
   async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const voieExtended: ExtendedVoie =
-      await this.voieService.extendVoieWithNumeros(req.voie);
+    const voieExtended: ExtendedVoie = await this.voieService.extendVoie(
+      req.voie,
+    );
     res.status(HttpStatus.OK).json(voieExtended);
   }
 
