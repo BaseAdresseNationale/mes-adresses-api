@@ -35,6 +35,9 @@ import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { formatEmail as createNewAdminNotificationEmail } from './sub_modules/mailer/templates/new-admin-notification';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
+import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
+import { getCommune } from '@/shared/utils/cog.utils';
+import { PopulateService } from './sub_modules/populate/populate.service';
 
 @Injectable()
 export class BaseLocaleService {
@@ -47,6 +50,8 @@ export class BaseLocaleService {
     private toponymeService: ToponymeService,
     @Inject(forwardRef(() => NumeroService))
     private numeroService: NumeroService,
+    @Inject(forwardRef(() => PopulateService))
+    private populateService: PopulateService,
   ) {}
 
   async findOneOrFail(id: string): Promise<BaseLocale> {
@@ -98,6 +103,25 @@ export class BaseLocaleService {
     await this.mailerService.sendMail(email, newBaseLocale.emails);
 
     return newBaseLocale;
+  }
+
+  async createDemo(
+    createDemoInput: CreateDemoBaseLocaleDTO,
+  ): Promise<BaseLocale> {
+    const { commune, populate } = createDemoInput;
+
+    const newDemoBaseLocale = await this.baseLocaleModel.create({
+      token: generateBase62String(20),
+      commune,
+      nom: `Adresses de ${getCommune(commune).nom} [démo]`,
+      status: StatusBaseLocalEnum.DEMO,
+    });
+
+    if (populate) {
+      await this.populate(newDemoBaseLocale);
+    }
+
+    return newDemoBaseLocale;
   }
 
   async updateOne(
@@ -168,7 +192,7 @@ export class BaseLocaleService {
     }
   }
 
-  async hardDeleteOne(baseLocale: BaseLocale) {
+  async deleteData(baseLocale: BaseLocale) {
     await this.numeroService.deleteMany({
       _bal: baseLocale._id,
     });
@@ -176,6 +200,10 @@ export class BaseLocaleService {
     await this.toponymeService.deleteMany({
       _bal: baseLocale._id,
     });
+  }
+
+  async hardDeleteOne(baseLocale: BaseLocale) {
+    await this.deleteData(baseLocale);
     await this.baseLocaleModel.deleteOne({ _id: baseLocale._id });
   }
 
@@ -188,6 +216,28 @@ export class BaseLocaleService {
 
   async aggregate(aggregation?: PipelineStage[]): Promise<Aggregate<any>> {
     return this.baseLocaleModel.aggregate(aggregation);
+  }
+
+  async populate(baseLocale: BaseLocale): Promise<BaseLocale> {
+    await this.deleteData(baseLocale);
+    // const { numeros, voies, toponymes } = await this.populateService.extract(
+    //   baseLocale.commune,
+    // );
+    // await Promise.all([
+    //   this.voieService.importMany(baseLocale._id, voies, {
+    //     validate: false,
+    //     keepIds: true,
+    //   }),
+    //   this.numeroService.importMany(baseLocale._id, numeros, {
+    //     validate: false,
+    //   }),
+    //   this.toponymeService.importMany(baseLocale._id, toponymes, {
+    //     validate: false,
+    //     keepIds: true,
+    //   }),
+    // ]);
+
+    return baseLocale;
   }
 
   async exportToCsv(baseLocale: BaseLocale): Promise<string> {

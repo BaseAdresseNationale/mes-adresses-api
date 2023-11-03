@@ -138,6 +138,10 @@ export class VoieService {
     return voieCreated;
   }
 
+  async importMany() {
+    // TODO
+  }
+
   async updateOne(
     voieId: Types.ObjectId,
     update: Partial<Voie>,

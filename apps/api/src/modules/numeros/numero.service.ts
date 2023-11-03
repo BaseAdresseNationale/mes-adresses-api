@@ -96,6 +96,10 @@ export class NumeroService {
     return this.numeroModel.countDocuments(filters);
   }
 
+  async importMany() {
+    // TODO
+  }
+
   public async create(
     voie: Voie,
     createNumeroDto: CreateNumeroDto,

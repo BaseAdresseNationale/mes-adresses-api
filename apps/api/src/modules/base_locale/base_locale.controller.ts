@@ -44,6 +44,7 @@ import { ExtendedBaseLocale } from './dto/extended_base_locale';
 import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -70,6 +71,21 @@ export class BaseLocaleController {
       await this.baseLocaleService.createOne(createBaseLocaleDTO);
 
     res.status(HttpStatus.OK).json(newBaseLocale);
+  }
+
+  @Post('create-demo')
+  @ApiOperation({ summary: 'Create a base locale' })
+  @ApiBody({ type: CreateDemoBaseLocaleDTO, required: true })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  async createDemoBaseLocale(
+    @Req() req: Request,
+    @Body() createBaseLocaleDTO: CreateBaseLocaleDTO,
+    @Res() res: Response,
+  ) {
+    const newDemoBaseLocale =
+      await this.baseLocaleService.createDemo(createBaseLocaleDTO);
+
+    res.status(HttpStatus.OK).json(newDemoBaseLocale);
   }
 
   @Get(':baseLocaleId')

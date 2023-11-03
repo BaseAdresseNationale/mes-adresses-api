@@ -201,6 +201,10 @@ export class ToponymeService {
     }
   }
 
+  // async importMany(baseLocale: BaseLocale, toponymes: Toponyme[]) {
+  //   // TODO
+  // }
+
   async isToponymeExist(
     _id: Types.ObjectId,
     _bal: Types.ObjectId = null,
