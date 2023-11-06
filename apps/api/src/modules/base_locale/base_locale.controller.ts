@@ -40,7 +40,7 @@ import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
 import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
-import { ExtendedBaseLocale } from './dto/extended_base_locale';
+import { ExtendedBaseLocale } from '@/modules/base_locale/dto/extended_base_locale';
 import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
@@ -122,7 +122,10 @@ export class BaseLocaleController {
       const balExtended: ExtendedBaseLocale =
         await this.baseLocaleService.extendWithNumeros(bal);
       const balExtendedFiltered: Omit<ExtendedBaseLocale, 'token' | 'emails'> =
-        filterSensitiveFields(balExtended);
+        filterSensitiveFields(balExtended) as Omit<
+          ExtendedBaseLocale,
+          'token' | 'emails'
+        >;
       results.push(balExtendedFiltered);
     }
     const page: PageBaseLocaleDTO = {

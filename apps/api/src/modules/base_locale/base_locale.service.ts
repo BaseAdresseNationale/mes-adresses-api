@@ -28,7 +28,7 @@ import { generateBase62String } from '@/lib/utils/token.utils';
 import { formatEmail as createBalCreationNotificationEmail } from '@/modules/base_locale/sub_modules/mailer/templates/bal-creation-notification';
 import { exportBalToCsv } from '@/lib/utils/export_csv_bal.utils';
 import { exportVoiesToCsv } from '@/modules/base_locale/utils/csv_voies.utils';
-import { ExtendedBaseLocale } from './dto/extended_base_locale';
+import { ExtendedBaseLocale } from '@/modules/base_locale/dto/extended_base_locale';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
