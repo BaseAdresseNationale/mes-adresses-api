@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ExtendedBaseLocale } from '@/modules/base_locale/dto/extended_base_locale';
+import { ExtendedBaseLocale } from './extended_base_locale';
 import { Type } from 'class-transformer';
 
 export class PageBaseLocaleDTO {
