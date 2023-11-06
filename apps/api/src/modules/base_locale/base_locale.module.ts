@@ -22,6 +22,7 @@ import { VoieModule } from '@/modules/voie/voie.module';
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
+import { SearchQueryPipe } from './pipe/search_query.pipe';
 
 @Module({
   imports: [
@@ -36,7 +37,12 @@ import { PopulateModule } from './sub_modules/populate/populate.module';
     forwardRef(() => CommuneModule),
     forwardRef(() => PopulateModule),
   ],
-  providers: [BaseLocaleMiddleware, BaseLocaleService, MailerService],
+  providers: [
+    BaseLocaleMiddleware,
+    BaseLocaleService,
+    MailerService,
+    SearchQueryPipe,
+  ],
   controllers: [BaseLocaleController],
   exports: [BaseLocaleService],
 })

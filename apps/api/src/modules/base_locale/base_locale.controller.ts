@@ -47,6 +47,11 @@ import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 import { PageBaseLocaleDTO } from './dto/page_base_locale.dto';
+import { SearchBaseLocalQuery } from './dto/search_base_locale.query';
+import {
+  SearchQueryPipe,
+  SearchQueryTransformed,
+} from './pipe/search_query.pipe';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -93,9 +98,7 @@ export class BaseLocaleController {
 
   @Get('/search')
   @ApiOperation({ summary: 'Search BAL by filters' })
-  @ApiQuery({ name: 'limit', type: Number, required: false })
-  @ApiQuery({ name: 'offset', type: Number, required: false })
-  @ApiQuery({ name: 'filters', type: String, required: false, isArray: true })
+  @ApiQuery({ type: SearchBaseLocalQuery })
   @ApiResponse({
     status: HttpStatus.OK,
     type: PageBaseLocaleDTO,
@@ -105,12 +108,9 @@ export class BaseLocaleController {
     description: 'Base locale token (Token xxx)',
   })
   async searchBaseLocale(
-    @Query('limit') limit: number = 20,
-    @Query('offset') offset: number = 0,
-    @Query('filters') filters: FilterQuery<BaseLocale> = {},
+    @Query(SearchQueryPipe) { filters, limit, offset }: SearchQueryTransformed,
     @Res() res: Response,
   ) {
-    console.log('SEARCH');
     const basesLocales: BaseLocale[] = await this.baseLocaleService.findMany(
       filters,
       null,

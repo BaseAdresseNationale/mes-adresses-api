@@ -64,11 +64,12 @@ describe('BASE LOCAL MODULE', () => {
     await numeroModel.deleteMany({});
   });
 
-  async function createBal() {
+  async function createBal(props: Partial<BaseLocale> = {}) {
     const balId = new Types.ObjectId();
     const bal: Partial<BaseLocale> = {
       _id: balId,
       token,
+      ...props,
     };
     await balModel.create(bal);
     return balId;
@@ -551,4 +552,53 @@ describe('BASE LOCAL MODULE', () => {
       //       expect(response.text).toEqual(csvFile);
     });
   });
+
+  // describe('GET /bases-locales/search', () => {
+  //   it('Find 200', async () => {
+  //     const balId1 = await createBal({
+  //       token: 'coucou',
+  //       emails: ['living@data.com'],
+  //       commune: '55326',
+  //     });
+
+  //     const balId2 = await createBal({
+  //       token: 'coucou',
+  //       emails: ['fetching@data.com'],
+  //       commune: '55500',
+  //     });
+
+  //     const response = await request(app.getHttpServer())
+  //       .get(`/bases-locales/search?commune=55326&email=living@data.com`)
+  //       .expect(200);
+
+  //     expect(response.body.count).toEqual(1);
+  //   });
+  // });
+  // test('Fetch Bases Locales by commune and email', async (t) => {
+  //   const idBal1 = new mongo.ObjectId();
+  //   const idBal2 = new mongo.ObjectId();
+
+  //   await mongo.db.collection('bases_locales').insertOne({
+  //     _id: idBal1,
+  //     token: 'coucou',
+  //     emails: ['living@data.com'],
+  //     commune: '55326',
+  //   });
+
+  //   await mongo.db.collection('bases_locales').insertOne({
+  //     _id: idBal2,
+  //     token: 'coucou',
+  //     emails: ['fetching@data.com'],
+  //     commune: '55500',
+  //   });
+
+  //   const response = await request(getApp()).get(
+  //     '/bases-locales/search?commune=55326&email=living@data.com',
+  //   );
+
+  //   t.is(response.status, 200);
+  //   t.is(response.body.results.length, 1);
+  //   t.is(response.body.results[0].email, undefined);
+  //   t.is(response.body.results[0].commune, '55326');
+  // });
 });
