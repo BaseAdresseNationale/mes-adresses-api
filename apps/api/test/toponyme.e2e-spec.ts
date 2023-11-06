@@ -151,7 +151,7 @@ describe('TOPONYME MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/toponymes/${toponymeId}/numeros`)
-        .set('Token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
 
       expect(response.body.length).toEqual(2);

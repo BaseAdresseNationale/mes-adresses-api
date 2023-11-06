@@ -135,7 +135,7 @@ describe('NUMERO', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/numeros/${numeroId}`)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
       expect(response.body.comment).toEqual('coucou');
     });
@@ -165,7 +165,7 @@ describe('NUMERO', () => {
       const response = await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
 
       expect(response.body._id).toEqual(numeroId.toString());
@@ -191,7 +191,7 @@ describe('NUMERO', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(404);
     });
 
@@ -211,7 +211,7 @@ describe('NUMERO', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(404);
     });
 
@@ -231,7 +231,7 @@ describe('NUMERO', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(404);
     });
 
@@ -278,7 +278,7 @@ describe('NUMERO', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
 
       const voieDbAfter = await voieModel.findOne({ _id: voieId });
@@ -307,7 +307,7 @@ describe('NUMERO', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
 
       const numeroDbAfter = await numeroModel.findOne({ _id: numeroId });
@@ -347,7 +347,7 @@ describe('NUMERO', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
 
       const numeroDbAfter = await numeroModel.findOne({ _id: numeroId });
@@ -386,7 +386,7 @@ describe('NUMERO', () => {
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
 
       const voie1DbAfter: Voie = await voieModel.findOne({ _id: voieId1 });
@@ -416,7 +416,7 @@ describe('NUMERO', () => {
 
       await request(app.getHttpServer())
         .delete(`/numeros/${numeroId}`)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(204);
 
       const numeroDeleted: Numero = await numeroModel.findOne({
@@ -434,7 +434,7 @@ describe('NUMERO', () => {
       const numeroId = new Types.ObjectId();
       await request(app.getHttpServer())
         .delete(`/numeros/${numeroId}`)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(404);
     });
 
@@ -475,7 +475,7 @@ describe('NUMERO', () => {
 
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}/soft-delete`)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
 
       const numeroDeleted: Numero = await numeroModel.findOne({
@@ -494,7 +494,7 @@ describe('NUMERO', () => {
       const numeroId = new Types.ObjectId();
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}/soft-delete`)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(404);
     });
 

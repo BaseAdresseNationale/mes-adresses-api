@@ -113,7 +113,7 @@
       "ts"
     ],
     "rootDir": ".",
-    "testRegex": ".*\\.spec\\.ts$",
+    "testRegex": "spec.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
@@ -123,9 +123,9 @@
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@/lib/(.*)$": "<rootDir>/lib/$1",
-      "^@/modules/(.*)$": "<rootDir>/modules/$1",
-      "^@/shared(|/.*)$": "<rootDir>/libs/shared/src/$1"
+      "^@/lib/(.*)$": "<rootDir>/apps/api/src/lib/$1",
+      "^@/modules/(.*)$": "<rootDir>/apps/api/src/modules/$1",
+      "^@/shared/(.*)$": "<rootDir>/libs/shared/src/$1"
     },
     "roots": [
       "<rootDir>/apps/",

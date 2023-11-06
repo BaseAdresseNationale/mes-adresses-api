@@ -17,7 +17,7 @@ import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
 import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
 
-describe('VOIE MODULE', () => {
+describe('BASE LOCAL MODULE', () => {
   let app: INestApplication;
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
@@ -115,7 +115,7 @@ describe('VOIE MODULE', () => {
     ];
   }
 
-  describe('PUT /bases_locales/numeros/batch', () => {
+  describe('PUT /bases-locales/numeros/batch', () => {
     it('Batch 200 numeros change voie', async () => {
       const balId = await createBal();
       const voieId1 = await createVoie({ nom: 'rue de la paix', _bal: balId });
@@ -156,9 +156,9 @@ describe('VOIE MODULE', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .put(`/bases_locales/${balId}/numeros/batch`)
+        .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
 
       expect(response.body.modifiedCount).toEqual(2);
@@ -234,9 +234,9 @@ describe('VOIE MODULE', () => {
       };
 
       await request(app.getHttpServer())
-        .put(`/bases_locales/${balId}/numeros/batch`)
+        .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(400);
     });
 
@@ -255,9 +255,9 @@ describe('VOIE MODULE', () => {
       };
 
       await request(app.getHttpServer())
-        .put(`/bases_locales/${balId}/numeros/batch`)
+        .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(400);
     });
 
@@ -278,9 +278,9 @@ describe('VOIE MODULE', () => {
       };
 
       await request(app.getHttpServer())
-        .put(`/bases_locales/${balId}/numeros/batch`)
+        .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(404);
     });
 
@@ -301,14 +301,14 @@ describe('VOIE MODULE', () => {
       };
 
       await request(app.getHttpServer())
-        .put(`/bases_locales/${balId}/numeros/batch`)
+        .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(404);
     });
   });
 
-  describe('PUT /bases_locales/numeros/batch/soft-delete', () => {
+  describe('PUT /bases-locales/numeros/batch/soft-delete', () => {
     it('Soft Delete 200', async () => {
       const balId = await createBal();
       const voieId1 = await createVoie({ nom: 'rue de la paix', _bal: balId });
@@ -341,9 +341,9 @@ describe('VOIE MODULE', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .put(`/bases_locales/${balId}/numeros/batch/soft-delete`)
+        .put(`/bases-locales/${balId}/numeros/batch/soft-delete`)
         .send(deleteBtach)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
 
       expect(response.body.modifiedCount).toEqual(2);
@@ -390,14 +390,14 @@ describe('VOIE MODULE', () => {
       };
 
       await request(app.getHttpServer())
-        .put(`/bases_locales/${balId}/numeros/batch/soft-delete`)
+        .put(`/bases-locales/${balId}/numeros/batch/soft-delete`)
         .send(deleteBtach)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(400);
     });
   });
 
-  describe('DELETE /bases_locales/numeros/batch', () => {
+  describe('DELETE /bases-locales/numeros/batch', () => {
     it('Delete 204', async () => {
       const balId = await createBal();
       const voieId1 = await createVoie({ nom: 'rue de la paix', _bal: balId });
@@ -430,9 +430,9 @@ describe('VOIE MODULE', () => {
       };
 
       await request(app.getHttpServer())
-        .delete(`/bases_locales/${balId}/numeros/batch/`)
+        .delete(`/bases-locales/${balId}/numeros/batch/`)
         .send(deleteBtach)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(204);
 
       const numero1After: Numero = await numeroModel.findOne({
@@ -476,9 +476,9 @@ describe('VOIE MODULE', () => {
       };
 
       await request(app.getHttpServer())
-        .delete(`/bases_locales/${balId}/numeros/batch`)
+        .delete(`/bases-locales/${balId}/numeros/batch`)
         .send(deleteBtach)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(400);
     });
   });

@@ -31,10 +31,7 @@ describe('VOIE MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        MongooseModule.forRoot(uri),
-        VoieModule
-      ],
+      imports: [MongooseModule.forRoot(uri), VoieModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -124,7 +121,7 @@ describe('VOIE MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/voies/${voieId}/numeros`)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(200);
       expect(response.body.length).toEqual(1);
       expect(response.body[0]._id).toEqual(numeroId1.toString());
@@ -153,7 +150,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(201);
       expect(response.body.numero).toEqual(1);
       expect(response.body._bal).toEqual(balId.toString());
@@ -199,7 +196,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(201);
 
       expect(response.body.numero).toEqual(1);
@@ -246,7 +243,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(404);
 
       expect(response.text).toEqual(
@@ -286,7 +283,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(404);
 
       expect(response.text).toEqual(
@@ -315,7 +312,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(400);
 
       expect(response.text).toEqual(
@@ -349,7 +346,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('token', token)
+        .set('authorization', `Token ${token}`)
         .expect(400);
 
       expect(response.text).toEqual(
