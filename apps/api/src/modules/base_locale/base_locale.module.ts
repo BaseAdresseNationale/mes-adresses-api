@@ -1,4 +1,9 @@
-import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
+import {
+  Module,
+  MiddlewareConsumer,
+  forwardRef,
+  RequestMethod,
+} from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import {
@@ -37,6 +42,9 @@ import { PopulateModule } from './sub_modules/populate/populate.module';
 })
 export class BaseLocaleModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(BaseLocaleMiddleware).forRoutes(BaseLocaleController);
+    consumer
+      .apply(BaseLocaleMiddleware)
+      .exclude({ path: 'bases-locales/search', method: RequestMethod.GET })
+      .forRoutes(BaseLocaleController);
   }
 }

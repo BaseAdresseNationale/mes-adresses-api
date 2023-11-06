@@ -200,18 +200,21 @@ app.route('/bases-locales/recovery')
     res.sendStatus(200)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/csv')
   .get(w(async (req, res) => {
     const csvFile = await BaseLocale.exportAsCsv(req.baseLocale._id)
     res.attachment('bal.csv').type('csv').send(csvFile)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/voies/csv')
   .get(w(async (req, res) => {
     const csvFile = await BaseLocale.exportVoiesAsCsv(req.baseLocale._id)
     res.status(200).attachment('liste-des-voies.csv').type('csv').send(csvFile)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/numeros/batch')
   .post(ensureIsAdmin, w(async (req, res) => {
     const batchUpdate = await Numero.batchUpdateNumeros(req.baseLocale._id, req.body)
@@ -222,6 +225,7 @@ app.route('/bases-locales/:baseLocaleId/numeros/batch')
     res.send(batchRemove)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/numeros/batch/soft-delete')
   .put(ensureIsAdmin, w(async (req, res) => {
     const batchSoftRemove = await Numero.batchSoftRemoveNumeros(req.baseLocale._id, req.body)
@@ -307,6 +311,7 @@ app.route('/bases-locales/:baseLocaleId/habilitation/email/validate-pin-code')
     }
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/tiles/:z/:x/:y.pbf')
   .get(w(async (req, res) => {
     const y = Number.parseInt(req.params.y, 10)
@@ -342,6 +347,7 @@ app.post('/bases-locales/:baseLocaleId/token/renew', ensureIsAdmin, w(async (req
   res.send(baseLocale)
 }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/voies')
   .post(ensureIsAdmin, w(async (req, res) => {
     const voie = await Voie.create(req.baseLocale, req.body)
@@ -354,12 +360,14 @@ app.route('/bases-locales/:baseLocaleId/voies')
     res.send(voiesExpanded)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/voies-deleted')
   .get(w(async (req, res) => {
     const voiesDeleted = await Voie.fetchAllDeleted(req.baseLocale._id)
     res.send(voiesDeleted)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/toponymes')
   .post(ensureIsAdmin, w(async (req, res) => {
     const toponyme = await Toponyme.create(req.baseLocale._id, req.body)
@@ -372,6 +380,7 @@ app.route('/bases-locales/:baseLocaleId/toponymes')
     res.send(toponymesExpanded)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/toponymes-deleted')
   .get(w(async (req, res) => {
     const toponymesDeleted = await Toponyme.fetchAllDeleted(req.baseLocale._id)
@@ -384,12 +393,14 @@ app.route('/bases-locales/:baseLocaleId/parcelles')
     res.send(parcelles)
   }))
 
+// OBSOLETTE
 app.route('/bases-locales/:baseLocaleId/batch')
   .post(ensureIsAdmin, w(async (req, res) => {
     const batchUpdate = await BaseLocale.batchUpdateNumeros(req.baseLocale._id, req.body)
     res.send(batchUpdate)
   }))
 
+// DONE
 app.route('/voies/:voieId')
   .get(w(async (req, res) => {
     const voie = await expandVoieOrToponyme(req.voie, 'voie')
@@ -404,6 +415,7 @@ app.route('/voies/:voieId')
     res.sendStatus(204)
   }))
 
+// DONE
 app.route('/voies/:voieId/numeros')
   .post(ensureIsAdmin, w(async (req, res) => {
     const numero = await Numero.create(req.voie._id, req.body)
@@ -423,6 +435,7 @@ app.route('/voies/:voieId/numeros')
     }
   }))
 
+// OBSOLETTE
 app.route('/voies/:voieId/batch')
   .post(ensureIsAdmin, w(async (req, res) => {
     const batchUpdate = await Voie.batchUpdateNumeros(req.voie._id, req.body)
@@ -435,18 +448,21 @@ app.route('/voies/:voieId/convert-to-toponyme')
     res.send(toponyme)
   }))
 
+// DONE
 app.route('/voies/:voieId/soft-delete')
   .put(ensureIsAdmin, w(async (req, res) => {
     const voie = await Voie.softRemove(req.voie._id, req.body)
     res.send(voie)
   }))
 
+// DONE
 app.route('/voies/:voieId/restore')
   .put(ensureIsAdmin, w(async (req, res) => {
     const voie = await Voie.restore(req.voie._id, req.body)
     res.send(voie)
   }))
 
+// DONE
 app.route('/numeros/:numeroId')
   .get(w(async (req, res) => {
     if (req.isAdmin) {
@@ -466,12 +482,14 @@ app.route('/numeros/:numeroId')
     res.sendStatus(204)
   }))
 
+// DONE
 app.route('/numeros/:numeroId/soft-delete')
   .put(ensureIsAdmin, w(async (req, res) => {
     const numero = await Numero.softRemove(req.numero._id)
     res.send(numero)
   }))
 
+// DONE
 app.route('/toponymes/:toponymeId')
   .get(w(async (req, res) => {
     const toponyme = await expandVoieOrToponyme(req.toponyme, 'toponyme')
@@ -486,18 +504,20 @@ app.route('/toponymes/:toponymeId')
     res.sendStatus(204)
   }))
 
+// DONE
 app.route('/toponymes/:toponymeId/restore')
   .put(ensureIsAdmin, w(async (req, res) => {
     const toponyme = await Toponyme.restore(req.toponyme._id)
     res.send(toponyme)
   }))
 
+// DONE
 app.route('/toponymes/:toponymeId/soft-delete')
   .put(ensureIsAdmin, w(async (req, res) => {
     const toponyme = await Toponyme.softRemove(req.toponyme._id)
     res.send(toponyme)
   }))
-
+// DONE
 app.route('/toponymes/:toponymeId/numeros')
   .get(w(async (req, res) => {
     const numeros = await Numero.fetchByToponyme(req.toponyme._id)

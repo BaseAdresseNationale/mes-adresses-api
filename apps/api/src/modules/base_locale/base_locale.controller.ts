@@ -22,6 +22,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FilterQuery } from 'mongoose';
 import { Request, Response } from 'express';
 
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
@@ -39,12 +40,13 @@ import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
 import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
-import { filterSensitiveFields } from '@/shared/utils/base-locale.utils';
+import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
 import { ExtendedBaseLocale } from './dto/extended_base_locale';
 import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
+import { PageBaseLocaleDTO } from './dto/page_base_locale.dto';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -58,6 +60,7 @@ export class BaseLocaleController {
     @Inject(forwardRef(() => ToponymeService))
     private toponymeService: ToponymeService,
   ) {}
+
   @Post('')
   @ApiOperation({ summary: 'Create a base locale' })
   @ApiBody({ type: CreateBaseLocaleDTO, required: true })
@@ -88,6 +91,50 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(newDemoBaseLocale);
   }
 
+  @Get('/search')
+  @ApiOperation({ summary: 'Search BAL by filters' })
+  @ApiQuery({ name: 'limit', type: Number, required: false })
+  @ApiQuery({ name: 'offset', type: Number, required: false })
+  @ApiQuery({ name: 'filters', type: String, required: false, isArray: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PageBaseLocaleDTO,
+  })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
+  async searchBaseLocale(
+    @Query('limit') limit: number = 20,
+    @Query('offset') offset: number = 0,
+    @Query('filters') filters: FilterQuery<BaseLocale> = {},
+    @Res() res: Response,
+  ) {
+    console.log('SEARCH');
+    const basesLocales: BaseLocale[] = await this.baseLocaleService.findMany(
+      filters,
+      null,
+      limit,
+      offset,
+    );
+    const count: number = await this.baseLocaleService.countDocuments(filters);
+    const results: Omit<ExtendedBaseLocale, 'token' | 'emails'>[] = [];
+    for (const bal of basesLocales) {
+      const balExtended: ExtendedBaseLocale =
+        await this.baseLocaleService.extendWithNumeros(bal);
+      const balExtendedFiltered: Omit<ExtendedBaseLocale, 'token' | 'emails'> =
+        filterSensitiveFields(balExtended);
+      results.push(balExtendedFiltered);
+    }
+    const page: PageBaseLocaleDTO = {
+      offset,
+      limit,
+      count,
+      results,
+    };
+    res.status(HttpStatus.OK).json(page);
+  }
+
   @Get(':baseLocaleId')
   @ApiOperation({ summary: 'Find Base_Locale by id' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
@@ -100,6 +147,7 @@ export class BaseLocaleController {
     description: 'Base locale token (Token xxx)',
   })
   async findOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+    console.log('FIND');
     const baseLocale = await this.baseLocaleService.extendWithNumeros(
       req.baseLocale,
     );

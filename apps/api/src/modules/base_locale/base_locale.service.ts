@@ -74,9 +74,15 @@ export class BaseLocaleService {
     return this.baseLocaleModel.findOne(filter);
   }
 
+  async countDocuments(filter?: FilterQuery<BaseLocale>): Promise<number> {
+    return this.baseLocaleModel.countDocuments(filter);
+  }
+
   async findMany(
     filter?: FilterQuery<BaseLocale>,
     selector: Record<string, number> = null,
+    limit: number = null,
+    offset: number = null,
   ): Promise<BaseLocale[]> {
     const query: QueryWithHelpers<
       Array<BaseLocale>,
@@ -85,6 +91,12 @@ export class BaseLocaleService {
 
     if (selector) {
       query.select(selector);
+    }
+    if (limit) {
+      query.limit(limit);
+    }
+    if (offset) {
+      query.skip(offset);
     }
 
     return query.exec();
