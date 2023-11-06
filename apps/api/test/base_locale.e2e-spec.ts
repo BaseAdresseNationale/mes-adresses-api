@@ -552,6 +552,66 @@ describe('BASE LOCAL MODULE', () => {
     });
   });
 
+  describe('GET /bases-locales/csv', () => {
+    it('Delete 204', async () => {
+      const balId = await createBal();
+      const voieId1 = await createVoie({
+        nom: 'rue de la paix',
+        commune: '91534',
+        _bal: balId,
+      });
+      const voieId2 = await createVoie({
+        nom: 'rue de paris',
+        commune: '91534',
+        _bal: balId,
+      });
+      const numeroId1 = await createNumero({
+        _bal: balId,
+        voie: voieId1,
+        numero: 1,
+        suffixe: 'bis',
+        positions: createPositions(),
+        certifie: true,
+        commune: '91534',
+        _updated: new Date('2000-01-01'),
+      });
+      const numeroId2 = await createNumero({
+        _bal: balId,
+        voie: voieId2,
+        numero: 1,
+        suffixe: 'ter',
+        positions: createPositions(),
+        certifie: false,
+        commune: '91534',
+        _updated: new Date('2000-01-01'),
+      });
+
+      const deleteBtach: DeleteBatchNumeroDto = {
+        numerosIds: [numeroId1, numeroId2],
+      };
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/voies/csv`)
+        .send(deleteBtach)
+        .set('token', token)
+        .expect(200);
+
+      expect(response.headers['content-disposition']).toEqual(
+        'attachment; filename="liste-des-voies.csv"',
+      );
+      expect(response.headers['content-type']).toEqual(
+        'text/csv; charset=utf-8',
+      );
+
+      const csvFile = `type;nom;nombre_de_numeros;numeros
+voie;rue de la paix;1;1bis
+voie;rue de paris;1;1ter`;
+      expect(response.text.replace(/\s/g, '')).toEqual(
+        csvFile.replace(/\s/g, ''),
+      );
+    });
+  });
+
   describe('GET /bases-locales/search', () => {
     it('Find 200', async () => {
       const balId1 = await createBal({
