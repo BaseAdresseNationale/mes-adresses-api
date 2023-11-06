@@ -26,7 +26,7 @@ import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.s
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { generateBase62String } from '@/lib/utils/token.utils';
 import { formatEmail as createBalCreationNotificationEmail } from '@/modules/base_locale/sub_modules/mailer/templates/bal-creation-notification';
-import { exportBalToCsv } from '@/lib/utils/csv_bal.utils';
+import { exportBalToCsv } from '@/lib/utils/export_csv_bal.utils';
 import { exportVoiesToCsv } from '@/modules/base_locale/utils/csv_voies.utils';
 import { ExtendedBaseLocale } from './dto/extended_base_locale';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
