@@ -37,7 +37,7 @@ export class SearchQueryPipe implements PipeTransform {
         HttpStatus.BAD_REQUEST,
       );
     }
-    console.log(query.deleted);
+
     if (query.deleted) {
       if (query.deleted === 'false') {
         filters._deleted = { $eq: null };
