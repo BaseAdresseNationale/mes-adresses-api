@@ -28,6 +28,9 @@ import bbox from '@turf/bbox';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { BBox as BboxTurf } from '@turf/helpers';
+import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
+import { ToponymeService } from '@/modules/toponyme/toponyme.service';
+import { CreateToponymeDto } from '../toponyme/dto/create_toponyme.dto';
 
 @Injectable()
 export class VoieService {
@@ -39,6 +42,8 @@ export class VoieService {
     private numeroService: NumeroService,
     @Inject(forwardRef(() => TilesService))
     private tilesService: TilesService,
+    @Inject(forwardRef(() => ToponymeService))
+    private toponymeService: ToponymeService,
   ) {}
 
   async findOneOrFail(voieId: string): Promise<Voie> {
@@ -264,6 +269,44 @@ export class VoieService {
     ) {
       return bbox(voie.trace);
     }
+  }
+
+  async convertToToponyme(voie: Voie): Promise<Toponyme> {
+    if (!this.isVoieExist(voie._id)) {
+      throw new HttpException(
+        `Voie ${voie._id} is deleted`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const numerosCount: number = await this.numeroService.count({
+      voie: voie._id,
+      _deleted: null,
+    });
+    if (numerosCount > 0) {
+      throw new HttpException(
+        `Voie ${voie._id} has numero(s)`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const baseLocale = await this.baseLocaleService.findOneOrFail(
+      voie._bal.toString(),
+    );
+
+    // CREATE TOPONYME
+    const payload: CreateToponymeDto = {
+      nom: voie.nom,
+      nomAlt: voie.nomAlt,
+    };
+    const toponyme: Toponyme = await this.toponymeService.create(
+      baseLocale,
+      payload,
+    );
+    // DELETE VOIE
+    await this.delete(voie);
+    // RETURN NEW TOPONYME
+    return toponyme;
   }
 
   touch(voieId: Types.ObjectId, _updated: Date = new Date()) {

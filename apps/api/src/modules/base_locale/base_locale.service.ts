@@ -74,7 +74,7 @@ export class BaseLocaleService {
     return this.baseLocaleModel.findOne(filter);
   }
 
-  async countDocuments(filter?: FilterQuery<BaseLocale>): Promise<number> {
+  async count(filter?: FilterQuery<BaseLocale>): Promise<number> {
     return this.baseLocaleModel.countDocuments(filter);
   }
 

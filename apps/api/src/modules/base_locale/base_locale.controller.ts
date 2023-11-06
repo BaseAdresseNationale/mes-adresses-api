@@ -117,7 +117,7 @@ export class BaseLocaleController {
       limit,
       offset,
     );
-    const count: number = await this.baseLocaleService.countDocuments(filters);
+    const count: number = await this.baseLocaleService.count(filters);
     const results: Omit<ExtendedBaseLocale, 'token' | 'emails'>[] = [];
     for (const bal of basesLocales) {
       const balExtended: ExtendedBaseLocale =

@@ -26,7 +26,7 @@ function checkQueryDateFromTo(req) {
   }
 }
 
-// NOT USE
+// OBSOLETTE
 app.route('/')
   .get(w(async (req, res) => {
     const stats = await useCache('bal-stats', 300, async () => {
@@ -43,6 +43,7 @@ app.route('/')
     res.send(stats)
   }))
 
+// DONE
 app.route('/bals')
   .post(w(async (req, res) => {
     const {fields} = req.query
@@ -51,12 +52,14 @@ app.route('/bals')
     res.status(201).send(bals)
   }))
 
+// DONE
 app.route('/bals/status')
   .get(w(async (req, res) => {
     const status = await BaseLocale.statusRepartitionStats()
     res.status(201).send(status)
   }))
 
+// DONE
 app.route('/creations')
   .get(w(async (req, res) => {
     checkQueryDateFromTo(req)
@@ -70,7 +73,7 @@ app.route('/creations')
     res.send(stats)
   }))
 
-// NOT USE
+// OBSOLETTE
 app.route('/departements/:codeDepartement')
   .get(w(async (req, res) => {
     const {codeDepartement} = req.params

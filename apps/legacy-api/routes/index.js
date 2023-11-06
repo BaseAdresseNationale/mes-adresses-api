@@ -115,6 +115,7 @@ app.route('/bases-locales/create-demo')
     res.status(201).send(baseLocale)
   }))
 
+// DONE
 app.route('/bases-locales/search')
   .get(w(async (req, res) => {
     const {offset, limit, count, basesLocales} = await BaseLocale.fetchByQuery(req.query)
@@ -387,6 +388,7 @@ app.route('/bases-locales/:baseLocaleId/toponymes-deleted')
     res.send(toponymesDeleted)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/parcelles')
   .get(w(async (req, res) => {
     const parcelles = await BaseLocale.getAssignedParcelles(req.baseLocale._id)

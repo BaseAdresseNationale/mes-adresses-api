@@ -34,6 +34,7 @@ import { UpdateVoieDto } from '@/modules/voie/dto/update_voie.dto';
 import { RestoreVoieDto } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
+import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -164,5 +165,19 @@ export class VoieController {
       createNumeroDto,
     );
     res.status(HttpStatus.CREATED).json(result);
+  }
+
+  @Put(':voieId/convert-to-toponyme')
+  @ApiOperation({ summary: 'Convert Voie (without numeros) to Toponyme' })
+  @ApiParam({ name: 'voieId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
+  @UseGuards(AdminGuard)
+  async convertVoieToToponyme(@Req() req: CustomRequest, @Res() res: Response) {
+    const result: Toponyme = await this.voieService.convertToToponyme(req.voie);
+    res.status(HttpStatus.OK).json(result);
   }
 }
