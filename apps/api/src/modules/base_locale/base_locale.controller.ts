@@ -22,7 +22,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { FilterQuery } from 'mongoose';
 import { Request, Response } from 'express';
 
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';

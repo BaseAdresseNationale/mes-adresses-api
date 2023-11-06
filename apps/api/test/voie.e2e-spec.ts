@@ -358,4 +358,45 @@ describe('VOIE MODULE', () => {
       );
     });
   });
+
+  describe('PUT /voies/:voieId/convert-to-toponyme', () => {
+    it('Return 200 numero without comment', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}/convert-to-toponyme`)
+        .set('authorization', `Token ${token}`)
+        .expect(200);
+      const toponyme: Toponyme = await toponymeModel.findOne({
+        nom: 'rue de la paix',
+      });
+      expect(toponyme).toBeDefined();
+    });
+
+    it('Return 200 numero without comment', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de paris', _bal: balId });
+      await createNumero({
+        _bal: balId,
+        voie: voieId,
+      });
+
+      const response = await request(app.getHttpServer())
+        .put(`/voies/${voieId}/convert-to-toponyme`)
+        .set('authorization', `Token ${token}`)
+        .expect(400);
+
+      expect(response.text).toEqual(
+        JSON.stringify({
+          statusCode: 400,
+          message: `Voie ${voieId} has numero(s)`,
+        }),
+      );
+
+      const toponyme: Toponyme = await toponymeModel.findOne({
+        nom: 'rue de paris',
+      });
+      expect(toponyme).toBeNull();
+    });
+  });
 });
