@@ -3,7 +3,7 @@ import {
   checkHasCadastre,
   checkHasMapsStyles,
   checkIsCommuneOutreMer,
-} from '@/shared/utils/commune.utils';
+} from '@/lib/utils/commune.utils';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
 @Injectable()

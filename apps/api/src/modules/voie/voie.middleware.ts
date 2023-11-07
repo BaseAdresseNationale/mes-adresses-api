@@ -7,7 +7,7 @@ import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { CustomRequest } from '@/lib/types/request.type';
 import { VoieService } from '@/modules/voie/voie.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { isAdmin } from '@/shared/utils/is-admin.utils';
+import { isAdmin } from '@/lib/utils/is-admin.utils';
 
 @Injectable()
 export class VoieMiddleware implements NestMiddleware {

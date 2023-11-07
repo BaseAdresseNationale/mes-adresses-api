@@ -1,4 +1,4 @@
-import { extractFromCsv } from '@/shared/utils/csv.utils';
+import { extractFromCsv } from '@/lib/utils/csv.utils';
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
