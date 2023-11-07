@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { omit } from 'lodash';
+import { omit, uniq } from 'lodash';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { NumeroPopulate } from '@/shared/schemas/numero/numero.populate';
@@ -23,6 +23,7 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { calcMetaTilesNumero } from '../base_locale/sub_modules/tiles/utils/tiles.utils';
 
 @Injectable()
 export class NumeroService {
@@ -96,8 +97,45 @@ export class NumeroService {
     return this.numeroModel.countDocuments(filters);
   }
 
-  async importMany() {
-    // TODO
+  async importMany(baseLocale: BaseLocale, rawNumeros: any[]): Promise<void> {
+    const numeros = rawNumeros
+      .map((rawNumero) => {
+        if (!rawNumero.commune || !rawNumero.voie || !rawNumero.numero) {
+          return null;
+        }
+
+        const numero = {
+          _bal: baseLocale._id,
+          commune: rawNumero.commune,
+          voie: rawNumero.voie,
+          ...(rawNumero.suffixe && {
+            suffix: normalizeSuffixe(rawNumero.suffixe),
+          }),
+          positions: rawNumero.positions || [],
+          parcelles: rawNumero.parcelles || [],
+          certifie: rawNumero.certifie || false,
+        } as Partial<Numero>;
+
+        calcMetaTilesNumero(numero);
+
+        if (rawNumero._updated && rawNumero._created) {
+          numero._created = rawNumero._created;
+          numero._updated = rawNumero._updated;
+        }
+
+        return numero;
+      })
+      .filter(Boolean);
+
+    if (numeros.length === 0) {
+      return;
+    }
+
+    await this.numeroModel.insertMany(numeros);
+
+    // UPDATE TILES OF VOIES
+    const voieIds = uniq(numeros.map((n) => n.voie));
+    await this.voieService.updateTiles(voieIds);
   }
 
   public async create(

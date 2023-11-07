@@ -13,7 +13,7 @@ import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
 import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
-import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
+import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
 import { UpdateToponymeDto } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
@@ -201,9 +201,37 @@ export class ToponymeService {
     }
   }
 
-  // async importMany(baseLocale: BaseLocale, toponymes: Toponyme[]) {
-  //   // TODO
-  // }
+  async importMany(baseLocale: BaseLocale, rawToponymes: any[]) {
+    const toponymes = rawToponymes
+      .map((rawToponyme) => {
+        if (!rawToponyme.commune || !rawToponyme.nom) {
+          return null;
+        }
+
+        const toponyme = {
+          _id: rawToponyme._id,
+          _bal: baseLocale._id,
+          nom: cleanNom(rawToponyme.nom),
+          code: rawToponyme.code || null,
+          commune: rawToponyme.commune,
+          nomAlt: getNomAltDefault(rawToponyme.nomAlt),
+        } as Partial<Toponyme>;
+
+        if (rawToponyme._updated && rawToponyme._created) {
+          toponyme._created = rawToponyme._created;
+          toponyme._updated = rawToponyme._updated;
+        }
+
+        return toponyme;
+      })
+      .filter(Boolean);
+
+    if (toponymes.length === 0) {
+      return;
+    }
+
+    await this.toponymeModel.insertMany(toponymes);
+  }
 
   async isToponymeExist(
     _id: Types.ObjectId,

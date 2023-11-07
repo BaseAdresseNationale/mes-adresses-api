@@ -256,22 +256,13 @@ export class BaseLocaleService {
 
   async populate(baseLocale: BaseLocale): Promise<BaseLocale> {
     await this.deleteData(baseLocale);
-    // const { numeros, voies, toponymes } = await this.populateService.extract(
-    //   baseLocale.commune,
-    // );
-    // await Promise.all([
-    //   this.voieService.importMany(baseLocale._id, voies, {
-    //     validate: false,
-    //     keepIds: true,
-    //   }),
-    //   this.numeroService.importMany(baseLocale._id, numeros, {
-    //     validate: false,
-    //   }),
-    //   this.toponymeService.importMany(baseLocale._id, toponymes, {
-    //     validate: false,
-    //     keepIds: true,
-    //   }),
-    // ]);
+    const { numeros, voies, toponymes } = await this.populateService.extract(
+      baseLocale.commune,
+    );
+
+    await this.voieService.importMany(baseLocale, voies);
+    await this.toponymeService.importMany(baseLocale, toponymes);
+    await this.numeroService.importMany(baseLocale, numeros);
 
     return baseLocale;
   }

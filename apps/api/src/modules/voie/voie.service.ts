@@ -17,7 +17,7 @@ import { ExtendedVoie } from '@/modules/voie/dto/extended_voie.dto';
 import { UpdateVoieDto } from '@/modules/voie/dto/update_voie.dto';
 import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
 import { RestoreVoieDto } from '@/modules/voie/dto/restore_voie.dto';
-import { cleanNom, cleanNomAlt } from '@/lib/utils/nom.util';
+import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
@@ -31,6 +31,12 @@ import { BBox as BboxTurf } from '@turf/helpers';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { CreateToponymeDto } from '../toponyme/dto/create_toponyme.dto';
+import {
+  getTilesByLineString,
+  getTilesByPosition,
+} from '../base_locale/sub_modules/tiles/utils/tiles.utils';
+import { getPriorityPosition } from '@/lib/utils/positions.util';
+import { ZOOM } from '../base_locale/sub_modules/tiles/const/zoom.const';
 
 @Injectable()
 export class VoieService {
@@ -143,8 +149,87 @@ export class VoieService {
     return voieCreated;
   }
 
-  async importMany() {
-    // TODO
+  async importMany(baseLocale: BaseLocale, rawVoies: any[]) {
+    const voies = rawVoies
+      .map((rawVoie) => {
+        if (!rawVoie.commune || !rawVoie.nom) {
+          return null;
+        }
+
+        const voie = {
+          _id: rawVoie._id,
+          _bal: baseLocale._id,
+          nom: cleanNom(rawVoie.nom),
+          code: rawVoie.code || null,
+          commune: rawVoie.commune,
+          nomAlt: getNomAltDefault(rawVoie.nomAlt),
+        } as Partial<Voie>;
+
+        if (rawVoie._updated && rawVoie._created) {
+          voie._created = rawVoie._created;
+          voie._updated = rawVoie._updated;
+        }
+
+        return voie;
+      })
+      .filter(Boolean);
+
+    if (voies.length === 0) {
+      return;
+    }
+
+    await this.voieModel.insertMany(voies);
+  }
+
+  async updateTiles(voies: Voie[]) {
+    return Promise.all(
+      voies.map(async (voie) => {
+        const voieSet = await this.calcMetaTilesVoie(voie);
+        return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
+      }),
+    );
+  }
+
+  async calcMetaTilesVoie(voie: Voie) {
+    voie.centroid = null;
+    voie.centroidTiles = null;
+    voie.traceTiles = null;
+
+    try {
+      if (voie.typeNumerotation === 'metrique' && voie.trace) {
+        voie.centroid = turf.centroid(voie.trace);
+        voie.centroidTiles = getTilesByPosition(
+          voie.centroid.geometry,
+          ZOOM.VOIE_ZOOM,
+        );
+        voie.traceTiles = getTilesByLineString(voie.trace);
+      } else {
+        const numeros = await this.numeroService.findMany(
+          { voie: voie._id, _deleted: null },
+          { positions: 1, voie: 1 },
+        );
+        if (numeros.length > 0) {
+          const coordinatesNumeros = numeros
+            .filter((n) => n.positions && n.positions.length > 0)
+            .map((n) => getPriorityPosition(n.positions)?.point?.coordinates);
+          // CALC CENTROID
+          if (coordinatesNumeros.length > 0) {
+            const featureCollection = turf.featureCollection(
+              coordinatesNumeros.map((n) => turf.point(n)),
+            );
+            voie.centroid = turf.centroid(featureCollection);
+            voie.centroidTiles = getTilesByPosition(
+              voie.centroid.geometry,
+              ZOOM.VOIE_ZOOM,
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error, voie);
+    }
+
+    return voie;
   }
 
   async updateOne(

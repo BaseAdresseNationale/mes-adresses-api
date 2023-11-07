@@ -9,3 +9,7 @@ export function cleanNomAlt(nomAlt) {
 
   return nomAlt;
 }
+
+export function getNomAltDefault(nomAlt) {
+  return nomAlt && Object.keys(nomAlt).length > 0 ? nomAlt : null;
+}
