@@ -17,23 +17,21 @@ import {
 import { uniq, difference } from 'lodash';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { MailerService } from '@/shared/modules/mailer/mailer.service';
+import { formatEmail as createBalCreationNotificationEmail } from '@/shared/modules/mailer/templates/bal-creation-notification';
+import { formatEmail as createNewAdminNotificationEmail } from '@/shared/modules/mailer/templates/new-admin-notification';
+import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
 
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
-import { Habilitation } from '@/modules/base_locale/sub_modules/habilitation/types/habilitation.type';
-import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { generateBase62String } from '@/lib/utils/token.utils';
-import { formatEmail as createBalCreationNotificationEmail } from '@/modules/base_locale/sub_modules/mailer/templates/bal-creation-notification';
-import { exportBalToCsv } from '@/lib/utils/export_csv_bal.utils';
-import { exportVoiesToCsv } from '@/modules/base_locale/utils/csv_voies.utils';
 import { ExtendedBaseLocale } from './dto/extended_base_locale';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
-import { formatEmail as createNewAdminNotificationEmail } from './sub_modules/mailer/templates/new-admin-notification';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 import { getCommune } from '@/shared/utils/cog.utils';
@@ -276,39 +274,6 @@ export class BaseLocaleService {
     // ]);
 
     return baseLocale;
-  }
-
-  async exportToCsv(baseLocale: BaseLocale): Promise<string> {
-    const voies = await this.voieService.findMany({
-      _bal: baseLocale._id,
-      _deleted: null,
-    });
-    const toponymes = await this.toponymeService.findMany({
-      _bal: baseLocale._id,
-      _deleted: null,
-    });
-    const numeros = await this.numeroService.findMany({
-      _bal: baseLocale._id,
-      _deleted: null,
-    });
-    return exportBalToCsv(voies, toponymes, numeros);
-  }
-
-  async exportVoiesToCsv(baseLocale: BaseLocale): Promise<string> {
-    const voies = await this.voieService.findMany({
-      _bal: baseLocale._id,
-      _deleted: null,
-    });
-    const toponymes = await this.toponymeService.findMany({
-      _bal: baseLocale._id,
-      _deleted: null,
-    });
-    const numeros = await this.numeroService.findMany({
-      _bal: baseLocale._id,
-      _deleted: null,
-    });
-
-    return exportVoiesToCsv(voies, toponymes, numeros);
   }
 
   async extendWithNumeros(baseLocale: BaseLocale): Promise<ExtendedBaseLocale> {

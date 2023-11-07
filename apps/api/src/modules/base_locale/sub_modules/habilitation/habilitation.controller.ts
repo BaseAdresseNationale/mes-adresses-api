@@ -16,10 +16,12 @@ import {
   ApiHeader,
   ApiBody,
 } from '@nestjs/swagger';
+
+import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
+
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { HabilitationService } from './habilitation.service';
-import { Habilitation } from './types/habilitation.type';
 import { ValidatePinCodeDTO } from './dto/validate-pin-code.dto';
 
 @ApiTags('habilitation')

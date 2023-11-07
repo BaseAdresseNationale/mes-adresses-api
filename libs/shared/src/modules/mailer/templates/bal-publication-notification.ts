@@ -1,6 +1,6 @@
 import { template } from 'lodash';
 import { getEditorUrl, getApiUrl } from '../mailer.utils';
-import { Email } from '@/modules/base_locale/sub_modules/mailer/mailer.types';
+import { Email } from '@/shared/modules/mailer/mailer.types';
 
 const bodyTemplate = template(`
 <!DOCTYPE html>

@@ -1,29 +1,15 @@
 import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
+
+import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
+
 import { HabilitationController } from './habilitation.controller';
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
 import { HabilitationService } from './habilitation.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { HttpModule } from '@nestjs/axios';
-import { MailerService } from '@/modules/base_locale/sub_modules/mailer/mailer.service';
 import { BaseLocaleModule } from '../../base_locale.module';
 
 @Module({
-  imports: [
-    HttpModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        baseURL: configService.get('API_DEPOT_URL'),
-        headers: {
-          Authorization: `Token ${configService.get(
-            'API_DEPOT_CLIENT_SECRET',
-          )}`,
-        },
-      }),
-      inject: [ConfigService],
-    }),
-    forwardRef(() => BaseLocaleModule),
-  ],
-  providers: [HabilitationService, BaseLocaleMiddleware, MailerService],
+  imports: [ApiDepotModule, forwardRef(() => BaseLocaleModule)],
+  providers: [HabilitationService, BaseLocaleMiddleware],
   controllers: [HabilitationController],
   exports: [HabilitationService],
 })

@@ -9,7 +9,7 @@ import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { getCommune } from '@/shared/utils/cog.utils';
-import { roundCoordinate } from './coor.utils';
+import { roundCoordinate } from '@/shared/utils/coor.utils';
 
 const DEFAULT_CODE_VOIE = 'xxxx';
 const DEFAULT_NUMERO_TOPONYME = 99999;

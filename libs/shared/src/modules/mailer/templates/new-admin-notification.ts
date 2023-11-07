@@ -1,6 +1,6 @@
 import { template } from 'lodash';
 import { getEditorUrl, getApiUrl } from '../mailer.utils';
-import { Email } from '../mailer.types';
+import { Email } from '@/shared/modules/mailer/mailer.types';
 
 const bodyTemplate = template(`
 <!DOCTYPE html>
@@ -9,7 +9,7 @@ const bodyTemplate = template(`
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Création d’une nouvelle Base Adresse Locale</title>
+  <title>Invitation à l‘administration d‘une Base Adresse Locale</title>
   <style>
     body {
       background-color: #F5F6F7;
@@ -70,24 +70,24 @@ const bodyTemplate = template(`
     <img src="<%= apiUrl %>/public/images/logo-adresse.png" alt="Logo République Française">
   </div>
   <div class="title">
-    <h2 style="margin:0; mso-line-height-rule:exactly;">Félicitations !</h2><br>
-    <h3 style="margin:0; mso-line-height-rule:exactly;">Vous venez de créer une nouvelle Base Adresse Locale !</h3>
+    <h3 style="margin:0; mso-line-height-rule:exactly;">Vous êtes invité à participer à l'édition de la Base Adresse Locale:</h3><br>
+    <span class="bal"><%= baseLocale.nom || 'non renseigné' %></span>
   </div>
 
   <div class="container">
-    <p><b>Nom de la Base Adresse Locale&nbsp;: </b><%= baseLocale.nom || 'non renseigné' %></p>
 
-    <p>Vous pouvez dès maintenant administrer votre <b><i>Base Adresse Locale</i></b> à partir de la page suivante:</p>
+    <p>Vous pouvez dès maintenant administrer la <b>Base Adresse Locale</b> à partir de la page
+      suivante&nbsp;: </p>
     <span class="forceWhiteLink"><button><a href="<%= editorUrl %>" target="blank">Gérer mes adresses</a></button></span>
-    <p>N'hésitez pas à faire suivre ce courriel à toute personne de confiance qui pourrait être amenée à intervenir sur les adresses.</p>
+
     <p>En cas de problème, l'accès à la <b><i>Base Adresse Locale</i></b> peut être réinitialisé sur demande.</p>
 
-    <span><i>L’équipe adresse.data.gouv.fr</i></span>
+    <p><i>L’équipe adresse.data.gouv.fr</i></p>
     <p class="infos">
       <small>
-        <i>Jeton d’administration (information expert)&nbsp;: <%= baseLocale.token %></i>
-        <div>Si le bouton ci-dessus ne fonctionne pas, collez l’URL suivante dans la barre d’adresse de votre navigateur : <b><%= editorUrl %></b></div>
+        <i>Nouveau jeton (information expert)&nbsp;: <%= baseLocale.token %></i>
       </small>
+      <div>Si le bouton ci-dessus ne fonctionne pas, collez l’URL suivante dans la barre d’adresse de votre navigateur : <b><%= editorUrl %></b></div>
     </p>
   </div>
 </body>
@@ -100,7 +100,7 @@ export function formatEmail({ baseLocale }): Email {
   const apiUrl = getApiUrl();
 
   return {
-    subject: 'Création d’une nouvelle Base Adresse Locale',
+    subject: 'Invitation à l‘administration d‘une Base Adresse Locale',
     html: bodyTemplate({ baseLocale, editorUrl, apiUrl }),
   };
 }

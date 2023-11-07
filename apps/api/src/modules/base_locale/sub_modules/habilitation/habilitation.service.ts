@@ -1,30 +1,20 @@
-import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { AxiosError } from 'axios';
-import { catchError, firstValueFrom } from 'rxjs';
-import { Habilitation } from './types/habilitation.type';
+
+import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
+import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+
 import { BaseLocaleService } from '../../base_locale.service';
 
 @Injectable()
 export class HabilitationService {
   constructor(
-    private readonly httpService: HttpService,
     private readonly baseLocaleService: BaseLocaleService,
+    private readonly apiDepotService: ApiDepotService,
   ) {}
 
   async findOne(habilitationId: string): Promise<Habilitation> {
-    const { data } = await firstValueFrom(
-      this.httpService
-        .get<Habilitation>(`habilitations/${habilitationId}`)
-        .pipe(
-          catchError((error: AxiosError) => {
-            throw error;
-          }),
-        ),
-    );
-
-    return data;
+    return this.apiDepotService.findOneHabiliation(habilitationId);
   }
 
   async createOne(baseLocale: BaseLocale): Promise<Habilitation> {
@@ -42,15 +32,8 @@ export class HabilitationService {
       }
     }
 
-    const { data: habilitation } = await firstValueFrom(
-      this.httpService
-        .post<Habilitation>(`communes/${baseLocale.commune}/habilitations`)
-        .pipe(
-          catchError((error: AxiosError) => {
-            throw error;
-          }),
-        ),
-    );
+    const habilitation: Habilitation =
+      await this.apiDepotService.createOneHabiliation(baseLocale);
 
     await this.baseLocaleService.updateHabilitation(baseLocale, habilitation);
 
@@ -67,11 +50,8 @@ export class HabilitationService {
       );
     }
 
-    const { data } = await firstValueFrom(
-      this.httpService.post<{ code: number; message: string }>(
-        `habilitations/${habilitationId}/authentication/email/send-pin-code`,
-      ),
-    );
+    const data =
+      await this.apiDepotService.sendPinCodeHabiliation(habilitationId);
 
     return data;
   }
@@ -89,17 +69,9 @@ export class HabilitationService {
       );
     }
 
-    const { data } = await firstValueFrom(
-      this.httpService
-        .post<{ validated: boolean }>(
-          `habilitations/${habilitationId}/authentication/email/validate-pin-code`,
-          { code },
-        )
-        .pipe(
-          catchError((error: AxiosError) => {
-            throw error;
-          }),
-        ),
+    const data = await this.apiDepotService.validatePinCodeHabiliation(
+      habilitationId,
+      code,
     );
 
     return data;
