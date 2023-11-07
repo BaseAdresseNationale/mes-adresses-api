@@ -157,7 +157,6 @@ export class NumeroService {
 
     // CREATE NUMERO
     const numero: Partial<Numero> = {
-      _id: new Types.ObjectId(),
       _bal: voie._bal,
       commune: voie.commune,
       voie: voie._id,
@@ -172,9 +171,6 @@ export class NumeroService {
       comment: createNumeroDto.comment || null,
       parcelles: createNumeroDto.parcelles || [],
       certifie: createNumeroDto.certifie || false,
-      _updated: new Date(),
-      _created: new Date(),
-      _deleted: null,
     };
     // SET TILES
     this.tilesService.calcMetaTilesNumero(numero);

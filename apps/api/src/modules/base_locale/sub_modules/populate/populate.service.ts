@@ -1,62 +1,71 @@
 import { extractFromCsv } from '@/lib/utils/csv.utils';
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AxiosError } from 'axios';
-import { catchError, firstValueFrom } from 'rxjs';
-import { BaseLocaleService } from '../../base_locale.service';
 
 @Injectable()
 export class PopulateService {
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
-    @Inject(forwardRef(() => BaseLocaleService))
-    private baseLocaleService: BaseLocaleService,
   ) {}
 
   private async extractFromApiDepot(codeCommune: string) {
-    const apiDepotUrl = this.configService.get<string>('API_DEPOT_URL');
-    const currentRevisionUrl = `${apiDepotUrl}/communes/${codeCommune}/current-revision`;
+    try {
+      const apiDepotUrl = this.configService.get<string>('API_DEPOT_URL');
+      const currentRevisionUrl = `${apiDepotUrl}/communes/${codeCommune}/current-revision`;
 
-    const { data } = await firstValueFrom(
-      this.httpService.get(`${currentRevisionUrl}/files/bal/download`).pipe(
-        catchError((error: AxiosError) => {
-          throw error;
-        }),
-      ),
-    );
+      const response = await this.httpService.axiosRef({
+        url: currentRevisionUrl,
+        method: 'GET',
+        responseType: 'arraybuffer',
+      });
 
-    return extractFromCsv(data, codeCommune);
+      const result = await extractFromCsv(response.data, codeCommune);
+
+      if (!result.isValid) {
+        throw new Error('Invalid CSV file');
+      }
+
+      return result;
+    } catch {}
   }
 
   private async extractFromBAN(codeCommune: string) {
-    const banApiUrl = this.configService.get<string>('BAN_API_URL');
-    const balFileData = `${banApiUrl}/ban/communes/${codeCommune}/download/csv-bal/adresses`;
+    try {
+      const banApiUrl = this.configService.get<string>('BAN_API_URL');
+      const balFileData = `${banApiUrl}/ban/communes/${codeCommune}/download/csv-bal/adresses`;
 
-    const { data } = await firstValueFrom(
-      this.httpService.get(balFileData).pipe(
-        catchError((error: AxiosError) => {
-          throw error;
-        }),
-      ),
-    );
+      const response = await this.httpService.axiosRef({
+        url: balFileData,
+        method: 'GET',
+        responseType: 'arraybuffer',
+      });
 
-    return extractFromCsv(data, codeCommune);
+      const result = await extractFromCsv(response.data, codeCommune);
+
+      if (!result.isValid) {
+        throw new Error('Invalid CSV file');
+      }
+
+      return result;
+    } catch {}
   }
 
   public async extract(codeCommune: string) {
-    const data =
-      (await this.extractFromApiDepot(codeCommune)) ||
-      (await this.extractFromBAN(codeCommune));
+    const fromApiDepot = await this.extractFromApiDepot(codeCommune);
+    const fromBan = await this.extractFromBAN(codeCommune);
 
-    if (data) {
-      return data;
+    const result = fromApiDepot || fromBan;
+
+    if (result) {
+      return result;
     }
 
     console.error(
       `Aucune adresse n’a pu être extraite avec le code commune: ${codeCommune}`,
     );
+
     return { voies: [], numeros: [], toponymes: [] };
   }
 }

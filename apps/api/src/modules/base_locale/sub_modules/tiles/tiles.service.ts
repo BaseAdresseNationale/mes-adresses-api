@@ -180,13 +180,14 @@ export class TilesService {
     return voie;
   }
 
-  public calcMetaTilesVoieWithTrace(voie: Voie): Voie {
+  public calcMetaTilesVoieWithTrace(voie: Partial<Voie>): Partial<Voie> {
     voie.centroid = turf.centroid(voie.trace);
     voie.centroidTiles = getTilesByPosition(
       voie.centroid.geometry,
       ZOOM.VOIE_ZOOM,
     );
     voie.traceTiles = getTilesByLineString(voie.trace);
+
     return voie;
   }
 }

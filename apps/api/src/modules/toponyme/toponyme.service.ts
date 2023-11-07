@@ -117,17 +117,13 @@ export class ToponymeService {
     createToponymeDto: CreateToponymeDto,
   ): Promise<Toponyme> {
     // CREATE OBJECT TOPONYME
-    const toponyme: Toponyme = {
-      _id: new Types.ObjectId(),
+    const toponyme: Partial<Toponyme> = {
       _bal: bal._id,
       commune: bal.commune,
       nom: createToponymeDto.nom,
       positions: createToponymeDto.positions || [],
       parcelles: createToponymeDto.parcelles || [],
       nomAlt: cleanNomAlt(createToponymeDto.nomAlt) || null,
-      _updated: new Date(),
-      _created: new Date(),
-      _deleted: null,
     };
 
     // REQUEST CREATE TOPONYME

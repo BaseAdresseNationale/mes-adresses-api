@@ -2,12 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { Position } from '../position.schema';
-import { DateBase } from '../date.schema';
+import { BaseEntity } from '../base-entity.schema';
 
-export class NumeroPopulate extends DateBase {
-  @ApiProperty()
-  _id: Types.ObjectId;
-
+export class NumeroPopulate extends BaseEntity {
   @ApiProperty()
   _bal: Types.ObjectId;
 

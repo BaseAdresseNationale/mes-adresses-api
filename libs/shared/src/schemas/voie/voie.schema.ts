@@ -4,16 +4,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { FeaturePoint, FeaturePointSchema } from '../feature_point.schema';
 import { LineString, LineStringSchema } from '../geometry/line_string.schema';
 import { TypeNumerotationEnum } from './type_numerotation.enum';
-import { DateBase } from '../date.schema';
+import { BaseEntity } from '../base-entity.schema';
 
 export type VoieDocument = HydratedDocument<Voie>;
 
 @Schema({ collection: 'voies' })
-export class Voie extends DateBase {
-  @ApiProperty()
-  @Prop({ type: SchemaTypes.ObjectId })
-  _id: Types.ObjectId;
-
+export class Voie extends BaseEntity {
   @ApiProperty()
   @Prop({ type: SchemaTypes.ObjectId })
   _bal: Types.ObjectId;

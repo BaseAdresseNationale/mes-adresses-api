@@ -1,16 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { Sync, SyncSchema } from './sync.schema';
 import { StatusBaseLocalEnum } from './status.enum';
-import { DateBase } from '../date.schema';
+import { BaseEntity } from '../base-entity.schema';
 
 export type BasesLocaleDocument = HydratedDocument<BaseLocale>;
 
 @Schema({ collection: 'bases_locales' })
-export class BaseLocale extends DateBase {
-  @Prop({ type: SchemaTypes.ObjectId })
-  _id: Types.ObjectId;
-
+export class BaseLocale extends BaseEntity {
   @Prop({ type: SchemaTypes.String })
   nom: string;
 

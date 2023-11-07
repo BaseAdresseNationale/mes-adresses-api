@@ -89,11 +89,12 @@ export class BaseLocaleController {
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   async createDemoBaseLocale(
     @Req() req: Request,
-    @Body() createBaseLocaleDTO: CreateBaseLocaleDTO,
+    @Body() createDemoBaseLocaleDTO: CreateDemoBaseLocaleDTO,
     @Res() res: Response,
   ) {
-    const newDemoBaseLocale =
-      await this.baseLocaleService.createDemo(createBaseLocaleDTO);
+    const newDemoBaseLocale = await this.baseLocaleService.createDemo(
+      createDemoBaseLocaleDTO,
+    );
 
     res.status(HttpStatus.OK).json(newDemoBaseLocale);
   }

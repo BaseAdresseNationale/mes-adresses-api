@@ -1,15 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Position, PositionSchema } from '../position.schema';
-import { DateBase } from '../date.schema';
+import { BaseEntity } from '../base-entity.schema';
 
 export type ToponymeDocument = HydratedDocument<Toponyme>;
 
 @Schema({ collection: 'toponymes' })
-export class Toponyme extends DateBase {
-  @Prop({ type: SchemaTypes.ObjectId })
-  _id: Types.ObjectId;
-
+export class Toponyme extends BaseEntity {
   @Prop({ type: SchemaTypes.ObjectId })
   _bal: Types.ObjectId;
 

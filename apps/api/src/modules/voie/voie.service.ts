@@ -121,8 +121,7 @@ export class VoieService {
     createVoieDto: CreateVoieDto,
   ): Promise<Voie> {
     // CREATE OBJECT VOIE
-    const voie: Voie = {
-      _id: new Types.ObjectId(),
+    const voie: Partial<Voie> = {
       _bal: bal._id,
       commune: bal.commune,
       nom: createVoieDto.nom,
@@ -133,9 +132,6 @@ export class VoieService {
       centroid: null,
       centroidTiles: null,
       traceTiles: null,
-      _updated: new Date(),
-      _created: new Date(),
-      _deleted: null,
     };
     // CALC CENTROID AND TILES IF METRIQUE
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {

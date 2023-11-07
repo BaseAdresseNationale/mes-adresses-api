@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { Position, PositionSchema } from '../position.schema';
-import { DateBase } from '../date.schema';
+import { BaseEntity } from '../base-entity.schema';
 import { displaySuffix } from '../../utils/numero.utils';
 import { Voie } from '../voie/voie.schema';
 
@@ -14,11 +14,7 @@ export type NumeroDocument = HydratedDocument<Numero>;
     virtuals: true,
   },
 })
-export class Numero extends DateBase {
-  @ApiProperty()
-  @Prop({ type: SchemaTypes.ObjectId })
-  _id: Types.ObjectId;
-
+export class Numero extends BaseEntity {
   @ApiProperty()
   @Prop({ type: SchemaTypes.ObjectId })
   _bal: Types.ObjectId;
