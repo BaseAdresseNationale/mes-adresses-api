@@ -16,6 +16,9 @@ export class Sync {
 
   @Prop({ type: SchemaTypes.ObjectId })
   lastUploadedRevisionId: Types.ObjectId;
+
+  @Prop({ type: SchemaTypes.Date })
+  currentUpdated: Date;
 }
 
 export const SyncSchema = SchemaFactory.createForClass(Sync);

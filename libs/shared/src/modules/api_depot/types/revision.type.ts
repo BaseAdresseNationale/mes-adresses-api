@@ -18,6 +18,16 @@ export enum StatusRevision {
   PUBLISHED = 'published',
 }
 
+export type FileRevision = {
+  _id: string;
+  revisionId: string;
+  name: string;
+  type: string;
+  size: number;
+  hash: string;
+  createdAt: Date;
+};
+
 export type Revision = {
   _id: string;
   codeCommune: string;
@@ -26,6 +36,7 @@ export type Revision = {
   client: string;
   status: StatusRevision;
   ready: boolean;
+  files?: FileRevision[];
   createdAt: Date;
   updatedAt: Date;
   publishedAt?: Date;

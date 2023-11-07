@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { AxiosError } from 'axios';
-import { catchError, firstValueFrom } from 'rxjs';
+import { of, catchError, firstValueFrom } from 'rxjs';
 import * as hasha from 'hasha';
 
 import { Habilitation } from './types/habilitation.type';
@@ -123,7 +123,7 @@ export class ApiDepotService {
   ): Promise<Revision> {
     const { data: revision } = await firstValueFrom(
       await this.httpService
-        .post<Revision>(`//revisions/${revisionId}/publish`, {
+        .post<Revision>(`/revisions/${revisionId}/publish`, {
           habilitationId,
         })
         .pipe(
@@ -135,7 +135,7 @@ export class ApiDepotService {
     return revision;
   }
 
-  async publishNewRevision(
+  public async publishNewRevision(
     codeCommune: string,
     balId: string,
     balFile: string,
@@ -158,5 +158,22 @@ export class ApiDepotService {
       habilitationId,
     );
     return publishedRevision;
+  }
+
+  public async getCurrentRevision(codeCommune: string): Promise<Revision> {
+    const { data: revision } = await firstValueFrom(
+      await this.httpService
+        .get<Revision>(`/communes/${codeCommune}/current-revision`)
+        .pipe(
+          catchError((error: AxiosError) => {
+            if (error.response && error.response.status === 404) {
+              return of({ data: null });
+            }
+            throw error;
+          }),
+        ),
+    );
+
+    return revision;
   }
 }
