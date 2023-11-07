@@ -15,6 +15,7 @@ import { BaseLocaleController } from '@/modules/base_locale/base_locale.controll
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { MailerModule } from '@/shared/modules/mailer/mailer.module';
+import { PublicationModule } from '@/shared/modules/publication/publication.module';
 
 import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
 import { ExportCsvModule } from '@/modules/base_locale/sub_modules/export_csv/export_csv.module';
@@ -32,6 +33,7 @@ import { SearchQueryPipe } from './pipe/search_query.pipe';
       { name: BaseLocale.name, schema: BaseLocaleSchema },
     ]),
     MailerModule,
+    PublicationModule,
     forwardRef(() => HabilitationModule),
     forwardRef(() => ExportCsvModule),
     forwardRef(() => TilesModule),

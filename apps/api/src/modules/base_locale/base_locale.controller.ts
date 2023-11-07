@@ -26,6 +26,7 @@ import { Request, Response } from 'express';
 
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { PublicationService } from '@/shared/modules/publication/publication.service';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
@@ -58,6 +59,7 @@ import {
 export class BaseLocaleController {
   constructor(
     private baseLocaleService: BaseLocaleService,
+    private publicationService: PublicationService,
     @Inject(forwardRef(() => NumeroService))
     private numeroService: NumeroService,
     @Inject(forwardRef(() => VoieService))
@@ -233,6 +235,35 @@ export class BaseLocaleController {
     const parcelles = await this.baseLocaleService.getParcelles(req.baseLocale);
 
     res.status(HttpStatus.OK).json(parcelles);
+  }
+
+  @Post(':baseLocaleId/sync/exec')
+  @ApiOperation({ summary: 'Publish base locale' })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @UseGuards(AdminGuard)
+  async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+    const baseLocale = await this.publicationService.exec(req.baseLocale._id, {
+      force: true,
+    });
+    res.status(HttpStatus.OK).json(baseLocale);
+  }
+
+  @Post(':baseLocaleId/sync/pause')
+  @ApiOperation({ summary: 'Update isPaused sync BAL to true' })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @UseGuards(AdminGuard)
+  async pauseBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+    const baseLocale = await this.publicationService.pause(req.baseLocale._id);
+    res.status(HttpStatus.OK).json(baseLocale);
+  }
+
+  @Post(':baseLocaleId/sync/resume')
+  @ApiOperation({ summary: 'Update isPaused sync BAL to false' })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @UseGuards(AdminGuard)
+  async resumeBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+    const baseLocale = await this.publicationService.resume(req.baseLocale._id);
+    res.status(HttpStatus.OK).json(baseLocale);
   }
 
   @Put(':baseLocaleId/numeros/batch')

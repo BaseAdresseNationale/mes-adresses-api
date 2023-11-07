@@ -153,6 +153,39 @@ export class PublicationService {
     return this.baseLocaleModel.findOne(balId);
   }
 
+  public async pause(balId: Types.ObjectId) {
+    return this.setIsPaused(balId, true);
+  }
+
+  public async resume(balId: Types.ObjectId) {
+    return this.setIsPaused(balId, false);
+  }
+
+  private async setIsPaused(
+    balId: Types.ObjectId,
+    isPaused: boolean,
+  ): Promise<BaseLocale> {
+    const baseLocale: BaseLocale = await this.baseLocaleModel.findOneAndUpdate(
+      {
+        _id: balId,
+        'sync.status': {
+          $in: [StatusSyncEnum.SYNCED, StatusSyncEnum.OUTDATED],
+        },
+      },
+      { $set: { 'sync.isPaused': isPaused } },
+      { returnDocument: 'after' },
+    );
+
+    if (!baseLocale) {
+      throw new HttpException(
+        'Le statut de synchronisation doit être actif pour modifier l’état de pause',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    return baseLocale;
+  }
+
   private async updateSync(
     baseLocale: BaseLocale,
     syncChanges: Partial<Sync>,
