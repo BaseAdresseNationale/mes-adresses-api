@@ -43,6 +43,7 @@ import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.u
 import { ExtendedBaseLocale } from './dto/extended_base_locale';
 import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
+import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 import { PageBaseLocaleDTO } from './dto/page_base_locale.dto';
@@ -172,6 +173,30 @@ export class BaseLocaleController {
       req.baseLocale,
       req.body,
     );
+
+    res.status(HttpStatus.OK).json(updatedBaseLocale);
+  }
+
+  @Put(':baseLocaleId/transform-to-draft')
+  @ApiOperation({ summary: 'Update one base locale status to draft' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: UpdateBaseLocaleDemoDTO, required: true })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Base locale token (Token xxx)',
+  })
+  @UseGuards(AdminGuard)
+  async UpdateStatusToDraft(
+    @Req() req: CustomRequest,
+    @Body() updateBaseLocaleDemoDTO: UpdateBaseLocaleDemoDTO,
+    @Res() res: Response,
+  ) {
+    const updatedBaseLocale: BaseLocale =
+      await this.baseLocaleService.updateStatusToDraft(
+        req.baseLocale,
+        updateBaseLocaleDemoDTO,
+      );
 
     res.status(HttpStatus.OK).json(updatedBaseLocale);
   }

@@ -38,6 +38,7 @@ import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 import { getCommune } from '@/shared/utils/cog.utils';
 import { PopulateService } from './sub_modules/populate/populate.service';
+import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 
 @Injectable()
 export class BaseLocaleService {
@@ -192,6 +193,31 @@ export class BaseLocaleService {
         ),
       );
     }
+
+    return updatedBaseLocale;
+  }
+
+  async updateStatusToDraft(
+    baseLocale: BaseLocale,
+    update: UpdateBaseLocaleDemoDTO,
+  ): Promise<BaseLocale> {
+    if (baseLocale.status !== StatusBaseLocalEnum.DEMO) {
+      throw new HttpException(
+        'La Base Adresse Locale n’est pas une Base Adresse Locale de démonstration.',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    const updatedBaseLocale = await this.baseLocaleModel.findOneAndUpdate(
+      { _id: baseLocale._id },
+      { $set: { ...update, status: StatusBaseLocalEnum.DRAFT } },
+      { returnDocument: 'after' },
+    );
+
+    const email = createBalCreationNotificationEmail({
+      baseLocale: updatedBaseLocale,
+    });
+    await this.mailerService.sendMail(email, updatedBaseLocale.emails);
 
     return updatedBaseLocale;
   }

@@ -154,6 +154,7 @@ app.route('/bases-locales/:baseLocaleId')
     res.sendStatus(204)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/transform-to-draft')
   .post(ensureIsAdmin, w(async (req, res) => {
     if (req.baseLocale.status !== 'demo') {
