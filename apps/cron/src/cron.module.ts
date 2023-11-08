@@ -13,6 +13,8 @@ import { CronService } from './cron.service';
 import { DetectOutdatedTask } from './tasks/detect_outdated.task';
 import { DetectConflictTask } from './tasks/detect_conflict.task';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
+import { PublicationModule } from '@/shared/modules/publication/publication.module';
+import { SyncOutdatedTask } from './tasks/sync_outdated.task';
 
 @Module({
   imports: [
@@ -31,7 +33,13 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     ScheduleModule.forRoot(),
     ApiDepotModule,
     CacheModule,
+    PublicationModule,
   ],
-  providers: [CronService, DetectOutdatedTask, DetectConflictTask],
+  providers: [
+    CronService,
+    DetectOutdatedTask,
+    DetectConflictTask,
+    SyncOutdatedTask,
+  ],
 })
 export class CronModule {}
