@@ -179,4 +179,25 @@ export class ApiDepotService {
 
     return revision;
   }
+
+  public async getCurrentRevisions(
+    publishedSince: Date = new Date('1970-01-01'),
+  ): Promise<Revision[]> {
+    const { data: revisions } = await firstValueFrom(
+      await this.httpService
+        .get<Revision[]>(
+          `/current-revisions?publishedSince=${publishedSince.toISOString()}`,
+        )
+        .pipe(
+          catchError((error: AxiosError) => {
+            if (error.response && error.response.status === 404) {
+              return of({ data: null });
+            }
+            throw error;
+          }),
+        ),
+    );
+
+    return revisions;
+  }
 }

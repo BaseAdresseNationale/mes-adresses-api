@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import {
-  detectOutdated,
-  detectConflict,
+  // detectOutdated,
+  // detectConflict,
   syncOutdated,
 } from '../../legacy-api/sync';
 import {
@@ -10,29 +10,37 @@ import {
   removeDemoBALsOlderThanAMonth,
 } from '../../legacy-api/models/base-locale';
 
+import { DetectOutdatedTask } from './tasks/detect_outdated.task';
+import { DetectConflictTask } from './tasks/detect_conflict.task';
+
 @Injectable()
 export class CronService {
   private readonly logger = new Logger(CronService.name);
 
+  constructor(
+    private readonly detectOutdatedTask: DetectOutdatedTask,
+    private readonly detectConflictTask: DetectConflictTask,
+  ) {}
+
   // Every 30 seconds
   @Interval(30000)
-  async detectOutdatedSyncTask() {
+  async detectOutdated() {
     this.logger.debug('Task start : detect outdated sync');
     // GET TOUTES LES BALS AVEC LE sync.status = SYNCED QUI ONT UN UPDATED SUPPERIEUR AU sync.currentUpdated
     // ET SET sync.status = OUTDATED et UNSET sync.currentUpdated DE CELLE DERNIERE
-    await detectOutdated();
+    await this.detectOutdatedTask.run();
     this.logger.debug('Task end : detect outdated sync');
   }
 
   // Every 30 seconds
   @Interval(30000)
-  async detectConflictTask() {
+  async detectConflict() {
     this.logger.debug('Task start : detect sync in conflict');
     // RECUPERE TOUTE LES REVISIONS COURRANTE DE L'API DE DEPOT
     // COMPARE TOUTES LES BALS DES CODES COMMUNES DES REVISIONS
     // SET LE STATUS A published et sync.status a SYNCED SI LE sync.lastUploadedRevisionId = revision._id ET QUE SONT status = REPLACED
     // SET LE STATUS A replaced et sync.status a CONFLICT SI LE sync.lastUploadedRevisionId != revision._id ET QUE SONT status = PUBLISHED
-    await detectConflict();
+    await this.detectConflictTask.run();
     this.logger.debug('Task end : detect sync in conflict');
   }
 
