@@ -90,18 +90,21 @@ export class ApiDepotService {
   }
 
   private async uploadFileRevision(revisionId: string, balFile: string) {
-    await this.httpService
-      .put(`/revisions/${revisionId}/files/bal`, balFile, {
-        headers: {
-          'Content-Type': 'application/csv',
-          'Content-MD5': hasha(balFile, { algorithm: 'md5' }),
-        },
-      })
-      .pipe(
-        catchError((error: AxiosError) => {
-          throw error;
-        }),
-      );
+    await firstValueFrom(
+      this.httpService
+        .put(`/revisions/${revisionId}/files/bal`, balFile, {
+          headers: {
+            'Content-Type': 'application/csv',
+            'Content-MD5': hasha(balFile, { algorithm: 'md5' }),
+          },
+        })
+        .pipe(
+          catchError((error: AxiosError) => {
+            console.log('COUCOU');
+            throw error;
+          }),
+        ),
+    );
   }
 
   private async computeRevision(revisionId: string): Promise<Revision> {
