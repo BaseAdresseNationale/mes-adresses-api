@@ -91,7 +91,5 @@ export class CronService {
       await this.voieModel.deleteMany({ _bal: balId });
       await this.baseLocaleModel.deleteOne({ _id: balId });
     }
-
-    console.log(`${balIds.length} BALs supprimées définitivement`);
   }
 }

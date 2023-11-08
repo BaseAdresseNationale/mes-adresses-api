@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { sub } from 'date-fns';
@@ -12,6 +12,7 @@ import { Task } from '../task_queue.class';
 @Injectable()
 export class SyncOutdatedTask implements Task {
   title: string = 'Sync outdated';
+  private readonly logger = new Logger(SyncOutdatedTask.name);
 
   constructor(
     private readonly publicationService: PublicationService,
@@ -33,8 +34,8 @@ export class SyncOutdatedTask implements Task {
       try {
         await this.publicationService.exec(balId);
       } catch (error) {
-        console.error(`Unable to sync ${balId}`);
-        console.error(error);
+        this.logger.error(`Unable to sync ${balId}`);
+        this.logger.error(error);
       }
     }
   }
