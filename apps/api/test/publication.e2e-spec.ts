@@ -5,7 +5,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model, Types } from 'mongoose';
 import axios from 'axios';
-import { add } from 'date-fns';
+import { add, sub } from 'date-fns';
 import MockAdapter from 'axios-mock-adapter';
 import * as nodemailer from 'nodemailer';
 
@@ -80,6 +80,7 @@ describe('BASE LOCAL MODULE', () => {
   });
 
   afterEach(async () => {
+    jest.clearAllMocks();
     axiosMock.reset();
     await toponymeModel.deleteMany({});
     await voieModel.deleteMany({});
@@ -108,16 +109,6 @@ describe('BASE LOCAL MODULE', () => {
     return voieId;
   }
 
-  async function createToponyme(props: Partial<Toponyme> = {}) {
-    const toponymeId = new Types.ObjectId();
-    const toponyme: Partial<Toponyme> = {
-      _id: toponymeId,
-      ...props,
-    };
-    await toponymeModel.create(toponyme);
-    return toponymeId;
-  }
-
   async function createNumero(props: Partial<Numero> = {}) {
     const numeroId = new Types.ObjectId();
     const numero: Partial<Numero> = {
@@ -142,7 +133,7 @@ describe('BASE LOCAL MODULE', () => {
   }
 
   describe('POST /bases-locales/sync/exec', () => {
-    it('Publish 200', async () => {
+    it('Publish 200 READY_TO_PUBLISH', async () => {
       const commune = '91534';
       const habilitationId = new Types.ObjectId();
       const balId = await createBal({
@@ -227,7 +218,8 @@ describe('BASE LOCAL MODULE', () => {
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Token ${token}`);
+        .set('authorization', `Token ${token}`)
+        .expect(200);
       expect(sendMailMock).toHaveBeenCalled();
 
       const syncExpected = {
@@ -240,6 +232,367 @@ describe('BASE LOCAL MODULE', () => {
       expect(response.body.commune).toEqual(commune);
       expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
       expect(response.body.sync).toEqual(syncExpected);
+    });
+
+    it('Publish 200 OUTDATED', async () => {
+      const commune = '91534';
+      const habilitationId = new Types.ObjectId();
+      // REVSION
+      const revisionId = new Types.ObjectId();
+      const revision: Revision = {
+        _id: revisionId.toString(),
+        codeCommune: commune,
+        status: StatusRevision.PENDING,
+        ready: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        current: false,
+        validation: {
+          valid: true,
+        },
+        files: [
+          {
+            type: 'bal',
+            hash: '',
+          },
+        ],
+      };
+
+      // BAL
+      const balId = await createBal({
+        commune,
+        _habilitation: habilitationId.toString(),
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+        sync: {
+          status: StatusSyncEnum.OUTDATED,
+          lastUploadedRevisionId: revisionId,
+        },
+      });
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        commune,
+        _bal: balId,
+      });
+      await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 1,
+        suffixe: 'bis',
+        positions: createPositions(),
+        certifie: true,
+        commune,
+        _updated: new Date('2000-01-01'),
+      });
+
+      // MOCK AXIOS
+      axiosMock
+        .onGet(`/communes/${commune}/current-revision`)
+        .reply(200, revision);
+
+      const habilitation: Habilitation = {
+        _id: habilitationId.toString(),
+        status: StatusHabiliation.ACCEPTED,
+        expiresAt: add(new Date(), { months: 1 }),
+        codeCommune: commune,
+        emailCommune: 'test@test.fr',
+      };
+      axiosMock
+        .onGet(`habilitations/${habilitationId}`)
+        .reply(200, habilitation);
+
+      axiosMock.onPost(`/communes/${commune}/revisions`).reply(200, revision);
+
+      axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
+
+      const csvFile = `cle_interop;uid_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+91534_xxxx_00001_bis;;rue de la paix;;1;bis;1;91534;Saclay;inconnu;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+      axiosMock
+        .onPut(`/revisions/${revisionId}/files/bal`)
+        .reply(({ data }) => {
+          expect(data.replace(/\s/g, '')).toEqual(csvFile.replace(/\s/g, ''));
+          return [200, null];
+        });
+
+      const publishedRevision: Revision = {
+        _id: revisionId.toString(),
+        codeCommune: commune,
+        status: StatusRevision.PUBLISHED,
+        ready: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        current: true,
+        validation: {
+          valid: true,
+        },
+      };
+      axiosMock.onPost(`/revisions/${revisionId}/publish`).reply(({ data }) => {
+        expect(JSON.parse(data).habilitationId).toEqual(
+          habilitationId.toString(),
+        );
+        return [200, publishedRevision];
+      });
+
+      // SEND REQUEST
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/sync/exec`)
+        .set('authorization', `Token ${token}`)
+        .expect(200);
+
+      expect(sendMailMock).not.toHaveBeenCalled();
+
+      const syncExpected = {
+        status: StatusSyncEnum.SYNCED,
+        isPaused: false,
+        lastUploadedRevisionId: revisionId.toString(),
+      };
+
+      expect(response.body._id).toEqual(balId.toString());
+      expect(response.body.commune).toEqual(commune);
+      expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
+      expect(response.body.sync).toEqual(syncExpected);
+    });
+
+    it('Publish 200 OUTDATED same hash', async () => {
+      const commune = '91534';
+      const habilitationId = new Types.ObjectId();
+      // REVSION
+      const revisionId = new Types.ObjectId();
+      const revision: Revision = {
+        _id: revisionId.toString(),
+        codeCommune: commune,
+        status: StatusRevision.PENDING,
+        ready: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        current: false,
+        validation: {
+          valid: true,
+        },
+        files: [
+          {
+            type: 'bal',
+            hash: '8769d081a8e02a4ddf6608270fbbbab44e432e6fa9a36e1787a890ba34a64b38',
+          },
+        ],
+      };
+
+      // BAL
+      const balId = await createBal({
+        commune,
+        _habilitation: habilitationId.toString(),
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+        sync: {
+          status: StatusSyncEnum.OUTDATED,
+          lastUploadedRevisionId: revisionId,
+        },
+      });
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        commune,
+        _bal: balId,
+      });
+      await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 1,
+        suffixe: 'bis',
+        positions: createPositions(),
+        certifie: true,
+        commune,
+        _updated: new Date('2000-01-01'),
+      });
+
+      // MOCK AXIOS
+      axiosMock
+        .onGet(`/communes/${commune}/current-revision`)
+        .reply(200, revision);
+
+      const habilitation: Habilitation = {
+        _id: habilitationId.toString(),
+        status: StatusHabiliation.ACCEPTED,
+        expiresAt: add(new Date(), { months: 1 }),
+        codeCommune: commune,
+        emailCommune: 'test@test.fr',
+      };
+      axiosMock
+        .onGet(`habilitations/${habilitationId}`)
+        .reply(200, habilitation);
+
+      // SEND REQUEST
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/sync/exec`)
+        .set('authorization', `Token ${token}`)
+        .expect(200);
+
+      expect(sendMailMock).not.toHaveBeenCalled();
+
+      const syncExpected = {
+        status: StatusSyncEnum.SYNCED,
+        isPaused: false,
+        lastUploadedRevisionId: revisionId.toString(),
+      };
+
+      expect(response.body._id).toEqual(balId.toString());
+      expect(response.body.commune).toEqual(commune);
+      expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
+      expect(response.body.sync).toEqual(syncExpected);
+    });
+
+    it('Publish 412 status DEMO', async () => {
+      const commune = '91534';
+      const habilitationId = new Types.ObjectId();
+      const balId = await createBal({
+        commune,
+        _habilitation: habilitationId.toString(),
+        status: StatusBaseLocalEnum.DEMO,
+        emails: ['test@test.fr'],
+      });
+
+      // SEND REQUEST
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/sync/exec`)
+        .set('authorization', `Token ${token}`)
+        .expect(412);
+
+      expect(response.text).toEqual(
+        JSON.stringify({
+          statusCode: 412,
+          message:
+            'La synchronisation pas possibles pour les Bases Adresses Locales de démo ou en mode brouillon',
+        }),
+      );
+    });
+
+    it('Publish 412 no habilitation', async () => {
+      const commune = '91534';
+      const balId = await createBal({
+        commune,
+        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        emails: ['test@test.fr'],
+      });
+
+      // SEND REQUEST
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/sync/exec`)
+        .set('authorization', `Token ${token}`)
+        .expect(412);
+
+      expect(response.text).toEqual(
+        JSON.stringify({
+          statusCode: 412,
+          message: 'Aucune habilitation rattachée à cette Base Adresse Locale',
+        }),
+      );
+    });
+
+    it('Publish 412 habilitation PENDING', async () => {
+      const commune = '91534';
+      const habilitationId = new Types.ObjectId();
+      const balId = await createBal({
+        commune,
+        _habilitation: habilitationId.toString(),
+        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        emails: ['test@test.fr'],
+      });
+
+      // MOCK AXIOS
+      const habilitation: Habilitation = {
+        _id: habilitationId.toString(),
+        status: StatusHabiliation.PENDING,
+        expiresAt: add(new Date(), { months: 1 }),
+        codeCommune: commune,
+        emailCommune: 'test@test.fr',
+      };
+      axiosMock
+        .onGet(`habilitations/${habilitationId}`)
+        .reply(200, habilitation);
+
+      // SEND REQUEST
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/sync/exec`)
+        .set('authorization', `Token ${token}`)
+        .expect(412);
+
+      expect(response.text).toEqual(
+        JSON.stringify({
+          statusCode: 412,
+          message: 'L’habilitation rattachée n’est pas une habilitation valide',
+        }),
+      );
+    });
+
+    it('Publish 412 habilitation expired', async () => {
+      const commune = '91534';
+      const habilitationId = new Types.ObjectId();
+      const balId = await createBal({
+        commune,
+        _habilitation: habilitationId.toString(),
+        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        emails: ['test@test.fr'],
+      });
+
+      // MOCK AXIOS
+      const habilitation: Habilitation = {
+        _id: habilitationId.toString(),
+        status: StatusHabiliation.ACCEPTED,
+        expiresAt: sub(new Date(), { months: 1 }),
+        codeCommune: commune,
+        emailCommune: 'test@test.fr',
+      };
+      axiosMock
+        .onGet(`habilitations/${habilitationId}`)
+        .reply(200, habilitation);
+
+      // SEND REQUEST
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/sync/exec`)
+        .set('authorization', `Token ${token}`)
+        .expect(412);
+
+      expect(response.text).toEqual(
+        JSON.stringify({
+          statusCode: 412,
+          message: 'L’habilitation rattachée a expiré',
+        }),
+      );
+    });
+
+    it('Publish 412 no numero', async () => {
+      const commune = '91534';
+      const habilitationId = new Types.ObjectId();
+      const balId = await createBal({
+        commune,
+        _habilitation: habilitationId.toString(),
+        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        emails: ['test@test.fr'],
+      });
+
+      // MOCK AXIOS
+      const habilitation: Habilitation = {
+        _id: habilitationId.toString(),
+        status: StatusHabiliation.ACCEPTED,
+        expiresAt: add(new Date(), { months: 1 }),
+        codeCommune: commune,
+        emailCommune: 'test@test.fr',
+      };
+      axiosMock
+        .onGet(`habilitations/${habilitationId}`)
+        .reply(200, habilitation);
+
+      // SEND REQUEST
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/sync/exec`)
+        .set('authorization', `Token ${token}`)
+        .expect(412);
+
+      expect(response.text).toEqual(
+        JSON.stringify({
+          statusCode: 412,
+          message: 'La base locale ne possède aucune adresse',
+        }),
+      );
     });
   });
 });

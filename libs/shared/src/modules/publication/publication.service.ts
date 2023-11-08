@@ -130,7 +130,7 @@ export class PublicationService {
       const currentRevisionBalFile = currentRevision.files.find(
         (f) => f.type === 'bal',
       );
-
+      // console.log(currentRevisionBalFile.hash, hash);
       // On traite si le hash du fichier BAL CSV est différent du fichier de la révision courante
       // Cela veut dire qu'il y a eu un changement dans le fichier
       if (currentRevisionBalFile.hash !== hash) {

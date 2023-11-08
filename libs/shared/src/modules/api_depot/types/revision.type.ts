@@ -19,13 +19,13 @@ export enum StatusRevision {
 }
 
 export type FileRevision = {
-  _id: string;
-  revisionId: string;
-  name: string;
+  _id?: string;
+  revisionId?: string;
+  name?: string;
   type: string;
-  size: number;
+  size?: number;
   hash: string;
-  createdAt: Date;
+  createdAt?: Date;
 };
 
 export type Revision = {

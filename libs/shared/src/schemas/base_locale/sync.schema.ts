@@ -12,13 +12,13 @@ export class Sync {
   status: StatusSyncEnum;
 
   @Prop({ type: SchemaTypes.Boolean })
-  isPaused: boolean;
+  isPaused?: boolean;
 
   @Prop({ type: SchemaTypes.ObjectId })
   lastUploadedRevisionId: Types.ObjectId;
 
   @Prop({ type: SchemaTypes.Date })
-  currentUpdated: Date;
+  currentUpdated?: Date;
 }
 
 export const SyncSchema = SchemaFactory.createForClass(Sync);
