@@ -24,7 +24,10 @@ describe('BASE LOCAL MODULE', () => {
   let voieModel: Model<Voie>;
   let balModel: Model<BaseLocale>;
   let toponymeModel: Model<Toponyme>;
+  // VAR
   const token = 'xxxx';
+  const _created = new Date('2000-01-01');
+  const _updated = new Date('2000-01-02');
 
   beforeAll(async () => {
     // INIT DB
@@ -67,6 +70,8 @@ describe('BASE LOCAL MODULE', () => {
     const balId = new Types.ObjectId();
     const bal: Partial<BaseLocale> = {
       _id: balId,
+      _created,
+      _updated,
       token,
       ...props,
     };
@@ -78,6 +83,8 @@ describe('BASE LOCAL MODULE', () => {
     const voieId = new Types.ObjectId();
     const voie: Partial<Voie> = {
       _id: voieId,
+      _created,
+      _updated,
       ...props,
     };
     await voieModel.create(voie);
@@ -88,6 +95,8 @@ describe('BASE LOCAL MODULE', () => {
     const toponymeId = new Types.ObjectId();
     const toponyme: Partial<Toponyme> = {
       _id: toponymeId,
+      _created,
+      _updated,
       ...props,
     };
     await toponymeModel.create(toponyme);
@@ -98,6 +107,8 @@ describe('BASE LOCAL MODULE', () => {
     const numeroId = new Types.ObjectId();
     const numero: Partial<Numero> = {
       _id: numeroId,
+      _created,
+      _updated,
       ...props,
     };
     await numeroModel.create(numero);
@@ -175,7 +186,7 @@ describe('BASE LOCAL MODULE', () => {
       const numero1After: Numero = await numeroModel.findOne({
         _id: numeroId1,
       });
-      expect(numero1After._updated).toBeDefined();
+      expect(numero1After._updated).not.toEqual(_updated.toISOString());
       expect(numero1After.voie).toEqual(voieId3);
       expect(numero1After.positions[0].type).toEqual(
         PositionTypeEnum.DELIVRANCE_POSTALE,
@@ -186,7 +197,7 @@ describe('BASE LOCAL MODULE', () => {
       const numero2After: Numero = await numeroModel.findOne({
         _id: numeroId2,
       });
-      expect(numero2After._updated).toBeDefined();
+      expect(numero2After._updated).not.toEqual(_updated.toISOString());
       expect(numero2After.voie).toEqual(voieId3);
       expect(numero2After.positions[0].type).toEqual(
         PositionTypeEnum.DELIVRANCE_POSTALE,
@@ -195,32 +206,32 @@ describe('BASE LOCAL MODULE', () => {
       expect(numero2After.comment).toEqual('coucou');
 
       const voie1After: Voie = await voieModel.findOne({ _id: voieId1 });
-      expect(voie1After._updated).toBeDefined();
+      expect(voie1After._updated).not.toEqual(_updated.toISOString());
       expect(voie1After.centroid).toBeNull();
       expect(voie1After.centroidTiles).toBeNull();
 
       const voie2After: Voie = await voieModel.findOne({ _id: voieId2 });
-      expect(voie2After._updated).toBeDefined();
+      expect(voie2After._updated).not.toEqual(_updated.toISOString());
       expect(voie2After.centroid).toBeNull();
       expect(voie2After.centroidTiles).toBeNull();
 
       const voie3After: Voie = await voieModel.findOne({ _id: voieId3 });
-      expect(voie3After._updated).toBeDefined();
+      expect(voie3After._updated).not.toEqual(_updated.toISOString());
       expect(voie3After.centroid).not.toBeNull();
       expect(voie3After.centroidTiles).not.toBeNull();
 
       const toponymeAfter1: Toponyme = await toponymeModel.findOne({
         _id: toponymeId1,
       });
-      expect(toponymeAfter1._updated).toBeDefined();
+      expect(toponymeAfter1._updated).not.toEqual(_updated.toISOString());
 
       const toponymeAfter2: Toponyme = await toponymeModel.findOne({
         _id: toponymeId2,
       });
-      expect(toponymeAfter2._updated).toBeDefined();
+      expect(toponymeAfter2._updated).not.toEqual(_updated.toISOString());
 
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(balAfter._updated).toBeDefined();
+      expect(balAfter._updated).not.toEqual(_updated.toISOString());
     });
 
     it('Batch 400 without numeroIds', async () => {
@@ -352,37 +363,37 @@ describe('BASE LOCAL MODULE', () => {
       const numero1After: Numero = await numeroModel.findOne({
         _id: numeroId1,
       });
-      expect(numero1After._updated).toBeDefined();
+      expect(numero1After._updated).not.toEqual(_updated.toISOString());
       expect(numero1After._deleted).toBeDefined();
 
       const numero2After: Numero = await numeroModel.findOne({
         _id: numeroId2,
       });
-      expect(numero2After._updated).toBeDefined();
+      expect(numero2After._updated).not.toEqual(_updated.toISOString());
       expect(numero2After._deleted).toBeDefined();
 
       const voie1After: Voie = await voieModel.findOne({ _id: voieId1 });
-      expect(voie1After._updated).toBeDefined();
+      expect(voie1After._updated).not.toEqual(_updated.toISOString());
       expect(voie1After.centroid).toBeNull();
       expect(voie1After.centroidTiles).toBeNull();
 
       const voie2After: Voie = await voieModel.findOne({ _id: voieId2 });
-      expect(voie2After._updated).toBeDefined();
+      expect(voie2After._updated).not.toEqual(_updated.toISOString());
       expect(voie2After.centroid).toBeNull();
       expect(voie2After.centroidTiles).toBeNull();
 
       const toponymeAfter1: Toponyme = await toponymeModel.findOne({
         _id: toponymeId1,
       });
-      expect(toponymeAfter1._updated).toBeDefined();
+      expect(toponymeAfter1._updated).not.toEqual(_updated.toISOString());
 
       const toponymeAfter2: Toponyme = await toponymeModel.findOne({
         _id: toponymeId2,
       });
-      expect(toponymeAfter2._updated).toBeDefined();
+      expect(toponymeAfter2._updated).not.toEqual(_updated.toISOString());
 
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(balAfter._updated).toBeDefined();
+      expect(balAfter._updated).not.toEqual(_updated.toISOString());
     });
 
     it('Soft Delete 400: Bad request', async () => {
@@ -448,27 +459,27 @@ describe('BASE LOCAL MODULE', () => {
       expect(numero2After).toBeNull();
 
       const voie1After: Voie = await voieModel.findOne({ _id: voieId1 });
-      expect(voie1After._updated).toBeDefined();
+      expect(voie1After._updated).not.toEqual(_updated.toISOString());
       expect(voie1After.centroid).toBeNull();
       expect(voie1After.centroidTiles).toBeNull();
 
       const voie2After: Voie = await voieModel.findOne({ _id: voieId2 });
-      expect(voie2After._updated).toBeDefined();
+      expect(voie2After._updated).not.toEqual(_updated.toISOString());
       expect(voie2After.centroid).toBeNull();
       expect(voie2After.centroidTiles).toBeNull();
 
       const toponymeAfter1: Toponyme = await toponymeModel.findOne({
         _id: toponymeId1,
       });
-      expect(toponymeAfter1._updated).toBeDefined();
+      expect(toponymeAfter1._updated).not.toEqual(_updated.toISOString());
 
       const toponymeAfter2: Toponyme = await toponymeModel.findOne({
         _id: toponymeId2,
       });
-      expect(toponymeAfter2._updated).toBeDefined();
+      expect(toponymeAfter2._updated).not.toEqual(_updated.toISOString());
 
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(balAfter._updated).toBeDefined();
+      expect(balAfter._updated).not.toEqual(_updated.toISOString());
     });
 
     it('Delete 400: Bad request', async () => {
@@ -512,7 +523,6 @@ describe('BASE LOCAL MODULE', () => {
         toponyme: toponymeId1,
         certifie: true,
         commune: '91534',
-        _updated: new Date('2000-01-01'),
       });
       const numeroId2 = await createNumero({
         _bal: balId,
@@ -523,7 +533,6 @@ describe('BASE LOCAL MODULE', () => {
         toponyme: toponymeId1,
         certifie: false,
         commune: '91534',
-        _updated: new Date('2000-01-01'),
       });
 
       const deleteBtach: DeleteBatchNumeroDto = {
@@ -544,9 +553,9 @@ describe('BASE LOCAL MODULE', () => {
       );
 
       const csvFile = `cle_interop;uid_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-91534_xxxx_00001_bis;;rue de la paix;allée;1;bis;1;91534;Saclay;inconnu;8;42;1114835.92;6113076.85;;ban;2000-01-01
-91534_xxxx_00001_ter;;rue de paris;allée;1;ter;0;91534;Saclay;inconnu;8;42;1114835.92;6113076.85;;ban;2000-01-01
-91534_xxxx_99999;;allée;;99999;;;91534;Saclay;;;;;;;commune;`;
+91534_xxxx_00001_bis;;rue de la paix;allée;1;bis;1;91534;Saclay;inconnu;8;42;1114835.92;6113076.85;;ban;2000-01-02
+91534_xxxx_00001_ter;;rue de paris;allée;1;ter;0;91534;Saclay;inconnu;8;42;1114835.92;6113076.85;;ban;2000-01-02
+91534_xxxx_99999;;allée;;99999;;;91534;Saclay;;;;;;;commune;2000-01-02`;
       expect(response.text.replace(/\s/g, '')).toEqual(
         csvFile.replace(/\s/g, ''),
       );
@@ -621,12 +630,6 @@ voie;rue de paris;1;1ter`;
         commune: '55326',
       });
 
-      await createBal({
-        token: 'coucou',
-        emails: ['fetching@data.com'],
-        commune: '55500',
-      });
-
       const response = await request(app.getHttpServer())
         .get(`/bases-locales/search?commune=55326&email=living@data.com`)
         .expect(200);
@@ -640,6 +643,9 @@ voie;rue de paris;1;1ter`;
           nbNumerosCertifies: 0,
           isAllCertified: false,
           commentedNumeros: [],
+          _created: _created.toISOString(),
+          _updated: _updated.toISOString(),
+          _deleted: null,
         },
       ];
 
