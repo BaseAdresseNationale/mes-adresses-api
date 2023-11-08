@@ -11,10 +11,14 @@ import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
 import { CacheService } from '@/shared/modules/cache/cache.service';
 
+import { Task } from '../task_queue.class';
+
 const KEY_DETECT_CONFLICT_PUBLISHED_SINCE = 'detectConflictPublishedSince';
 
 @Injectable()
-export class DetectConflictTask {
+export class DetectConflictTask implements Task {
+  title: string = 'Detect conflict';
+
   constructor(
     private readonly apiDepotService: ApiDepotService,
     private readonly cacheService: CacheService,

@@ -13,12 +13,12 @@ import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { DetectOutdatedTask } from './tasks/detect_outdated.task';
 import { DetectConflictTask } from './tasks/detect_conflict.task';
 import { SyncOutdatedTask } from './tasks/sync_outdated.task';
-import { TaskQueue, Task } from './task_queue.class';
+import { TaskQueue } from './task_queue.class';
 
 @Injectable()
 export class CronService {
-  queue: TaskQueue = new TaskQueue();
   private readonly logger = new Logger(CronService.name);
+  private queue: TaskQueue = new TaskQueue();
 
   constructor(
     @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
@@ -35,11 +35,7 @@ export class CronService {
   async detectOutdated() {
     // this.logger.debug('Task start : detect outdated sync');
     // Met le status de sync a OUTDATED si il y a eu un changement
-    const task: Task = {
-      title: 'detect outdated',
-      service: this.detectOutdatedTask,
-    };
-    this.queue.pushTask(task);
+    this.queue.pushTask(this.detectOutdatedTask);
     // this.logger.debug('Task end : detect outdated sync');
   }
 
@@ -49,11 +45,7 @@ export class CronService {
     // this.logger.debug('Task start : detect sync in conflict');
     // Met le status a published (synced) si la derniere revision a le même id que le lastUploadedRevisionId du sync
     // sinon met le status a replaced (conflict)
-    const task: Task = {
-      title: 'detect conflict',
-      service: this.detectConflictTask,
-    };
-    this.queue.pushTask(task);
+    this.queue.pushTask(this.detectConflictTask);
     // this.logger.debug('Task end : detect sync in conflict');
   }
 
@@ -62,11 +54,7 @@ export class CronService {
   async syncOutdated() {
     // this.logger.debug('Task start : sync outdated');
     // Lance la publication de toutes les bals dont le sync est OUTDATED dans les 2 dernières heures
-    const task: Task = {
-      title: 'sync outdated',
-      service: this.syncOutdatedTask,
-    };
-    this.queue.pushTask(task);
+    this.queue.pushTask(this.syncOutdatedTask);
     // this.logger.debug('Task end : sync outdated');
   }
 

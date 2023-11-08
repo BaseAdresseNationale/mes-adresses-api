@@ -5,8 +5,12 @@ import { Model } from 'mongoose';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { StatusSyncEnum } from '@/shared/schemas/base_locale/status.enum';
 
+import { Task } from '../task_queue.class';
+
 @Injectable()
-export class DetectOutdatedTask {
+export class DetectOutdatedTask implements Task {
+  title: string = 'Detect outdated';
+
   constructor(
     @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
   ) {}

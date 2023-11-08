@@ -7,8 +7,12 @@ import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { StatusSyncEnum } from '@/shared/schemas/base_locale/status.enum';
 import { PublicationService } from '@/shared/modules/publication/publication.service';
 
+import { Task } from '../task_queue.class';
+
 @Injectable()
-export class SyncOutdatedTask {
+export class SyncOutdatedTask implements Task {
+  title: string = 'Sync outdated';
+
   constructor(
     private readonly publicationService: PublicationService,
     @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
