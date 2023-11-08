@@ -15,6 +15,12 @@ import { DetectConflictTask } from './tasks/detect_conflict.task';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { SyncOutdatedTask } from './tasks/sync_outdated.task';
+import { Numero, NumeroSchema } from '@/shared/schemas/numero/numero.schema';
+import {
+  Toponyme,
+  ToponymeSchema,
+} from '@/shared/schemas/toponyme/toponyme.schema';
+import { Voie, VoieSchema } from '@/shared/schemas/voie/voie.schema';
 
 @Module({
   imports: [
@@ -29,6 +35,9 @@ import { SyncOutdatedTask } from './tasks/sync_outdated.task';
     }),
     MongooseModule.forFeature([
       { name: BaseLocale.name, schema: BaseLocaleSchema },
+      { name: Numero.name, schema: NumeroSchema },
+      { name: Toponyme.name, schema: ToponymeSchema },
+      { name: Voie.name, schema: VoieSchema },
     ]),
     ScheduleModule.forRoot(),
     ApiDepotModule,
