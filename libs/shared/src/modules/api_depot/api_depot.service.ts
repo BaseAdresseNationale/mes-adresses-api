@@ -100,7 +100,6 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            console.log('COUCOU');
             throw error;
           }),
         ),

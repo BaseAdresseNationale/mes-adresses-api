@@ -150,7 +150,6 @@ export class BaseLocaleController {
     description: 'Base locale token (Token xxx)',
   })
   async findOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    console.log('FIND');
     const baseLocale = await this.baseLocaleService.extendWithNumeros(
       req.baseLocale,
     );
