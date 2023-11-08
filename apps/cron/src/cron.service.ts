@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { subMonths } from 'date-fns';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
@@ -12,9 +13,11 @@ import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { DetectOutdatedTask } from './tasks/detect_outdated.task';
 import { DetectConflictTask } from './tasks/detect_conflict.task';
 import { SyncOutdatedTask } from './tasks/sync_outdated.task';
+import { TaskQueue, Task } from './task_queue.class';
 
 @Injectable()
 export class CronService {
+  queue: TaskQueue = new TaskQueue();
   private readonly logger = new Logger(CronService.name);
 
   constructor(
@@ -28,31 +31,43 @@ export class CronService {
   ) {}
 
   // Every 30 seconds
-  @Interval(30000)
+  @Interval(10000)
   async detectOutdated() {
-    this.logger.debug('Task start : detect outdated sync');
+    // this.logger.debug('Task start : detect outdated sync');
     // Met le status de sync a OUTDATED si il y a eu un changement
-    await this.detectOutdatedTask.run();
-    this.logger.debug('Task end : detect outdated sync');
+    const task: Task = {
+      title: 'detect outdated',
+      service: this.detectOutdatedTask,
+    };
+    this.queue.pushTask(task);
+    // this.logger.debug('Task end : detect outdated sync');
   }
 
   // Every 30 seconds
-  @Interval(30000)
+  @Interval(10000)
   async detectConflict() {
-    this.logger.debug('Task start : detect sync in conflict');
+    // this.logger.debug('Task start : detect sync in conflict');
     // Met le status a published (synced) si la derniere revision a le même id que le lastUploadedRevisionId du sync
     // sinon met le status a replaced (conflict)
-    await this.detectConflictTask.run();
-    this.logger.debug('Task end : detect sync in conflict');
+    const task: Task = {
+      title: 'detect conflict',
+      service: this.detectConflictTask,
+    };
+    this.queue.pushTask(task);
+    // this.logger.debug('Task end : detect sync in conflict');
   }
 
   // Every 5 minutes
   @Interval(300000)
   async syncOutdated() {
-    this.logger.debug('Task start : sync outdated');
+    // this.logger.debug('Task start : sync outdated');
     // Lance la publication de toutes les bals dont le sync est OUTDATED dans les 2 dernières heures
-    await this.syncOutdatedTask.run();
-    this.logger.debug('Task end : sync outdated');
+    const task: Task = {
+      title: 'sync outdated',
+      service: this.syncOutdatedTask,
+    };
+    this.queue.pushTask(task);
+    // this.logger.debug('Task end : sync outdated');
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
@@ -69,7 +84,7 @@ export class CronService {
     this.logger.debug('Task start : purge demo BALs');
     const creationTime = subMonths(new Date(), 1);
     const filter: FilterQuery<BaseLocale> = {
-      status: 'demo',
+      status: StatusBaseLocalEnum.DEMO,
       _created: { $lt: creationTime },
     };
     await this.removeBals(filter);

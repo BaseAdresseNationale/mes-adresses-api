@@ -12,7 +12,7 @@ export class DetectOutdatedTask {
   ) {}
 
   public async run() {
-    return await this.baseLocaleModel.updateMany(
+    await this.baseLocaleModel.updateMany(
       {
         'sync.status': StatusSyncEnum.SYNCED,
         $expr: { $gt: ['$_updated', '$sync.currentUpdated'] },
