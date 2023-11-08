@@ -168,18 +168,21 @@ app.route('/bases-locales/:baseLocaleId/transform-to-draft')
     res.send(baseLocale)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/sync/exec')
   .post(ensureIsAdmin, w(async (req, res) => {
     const baseLocale = await sync.exec(req.baseLocale._id, {force: true})
     res.send(baseLocale)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/sync/pause')
   .post(ensureIsAdmin, w(async (req, res) => {
     const baseLocale = await sync.pause(req.baseLocale._id)
     res.send(baseLocale)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/sync/resume')
   .post(ensureIsAdmin, w(async (req, res) => {
     const baseLocale = await sync.resume(req.baseLocale._id)
