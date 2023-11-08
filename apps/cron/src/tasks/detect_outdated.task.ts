@@ -15,7 +15,7 @@ export class DetectOutdatedTask implements Task {
     @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
   ) {}
 
-g  public async run() {
+  public async run() {
     await this.baseLocaleModel.updateMany(
       {
         'sync.status': StatusSyncEnum.SYNCED,
