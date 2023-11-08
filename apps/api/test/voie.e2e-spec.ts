@@ -22,7 +22,10 @@ describe('VOIE MODULE', () => {
   let voieModel: Model<Voie>;
   let balModel: Model<BaseLocale>;
   let toponymeModel: Model<Toponyme>;
+  // VAR
   const token = 'xxxx';
+  const _created = new Date('2000-01-01');
+  const _updated = new Date('2000-01-02');
 
   beforeAll(async () => {
     // INIT DB
@@ -64,6 +67,8 @@ describe('VOIE MODULE', () => {
     const balId = new Types.ObjectId();
     const bal: Partial<BaseLocale> = {
       _id: balId,
+      _created,
+      _updated,
       token,
     };
     await balModel.create(bal);
@@ -74,6 +79,8 @@ describe('VOIE MODULE', () => {
     const voieId = new Types.ObjectId();
     const voie: Partial<Voie> = {
       _id: voieId,
+      _created,
+      _updated,
       ...props,
     };
     await voieModel.create(voie);
@@ -84,6 +91,8 @@ describe('VOIE MODULE', () => {
     const numeroId = new Types.ObjectId();
     const numero: Partial<Numero> = {
       _id: numeroId,
+      _created,
+      _updated,
       ...props,
     };
     await numeroModel.create(numero);
@@ -162,14 +171,14 @@ describe('VOIE MODULE', () => {
       expect(response.body.toponyme).toEqual(null);
       expect(response.body.comment).toEqual(null);
       expect(response.body.certifie).toEqual(false);
-      expect(response.body._updated).not.toBeNull();
-      expect(response.body._created).not.toBeNull();
+      expect(response.body._updated).not.toEqual(_updated.toISOString());
+      expect(response.body._created).not.toEqual(_created.toISOString());
       expect(response.body._deleted).toEqual(null);
 
       const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).not.toBeNull();
-      expect(balAfter._updated).not.toBeNull();
+      expect(voieAfter._updated).not.toEqual(_updated.toISOString());
+      expect(balAfter._updated).not.toEqual(_updated.toISOString());
     });
 
     it('Create 201 numero with meta', async () => {
@@ -209,14 +218,14 @@ describe('VOIE MODULE', () => {
       expect(response.body.toponyme).toEqual(null);
       expect(response.body.comment).toEqual('coucou');
       expect(response.body.certifie).toEqual(true);
-      expect(response.body._updated).not.toBeNull();
-      expect(response.body._created).not.toBeNull();
+      expect(response.body._updated).not.toEqual(_updated.toISOString());
+      expect(response.body._created).not.toEqual(_created.toISOString());
       expect(response.body._deleted).toEqual(null);
 
       const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).not.toBeNull();
-      expect(balAfter._updated).not.toBeNull();
+      expect(voieAfter._updated).not.toEqual(_updated.toISOString());
+      expect(balAfter._updated).not.toEqual(_updated.toISOString());
     });
 
     it('Create 404 voie is deleted', async () => {
@@ -255,8 +264,8 @@ describe('VOIE MODULE', () => {
 
       const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).toBeUndefined();
-      expect(balAfter._updated).toBeUndefined();
+      expect(voieAfter._updated.toISOString()).toEqual(_updated.toISOString());
+      expect(balAfter._updated.toISOString()).toEqual(_updated.toISOString());
     });
 
     it('Create 404 toponyme not exist', async () => {
@@ -295,8 +304,8 @@ describe('VOIE MODULE', () => {
 
       const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).toBeUndefined();
-      expect(balAfter._updated).toBeUndefined();
+      expect(voieAfter._updated.toISOString()).toEqual(_updated.toISOString());
+      expect(balAfter._updated.toISOString()).toEqual(_updated.toISOString());
     });
 
     it('Create 404 bad payload', async () => {
