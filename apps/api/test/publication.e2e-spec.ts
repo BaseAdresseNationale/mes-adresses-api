@@ -42,7 +42,10 @@ describe('BASE LOCAL MODULE', () => {
   let voieModel: Model<Voie>;
   let balModel: Model<BaseLocale>;
   let toponymeModel: Model<Toponyme>;
+  // VAR
   const token = 'xxxx';
+  const _created = new Date('2000-01-01');
+  const _updated = new Date('2000-01-02');
   // AXIOS
   const axiosMock = new MockAdapter(axios);
   // NODEMAILER
@@ -93,6 +96,8 @@ describe('BASE LOCAL MODULE', () => {
     const bal: Partial<BaseLocale> = {
       _id: balId,
       token,
+      _created,
+      _updated,
       ...props,
     };
     await balModel.create(bal);
@@ -223,6 +228,7 @@ describe('BASE LOCAL MODULE', () => {
       expect(sendMailMock).toHaveBeenCalled();
 
       const syncExpected = {
+        currentUpdated: _updated.toISOString(),
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
         lastUploadedRevisionId: revisionId.toString(),
@@ -342,6 +348,7 @@ describe('BASE LOCAL MODULE', () => {
       expect(sendMailMock).not.toHaveBeenCalled();
 
       const syncExpected = {
+        currentUpdated: _updated.toISOString(),
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
         lastUploadedRevisionId: revisionId.toString(),
@@ -429,6 +436,7 @@ describe('BASE LOCAL MODULE', () => {
       expect(sendMailMock).not.toHaveBeenCalled();
 
       const syncExpected = {
+        currentUpdated: _updated.toISOString(),
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
         lastUploadedRevisionId: revisionId.toString(),
