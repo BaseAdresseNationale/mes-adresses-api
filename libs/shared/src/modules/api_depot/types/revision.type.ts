@@ -33,7 +33,7 @@ export type Revision = {
   codeCommune: string;
   context?: ContextRevision;
   validation?: ValidationRevision;
-  client: string;
+  client?: string;
   status: StatusRevision;
   ready: boolean;
   files?: FileRevision[];

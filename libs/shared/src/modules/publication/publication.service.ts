@@ -70,7 +70,10 @@ export class PublicationService {
     }
 
     // On verifie que l'habilitation n'est pas expirée
-    if (new Date(habilitation.expiresAt) < new Date()) {
+    if (
+      !habilitation.expiresAt ||
+      new Date(habilitation.expiresAt) < new Date()
+    ) {
       throw new HttpException(
         'L’habilitation rattachée a expiré',
         HttpStatus.PRECONDITION_FAILED,
@@ -105,7 +108,6 @@ export class PublicationService {
       // On envoie un mail de notification
       const email = createPublicationNotificationEmail({ baseLocale });
       await this.mailerService.sendMail(email, baseLocale.emails);
-
       // On marque le sync de la BAL en published
       return this.markAsSynced(baseLocale, publishedRevision._id);
     }

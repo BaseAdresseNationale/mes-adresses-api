@@ -4,6 +4,10 @@ import * as request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model, Types } from 'mongoose';
+import axios from 'axios';
+import { add } from 'date-fns';
+import MockAdapter from 'axios-mock-adapter';
+import * as nodemailer from 'nodemailer';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
@@ -11,11 +15,26 @@ import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 import { Position } from '@/shared/schemas/position.schema';
+import {
+  StatusBaseLocalEnum,
+  StatusSyncEnum,
+} from '@/shared/schemas/base_locale/status.enum';
+import {
+  Habilitation,
+  StatusHabiliation,
+} from '@/shared/modules/api_depot/types/habilitation.type';
+import {
+  Revision,
+  StatusRevision,
+} from '@/shared/modules/api_depot/types/revision.type';
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
-
 import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
 import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
+
+jest.mock('nodemailer');
+
+const createTransport = nodemailer.createTransport;
 
 describe('BASE LOCAL MODULE', () => {
   let app: INestApplication;
@@ -26,6 +45,11 @@ describe('BASE LOCAL MODULE', () => {
   let balModel: Model<BaseLocale>;
   let toponymeModel: Model<Toponyme>;
   const token = 'xxxx';
+  // AXIOS
+  const axiosMock = new MockAdapter(axios);
+  // NODEMAILER
+  const sendMailMock = jest.fn();
+  createTransport.mockReturnValue({ sendMail: sendMailMock });
 
   beforeAll(async () => {
     // INIT DB
@@ -41,6 +65,8 @@ describe('BASE LOCAL MODULE', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
+    // const httpService = moduleFixture.get<HttpService>(HttpService);
+    // axiosMock = new MockAdapter(httpService.axiosRef as AxiosInstance);
     // INIT MODEL
     numeroModel = app.get<Model<Numero>>(getModelToken(Numero.name));
     voieModel = app.get<Model<Voie>>(getModelToken(Voie.name));
@@ -56,6 +82,7 @@ describe('BASE LOCAL MODULE', () => {
   });
 
   afterEach(async () => {
+    axiosMock.reset();
     await toponymeModel.deleteMany({});
     await voieModel.deleteMany({});
     await balModel.deleteMany({});
@@ -613,7 +640,7 @@ voie;rue de paris;1;1ter`;
   });
 
   describe('GET /bases-locales/search', () => {
-    it('Find 200', async () => {
+    it('Search 200', async () => {
       const balId1 = await createBal({
         token: 'coucou',
         emails: ['living@data.com'],
@@ -646,6 +673,96 @@ voie;rue de paris;1;1ter`;
       expect(response.body.offset).toEqual(0);
       expect(response.body.limit).toEqual(20);
       expect(response.body.results).toEqual(results);
+    });
+  });
+
+  describe('POST /bases-locales/sync/exec', () => {
+    it('Publish 200', async () => {
+      const commune = '91534';
+      const habilitationId = new Types.ObjectId();
+      const balId = await createBal({
+        commune,
+        _habilitation: habilitationId.toString(),
+        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        emails: ['test@test.fr'],
+      });
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        commune,
+        _bal: balId,
+      });
+      await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 1,
+        suffixe: 'bis',
+        positions: createPositions(),
+        certifie: true,
+        commune,
+        _updated: new Date('2000-01-01'),
+      });
+
+      // MOCK AXIOS
+      const habilitation: Habilitation = {
+        _id: habilitationId.toString(),
+        status: StatusHabiliation.ACCEPTED,
+        expiresAt: add(new Date(), { months: 1 }),
+        codeCommune: commune,
+        emailCommune: 'test@test.fr',
+      };
+      axiosMock
+        .onGet(`habilitations/${habilitationId}`)
+        .reply(200, habilitation);
+
+      const revisionId = new Types.ObjectId();
+      const revision: Revision = {
+        _id: revisionId.toString(),
+        codeCommune: commune,
+        status: StatusRevision.PENDING,
+        ready: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        current: false,
+        validation: {
+          valid: true,
+        },
+      };
+      axiosMock.onPost(`/communes/${commune}/revisions`).reply(200, revision);
+
+      axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
+
+      const publishedRevision: Revision = {
+        _id: revisionId.toString(),
+        codeCommune: commune,
+        status: StatusRevision.PUBLISHED,
+        ready: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        current: true,
+        validation: {
+          valid: true,
+        },
+      };
+      axiosMock
+        .onPost(`/revisions/${revisionId}/publish`)
+        .reply(200, publishedRevision);
+
+      // SEND REQUEST
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/sync/exec`)
+        .set('authorization', `Token ${token}`);
+      expect(sendMailMock).toHaveBeenCalled();
+
+      const syncExpected = {
+        status: StatusSyncEnum.SYNCED,
+        isPaused: false,
+        lastUploadedRevisionId: revisionId.toString(),
+      };
+
+      expect(response.body._id).toEqual(balId.toString());
+      expect(response.body.commune).toEqual(commune);
+      expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
+      expect(response.body.sync).toEqual(syncExpected);
     });
   });
 });

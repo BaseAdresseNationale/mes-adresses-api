@@ -20,11 +20,11 @@ export type Habilitation = {
   _id: string;
   codeCommune: string;
   emailCommune: string;
-  franceconnectAuthenticationUrl: string;
-  strategy: EmailStrategy | FranceConnectStrategy;
-  client: string;
+  franceconnectAuthenticationUrl?: string;
+  strategy?: EmailStrategy | FranceConnectStrategy;
+  client?: string;
   status: StatusHabiliation;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   expiresAt?: Date;
 };
