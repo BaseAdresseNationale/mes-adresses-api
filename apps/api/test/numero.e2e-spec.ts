@@ -20,7 +20,10 @@ describe('NUMERO', () => {
   let numeroModel: Model<Numero>;
   let voieModel: Model<Voie>;
   let balModel: Model<BaseLocale>;
+  // VAR
   const token = 'xxxx';
+  const _created = new Date('2000-01-01');
+  const _updated = new Date('2000-01-02');
 
   beforeAll(async () => {
     // INIT DB
@@ -59,6 +62,8 @@ describe('NUMERO', () => {
     const balId = new Types.ObjectId();
     const bal: Partial<BaseLocale> = {
       _id: balId,
+      _created,
+      _updated,
       token,
     };
     await balModel.create(bal);
@@ -69,6 +74,8 @@ describe('NUMERO', () => {
     const voieId = new Types.ObjectId();
     const voie: Partial<Voie> = {
       _id: voieId,
+      _created,
+      _updated,
       ...props,
     };
     await voieModel.create(voie);
@@ -79,6 +86,8 @@ describe('NUMERO', () => {
     const numeroId = new Types.ObjectId();
     const numero: Partial<Numero> = {
       _id: numeroId,
+      _created,
+      _updated,
       ...props,
     };
     await numeroModel.create(numero);
@@ -178,8 +187,8 @@ describe('NUMERO', () => {
 
       const voieDbAfter = await voieModel.findOne({ _id: voieId });
       const balDbAfter = await balModel.findOne({ _id: balId });
-      expect(voieDbAfter._updated).not.toBeNull();
-      expect(balDbAfter._updated).not.toBeNull();
+      expect(voieDbAfter._updated).not.toEqual(_updated.toISOString());
+      expect(balDbAfter._updated).not.toEqual(_updated.toISOString());
     });
 
     it('Update 404 Numero Not Found', async () => {
@@ -255,8 +264,10 @@ describe('NUMERO', () => {
 
       const voieDbAfter = await voieModel.findOne({ _id: voieId });
       const balDbAfter = await balModel.findOne({ _id: balId });
-      expect(voieDbAfter._updated).toBeUndefined();
-      expect(balDbAfter._updated).toBeUndefined();
+      expect(voieDbAfter._updated.toISOString()).toEqual(
+        _updated.toISOString(),
+      );
+      expect(balDbAfter._updated.toISOString()).toEqual(_updated.toISOString());
     });
 
     it('Update 200 check field _updated of voie and bal', async () => {
@@ -296,10 +307,6 @@ describe('NUMERO', () => {
         numero: 99,
       });
 
-      const numeroDbBefore = await numeroModel.findOne({ _id: numeroId });
-      const voieDbBefore = await voieModel.findOne({ _id: voieId });
-      const balDbBefore = await balModel.findOne({ _id: balId });
-
       const updatedNumero: UpdateNumeroDto = {
         numero: 100,
       };
@@ -314,9 +321,9 @@ describe('NUMERO', () => {
       const voieDbAfter = await voieModel.findOne({ _id: voieId });
       const balDbAfter = await balModel.findOne({ _id: balId });
 
-      expect(numeroDbBefore._updated).not.toEqual(numeroDbAfter._updated);
-      expect(voieDbBefore._updated).not.toEqual(voieDbAfter._updated);
-      expect(balDbBefore._updated).not.toEqual(balDbAfter._updated);
+      expect(numeroDbAfter._updated).not.toEqual(_updated.toISOString());
+      expect(voieDbAfter._updated).not.toEqual(_updated.toISOString());
+      expect(balDbAfter._updated).not.toEqual(_updated.toISOString());
     });
 
     it('Update 200 check field tiles Numero is UPDATE and centroid, centroidTiles voie is UPDATE', async () => {
@@ -399,8 +406,8 @@ describe('NUMERO', () => {
       expect(voie2DbAfter.centroid).not.toBe(null);
       expect(voie2DbAfter.centroidTiles).not.toBe(null);
 
-      expect(voie1DbAfter._updated).not.toBeNull();
-      expect(voie2DbAfter._updated).not.toBeNull();
+      expect(voie1DbAfter._updated).not.toEqual(_updated.toISOString());
+      expect(voie2DbAfter._updated).not.toEqual(_updated.toISOString());
     });
   });
 
@@ -426,8 +433,8 @@ describe('NUMERO', () => {
       expect(numeroDeleted).toBe(null);
       const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).not.toBeNull();
-      expect(balAfter._updated).not.toBeNull();
+      expect(voieAfter._updated).not.toEqual(_updated.toISOString());
+      expect(balAfter._updated).not.toEqual(_updated.toISOString());
     });
 
     it('Delete 404 NOT FOUND', async () => {
@@ -458,8 +465,8 @@ describe('NUMERO', () => {
       expect(numeroDeleted).not.toBe(null);
       const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).toBeUndefined();
-      expect(balAfter._updated).toBeUndefined();
+      expect(voieAfter._updated.toISOString()).toEqual(_updated.toISOString());
+      expect(balAfter._updated.toISOString()).toEqual(_updated.toISOString());
     });
   });
 
@@ -486,8 +493,8 @@ describe('NUMERO', () => {
 
       const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).not.toBeNull();
-      expect(balAfter._updated).not.toBeNull();
+      expect(voieAfter._updated).not.toEqual(_updated.toISOString());
+      expect(balAfter._updated).not.toEqual(_updated.toISOString());
     });
 
     it('Soft Delete 404 NOT FOUND', async () => {
@@ -518,8 +525,8 @@ describe('NUMERO', () => {
       expect(numeroDeleted._deleted).toBe(null);
       const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
       const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).toBeUndefined();
-      expect(balAfter._updated).toBeUndefined();
+      expect(voieAfter._updated.toISOString()).toEqual(_updated.toISOString());
+      expect(balAfter._updated.toISOString()).toEqual(_updated.toISOString());
     });
   });
 });
