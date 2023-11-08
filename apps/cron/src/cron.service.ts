@@ -31,31 +31,25 @@ export class CronService {
   ) {}
 
   // Every 30 seconds
-  @Interval(10000)
+  @Interval(30000)
   async detectOutdated() {
-    // this.logger.debug('Task start : detect outdated sync');
     // Met le status de sync a OUTDATED si il y a eu un changement
     this.queue.pushTask(this.detectOutdatedTask);
-    // this.logger.debug('Task end : detect outdated sync');
   }
 
   // Every 30 seconds
-  @Interval(10000)
+  @Interval(30000)
   async detectConflict() {
-    // this.logger.debug('Task start : detect sync in conflict');
     // Met le status a published (synced) si la derniere revision a le même id que le lastUploadedRevisionId du sync
     // sinon met le status a replaced (conflict)
     this.queue.pushTask(this.detectConflictTask);
-    // this.logger.debug('Task end : detect sync in conflict');
   }
 
   // Every 5 minutes
   @Interval(300000)
   async syncOutdated() {
-    // this.logger.debug('Task start : sync outdated');
     // Lance la publication de toutes les bals dont le sync est OUTDATED dans les 2 dernières heures
     this.queue.pushTask(this.syncOutdatedTask);
-    // this.logger.debug('Task end : sync outdated');
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
