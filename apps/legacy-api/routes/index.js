@@ -350,12 +350,14 @@ app.route('/bases-locales/:baseLocaleId/tiles/:z/:x/:y.pbf')
     res.send(await gzip(Buffer.from(pbf)))
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/populate')
   .post(ensureIsAdmin, w(async (req, res) => {
     const baseLocale = await BaseLocale.populateCommune(req.baseLocale._id)
     res.send(baseLocale)
   }))
 
+// DONE
 app.post('/bases-locales/:baseLocaleId/token/renew', ensureIsAdmin, w(async (req, res) => {
   const baseLocale = await BaseLocale.renewToken(req.baseLocale._id)
   res.send(baseLocale)

@@ -13,7 +13,7 @@ export class PopulateService {
   private async extractFromApiDepot(codeCommune: string) {
     try {
       const apiDepotUrl = this.configService.get<string>('API_DEPOT_URL');
-      const currentRevisionUrl = `${apiDepotUrl}/communes/${codeCommune}/current-revision`;
+      const currentRevisionUrl = `${apiDepotUrl}/communes/${codeCommune}/current-revision/files/bal/download`;
 
       const response = await this.httpService.axiosRef({
         url: currentRevisionUrl,
