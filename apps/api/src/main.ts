@@ -34,6 +34,15 @@ async function bootstrap() {
     .setTitle('Mes adresses API')
     .setDescription('Mes adresses API description')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        description: `Please enter token in following format: Token xxx`,
+        name: 'Authorization',
+        type: 'http',
+        in: 'Header',
+      },
+      'admin-token',
+    )
     .build();
   app.useGlobalPipes(new ValidationPipe());
   const document = SwaggerModule.createDocument(app, config);

@@ -133,7 +133,7 @@ export function extractData(rows, codeCommune) {
   return { voies, numeros, toponymes };
 }
 
-export async function extractFromCsv(file, codeCommune) {
+export async function extractFromCsv(file: Buffer, codeCommune: string) {
   try {
     const { rows, parseOk } = await validate(file, { profile: '1.3-relax' });
 

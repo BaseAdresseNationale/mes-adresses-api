@@ -38,17 +38,15 @@ export class SearchQueryPipe implements PipeTransform {
       );
     }
 
-    if (query.deleted) {
-      if (query.deleted === 'false') {
-        filters._deleted = { $eq: null };
-      } else if (query.deleted === 'true') {
-        filters._deleted = { $ne: null };
-      } else {
-        throw new HttpException(
-          'La valeur du champ "deleted" est invalide',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+    if (Number.parseInt(query.deleted) === 0) {
+      filters._deleted = { $eq: null };
+    } else if (Number.parseInt(query.deleted) === 1) {
+      filters._deleted = { $ne: null };
+    } else if (query.deleted) {
+      throw new HttpException(
+        'La valeur du champ "deleted" est invalide',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     if (query.commune) {

@@ -17,9 +17,9 @@ import {
   ApiParam,
   ApiTags,
   ApiResponse,
-  ApiHeader,
   ApiBody,
   ApiOperation,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 import { Voie } from '@/shared/schemas/voie/voie.schema';
@@ -49,10 +49,7 @@ export class VoieController {
   @ApiOperation({ summary: 'Find Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoie })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   async find(@Req() req: CustomRequest, @Res() res: Response) {
     const voieExtended: ExtendedVoie = await this.voieService.extendVoie(
       req.voie,
@@ -65,10 +62,7 @@ export class VoieController {
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
   @ApiBody({ type: UpdateVoieDto, required: true })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
@@ -83,10 +77,7 @@ export class VoieController {
   @ApiOperation({ summary: 'Soft delete Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Voie = await this.voieService.softDelete(req.voie);
@@ -98,10 +89,7 @@ export class VoieController {
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiBody({ type: RestoreVoieDto, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async restore(
     @Req() req: CustomRequest,
@@ -119,10 +107,7 @@ export class VoieController {
   @ApiOperation({ summary: 'Delete Voie by id' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async delete(@Req() req: CustomRequest, @Res() res: Response) {
     await this.voieService.delete(req.voie);
@@ -133,10 +118,7 @@ export class VoieController {
   @ApiOperation({ summary: 'Find all numeros which belong to the voie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   async findByVoie(@Req() req: CustomRequest, @Res() res: Response) {
     const numeros: Numero[] = await this.numeroService.findMany({
       voie: req.voie._id,
@@ -150,10 +132,7 @@ export class VoieController {
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiBody({ type: CreateNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Numero })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createNumero(
     @Req() req: CustomRequest,
@@ -171,10 +150,7 @@ export class VoieController {
   @ApiOperation({ summary: 'Convert Voie (without numeros) to Toponyme' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async convertVoieToToponyme(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Toponyme = await this.voieService.convertToToponyme(req.voie);

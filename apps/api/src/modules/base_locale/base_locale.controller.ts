@@ -5,17 +5,21 @@ import {
   Get,
   HttpStatus,
   Inject,
+  ParseFilePipeBuilder,
   Post,
   Put,
   Query,
   Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
   forwardRef,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
-  ApiHeader,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -53,6 +57,8 @@ import {
   SearchQueryPipe,
   SearchQueryTransformed,
 } from './pipe/search_query.pipe';
+import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -106,10 +112,7 @@ export class BaseLocaleController {
     status: HttpStatus.OK,
     type: PageBaseLocaleDTO,
   })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   async searchBaseLocale(
     @Query(SearchQueryPipe) { filters, limit, offset }: SearchQueryTransformed,
     @Res() res: Response,
@@ -145,10 +148,7 @@ export class BaseLocaleController {
     status: HttpStatus.OK,
     type: ExtendedBaseLocale,
   })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   async findOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     const baseLocale = await this.baseLocaleService.extendWithNumeros(
       req.baseLocale,
@@ -165,10 +165,7 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBaseLocaleDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async updateOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     const updatedBaseLocale = await this.baseLocaleService.updateOne(
@@ -179,17 +176,25 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(updatedBaseLocale);
   }
 
+  @Delete(':baseLocaleId')
+  @ApiOperation({ summary: 'Delete one base locale' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async deleteOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+    const baseLocale = await this.baseLocaleService.deleteOne(req.baseLocale);
+    res.status(HttpStatus.OK).json(baseLocale);
+  }
+
   @Put(':baseLocaleId/transform-to-draft')
   @ApiOperation({ summary: 'Update one base locale status to draft' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBaseLocaleDemoDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async UpdateStatusToDraft(
+  async updateStatusToDraft(
     @Req() req: CustomRequest,
     @Body() updateBaseLocaleDemoDTO: UpdateBaseLocaleDemoDTO,
     @Res() res: Response,
@@ -203,18 +208,46 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(updatedBaseLocale);
   }
 
-  @Delete(':baseLocaleId')
-  @ApiOperation({ summary: 'Delete one base locale' })
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
+  @Post(':baseLocaleId/upload')
+  @ApiOperation({ summary: 'Upload a CSV BAL file' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
   })
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: ImportFileBaseLocaleDTO })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async deleteOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.baseLocaleService.deleteOne(req.baseLocale);
-    res.status(HttpStatus.OK).json(baseLocale);
+  async uploadBALFile(
+    @Req() req: CustomRequest,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'text/csv',
+        })
+        .addMaxSizeValidator({
+          maxSize: 50000000, // 50 Mo
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+    @Res() res: Response,
+  ) {
+    const importStatus: ImportFileBaseLocaleDTO =
+      await this.baseLocaleService.importFile(req.baseLocale, file.buffer);
+
+    res.status(HttpStatus.OK).json(importStatus);
   }
 
   @Get(':baseLocaleId/parcelles')
@@ -224,10 +257,7 @@ export class BaseLocaleController {
     status: HttpStatus.OK,
     isArray: true,
   })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   async getBaseLocaleParcelles(
     @Req() req: CustomRequest,
     @Res() res: Response,
@@ -271,10 +301,7 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBatchNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.OK })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async batchNumeros(
     @Req() req: CustomRequest,
@@ -293,10 +320,7 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: DeleteBatchNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.OK })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDeleteNumeros(
     @Req() req: CustomRequest,
@@ -315,10 +339,7 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: DeleteBatchNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async deleteNumeros(
     @Req() req: CustomRequest,
@@ -337,10 +358,7 @@ export class BaseLocaleController {
     status: HttpStatus.OK,
     isArray: true,
   })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   async findVoieByBal(
     @Req() req: CustomRequest,
     @Query('isDeleted') isDeleted: boolean = false,
@@ -360,10 +378,7 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateVoieDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Voie, isArray: true })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   async createVoie(
     @Req() req: CustomRequest,
     @Body() createVoieDto: CreateVoieDto,
@@ -381,10 +396,7 @@ export class BaseLocaleController {
   @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme, isArray: true })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   async findToponymeByBal(
     @Req() req: CustomRequest,
     @Query('isDeleted') isDeleted: boolean = false,
@@ -404,10 +416,7 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateToponymeDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme, isArray: true })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Base locale token (Token xxx)',
-  })
+  @ApiBearerAuth('admin-token')
   async create(
     @Req() req: CustomRequest,
     @Body() createToponymeDto: CreateToponymeDto,

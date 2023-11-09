@@ -37,6 +37,9 @@ import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 import { getCommune } from '@/shared/utils/cog.utils';
 import { PopulateService } from './sub_modules/populate/populate.service';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
+import { extractFromCsv } from '@/lib/utils/csv.utils';
+import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 
 @Injectable()
 export class BaseLocaleService {
@@ -129,10 +132,41 @@ export class BaseLocaleService {
     });
 
     if (populate) {
-      await this.populate(newDemoBaseLocale);
+      const { numeros, voies, toponymes } = await this.populateService.extract(
+        newDemoBaseLocale.commune,
+      );
+      await this.populate(newDemoBaseLocale, { numeros, voies, toponymes });
     }
 
     return newDemoBaseLocale;
+  }
+
+  async importFile(
+    baseLocale: BaseLocale,
+    file: Buffer,
+  ): Promise<ImportFileBaseLocaleDTO> {
+    const { voies, numeros, toponymes, isValid, accepted, rejected } =
+      await extractFromCsv(file, baseLocale.commune);
+
+    if (!isValid) {
+      throw new HttpException(
+        `CSV file is not valid`,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    await this.populate(baseLocale, { voies, numeros, toponymes });
+
+    await this.touch(baseLocale._id);
+
+    return {
+      isValid: true,
+      accepted,
+      rejected,
+      commune: baseLocale.commune,
+      voies: voies.length,
+      numeros: numeros.length,
+    };
   }
 
   async updateOne(
@@ -254,11 +288,13 @@ export class BaseLocaleService {
     return this.baseLocaleModel.aggregate(aggregation);
   }
 
-  async populate(baseLocale: BaseLocale): Promise<BaseLocale> {
+  async populate(
+    baseLocale: BaseLocale,
+    data: { voies: Voie[]; toponymes: Toponyme[]; numeros: Numero[] },
+  ): Promise<BaseLocale> {
     await this.deleteData(baseLocale);
-    const { numeros, voies, toponymes } = await this.populateService.extract(
-      baseLocale.commune,
-    );
+
+    const { voies, toponymes, numeros } = data;
 
     await this.voieService.importMany(baseLocale, voies);
     await this.toponymeService.importMany(baseLocale, toponymes);
