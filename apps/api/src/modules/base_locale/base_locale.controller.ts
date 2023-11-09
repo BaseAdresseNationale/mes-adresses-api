@@ -59,6 +59,8 @@ import {
 } from './pipe/search_query.pipe';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
+import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -250,6 +252,63 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(importStatus);
   }
 
+  @Post('recovery')
+  @ApiOperation({ summary: 'Recover BAL access' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  async recoverBALAccess(
+    @Req() req: Request,
+    @Body() recoverBaseLocaleDTO: RecoverBaseLocaleDTO,
+    @Res() res: Response,
+  ) {
+    await this.baseLocaleService.recoverAccess(recoverBaseLocaleDTO);
+
+    res.status(HttpStatus.NO_CONTENT).json(true);
+  }
+
+  @Get(':baseLocaleId/:token/recovery')
+  @ApiOperation({ summary: 'Recover BAL access' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiParam({ name: 'token', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.TEMPORARY_REDIRECT })
+  async BALRecovery(@Req() req: CustomRequest, @Res() res: Response) {
+    if (req.baseLocale.token !== req.params.token) {
+      return res.sendStatus(403);
+    }
+
+    const restoredBaseLocale = await this.baseLocaleService.recovery(
+      req.baseLocale,
+    );
+
+    const editorUrl = getEditorUrl(restoredBaseLocale);
+    res.redirect(307, editorUrl);
+  }
+
+  @Post(':baseLocaleId/populate')
+  @ApiOperation({ summary: 'Populate Base Locale' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async populate(@Req() req: CustomRequest, @Res() res: Response) {
+    const populatedBAL = await this.baseLocaleService.extractAndPopulate(
+      req.baseLocale,
+    );
+
+    res.status(HttpStatus.OK).json(populatedBAL);
+  }
+
+  @Post(':baseLocaleId/token/renew')
+  @ApiOperation({ summary: 'Renew Base Locale token' })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async renewToken(@Req() req: CustomRequest, @Res() res: Response) {
+    const baseLocale = await this.baseLocaleService.renewToken(req.baseLocale);
+
+    res.status(HttpStatus.OK).json(baseLocale);
+  }
+
   @Get(':baseLocaleId/parcelles')
   @ApiOperation({ summary: 'Find Base_Locale parcelles' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
@@ -257,7 +316,6 @@ export class BaseLocaleController {
     status: HttpStatus.OK,
     isArray: true,
   })
-  @ApiBearerAuth('admin-token')
   async getBaseLocaleParcelles(
     @Req() req: CustomRequest,
     @Res() res: Response,
@@ -270,6 +328,7 @@ export class BaseLocaleController {
   @Post(':baseLocaleId/sync/exec')
   @ApiOperation({ summary: 'Publish base locale' })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     const baseLocale = await this.publicationService.exec(req.baseLocale._id, {
@@ -281,6 +340,7 @@ export class BaseLocaleController {
   @Post(':baseLocaleId/sync/pause')
   @ApiOperation({ summary: 'Update isPaused sync BAL to true' })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async pauseBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     const baseLocale = await this.publicationService.pause(req.baseLocale._id);
@@ -290,6 +350,7 @@ export class BaseLocaleController {
   @Post(':baseLocaleId/sync/resume')
   @ApiOperation({ summary: 'Update isPaused sync BAL to false' })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async resumeBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     const baseLocale = await this.publicationService.resume(req.baseLocale._id);

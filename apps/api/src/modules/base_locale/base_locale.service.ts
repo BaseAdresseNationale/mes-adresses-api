@@ -20,6 +20,8 @@ import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { MailerService } from '@/shared/modules/mailer/mailer.service';
 import { formatEmail as createBalCreationNotificationEmail } from '@/shared/modules/mailer/templates/bal-creation-notification';
 import { formatEmail as createNewAdminNotificationEmail } from '@/shared/modules/mailer/templates/new-admin-notification';
+import { formatEmail as createRecoveryNotificationEmail } from '@/shared/modules/mailer/templates/recovery-notification';
+import { formatEmail as createTokenRenewalNotificationEmail } from '@/shared/modules/mailer/templates/token-renewal-notification';
 import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
 
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
@@ -40,6 +42,7 @@ import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { extractFromCsv } from '@/lib/utils/csv.utils';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
+import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 
 @Injectable()
 export class BaseLocaleService {
@@ -132,13 +135,18 @@ export class BaseLocaleService {
     });
 
     if (populate) {
-      const { numeros, voies, toponymes } = await this.populateService.extract(
-        newDemoBaseLocale.commune,
-      );
-      await this.populate(newDemoBaseLocale, { numeros, voies, toponymes });
+      await this.extractAndPopulate(newDemoBaseLocale);
     }
 
     return newDemoBaseLocale;
+  }
+
+  async extractAndPopulate(baseLocale: BaseLocale): Promise<BaseLocale> {
+    const { numeros, voies, toponymes } = await this.populateService.extract(
+      baseLocale.commune,
+    );
+
+    return this.populate(baseLocale, { numeros, voies, toponymes });
   }
 
   async importFile(
@@ -345,6 +353,49 @@ export class BaseLocaleService {
       { _id: baseLocale._id },
       { _habilitation: habilitation._id },
     );
+  }
+
+  async recoverAccess({ id, email }: RecoverBaseLocaleDTO) {
+    const filters = { emails: email } as FilterQuery<BaseLocale>;
+
+    if (id) {
+      filters._id = id;
+    }
+
+    const basesLocales = await this.baseLocaleModel.find(filters);
+
+    if (basesLocales.length > 0) {
+      const template = createRecoveryNotificationEmail({ basesLocales });
+      await this.mailerService.sendMail(template, [email]);
+    }
+  }
+
+  async recovery(baseLocale: BaseLocale) {
+    const now = new Date();
+    const recoveredBaseLocale = await this.baseLocaleModel.findByIdAndUpdate(
+      { _id: baseLocale._id },
+      { $set: { _deleted: null, _updated: now } },
+      { returnDocument: 'after' },
+    );
+
+    return recoveredBaseLocale;
+  }
+
+  async renewToken(baseLocale: BaseLocale) {
+    const token = generateBase62String(20);
+    const updatedBaseLocale = await this.baseLocaleModel.findByIdAndUpdate(
+      { _id: baseLocale._id },
+      { $set: { token } },
+      { returnDocument: 'after' },
+    );
+
+    const email = createTokenRenewalNotificationEmail({
+      baseLocale: updatedBaseLocale,
+    });
+
+    await this.mailerService.sendMail(email, updatedBaseLocale.emails);
+
+    return updatedBaseLocale;
   }
 
   touch(baseLocaleId: Types.ObjectId, _updated: Date = new Date()) {

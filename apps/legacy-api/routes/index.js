@@ -94,6 +94,7 @@ app.param('toponymeId', w(async (req, res, next) => {
   next()
 }))
 
+// DONE
 app.route('/bases-locales')
   .get(w(async (req, res) => {
     const basesLocales = await BaseLocale.fetchAll()
@@ -109,6 +110,7 @@ app.route('/bases-locales')
     res.status(201).send(baseLocaleExpanded)
   }))
 
+// DONE
 app.route('/bases-locales/create-demo')
   .post(w(async (req, res) => {
     const baseLocale = await BaseLocale.createDemo(req.body)
@@ -131,6 +133,7 @@ app.route('/bases-locales/search')
     })
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId')
   .get(w(async (req, res) => {
     const baseLocale = await expandBalWithNumeros(req.baseLocale)
@@ -189,6 +192,7 @@ app.route('/bases-locales/:baseLocaleId/sync/resume')
     res.send(baseLocale)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/upload')
   .post(ensureIsAdmin, bodyParser.raw({limit: '50mb', type: 'text/csv'}), w(async (req, res) => {
     if (!Buffer.isBuffer(req.body)) {
@@ -199,6 +203,7 @@ app.route('/bases-locales/:baseLocaleId/upload')
     res.send(result)
   }))
 
+// DONE
 app.route('/bases-locales/recovery')
   .post(w(async (req, res) => {
     await BaseLocale.basesLocalesRecovery(req.body.email, req.body.id)
@@ -237,6 +242,7 @@ app.route('/bases-locales/:baseLocaleId/numeros/batch/soft-delete')
     res.send(batchSoftRemove)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/:token/recovery')
   .get(w(async (req, res) => {
     if (req.baseLocale.token !== req.params.token) {
@@ -272,6 +278,7 @@ function ensurePendingHabilitation(req, res, next) {
   next()
 }
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/habilitation')
   .get(ensureIsAdmin, loadHabilitation(), w(async (req, res) => {
     res.send(req.habilitation)
@@ -291,12 +298,14 @@ app.route('/bases-locales/:baseLocaleId/habilitation')
     res.send(habilitation)
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/habilitation/email/send-pin-code')
   .post(ensureIsAdmin, loadHabilitation(), ensurePendingHabilitation, w(async (req, res) => {
     const body = await sendPinCode(req.baseLocale._habilitation)
     return res.status(body.code).send({code: body.code, message: body.message})
   }))
 
+// DONE
 app.route('/bases-locales/:baseLocaleId/habilitation/email/validate-pin-code')
   .post(ensureIsAdmin, loadHabilitation(), ensurePendingHabilitation, w(async (req, res) => {
     if (!req.body.code) {
@@ -538,6 +547,7 @@ app.route('/toponymes/:toponymeId/numeros')
     }
   }))
 
+// DONE
 app.route('/commune/:codeCommune')
   .get(w(async (req, res) => {
     if (getCommune(req.params.codeCommune)) {

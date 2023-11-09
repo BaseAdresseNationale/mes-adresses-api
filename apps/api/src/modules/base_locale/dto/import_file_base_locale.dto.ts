@@ -5,10 +5,10 @@ export class ImportFileBaseLocaleDTO {
   isValid: boolean;
 
   @ApiProperty({ nullable: false })
-  accepted: boolean;
+  accepted: number;
 
   @ApiProperty({ nullable: false })
-  rejected: boolean;
+  rejected: number;
 
   @ApiProperty({ nullable: false })
   commune: string;
