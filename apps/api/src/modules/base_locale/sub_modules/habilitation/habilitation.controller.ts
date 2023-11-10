@@ -25,7 +25,7 @@ import { HabilitationService } from './habilitation.service';
 import { ValidatePinCodeDTO } from './dto/validate-pin-code.dto';
 
 @ApiTags('habilitation')
-@Controller('habilitation')
+@Controller('')
 export class HabilitationController {
   constructor(private habilitationService: HabilitationService) {}
 
