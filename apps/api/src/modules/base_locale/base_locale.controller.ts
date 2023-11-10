@@ -169,10 +169,14 @@ export class BaseLocaleController {
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async updateOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+  async updateOneBaseLocale(
+    @Req() req: CustomRequest,
+    @Body() updateBaseLocaleDTO: UpdateBaseLocaleDTO,
+    @Res() res: Response,
+  ) {
     const updatedBaseLocale = await this.baseLocaleService.updateOne(
       req.baseLocale,
-      req.body,
+      updateBaseLocaleDTO,
     );
 
     res.status(HttpStatus.OK).json(updatedBaseLocale);
@@ -185,8 +189,8 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async deleteOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.baseLocaleService.deleteOne(req.baseLocale);
-    res.status(HttpStatus.OK).json(baseLocale);
+    await this.baseLocaleService.deleteOne(req.baseLocale);
+    res.status(HttpStatus.NO_CONTENT).json(true);
   }
 
   @Put(':baseLocaleId/transform-to-draft')
@@ -266,7 +270,7 @@ export class BaseLocaleController {
   }
 
   @Get(':baseLocaleId/:token/recovery')
-  @ApiOperation({ summary: 'Recover BAL access' })
+  @ApiOperation({ summary: 'Restore deleted BAL' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiParam({ name: 'token', required: true, type: String })
   @ApiResponse({ status: HttpStatus.TEMPORARY_REDIRECT })

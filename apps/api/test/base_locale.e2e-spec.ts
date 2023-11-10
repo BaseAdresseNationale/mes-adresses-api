@@ -4,6 +4,7 @@ import * as request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model, Types } from 'mongoose';
+import * as nodemailer from 'nodemailer';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
@@ -15,6 +16,27 @@ import { Position } from '@/shared/schemas/position.schema';
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
 import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
+import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
+
+const baseLocaleAdminProperties = ['token', 'emails'];
+const baseLocalePublicProperties = [
+  'nom',
+  'commune',
+  '_updated',
+  'nbNumeros',
+  'nbNumerosCertifies',
+  'isAllCertified',
+  'commentedNumeros',
+  'status',
+  '_created',
+  '_deleted',
+  '_id',
+  '__v',
+];
+
+jest.mock('nodemailer');
+
+const createTransport = nodemailer.createTransport;
 
 describe('BASE LOCAL MODULE', () => {
   let app: INestApplication;
@@ -28,6 +50,10 @@ describe('BASE LOCAL MODULE', () => {
   const token = 'xxxx';
   const _created = new Date('2000-01-01');
   const _updated = new Date('2000-01-02');
+
+  // NODEMAILER
+  const sendMailMock = jest.fn();
+  createTransport.mockReturnValue({ sendMail: sendMailMock });
 
   beforeAll(async () => {
     // INIT DB
@@ -64,6 +90,7 @@ describe('BASE LOCAL MODULE', () => {
     await voieModel.deleteMany({});
     await balModel.deleteMany({});
     await numeroModel.deleteMany({});
+    sendMailMock.mockReset();
   });
 
   async function createBal(props: Partial<BaseLocale> = {}) {
@@ -72,6 +99,7 @@ describe('BASE LOCAL MODULE', () => {
       _id: balId,
       _created,
       _updated,
+      status: props.status ?? StatusBaseLocalEnum.DRAFT,
       token,
       ...props,
     };
@@ -553,8 +581,8 @@ describe('BASE LOCAL MODULE', () => {
       );
 
       const csvFile = `cle_interop;uid_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-91534_xxxx_00001_bis;;rue de la paix;allée;1;bis;1;91534;Saclay;inconnu;8;42;1114835.92;6113076.85;;ban;2000-01-02
-91534_xxxx_00001_ter;;rue de paris;allée;1;ter;0;91534;Saclay;inconnu;8;42;1114835.92;6113076.85;;ban;2000-01-02
+91534_xxxx_00001_bis;;rue de la paix;allée;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
+91534_xxxx_00001_ter;;rue de paris;allée;1;ter;0;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
 91534_xxxx_99999;;allée;;99999;;;91534;Saclay;;;;;;;commune;2000-01-02`;
       expect(response.text.replace(/\s/g, '')).toEqual(
         csvFile.replace(/\s/g, ''),
@@ -643,6 +671,7 @@ voie;rue de paris;1;1ter`;
           nbNumerosCertifies: 0,
           isAllCertified: false,
           commentedNumeros: [],
+          status: 'draft',
           _created: _created.toISOString(),
           _updated: _updated.toISOString(),
           _deleted: null,
@@ -653,6 +682,507 @@ voie;rue de paris;1;1ter`;
       expect(response.body.offset).toEqual(0);
       expect(response.body.limit).toEqual(20);
       expect(response.body.results).toEqual(results);
+    });
+  });
+
+  describe('POST /bases-locales', () => {
+    it('Create 200', async () => {
+      const createBALDTO = {
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      };
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales`)
+        .send(createBALDTO)
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        nom: 'foo',
+        emails: ['me@domain.co'],
+        status: 'draft',
+        commune: '27115',
+        _deleted: null,
+      });
+      expect(sendMailMock).toHaveBeenCalled();
+    });
+
+    it('Create a BaseLocale with invalid payload 400', async () => {
+      const createBALDTO = {};
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales`)
+        .send(createBALDTO)
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: 'Bad Request',
+        message: [
+          'nom should not be empty',
+          'each value in emails must be an email',
+          'emails should not be empty',
+          "Le champ commune : undefined n'est pas valide",
+        ],
+        statusCode: 400,
+      });
+      expect(sendMailMock).not.toHaveBeenCalled();
+    });
+
+    it('Create a BaseLocale with invalid commune 400', async () => {
+      const createBALDTO = {
+        nom: 'foo',
+        emails: ['me@domain.co'],
+        commune: '00000',
+      };
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales`)
+        .send(createBALDTO)
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: 'Bad Request',
+        message: ["Le champ commune : 00000 n'est pas valide"],
+        statusCode: 400,
+      });
+      expect(sendMailMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /bases-locales/:id', () => {
+    it('Get 200 with admin token', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}`)
+        .set('authorization', `Token ${token}`)
+        .expect(200);
+
+      expect(Object.keys(response.body).sort()).toEqual(
+        [...baseLocaleAdminProperties, ...baseLocalePublicProperties].sort(),
+      );
+    });
+
+    it('Get 200 without admin token', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}`)
+        .expect(200);
+
+      expect(Object.keys(response.body).sort()).toEqual(
+        baseLocalePublicProperties.sort(),
+      );
+    });
+
+    it('Get 404 with invalid ID', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/5f7b3b7b5d6e4a0017d0d0d0`)
+        .expect(404);
+
+      expect(response.body).toEqual({
+        message: 'BaseLocale 5f7b3b7b5d6e4a0017d0d0d0 not found',
+        statusCode: 404,
+      });
+    });
+
+    it('Count numeros & certified numeros', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        certifie: true,
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 2,
+        certifie: false,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}`)
+        .expect(200);
+
+      expect(response.body.nbNumeros).toEqual(2);
+      expect(response.body.nbNumerosCertifies).toEqual(1);
+      expect(response.body.isAllCertified).toEqual(false);
+    });
+
+    it('Count numeros & certified numeros / all certified', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        certifie: true,
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 2,
+        certifie: true,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}`)
+        .expect(200);
+
+      expect(response.body.nbNumeros).toEqual(2);
+      expect(response.body.nbNumerosCertifies).toEqual(2);
+      expect(response.body.isAllCertified).toEqual(true);
+    });
+
+    it('Commented numeros', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        comment: 'blabla',
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 2,
+        comment: 'blibli',
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}`)
+        .expect(200);
+
+      expect(response.body.commentedNumeros.length).toEqual(2);
+      expect(response.body.commentedNumeros[0].numero).toEqual(1);
+      expect(response.body.commentedNumeros[0].comment).toEqual('blabla');
+      expect(response.body.commentedNumeros[1].numero).toEqual(2);
+      expect(response.body.commentedNumeros[1].comment).toEqual('blibli');
+    });
+  });
+
+  describe('PUT /bases-locales/:id', () => {
+    it('Update 200 with admin token', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const updateBALDTO = {
+        nom: 'bar',
+        commune: '27115',
+        emails: ['me@domain.co', 'metoo@domain.co'],
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/bases-locales/${balId}`)
+        .set('authorization', `Token ${token}`)
+        .send(updateBALDTO)
+        .expect(200);
+
+      expect(response.body.nom).toEqual('bar');
+      expect(response.body.emails).toEqual(['me@domain.co', 'metoo@domain.co']);
+      expect(sendMailMock).toHaveBeenCalled();
+    });
+
+    it('Update 403 without admin token', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const updateBALDTO = {
+        nom: 'bar',
+        commune: '27115',
+        emails: ['me@domain.co', 'metoo@domain.co'],
+      };
+
+      await request(app.getHttpServer())
+        .put(`/bases-locales/${balId}`)
+        .send(updateBALDTO)
+        .expect(403);
+      expect(sendMailMock).not.toHaveBeenCalled();
+    });
+
+    it('Update 400 invalid payload', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const updateBALDTO = {
+        nom: '',
+        emails: [],
+        status: 'blabla',
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/bases-locales/${balId}`)
+        .set('authorization', `Token ${token}`)
+        .send(updateBALDTO)
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: 'Bad Request',
+        message: [
+          'nom should not be empty',
+          'status must be one of the following values: draft, ready-to-publish, published, demo, replaced',
+          'emails should not be empty',
+        ],
+        statusCode: 400,
+      });
+      expect(sendMailMock).not.toHaveBeenCalled();
+    });
+
+    it('Update 412 modify a demo base locale', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        status: StatusBaseLocalEnum.DEMO,
+      });
+
+      const updateBALDTO = {
+        status: StatusBaseLocalEnum.PUBLISHED,
+      };
+
+      await request(app.getHttpServer())
+        .put(`/bases-locales/${balId}`)
+        .set('authorization', `Token ${token}`)
+        .send(updateBALDTO)
+        .expect(412);
+    });
+
+    it('Update 412 modify a published base locale', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        status: StatusBaseLocalEnum.PUBLISHED,
+      });
+
+      const updateBALDTO = {
+        status: StatusBaseLocalEnum.DEMO,
+      };
+
+      await request(app.getHttpServer())
+        .put(`/bases-locales/${balId}`)
+        .set('authorization', `Token ${token}`)
+        .send(updateBALDTO)
+        .expect(412);
+    });
+  });
+
+  describe('PUT /bases-locales/:id/transform-to-draft', () => {
+    it('Transform to draft 200', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: [],
+        status: StatusBaseLocalEnum.DEMO,
+      });
+
+      const response = await request(app.getHttpServer())
+        .put(`/bases-locales/${balId}/transform-to-draft`)
+        .set('authorization', `Token ${token}`)
+        .send({ nom: 'bar', email: 'me@mail.co' })
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        nom: 'bar',
+        emails: ['me@mail.co'],
+        status: 'draft',
+      });
+    });
+
+    it('Transform to draft 412', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        status: StatusBaseLocalEnum.DRAFT,
+      });
+
+      const response = await request(app.getHttpServer())
+        .put(`/bases-locales/${balId}/transform-to-draft`)
+        .set('authorization', `Token ${token}`)
+        .send({ nom: 'bar', email: 'me@mail.co' })
+        .expect(412);
+
+      expect(response.body).toEqual({
+        message:
+          'La Base Adresse Locale n’est pas une Base Adresse Locale de démonstration.',
+        statusCode: 412,
+      });
+    });
+  });
+
+  describe('DELETE /bases-locales/:id', () => {
+    it('Delete BAL with admin token (soft delete) 204', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      await request(app.getHttpServer())
+        .delete(`/bases-locales/${balId}`)
+        .set('authorization', `Token ${token}`)
+        .expect(204);
+
+      const baseLocale = await balModel.findOne({ _id: balId });
+
+      expect(baseLocale._deleted).not.toBeNull();
+    });
+
+    it('Delete demo BAL with admin token (hard delete) 204', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        status: StatusBaseLocalEnum.DEMO,
+      });
+
+      await request(app.getHttpServer())
+        .delete(`/bases-locales/${balId}`)
+        .set('authorization', `Token ${token}`)
+        .expect(204);
+
+      const baseLocale = await balModel.findOne({ _id: balId });
+
+      expect(baseLocale).toBeNull();
+    });
+
+    it('Delete BAL without admin token 403', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      await request(app.getHttpServer())
+        .delete(`/bases-locales/${balId}`)
+        .expect(403);
+    });
+  });
+
+  describe('GET /bases-locales/:id/:token/recovery', () => {
+    it('Restore deleted BAL', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        _deleted: new Date(),
+      });
+
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/${token}/recovery`)
+        .expect(307);
+
+      const baseLocale = await balModel.findOne({ _id: balId });
+
+      expect(baseLocale._deleted).toBeNull();
+    });
+
+    it('Restore deleted BAL / invalid token', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        _deleted: new Date(),
+      });
+
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/blabla/recovery`)
+        .expect(403);
+    });
+  });
+
+  describe('POST /bases-locales/recovery', () => {
+    it('Renew token', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        _deleted: new Date(),
+      });
+
+      const body = {
+        id: balId,
+        email: 'me@domain.co',
+      };
+
+      await request(app.getHttpServer())
+        .post(`/bases-locales/recovery`)
+        .send(body)
+        .expect(204);
+
+      expect(sendMailMock).toHaveBeenCalled();
+    });
+
+    it('Renew token / invalid balId', async () => {
+      const body = {
+        id: '42',
+        email: 'me@domain.co',
+      };
+
+      await request(app.getHttpServer())
+        .post(`/bases-locales/recovery`)
+        .send(body)
+        .expect(400);
+
+      expect(sendMailMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /bases-locales/:id/parcelles', () => {
+    it('GET all assigned parcelles', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        _deleted: new Date(),
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        commune: '27115',
+        parcelles: ['12345000AA0002'],
+      });
+
+      await createToponyme({
+        _bal: balId,
+        commune: '27115',
+        parcelles: ['12345000AA0002', '12345000AA0005'],
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/parcelles`)
+        .expect(200);
+
+      expect(response.body).toEqual(['12345000AA0002', '12345000AA0005']);
     });
   });
 });

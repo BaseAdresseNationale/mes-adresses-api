@@ -199,4 +199,16 @@ export class ApiDepotService {
 
     return revisions;
   }
+
+  public async downloadCurrentRevisionFile(codeCommune: string) {
+    const currentRevisionUrl = `/communes/${codeCommune}/current-revision/files/bal/download`;
+
+    const response = await this.httpService.axiosRef({
+      url: currentRevisionUrl,
+      method: 'GET',
+      responseType: 'arraybuffer',
+    });
+
+    return response.data;
+  }
 }

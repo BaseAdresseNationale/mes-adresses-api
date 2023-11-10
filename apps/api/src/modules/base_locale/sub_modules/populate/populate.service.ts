@@ -1,4 +1,5 @@
 import { extractFromCsv } from '@/lib/utils/csv.utils';
+import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -8,18 +9,13 @@ export class PopulateService {
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
+    private apiDepotService: ApiDepotService,
   ) {}
 
   private async extractFromApiDepot(codeCommune: string) {
     try {
-      const apiDepotUrl = this.configService.get<string>('API_DEPOT_URL');
-      const currentRevisionUrl = `${apiDepotUrl}/communes/${codeCommune}/current-revision/files/bal/download`;
-
-      const response = await this.httpService.axiosRef({
-        url: currentRevisionUrl,
-        method: 'GET',
-        responseType: 'arraybuffer',
-      });
+      const response =
+        await this.apiDepotService.downloadCurrentRevisionFile(codeCommune);
 
       const result = await extractFromCsv(response.data, codeCommune);
 

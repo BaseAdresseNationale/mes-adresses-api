@@ -32,8 +32,10 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Mes adresses API')
-    .setDescription('Mes adresses API description')
-    .setVersion('1.0')
+    .setDescription(
+      'API permettant la gestion de bases d’adresses à l’échelon local',
+    )
+    .setVersion('2.0')
     .addBearerAuth(
       {
         description: `Please enter token in following format: Token xxx`,
@@ -45,6 +47,7 @@ async function bootstrap() {
     )
     .build();
   app.useGlobalPipes(new ValidationPipe());
+  app.setGlobalPrefix('v2');
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 

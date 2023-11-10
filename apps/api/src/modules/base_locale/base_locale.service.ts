@@ -248,16 +248,23 @@ export class BaseLocaleService {
       );
     }
 
+    const { nom, email } = update;
     const updatedBaseLocale = await this.baseLocaleModel.findOneAndUpdate(
       { _id: baseLocale._id },
-      { $set: { ...update, status: StatusBaseLocalEnum.DRAFT } },
+      {
+        $set: {
+          nom,
+          emails: [email],
+          status: StatusBaseLocalEnum.DRAFT,
+        },
+      },
       { returnDocument: 'after' },
     );
 
-    const email = createBalCreationNotificationEmail({
+    const templateEmail = createBalCreationNotificationEmail({
       baseLocale: updatedBaseLocale,
     });
-    await this.mailerService.sendMail(email, updatedBaseLocale.emails);
+    await this.mailerService.sendMail(templateEmail, updatedBaseLocale.emails);
 
     return updatedBaseLocale;
   }
