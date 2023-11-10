@@ -193,7 +193,7 @@ describe('BASE LOCAL MODULE', () => {
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
       const csvFile = `cle_interop;uid_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-91534_xxxx_00001_bis;;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+    91534_xxxx_00001_bis;;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -312,7 +312,7 @@ describe('BASE LOCAL MODULE', () => {
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
       const csvFile = `cle_interop;uid_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-91534_xxxx_00001_bis;;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+    91534_xxxx_00001_bis;;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -379,7 +379,7 @@ describe('BASE LOCAL MODULE', () => {
         files: [
           {
             type: 'bal',
-            hash: '8769d081a8e02a4ddf6608270fbbbab44e432e6fa9a36e1787a890ba34a64b38',
+            hash: '64efb8a258712e11e6409b60fcd4b1fee8f748286101c52a63a81dfd5e106369',
           },
         ],
       };
