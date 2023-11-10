@@ -33,7 +33,10 @@ export class NumeroController {
   constructor(private numeroService: NumeroService) {}
 
   @Get(':numeroId')
-  @ApiOperation({ summary: 'Find the numero by id' })
+  @ApiOperation({
+    summary: 'Find the numero by id',
+    operationId: 'findNumero',
+  })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
   @ApiBearerAuth('admin-token')
@@ -45,7 +48,10 @@ export class NumeroController {
   }
 
   @Put(':numeroId')
-  @ApiOperation({ summary: 'Update the numero by id' })
+  @ApiOperation({
+    summary: 'Update the numero by id',
+    operationId: 'updateNumero',
+  })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
   @ApiBody({ type: UpdateNumeroDto, required: true })
@@ -64,7 +70,10 @@ export class NumeroController {
   }
 
   @Put(':numeroId/soft-delete')
-  @ApiOperation({ summary: 'Soft delete the numero by id' })
+  @ApiOperation({
+    summary: 'Soft delete the numero by id',
+    operationId: 'softDeleteNumero',
+  })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
   @ApiBearerAuth('admin-token')
@@ -75,7 +84,10 @@ export class NumeroController {
   }
 
   @Delete(':numeroId')
-  @ApiOperation({ summary: 'Delete the numero by id' })
+  @ApiOperation({
+    summary: 'Delete the numero by id',
+    operationId: 'deleteNumero',
+  })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @ApiBearerAuth('admin-token')

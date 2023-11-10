@@ -326,7 +326,7 @@ export class BaseLocaleController {
   }
 
   @Post(':baseLocaleId/sync/exec')
-  @ApiOperation({ summary: 'Publish base locale' })
+  @ApiOperation({ summary: 'Publish base locale', operationId: 'publishBal' })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
@@ -338,7 +338,10 @@ export class BaseLocaleController {
   }
 
   @Post(':baseLocaleId/sync/pause')
-  @ApiOperation({ summary: 'Update isPaused sync BAL to true' })
+  @ApiOperation({
+    summary: 'Update isPaused sync BAL to true',
+    operationId: 'pauseBal',
+  })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
@@ -348,7 +351,10 @@ export class BaseLocaleController {
   }
 
   @Post(':baseLocaleId/sync/resume')
-  @ApiOperation({ summary: 'Update isPaused sync BAL to false' })
+  @ApiOperation({
+    summary: 'Update isPaused sync BAL to false',
+    operationId: 'resumeBal',
+  })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
@@ -358,7 +364,10 @@ export class BaseLocaleController {
   }
 
   @Put(':baseLocaleId/numeros/batch')
-  @ApiOperation({ summary: 'Multi update numeros' })
+  @ApiOperation({
+    summary: 'Multi update numeros',
+    operationId: 'updateNumeros',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBatchNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.OK })
@@ -377,7 +386,10 @@ export class BaseLocaleController {
   }
 
   @Put(':baseLocaleId/numeros/batch/soft-delete')
-  @ApiOperation({ summary: 'Multi soft delete numeros' })
+  @ApiOperation({
+    summary: 'Multi soft delete numeros',
+    operationId: 'softDeleteNumeros',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: DeleteBatchNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.OK })
@@ -396,7 +408,10 @@ export class BaseLocaleController {
   }
 
   @Delete(':baseLocaleId/numeros/batch')
-  @ApiOperation({ summary: 'Multi delete numeros' })
+  @ApiOperation({
+    summary: 'Multi delete numeros',
+    operationId: 'deleteNumeros',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: DeleteBatchNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
@@ -412,7 +427,10 @@ export class BaseLocaleController {
   }
 
   @Get(':baseLocaleId/voies')
-  @ApiOperation({ summary: 'Find all Voie in Bal' })
+  @ApiOperation({
+    summary: 'Find all Voie in Bal',
+    operationId: 'findBaseLocaleVoies',
+  })
   @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
@@ -435,7 +453,7 @@ export class BaseLocaleController {
   }
 
   @Post(':baseLocaleId/voies')
-  @ApiOperation({ summary: 'Create Voie in Bal' })
+  @ApiOperation({ summary: 'Create Voie in Bal', operationId: 'createVoie' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateVoieDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Voie, isArray: true })
@@ -453,7 +471,10 @@ export class BaseLocaleController {
   }
 
   @Get(':baseLocaleId/toponymes')
-  @ApiOperation({ summary: 'Find all Toponymes in Bal' })
+  @ApiOperation({
+    summary: 'Find all Toponymes in Bal',
+    operationId: 'findBaseLocaleToponymes',
+  })
   @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme, isArray: true })
@@ -473,7 +494,10 @@ export class BaseLocaleController {
   }
 
   @Post(':baseLocaleId/toponymes')
-  @ApiOperation({ summary: 'Create Toponyme in Bal' })
+  @ApiOperation({
+    summary: 'Create Toponyme in Bal',
+    operationId: 'createToponyme',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateToponymeDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme, isArray: true })

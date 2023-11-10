@@ -11,7 +11,7 @@ export class ExportCsvController {
   constructor(private exportCsvService: ExportCsvService) {}
 
   @Get(':baseLocaleId/csv')
-  @ApiOperation({ summary: 'Get Bal csv file' })
+  @ApiOperation({ summary: 'Get Bal csv file', operationId: 'getCsvBal' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK })
   async getCsvBal(@Req() req: CustomRequest, @Res() res: Response) {
@@ -22,7 +22,7 @@ export class ExportCsvController {
   }
 
   @Get(':baseLocaleId/voies/csv')
-  @ApiOperation({ summary: 'Get voies csv file' })
+  @ApiOperation({ summary: 'Get voies csv file', operationId: 'getCsvVoies' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK })
   async getCsvVoies(@Req() req: CustomRequest, @Res() res: Response) {

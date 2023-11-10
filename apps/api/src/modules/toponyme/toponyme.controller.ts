@@ -42,7 +42,7 @@ export class ToponymeController {
   ) {}
 
   @Get(':toponymeId')
-  @ApiOperation({ summary: 'Find Toponyme by id' })
+  @ApiOperation({ summary: 'Find Toponyme by id', operationId: 'findToponyme' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme })
   @ApiBearerAuth('admin-token')
@@ -53,7 +53,10 @@ export class ToponymeController {
   }
 
   @Put(':toponymeId')
-  @ApiOperation({ summary: 'Update Toponyme by id' })
+  @ApiOperation({
+    summary: 'Update Toponyme by id',
+    operationId: 'updateToponyme',
+  })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
   @ApiBody({ type: UpdateToponymeDto, required: true })
@@ -72,7 +75,10 @@ export class ToponymeController {
   }
 
   @Put(':toponymeId/soft-delete')
-  @ApiOperation({ summary: 'Soft delete Tpponyme by id' })
+  @ApiOperation({
+    summary: 'Soft delete Tpponyme by id',
+    operationId: 'softDeleteToponyme',
+  })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
   @ApiBearerAuth('admin-token')
@@ -85,7 +91,10 @@ export class ToponymeController {
   }
 
   @Put(':toponymeId/restore')
-  @ApiOperation({ summary: 'Restore Toponyme by id' })
+  @ApiOperation({
+    summary: 'Restore Toponyme by id',
+    operationId: 'restoreToponyme',
+  })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
   @ApiBearerAuth('admin-token')
@@ -96,7 +105,10 @@ export class ToponymeController {
   }
 
   @Delete(':toponymeId')
-  @ApiOperation({ summary: 'Delete Toponyme by id' })
+  @ApiOperation({
+    summary: 'Delete Toponyme by id',
+    operationId: 'deleteToponyme',
+  })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @ApiBearerAuth('admin-token')
@@ -107,7 +119,10 @@ export class ToponymeController {
   }
 
   @Get(':toponymeId/numeros')
-  @ApiOperation({ summary: 'Find all numeros which belong to the toponyme' })
+  @ApiOperation({
+    summary: 'Find all numeros which belong to the toponyme',
+    operationId: 'findToponymeNumeros',
+  })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: NumeroPopulate, isArray: true })
   @ApiBearerAuth('admin-token')

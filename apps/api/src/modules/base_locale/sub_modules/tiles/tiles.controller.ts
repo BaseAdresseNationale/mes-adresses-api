@@ -34,7 +34,10 @@ export class TilesController {
   constructor(private tilesService: TilesService) {}
 
   @Get('/bases-locales/:baseLocaleId/tiles/:z/:x/:y.pbf')
-  @ApiOperation({ summary: 'Get tile (with voies and numeros features)' })
+  @ApiOperation({
+    summary: 'Get tile (with voies and numeros features)',
+    operationId: 'getBaseLocaleTile',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiParam({ name: 'z', required: true, type: String })
   @ApiParam({ name: 'x', required: true, type: String })

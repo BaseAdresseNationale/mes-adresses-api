@@ -46,7 +46,7 @@ export class VoieController {
   ) {}
 
   @Get(':voieId')
-  @ApiOperation({ summary: 'Find Voie by id' })
+  @ApiOperation({ summary: 'Find Voie by id', operationId: 'findVoie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoie })
   @ApiBearerAuth('admin-token')
@@ -58,7 +58,7 @@ export class VoieController {
   }
 
   @Put(':voieId')
-  @ApiOperation({ summary: 'Update Voie by id' })
+  @ApiOperation({ summary: 'Update Voie by id', operationId: 'updateVoie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
   @ApiBody({ type: UpdateVoieDto, required: true })
@@ -74,7 +74,10 @@ export class VoieController {
   }
 
   @Put(':voieId/soft-delete')
-  @ApiOperation({ summary: 'Soft delete Voie by id' })
+  @ApiOperation({
+    summary: 'Soft delete Voie by id',
+    operationId: 'softDeleteVoie',
+  })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
   @ApiBearerAuth('admin-token')
@@ -85,7 +88,7 @@ export class VoieController {
   }
 
   @Put(':voieId/restore')
-  @ApiOperation({ summary: 'Restore Voie by id' })
+  @ApiOperation({ summary: 'Restore Voie by id', operationId: 'restoreVoie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiBody({ type: RestoreVoieDto, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
@@ -104,7 +107,7 @@ export class VoieController {
   }
 
   @Delete(':voieId')
-  @ApiOperation({ summary: 'Delete Voie by id' })
+  @ApiOperation({ summary: 'Delete Voie by id', operationId: 'deleteVoie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @ApiBearerAuth('admin-token')
@@ -115,7 +118,10 @@ export class VoieController {
   }
 
   @Get(':voieId/numeros')
-  @ApiOperation({ summary: 'Find all numeros which belong to the voie' })
+  @ApiOperation({
+    summary: 'Find all numeros which belong to the voie',
+    operationId: 'findVoieNumeros',
+  })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiBearerAuth('admin-token')
@@ -128,7 +134,10 @@ export class VoieController {
   }
 
   @Post(':voieId/numeros')
-  @ApiOperation({ summary: 'Create numero on the voie' })
+  @ApiOperation({
+    summary: 'Create numero on the voie',
+    operationId: 'createNumero',
+  })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiBody({ type: CreateNumeroDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Numero })
@@ -147,7 +156,10 @@ export class VoieController {
   }
 
   @Put(':voieId/convert-to-toponyme')
-  @ApiOperation({ summary: 'Convert Voie (without numeros) to Toponyme' })
+  @ApiOperation({
+    summary: 'Convert Voie (without numeros) to Toponyme',
+    operationId: 'convertToToponyme',
+  })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
   @ApiBearerAuth('admin-token')
