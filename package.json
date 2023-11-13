@@ -33,7 +33,8 @@
     "test:api": "jest --config ./apps/api/test/jest-e2e.json",
     "test:cron": "jest --config ./apps/cron/test/jest-e2e.json",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
-    "update-contours": "node ./scripts/update-contours-communes.js"
+    "update-contours": "node ./scripts/update-contours-communes.js",
+    "push-staging": "./scripts/push-staging.sh"
   },
   "dependencies": {
     "@ban-team/adresses-util": "^0.9.0",
