@@ -363,17 +363,24 @@ export class BaseLocaleService {
   }
 
   async recoverAccess({ id, email }: RecoverBaseLocaleDTO) {
-    const filters = { emails: email } as FilterQuery<BaseLocale>;
+    const filters = {
+      emails: { $regex: new RegExp(`^${email}$`, 'i') },
+    } as FilterQuery<BaseLocale>;
 
     if (id) {
       filters._id = id;
     }
 
-    const basesLocales = await this.baseLocaleModel.find(filters);
+    const basesLocales = await this.findMany(filters);
 
     if (basesLocales.length > 0) {
       const template = createRecoveryNotificationEmail({ basesLocales });
       await this.mailerService.sendMail(template, [email]);
+    } else {
+      throw new HttpException(
+        'Aucune base locale ne correspond à ces critères',
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 

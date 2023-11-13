@@ -62,7 +62,7 @@ export class SearchQueryPipe implements PipeTransform {
 
     if (query.email) {
       if (typeof query.email === 'string' && checkValidEmail(query.email)) {
-        filters.emails = { $eq: query.email };
+        filters.emails = { $regex: new RegExp(`^${query.email}$`, 'i') };
       } else {
         throw new HttpException(
           'La valeur du champ "email" est invalide',
