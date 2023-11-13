@@ -34,7 +34,7 @@ export type Revision = {
   context?: ContextRevision;
   validation?: ValidationRevision;
   client?: string;
-  status: StatusRevision;
+  status?: StatusRevision;
   ready: boolean;
   files?: FileRevision[];
   createdAt: Date;

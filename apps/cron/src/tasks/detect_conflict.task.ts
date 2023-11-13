@@ -13,7 +13,8 @@ import { CacheService } from '@/shared/modules/cache/cache.service';
 
 import { Task } from '../task_queue.class';
 
-const KEY_DETECT_CONFLICT_PUBLISHED_SINCE = 'detectConflictPublishedSince';
+export const KEY_DETECT_CONFLICT_PUBLISHED_SINCE =
+  'detectConflictPublishedSince';
 
 @Injectable()
 export class DetectConflictTask implements Task {
@@ -41,8 +42,6 @@ export class DetectConflictTask implements Task {
       KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
       futurePublishedSince,
     );
-
-    await this.wait(5000);
 
     for (const codeCommune of revisedCommunes) {
       try {

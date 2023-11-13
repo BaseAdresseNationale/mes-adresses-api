@@ -66,8 +66,6 @@ describe('BASE LOCAL MODULE', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
-    // const httpService = moduleFixture.get<HttpService>(HttpService);
-    // axiosMock = new MockAdapter(httpService.axiosRef as AxiosInstance);
     // INIT MODEL
     numeroModel = app.get<Model<Numero>>(getModelToken(Numero.name));
     voieModel = app.get<Model<Voie>>(getModelToken(Voie.name));
