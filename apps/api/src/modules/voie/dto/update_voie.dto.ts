@@ -29,7 +29,7 @@ export class UpdateVoieDto {
   @ApiProperty({ required: false, nullable: false })
   typeNumerotation: TypeNumerotationEnum;
 
-  @IsNotEmptyObject()
+  @IsOptional()
   @ValidateNested()
   @Type(() => LineString)
   @ApiProperty({
