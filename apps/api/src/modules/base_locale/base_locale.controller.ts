@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Inject,
+  ParseBoolPipe,
   ParseFilePipeBuilder,
   Post,
   Put,
@@ -435,8 +436,8 @@ export class BaseLocaleController {
     summary: 'Find all Voie in Bal',
     operationId: 'findBaseLocaleVoies',
   })
-  @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiQuery({ name: 'isdeleted', type: Boolean, required: false })
   @ApiResponse({
     status: HttpStatus.OK,
     isArray: true,
@@ -444,7 +445,8 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   async findVoieByBal(
     @Req() req: CustomRequest,
-    @Query('isDeleted') isDeleted: boolean = false,
+    @Query('isdeleted', new ParseBoolPipe({ optional: true }))
+    isDeleted = false,
     @Res() res: Response,
   ) {
     const voies: Voie[] = await this.voieService.findAllByBalId(
@@ -479,13 +481,14 @@ export class BaseLocaleController {
     summary: 'Find all Toponymes in Bal',
     operationId: 'findBaseLocaleToponymes',
   })
-  @ApiQuery({ name: 'isDelete', type: Boolean, required: false })
+  @ApiQuery({ name: 'isdeleted', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme, isArray: true })
   @ApiBearerAuth('admin-token')
   async findToponymeByBal(
     @Req() req: CustomRequest,
-    @Query('isDeleted') isDeleted: boolean = false,
+    @Query('isdeleted', new ParseBoolPipe({ optional: true }))
+    isDeleted = false,
     @Res() res: Response,
   ) {
     const toponymes: Toponyme[] = await this.toponymeService.findAllByBalId(
