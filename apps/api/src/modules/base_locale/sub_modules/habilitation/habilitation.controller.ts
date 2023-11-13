@@ -35,15 +35,20 @@ export class HabilitationController {
   @ApiHeader({ name: 'Token' })
   @UseGuards(AdminGuard)
   async getHabilitation(@Req() req: CustomRequest, @Res() res: Response) {
-    const result: Habilitation = await this.habilitationService.findOne(
-      req.baseLocale._habilitation,
-    );
-    res.status(HttpStatus.OK).json(result);
+    try {
+      const result: Habilitation = await this.habilitationService.findOne(
+        req.baseLocale._habilitation,
+      );
+      res.status(HttpStatus.OK).json(result);
+    } catch (err) {
+      const { response } = err;
+      res.status(response.status).json(response.data);
+    }
   }
 
   @Post('/bases-locales/:baseLocaleId/habilitation')
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 201 })
   @ApiHeader({ name: 'Token' })
   @UseGuards(AdminGuard)
   async createHabilitation(@Req() req: CustomRequest, @Res() res: Response) {
@@ -87,11 +92,7 @@ export class HabilitationController {
         body.code,
       );
 
-      if (validationResponse.validated === false) {
-        return res.status(200).send({ code: 200, ...validationResponse });
-      }
-
-      res.send(validationResponse);
+      return res.status(200).send({ code: 200, ...validationResponse });
     } catch (error) {
       return res.status(200).send({ code: 200, message: error.message });
     }
