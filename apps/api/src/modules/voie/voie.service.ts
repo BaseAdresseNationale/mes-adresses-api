@@ -250,8 +250,8 @@ export class VoieService {
 
     const voieUpdated = await this.voieModel.findOneAndUpdate(
       { _id: voie._id, _deleted: null },
-      { $set: { ...updateVoieDto, _upated: new Date() } },
-      { returnDocument: 'after' },
+      { $set: { ...updateVoieDto, _updated: new Date() } },
+      { new: true },
     );
     // SET TILES OF VOIES
     await this.tilesService.updateVoieTiles(voieUpdated);
@@ -304,7 +304,7 @@ export class VoieService {
   ): Promise<Voie> {
     const updatedVoie = await this.voieModel.findOneAndUpdate(
       { _id: voie._id },
-      { $set: { _deleted: null, _upated: new Date() } },
+      { $set: { _deleted: null, _updated: new Date() } },
       { new: true },
     );
     // SET _updated OF VOIE

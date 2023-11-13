@@ -13,6 +13,8 @@ import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 
 import { VoieModule } from '@/modules/voie/voie.module';
 import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
+import { UpdateVoieDto } from '@/modules/voie/dto/update_voie.dto';
+import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 
 describe('VOIE MODULE', () => {
   let app: INestApplication;
@@ -406,6 +408,255 @@ describe('VOIE MODULE', () => {
         nom: 'rue de paris',
       });
       expect(toponyme).toBeNull();
+    });
+  });
+
+  describe('GET /voies', () => {
+    it('Return 200', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const response = await request(app.getHttpServer())
+        .get(`/voies/${voieId}`)
+        .expect(200);
+      expect(response.body._id).toEqual(voieId.toString());
+      expect(response.body._bal).toEqual(balId.toString());
+      expect(response.body.nom).toEqual('rue de la paix');
+    });
+
+    it('Return 404', async () => {
+      await request(app.getHttpServer())
+        .get(`/voies/${new Types.ObjectId()}`)
+        .expect(404);
+    });
+  });
+
+  describe('PUT /voies', () => {
+    it('Return 200', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const changes: UpdateVoieDto = {
+        nom: 'coucou',
+        nomAlt: null,
+        typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
+        trace: {
+          type: 'LineString',
+          coordinates: [
+            [48, 2],
+            [49, 1],
+          ],
+        },
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/voies/${voieId}`)
+        .send(changes)
+        .set('authorization', `Token ${token}`)
+        .expect(200);
+      expect(response.body._id).toEqual(voieId.toString());
+      expect(response.body._bal).toEqual(balId.toString());
+      expect(response.body.nom).toEqual('coucou');
+      expect(response.body.typeNumerotation).toEqual(
+        TypeNumerotationEnum.NUMERIQUE,
+      );
+      expect(response.body.trace).toEqual(changes.trace);
+
+      const bal = await balModel.findOne(balId);
+      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+    });
+
+    it('Return 200 trace empty', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const changes: UpdateVoieDto = {
+        nom: 'coucou',
+        nomAlt: null,
+        typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
+        trace: null,
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/voies/${voieId}`)
+        .send(changes)
+        .set('authorization', `Token ${token}`)
+        .expect(200);
+      expect(response.body._id).toEqual(voieId.toString());
+      expect(response.body._bal).toEqual(balId.toString());
+      expect(response.body.nom).toEqual('coucou');
+      expect(response.body.typeNumerotation).toEqual(
+        TypeNumerotationEnum.NUMERIQUE,
+      );
+      expect(response.body.trace).toEqual(null);
+
+      const bal = await balModel.findOne(balId);
+      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+    });
+
+    it('Return 403', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const changes: UpdateVoieDto = {
+        nom: 'coucou',
+        nomAlt: null,
+        typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
+        trace: {
+          type: 'LineString',
+          coordinates: [
+            [48, 2],
+            [49, 1],
+          ],
+        },
+      };
+
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}`)
+        .send(changes)
+        .expect(403);
+
+      const bal = await balModel.findOne(balId);
+      expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
+    });
+  });
+
+  describe('PUT /soft-delete', () => {
+    it('Return 200', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const response = await request(app.getHttpServer())
+        .put(`/voies/${voieId}/soft-delete`)
+        .set('authorization', `Token ${token}`)
+        .expect(200);
+
+      expect(response.body._deleted).not.toBeNull();
+
+      const bal = await balModel.findOne(balId);
+      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+    });
+
+    it('Return 403', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const response = await request(app.getHttpServer())
+        .put(`/voies/${voieId}/soft-delete`)
+        .expect(403);
+
+      expect(response.body._deleted).not.toBeNull();
+
+      const bal = await balModel.findOne(balId);
+      expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
+    });
+  });
+
+  describe('PUT /restore', () => {
+    it('Return 200', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+        _deleted: _updated,
+      });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        _deleted: _updated,
+      });
+      const response = await request(app.getHttpServer())
+        .put(`/voies/${voieId}/restore`)
+        .send({ numerosIds: [numeroId] })
+        .set('authorization', `Token ${token}`)
+        .expect(200);
+
+      expect(response.body._deleted).toBeNull();
+
+      const numero = await numeroModel.findOne(numeroId);
+
+      expect(numero._deleted).toEqual(null);
+
+      const bal = await balModel.findOne(balId);
+      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+    });
+
+    it('Return 403', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+        _deleted: _updated,
+      });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        _deleted: _updated,
+      });
+      const response = await request(app.getHttpServer())
+        .put(`/voies/${voieId}/restore`)
+        .send({ numeroIds: [numeroId] })
+        .expect(403);
+
+      expect(response.body._deleted).not.toBeNull();
+
+      const numero = await numeroModel.findOne(numeroId);
+
+      expect(numero._deleted).not.toBeNull();
+
+      const bal = await balModel.findOne(balId);
+      expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
+    });
+  });
+
+  describe('DELETE /voies', () => {
+    it('Return 200', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+        _deleted: _updated,
+      });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        _deleted: _updated,
+      });
+      await request(app.getHttpServer())
+        .delete(`/voies/${voieId}`)
+        .set('authorization', `Token ${token}`)
+        .expect(204);
+
+      const voie = await voieModel.findOne(voieId);
+      expect(voie).toBeNull();
+
+      const numero = await numeroModel.findOne(numeroId);
+      expect(numero).toBeNull();
+
+      const bal = await balModel.findOne(balId);
+      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+    });
+
+    it('Return 403', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+        _deleted: _updated,
+      });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        _deleted: _updated,
+      });
+
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}/restore`)
+        .send({ numeroIds: [numeroId] })
+        .expect(403);
+
+      const voie = await voieModel.findOne(voieId);
+      expect(voie).not.toBeNull();
+
+      const numero = await numeroModel.findOne(numeroId);
+      expect(numero).not.toBeNull();
+
+      const bal = await balModel.findOne(balId);
+      expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
     });
   });
 });

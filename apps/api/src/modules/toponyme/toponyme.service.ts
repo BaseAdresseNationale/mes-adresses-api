@@ -150,7 +150,7 @@ export class ToponymeService {
 
     const toponymeUpdated = await this.toponymeModel.findOneAndUpdate(
       { _id: toponyme._id, _deleted: null },
-      { $set: { ...updateToponymeDto, _upated: new Date() } },
+      { $set: { ...updateToponymeDto, _updated: new Date() } },
       { returnDocument: 'after' },
     );
 
@@ -178,7 +178,7 @@ export class ToponymeService {
   public async restore(toponyme: Toponyme): Promise<Toponyme> {
     const updatedToponyme = await this.toponymeModel.findOneAndUpdate(
       { _id: toponyme._id },
-      { $set: { _deleted: null, _upated: new Date() } },
+      { $set: { _deleted: null, _updated: new Date() } },
       { returnDocument: 'after' },
     );
     // SET _updated OF TOPONYME
