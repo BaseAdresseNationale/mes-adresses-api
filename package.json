@@ -30,7 +30,6 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/api/test/jest-e2e.json",
-    "test-unit": "nyc ava --serial",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
     "update-contours": "node ./scripts/update-contours-communes.js"
   },
