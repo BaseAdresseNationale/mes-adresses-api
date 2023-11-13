@@ -22,7 +22,7 @@ export class ValidatorBal implements ValidatorConstraintInterface {
     try {
       const field = args.constraints[0];
       if (
-        ['numero', 'suffixe', 'position', 'source', 'nom_voie'].includes(field)
+        ['numero', 'suffixe', 'position', 'source', 'voie_nom'].includes(field)
       ) {
         const { errors } = await validateurBAL(value.toString(), field);
         return errors.length === 0;

@@ -13,7 +13,7 @@ import { LineString } from '@/shared/schemas/geometry/line_string.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 
 export class CreateVoieDto {
-  @Validate(ValidatorBal, ['nom_voie'])
+  @Validate(ValidatorBal, ['voie_nom'])
   @ApiProperty({ required: true, nullable: false })
   nom: string;
 
@@ -28,7 +28,7 @@ export class CreateVoieDto {
   @ApiProperty({ required: false, nullable: false })
   typeNumerotation: TypeNumerotationEnum;
 
-  @IsNotEmptyObject()
+  @IsOptional()
   @ValidateNested()
   @Type(() => LineString)
   @ApiProperty({

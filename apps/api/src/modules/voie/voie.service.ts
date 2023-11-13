@@ -120,6 +120,7 @@ export class VoieService {
     bal: BaseLocale,
     createVoieDto: CreateVoieDto,
   ): Promise<Voie> {
+    console.log('1');
     // CREATE OBJECT VOIE
     const voie: Partial<Voie> = {
       _bal: bal._id,
@@ -128,7 +129,7 @@ export class VoieService {
       typeNumerotation:
         createVoieDto.typeNumerotation || TypeNumerotationEnum.NUMERIQUE,
       trace: createVoieDto.trace || null,
-      nomAlt: cleanNomAlt(createVoieDto.nomAlt) || null,
+      nomAlt: createVoieDto.nomAlt ? cleanNomAlt(createVoieDto.nomAlt) : null,
       centroid: null,
       centroidTiles: null,
       traceTiles: null,

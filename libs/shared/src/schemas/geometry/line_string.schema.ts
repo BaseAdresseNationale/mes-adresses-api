@@ -21,7 +21,7 @@ export class LineString implements LineStringTurf {
 
   @Validate(LineStringValidator)
   @ApiProperty()
-  @Prop({ type: [SchemaTypes.Number], required: true, nullable: false })
+  @Prop({ type: [[SchemaTypes.Number]], required: true, nullable: false })
   coordinates: PositionTurf[];
 }
 
