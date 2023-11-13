@@ -46,6 +46,7 @@ import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
 import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
+import { filterSensitiveFields as numberfilterSensitiveFields } from '@/shared/utils/numero.utils';
 import { ExtendedBaseLocale } from './dto/extended_base_locale';
 import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
@@ -62,6 +63,8 @@ import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { FilterQuery } from 'mongoose';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -366,6 +369,37 @@ export class BaseLocaleController {
   async resumeBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     const baseLocale = await this.publicationService.resume(req.baseLocale._id);
     res.status(HttpStatus.OK).json(baseLocale);
+  }
+
+  @Get(':baseLocaleId/numeros')
+  @ApiOperation({
+    summary: 'Find all Voie in Bal',
+    operationId: 'findBaseLocaleVoies',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiQuery({ name: 'isdeleted', type: Boolean, required: false })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    isArray: true,
+  })
+  @ApiBearerAuth('admin-token')
+  async findNumeroByBal(
+    @Req() req: CustomRequest,
+    @Query('isdeleted', new ParseBoolPipe({ optional: true }))
+    isDeleted,
+    @Res() res: Response,
+  ) {
+    const filter: FilterQuery<Numero> = {
+      _bal: req.baseLocale._id,
+    };
+    if (isDeleted === true || isDeleted === false) {
+      filter._deleted = isDeleted ? { $ne: null } : null;
+    }
+    const numeros: Numero[] = await this.numeroService.findMany(filter);
+    const result = numeros.map((n) =>
+      numberfilterSensitiveFields(n, !req.isAdmin),
+    );
+    res.status(HttpStatus.OK).json(result);
   }
 
   @Put(':baseLocaleId/numeros/batch')

@@ -107,12 +107,14 @@ export class VoieService {
 
   public async findAllByBalId(
     balId: Types.ObjectId,
-    isDelete: boolean = false,
+    isDeleted: boolean = undefined,
   ): Promise<Voie[]> {
-    const filter = {
+    const filter: FilterQuery<Voie> = {
       _bal: balId,
-      _deleted: isDelete ? { $ne: null } : null,
     };
+    if (isDeleted === true || isDeleted === false) {
+      filter._deleted = isDeleted ? { $ne: null } : null;
+    }
     return this.voieModel.find(filter).exec();
   }
 
@@ -120,7 +122,6 @@ export class VoieService {
     bal: BaseLocale,
     createVoieDto: CreateVoieDto,
   ): Promise<Voie> {
-    console.log('1');
     // CREATE OBJECT VOIE
     const voie: Partial<Voie> = {
       _bal: bal._id,
@@ -302,9 +303,9 @@ export class VoieService {
     { numerosIds }: RestoreVoieDto,
   ): Promise<Voie> {
     const updatedVoie = await this.voieModel.findOneAndUpdate(
-      { _id: voie._id, _deleted: null },
+      { _id: voie._id },
       { $set: { _deleted: null, _upated: new Date() } },
-      { returnDocument: 'after' },
+      { new: true },
     );
     // SET _updated OF VOIE
     await this.baseLocaleService.touch(voie._bal);

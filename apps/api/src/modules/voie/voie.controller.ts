@@ -11,6 +11,8 @@ import {
   Body,
   Inject,
   forwardRef,
+  ParseBoolPipe,
+  Query,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -20,7 +22,9 @@ import {
   ApiBody,
   ApiOperation,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
+import { FilterQuery } from 'mongoose';
 
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
@@ -122,13 +126,23 @@ export class VoieController {
     summary: 'Find all numeros which belong to the voie',
     operationId: 'findVoieNumeros',
   })
+  @ApiQuery({ name: 'isdeleted', type: Boolean, required: false })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiBearerAuth('admin-token')
-  async findByVoie(@Req() req: CustomRequest, @Res() res: Response) {
-    const numeros: Numero[] = await this.numeroService.findMany({
+  async findByVoie(
+    @Req() req: CustomRequest,
+    @Query('isdeleted', new ParseBoolPipe({ optional: true }))
+    isDeleted,
+    @Res() res: Response,
+  ) {
+    const filter: FilterQuery<Numero> = {
       voie: req.voie._id,
-    });
+    };
+    if (isDeleted === true || isDeleted === false) {
+      filter._deleted = isDeleted ? { $ne: null } : null;
+    }
+    const numeros: Numero[] = await this.numeroService.findMany(filter);
     const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
   }

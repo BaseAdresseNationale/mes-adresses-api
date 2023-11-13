@@ -103,12 +103,14 @@ export class ToponymeService {
 
   public async findAllByBalId(
     balId: Types.ObjectId,
-    isDelete: boolean = false,
+    isDeleted: boolean = undefined,
   ): Promise<Toponyme[]> {
-    const filter = {
+    const filter: FilterQuery<Toponyme> = {
       _bal: balId,
-      _deleted: isDelete ? { $ne: null } : null,
     };
+    if (isDeleted === true || isDeleted === false) {
+      filter._deleted = isDeleted ? { $ne: null } : null;
+    }
     return this.toponymeModel.find(filter).exec();
   }
 
@@ -175,7 +177,7 @@ export class ToponymeService {
 
   public async restore(toponyme: Toponyme): Promise<Toponyme> {
     const updatedToponyme = await this.toponymeModel.findOneAndUpdate(
-      { _id: toponyme._id, _deleted: null },
+      { _id: toponyme._id },
       { $set: { _deleted: null, _upated: new Date() } },
       { returnDocument: 'after' },
     );
