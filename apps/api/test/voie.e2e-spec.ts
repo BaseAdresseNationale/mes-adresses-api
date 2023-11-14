@@ -493,7 +493,11 @@ describe('VOIE MODULE', () => {
 
     it('Return 403', async () => {
       const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+        trace: null,
+      });
       const changes: UpdateVoieDto = {
         nom: 'coucou',
         nomAlt: null,
@@ -512,6 +516,10 @@ describe('VOIE MODULE', () => {
         .send(changes)
         .expect(403);
 
+      const voie = await voieModel.findOne(voieId);
+      expect(voie.nom).toEqual('rue de la paix');
+      expect(voie.trace).toBeNull();
+
       const bal = await balModel.findOne(balId);
       expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
     });
@@ -520,7 +528,11 @@ describe('VOIE MODULE', () => {
   describe('PUT /soft-delete', () => {
     it('Return 200', async () => {
       const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+        _deleted: null,
+      });
       const response = await request(app.getHttpServer())
         .put(`/voies/${voieId}/soft-delete`)
         .set('authorization', `Token ${token}`)
@@ -534,12 +546,17 @@ describe('VOIE MODULE', () => {
 
     it('Return 403', async () => {
       const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
-      const response = await request(app.getHttpServer())
+      const voieId = await createVoie({
+        nom: 'rue de la paix',
+        _bal: balId,
+        _deleted: null,
+      });
+      await request(app.getHttpServer())
         .put(`/voies/${voieId}/soft-delete`)
         .expect(403);
 
-      expect(response.body._deleted).not.toBeNull();
+      const voie = await voieModel.findOne(voieId);
+      expect(voie._deleted).toBeNull();
 
       const bal = await balModel.findOne(balId);
       expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
@@ -587,12 +604,13 @@ describe('VOIE MODULE', () => {
         voie: voieId,
         _deleted: _updated,
       });
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .put(`/voies/${voieId}/restore`)
         .send({ numeroIds: [numeroId] })
         .expect(403);
 
-      expect(response.body._deleted).not.toBeNull();
+      const voie = await voieModel.findOne(voieId);
+      expect(voie._deleted).not.toBeNull();
 
       const numero = await numeroModel.findOne(numeroId);
 

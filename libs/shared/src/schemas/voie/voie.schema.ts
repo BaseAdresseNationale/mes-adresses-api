@@ -23,7 +23,7 @@ export class Voie extends BaseEntity {
   commune: string;
 
   @ApiProperty()
-  @Prop({ type: [SchemaTypes.Map] })
+  @Prop({ type: SchemaTypes.Map })
   nomAlt: Record<string, string>;
 
   @ApiProperty()
