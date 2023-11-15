@@ -7,5 +7,5 @@ export enum PositionTypeEnum {
   DELIVRANCE_POSTALE = 'délivrance postale',
   PARCELLE = 'parcelle',
   SEGMENT = 'segment',
-  ICONNUE = 'inconnue',
+  INCONNUE = 'inconnue',
 }

@@ -14,7 +14,6 @@ export type PositionDocument = HydratedDocument<Position>;
 })
 export class Position {
   @IsEnum(PositionTypeEnum)
-  @Validate(ValidatorBal, ['position'])
   @ApiProperty()
   @Prop({ type: SchemaTypes.String, enum: PositionTypeEnum })
   type: PositionTypeEnum;

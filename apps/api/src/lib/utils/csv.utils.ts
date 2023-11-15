@@ -3,6 +3,7 @@ import { normalize } from '@ban-team/adresses-util/lib/voies';
 import { chain, compact, keyBy, min, max } from 'lodash';
 import { beautifyUppercased, beautifyNomAlt } from './string.utils';
 import { ObjectId } from 'mongodb';
+import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 
 export function extractCodeCommune({ parsedValues, additionalValues }) {
   return (
@@ -13,7 +14,7 @@ export function extractCodeCommune({ parsedValues, additionalValues }) {
 export function extractPosition(row) {
   return {
     source: row.parsedValues.source || null,
-    type: row.parsedValues.position || 'inconnue',
+    type: row.parsedValues.position || PositionTypeEnum.INCONNUE,
     point: {
       type: 'Point',
       coordinates: [row.parsedValues.long, row.parsedValues.lat],
