@@ -11,8 +11,6 @@ import {
   Body,
   Inject,
   forwardRef,
-  ParseBoolPipe,
-  Query,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -24,7 +22,6 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
-import { FilterQuery } from 'mongoose';
 
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
