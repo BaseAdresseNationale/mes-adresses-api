@@ -105,19 +105,6 @@ export class VoieService {
     };
   }
 
-  public async findAllByBalId(
-    balId: Types.ObjectId,
-    isDeleted: boolean = undefined,
-  ): Promise<Voie[]> {
-    const filter: FilterQuery<Voie> = {
-      _bal: balId,
-    };
-    if (isDeleted === true || isDeleted === false) {
-      filter._deleted = isDeleted ? { $ne: null } : null;
-    }
-    return this.voieModel.find(filter).exec();
-  }
-
   public async create(
     bal: BaseLocale,
     createVoieDto: CreateVoieDto,

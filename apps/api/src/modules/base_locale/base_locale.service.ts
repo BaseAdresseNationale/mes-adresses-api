@@ -14,7 +14,7 @@ import {
   Aggregate,
   PipelineStage,
 } from 'mongoose';
-import { uniq, difference } from 'lodash';
+import { uniq, difference, groupBy } from 'lodash';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { MailerService } from '@/shared/modules/mailer/mailer.service';
@@ -43,6 +43,8 @@ import { extractFromCsv } from '@/lib/utils/csv.utils';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
+import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
+import { PopulateVoie } from '@/shared/schemas/voie/voie.populate';
 
 @Injectable()
 export class BaseLocaleService {
@@ -301,6 +303,46 @@ export class BaseLocaleService {
 
   async aggregate(aggregation?: PipelineStage[]): Promise<Aggregate<any>> {
     return this.baseLocaleModel.aggregate(aggregation);
+  }
+
+  async findAllDeletedByBal(
+    baseLocale: BaseLocale,
+  ): Promise<AllDeletedInBalDTO> {
+    const numerosDeleted = await this.numeroService.findMany({
+      _bal: baseLocale._id,
+      _deleted: { $ne: null },
+    });
+
+    const numerosByVoieId = groupBy(numerosDeleted, 'voie');
+    const voies: any[] = await this.voieService.findMany({
+      _bal: baseLocale._id,
+      $or: [
+        {
+          _id: {
+            $in: Object.keys(numerosByVoieId),
+          },
+        },
+        { _deleted: { $ne: null } },
+      ],
+    });
+
+    const voiesPopulate: PopulateVoie[] = [];
+    for (const voie of voies) {
+      const voiePopulate: PopulateVoie = {
+        ...voie.toObject(),
+        numeros: numerosByVoieId[voie._id.toString()] || [],
+      };
+      voiesPopulate.push(voiePopulate);
+    }
+
+    const toponymes: Toponyme[] = await this.toponymeService.findMany({
+      _bal: baseLocale._id,
+      _deleted: { $ne: null },
+    });
+    return {
+      voies: voiesPopulate,
+      toponymes,
+    };
   }
 
   async populate(

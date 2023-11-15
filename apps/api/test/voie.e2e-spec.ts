@@ -120,6 +120,30 @@ describe('VOIE MODULE', () => {
       expect(response.body[0].comment).toEqual(null);
     });
 
+    it('Return 200 numeronot deleted', async () => {
+      const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 1,
+        comment: 'coucou',
+      });
+
+      await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 2,
+        comment: 'coucou',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/voies/${voieId}/numeros`)
+        .expect(200);
+      expect(response.body).toHaveLength(1);
+    });
+
     it('Return 200 numero with comment', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });

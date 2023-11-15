@@ -101,19 +101,6 @@ export class ToponymeService {
     };
   }
 
-  public async findAllByBalId(
-    balId: Types.ObjectId,
-    isDeleted: boolean = undefined,
-  ): Promise<Toponyme[]> {
-    const filter: FilterQuery<Toponyme> = {
-      _bal: balId,
-    };
-    if (isDeleted === true || isDeleted === false) {
-      filter._deleted = isDeleted ? { $ne: null } : null;
-    }
-    return this.toponymeModel.find(filter).exec();
-  }
-
   public async create(
     bal: BaseLocale,
     createToponymeDto: CreateToponymeDto,

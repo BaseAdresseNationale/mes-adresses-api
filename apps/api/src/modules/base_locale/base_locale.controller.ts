@@ -46,7 +46,6 @@ import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
 import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
-import { filterSensitiveFields as numberfilterSensitiveFields } from '@/shared/utils/numero.utils';
 import { ExtendedBaseLocale } from './dto/extended_base_locale';
 import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
@@ -63,8 +62,7 @@ import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { FilterQuery } from 'mongoose';
+import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -371,35 +369,22 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(baseLocale);
   }
 
-  @Get(':baseLocaleId/numeros')
+  @Get(':baseLocaleId/all/deleted')
   @ApiOperation({
-    summary: 'Find all Voie in Bal',
-    operationId: 'findBaseLocaleVoies',
+    summary: 'Find all model deleted in Bal',
+    operationId: 'findAllDeleted',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiQuery({ name: 'isdeleted', type: Boolean, required: false })
   @ApiResponse({
+    type: AllDeletedInBalDTO,
     status: HttpStatus.OK,
     isArray: true,
   })
   @ApiBearerAuth('admin-token')
-  async findNumeroByBal(
-    @Req() req: CustomRequest,
-    @Query('isdeleted', new ParseBoolPipe({ optional: true }))
-    isDeleted,
-    @Res() res: Response,
-  ) {
-    const filter: FilterQuery<Numero> = {
-      _bal: req.baseLocale._id,
-    };
-    if (isDeleted === true || isDeleted === false) {
-      filter._deleted = isDeleted ? { $ne: null } : null;
-    }
-    const numeros: Numero[] = await this.numeroService.findMany(filter);
-    const result = numeros.map((n) =>
-      numberfilterSensitiveFields(n, !req.isAdmin),
-    );
-    res.status(HttpStatus.OK).json(result);
+  async findAllDeletedByBal(@Req() req: CustomRequest, @Res() res: Response) {
+    const allDeleted: AllDeletedInBalDTO =
+      await this.baseLocaleService.findAllDeletedByBal(req.baseLocale);
+    res.status(HttpStatus.OK).json(allDeleted);
   }
 
   @Put(':baseLocaleId/numeros/batch')
@@ -471,22 +456,16 @@ export class BaseLocaleController {
     operationId: 'findBaseLocaleVoies',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiQuery({ name: 'isdeleted', type: Boolean, required: false })
   @ApiResponse({
     status: HttpStatus.OK,
     isArray: true,
   })
   @ApiBearerAuth('admin-token')
-  async findVoieByBal(
-    @Req() req: CustomRequest,
-    @Query('isdeleted', new ParseBoolPipe({ optional: true }))
-    isDeleted = false,
-    @Res() res: Response,
-  ) {
-    const voies: Voie[] = await this.voieService.findAllByBalId(
-      req.baseLocale._id,
-      isDeleted,
-    );
+  async findVoieByBal(@Req() req: CustomRequest, @Res() res: Response) {
+    const voies: Voie[] = await this.voieService.findMany({
+      _bal: req.baseLocale._id,
+      _deleted: null,
+    });
     const extendedVoie: ExtendedVoie[] =
       await this.voieService.extendVoies(voies);
     res.status(HttpStatus.OK).json(extendedVoie);
@@ -516,20 +495,14 @@ export class BaseLocaleController {
     summary: 'Find all Toponymes in Bal',
     operationId: 'findBaseLocaleToponymes',
   })
-  @ApiQuery({ name: 'isdeleted', type: Boolean, required: false })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme, isArray: true })
   @ApiBearerAuth('admin-token')
-  async findToponymeByBal(
-    @Req() req: CustomRequest,
-    @Query('isdeleted', new ParseBoolPipe({ optional: true }))
-    isDeleted = false,
-    @Res() res: Response,
-  ) {
-    const toponymes: Toponyme[] = await this.toponymeService.findAllByBalId(
-      req.baseLocale._id,
-      isDeleted,
-    );
+  async findToponymeByBal(@Req() req: CustomRequest, @Res() res: Response) {
+    const toponymes: Toponyme[] = await this.toponymeService.findMany({
+      _bal: req.baseLocale._id,
+      _deleted: null,
+    });
     const extendedToponyme: ExtentedToponyme[] =
       await this.toponymeService.extendToponymes(toponymes);
     res.status(HttpStatus.OK).json(extendedToponyme);

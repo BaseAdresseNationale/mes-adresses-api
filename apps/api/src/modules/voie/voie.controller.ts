@@ -130,19 +130,11 @@ export class VoieController {
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiBearerAuth('admin-token')
-  async findByVoie(
-    @Req() req: CustomRequest,
-    @Query('isdeleted', new ParseBoolPipe({ optional: true }))
-    isDeleted,
-    @Res() res: Response,
-  ) {
-    const filter: FilterQuery<Numero> = {
+  async findNumerosByVoie(@Req() req: CustomRequest, @Res() res: Response) {
+    const numeros: Numero[] = await this.numeroService.findMany({
       voie: req.voie._id,
-    };
-    if (isDeleted === true || isDeleted === false) {
-      filter._deleted = isDeleted ? { $ne: null } : null;
-    }
-    const numeros: Numero[] = await this.numeroService.findMany(filter);
+      _deleted: null,
+    });
     const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
   }
