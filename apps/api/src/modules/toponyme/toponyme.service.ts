@@ -125,7 +125,9 @@ export class ToponymeService {
       nom: createToponymeDto.nom,
       positions: createToponymeDto.positions || [],
       parcelles: createToponymeDto.parcelles || [],
-      nomAlt: cleanNomAlt(createToponymeDto.nomAlt) || null,
+      nomAlt: createToponymeDto.nomAlt
+        ? cleanNomAlt(createToponymeDto.nomAlt)
+        : null,
     };
 
     // REQUEST CREATE TOPONYME

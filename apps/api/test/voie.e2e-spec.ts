@@ -378,6 +378,7 @@ describe('VOIE MODULE', () => {
         .put(`/voies/${voieId}/convert-to-toponyme`)
         .set('authorization', `Token ${token}`)
         .expect(200);
+
       const toponyme: Toponyme = await toponymeModel.findOne({
         nom: 'rue de la paix',
       });

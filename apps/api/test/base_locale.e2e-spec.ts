@@ -1185,4 +1185,171 @@ voie;rue de paris;1;1ter`;
       expect(response.body).toEqual(['12345000AA0002', '12345000AA0005']);
     });
   });
+
+  describe('GET /:bases-locales/numeros', () => {
+    it('GET all', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        commune: '27115',
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        commune: '27115',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/numeros`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(2);
+    });
+
+    it('GET deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        commune: '27115',
+      });
+
+      const numeroId = await createNumero({
+        _bal: balId,
+        numero: 1,
+        commune: '27115',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/numeros?isdeleted=true`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toEqual(numeroId.toString());
+    });
+
+    it('GET not deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const numeroId = await createNumero({
+        _bal: balId,
+        numero: 1,
+        commune: '27115',
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        commune: '27115',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/numeros?isdeleted=false`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toEqual(numeroId.toString());
+    });
+  });
+
+  describe('GET /:baseLocaleId/voies', () => {
+    it('GET default not deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const voieId = await createVoie({
+        _bal: balId,
+        nom: 'rue de la paix',
+      });
+
+      await createVoie({
+        _bal: balId,
+        nom: 'rue de paris',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/voies`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toEqual(voieId.toString());
+    });
+
+    it('GET deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        _deleted: new Date(),
+      });
+
+      await createVoie({
+        _bal: balId,
+        nom: 'rue',
+      });
+
+      const voieId = await createVoie({
+        _bal: balId,
+        nom: 'rue',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/voies?isdeleted=true`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toEqual(voieId.toString());
+    });
+
+    it('GET not deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        _deleted: new Date(),
+      });
+
+      const voieId = await createVoie({
+        _bal: balId,
+        nom: 'rue',
+      });
+
+      await createVoie({
+        _bal: balId,
+        nom: 'rue',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/voies?isdeleted=false`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toEqual(voieId.toString());
+    });
+  });
 });
