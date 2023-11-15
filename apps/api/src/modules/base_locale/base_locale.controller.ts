@@ -498,6 +498,7 @@ export class BaseLocaleController {
   @ApiBody({ type: CreateVoieDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Voie, isArray: true })
   @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
   async createVoie(
     @Req() req: CustomRequest,
     @Body() createVoieDto: CreateVoieDto,
@@ -543,6 +544,7 @@ export class BaseLocaleController {
   @ApiBody({ type: CreateToponymeDto, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme, isArray: true })
   @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
   async create(
     @Req() req: CustomRequest,
     @Body() createToponymeDto: CreateToponymeDto,

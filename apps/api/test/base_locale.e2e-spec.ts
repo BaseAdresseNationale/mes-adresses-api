@@ -17,6 +17,9 @@ import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
 import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
 import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
+import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
+import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
+import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
 
 const baseLocaleAdminProperties = ['token', 'emails'];
 const baseLocalePublicProperties = [
@@ -1350,6 +1353,191 @@ voie;rue de paris;1;1ter`;
 
       expect(response.body).toHaveLength(1);
       expect(response.body[0]._id).toEqual(voieId.toString());
+    });
+  });
+
+  describe('POST /:baseLocaleId/voies', () => {
+    it('POST 201', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const voie: CreateVoieDto = {
+        nom: 'rue de la paix',
+        nomAlt: null,
+        trace: null,
+        typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .set('authorization', `Token ${token}`)
+        .send(voie)
+        .expect(201);
+
+      expect(response.body._id).toBeDefined();
+      expect(response.body.nom).toEqual('rue de la paix');
+      expect(response.body.nomAlt).toBeNull();
+      expect(response.body.trace).toBeNull();
+      expect(response.body.typeNumerotation).toEqual(
+        TypeNumerotationEnum.NUMERIQUE,
+      );
+      expect(response.body.traceTiles).toBeNull();
+      expect(response.body.centroid).toBeNull();
+      expect(response.body.centroidTiles).toBeNull();
+      expect(response.body._deleted).toBeNull();
+      expect(response.body._updated).toBeDefined();
+      expect(response.body._created).toBeDefined();
+    });
+
+    it('POST 403', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const voie: CreateVoieDto = {
+        nom: 'rue de la paix',
+        nomAlt: null,
+        trace: null,
+        typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
+      };
+
+      await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send(voie)
+        .expect(403);
+    });
+  });
+
+  describe('GET /:baseLocaleId/toponymes', () => {
+    it('GET default not deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const toponymeId = await createToponyme({
+        _bal: balId,
+        nom: 'rue de la paix',
+      });
+
+      await createToponyme({
+        _bal: balId,
+        nom: 'rue de paris',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/toponymes`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toEqual(toponymeId.toString());
+    });
+
+    it('GET deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        _deleted: new Date(),
+      });
+
+      await createToponyme({
+        _bal: balId,
+        nom: 'rue',
+      });
+
+      const toponymeId = await createToponyme({
+        _bal: balId,
+        nom: 'rue',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/toponymes?isdeleted=true`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toEqual(toponymeId.toString());
+    });
+
+    it('GET not deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+        _deleted: new Date(),
+      });
+
+      const toponymeId = await createToponyme({
+        _bal: balId,
+        nom: 'rue',
+      });
+
+      await createToponyme({
+        _bal: balId,
+        nom: 'rue',
+        _deleted: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/toponymes?isdeleted=false`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toEqual(toponymeId.toString());
+    });
+  });
+
+  describe('POST /:baseLocaleId/toponymes', () => {
+    it('POST 201', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const toponyme: CreateToponymeDto = {
+        nom: 'rue de la paix',
+        nomAlt: null,
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/toponymes`)
+        .set('authorization', `Token ${token}`)
+        .send(toponyme)
+        .expect(201);
+
+      expect(response.body._id).toBeDefined();
+      expect(response.body.nom).toEqual('rue de la paix');
+      expect(response.body.nomAlt).toBeNull();
+      expect(response.body.positions).toEqual([]);
+      expect(response.body.positions).toEqual([]);
+      expect(response.body.commune).toEqual('27115');
+    });
+
+    it('POST 403', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+
+      const toponyme: CreateToponymeDto = {
+        nom: 'rue de la paix',
+        nomAlt: null,
+      };
+
+      await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/toponymes`)
+        .send(toponyme)
+        .expect(403);
     });
   });
 });
