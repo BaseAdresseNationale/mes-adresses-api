@@ -428,21 +428,17 @@ export class NumeroService {
     numeroIds: Types.ObjectId[],
     _bal: Types.ObjectId,
   ): Promise<{ voieIds: Types.ObjectId[]; toponymeIds: Types.ObjectId[] }> {
-    const voieIds = (
-      await this.numeroModel.distinct('voie', {
-        _id: { $in: numeroIds },
-        _bal,
-        _deleted: null,
-      })
-    ).map(({ _id }) => _id);
+    const voieIds = await this.numeroModel.distinct('voie', {
+      _id: { $in: numeroIds },
+      _bal,
+      _deleted: null,
+    });
 
-    const toponymeIds = (
-      await this.numeroModel.distinct('toponyme', {
-        _id: { $in: numeroIds },
-        _bal,
-        _deleted: null,
-      })
-    ).map(({ _id }) => _id);
+    const toponymeIds = await this.numeroModel.distinct('toponyme', {
+      _id: { $in: numeroIds },
+      _bal,
+      _deleted: null,
+    });
 
     return { voieIds, toponymeIds };
   }
