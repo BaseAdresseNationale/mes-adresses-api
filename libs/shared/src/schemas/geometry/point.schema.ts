@@ -21,7 +21,7 @@ export class Point implements PointTurf {
   type: 'Point';
 
   @Validate(PointValidator)
-  @ApiProperty({ required: true, nullable: false })
+  @ApiProperty({ required: true, nullable: false, type: Number, isArray: true })
   @Prop({ type: [SchemaTypes.Number], required: true, nullable: false })
   coordinates: PositionTurf;
 }

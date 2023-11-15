@@ -20,7 +20,7 @@ export class LineString implements LineStringTurf {
   type: 'LineString';
 
   @Validate(LineStringValidator)
-  @ApiProperty()
+  @ApiProperty({ type: Array, isArray: true })
   @Prop({ type: [[SchemaTypes.Number]], required: true, nullable: false })
   coordinates: PositionTurf[];
 }

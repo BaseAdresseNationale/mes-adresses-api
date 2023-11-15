@@ -34,7 +34,7 @@ export class Voie extends BaseEntity {
   @Prop({ type: [SchemaTypes.String] })
   centroidTiles: string[];
 
-  @ApiProperty()
+  @ApiProperty({ enum: TypeNumerotationEnum })
   @Prop({ type: SchemaTypes.String, enum: TypeNumerotationEnum })
   typeNumerotation: TypeNumerotationEnum;
 
