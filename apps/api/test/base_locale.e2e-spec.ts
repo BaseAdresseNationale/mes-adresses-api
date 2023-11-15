@@ -149,7 +149,7 @@ describe('BASE LOCAL MODULE', () => {
   function createPositions(coordinates: number[] = [8, 42]): Position[] {
     return [
       {
-        type: PositionTypeEnum.ICONNUE,
+        type: PositionTypeEnum.INCONNUE,
         source: 'ban',
         point: {
           type: 'Point',
@@ -1345,6 +1345,111 @@ voie;rue de paris;1;1ter`;
         .post(`/bases-locales/${balId}/toponymes`)
         .send(toponyme)
         .expect(403);
+    });
+  });
+
+  describe('GET /:baseLocaleId/all/deleted', () => {
+    it('GET 200 voie deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+      const voieId = await createVoie({
+        _bal: balId,
+        nom: 'rue de la paix',
+        _deleted: new Date(),
+      });
+      await createVoie({
+        _bal: balId,
+        nom: 'rue de la paix',
+      });
+      const toponymeId = await createToponyme({
+        _bal: balId,
+        nom: 'rue de la paix',
+        _deleted: new Date(),
+      });
+      await createToponyme({
+        _bal: balId,
+        nom: 'rue de la paix',
+      });
+
+      const numeroId = await createNumero({
+        _bal: balId,
+        numero: 1,
+        voie: voieId,
+        _deleted: new Date(),
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        voie: voieId,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/all/deleted`)
+        .expect(200);
+
+      expect(response.body.toponymes).toHaveLength(1);
+      expect(response.body.toponymes[0]._id).toEqual(toponymeId.toString());
+      expect(response.body.voies).toHaveLength(1);
+      expect(response.body.voies[0]._id).toEqual(voieId.toString());
+      expect(response.body.voies[0].numeros).toHaveLength(1);
+      expect(response.body.voies[0].numeros[0]._id).toEqual(
+        numeroId.toString(),
+      );
+    });
+
+    it('GET 200 voie not deleted', async () => {
+      const balId = await createBal({
+        nom: 'foo',
+        commune: '27115',
+        emails: ['me@domain.co'],
+      });
+      const voieId = await createVoie({
+        _bal: balId,
+        nom: 'rue de la paix',
+      });
+      await createVoie({
+        _bal: balId,
+        nom: 'rue de la paix',
+      });
+      const toponymeId = await createToponyme({
+        _bal: balId,
+        nom: 'rue de la paix',
+        _deleted: new Date(),
+      });
+      await createToponyme({
+        _bal: balId,
+        nom: 'rue de la paix',
+      });
+
+      const numeroId = await createNumero({
+        _bal: balId,
+        numero: 1,
+        voie: voieId,
+        _deleted: new Date(),
+      });
+
+      await createNumero({
+        _bal: balId,
+        numero: 1,
+        voie: voieId,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/all/deleted`)
+        .expect(200);
+
+      expect(response.body.toponymes).toHaveLength(1);
+      expect(response.body.toponymes[0]._id).toEqual(toponymeId.toString());
+      expect(response.body.voies).toHaveLength(1);
+      expect(response.body.voies[0]._id).toEqual(voieId.toString());
+      expect(response.body.voies[0].numeros).toHaveLength(1);
+      expect(response.body.voies[0].numeros[0]._id).toEqual(
+        numeroId.toString(),
+      );
     });
   });
 });

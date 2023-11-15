@@ -374,7 +374,7 @@ describe('NUMERO', () => {
         numero: 99,
         positions: [
           {
-            type: PositionTypeEnum.ICONNUE,
+            type: PositionTypeEnum.INCONNUE,
             source: 'ban',
             point: {
               type: 'Point',

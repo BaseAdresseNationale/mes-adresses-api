@@ -125,7 +125,7 @@ describe('BASE LOCAL MODULE', () => {
   function createPositions(coordinates: number[] = [8, 42]): Position[] {
     return [
       {
-        type: PositionTypeEnum.ICONNUE,
+        type: PositionTypeEnum.INCONNUE,
         source: 'ban',
         point: {
           type: 'Point',
