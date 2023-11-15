@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiHeader,
   ApiBody,
+  ApiOperation,
 } from '@nestjs/swagger';
 
 import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
@@ -30,6 +31,10 @@ export class HabilitationController {
   constructor(private habilitationService: HabilitationService) {}
 
   @Get('/bases-locales/:baseLocaleId/habilitation')
+  @ApiOperation({
+    summary: 'Find habiliation',
+    operationId: 'findHabilitation',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: 200 })
   @ApiHeader({ name: 'Token' })
@@ -47,6 +52,10 @@ export class HabilitationController {
   }
 
   @Post('/bases-locales/:baseLocaleId/habilitation')
+  @ApiOperation({
+    summary: 'Create habiliation',
+    operationId: 'createHabilitation',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: 201 })
   @ApiHeader({ name: 'Token' })
@@ -60,6 +69,10 @@ export class HabilitationController {
   }
 
   @Post('/bases-locales/:baseLocaleId/habilitation/email/send-pin-code')
+  @ApiOperation({
+    summary: 'Send pin code of habilitation',
+    operationId: 'sendPinCodeHabilitation',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: 200 })
   @ApiHeader({ name: 'Token' })
@@ -76,6 +89,10 @@ export class HabilitationController {
   }
 
   @Post('/bases-locales/:baseLocaleId/habilitation/email/validate-pin-code')
+  @ApiOperation({
+    summary: 'Valide pin code of habiliation',
+    operationId: 'validePinCodeHabilitation',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: ValidatePinCodeDTO, required: true })
   @ApiResponse({ status: 200 })

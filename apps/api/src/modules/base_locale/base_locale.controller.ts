@@ -5,7 +5,6 @@ import {
   Get,
   HttpStatus,
   Inject,
-  ParseBoolPipe,
   ParseFilePipeBuilder,
   Post,
   Put,
@@ -79,7 +78,10 @@ export class BaseLocaleController {
   ) {}
 
   @Post('')
-  @ApiOperation({ summary: 'Create a base locale' })
+  @ApiOperation({
+    summary: 'Create a base locale',
+    operationId: 'createBaseLocale',
+  })
   @ApiBody({ type: CreateBaseLocaleDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   async createBaseLocale(
@@ -94,7 +96,10 @@ export class BaseLocaleController {
   }
 
   @Post('create-demo')
-  @ApiOperation({ summary: 'Create a base locale' })
+  @ApiOperation({
+    summary: 'Create a base locale',
+    operationId: 'createBaseLocaleDemo',
+  })
   @ApiBody({ type: CreateDemoBaseLocaleDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   async createDemoBaseLocale(
@@ -110,7 +115,10 @@ export class BaseLocaleController {
   }
 
   @Get('/search')
-  @ApiOperation({ summary: 'Search BAL by filters' })
+  @ApiOperation({
+    summary: 'Search BAL by filters',
+    operationId: 'searchBaseLocale',
+  })
   @ApiQuery({ type: SearchBaseLocalQuery })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -146,7 +154,10 @@ export class BaseLocaleController {
   }
 
   @Get(':baseLocaleId')
-  @ApiOperation({ summary: 'Find Base_Locale by id' })
+  @ApiOperation({
+    summary: 'Find Base_Locale by id',
+    operationId: 'findBaseLocale',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -165,7 +176,10 @@ export class BaseLocaleController {
   }
 
   @Put(':baseLocaleId')
-  @ApiOperation({ summary: 'Update one base locale' })
+  @ApiOperation({
+    summary: 'Update one base locale',
+    operationId: 'updateBaseLocale',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBaseLocaleDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
@@ -185,7 +199,10 @@ export class BaseLocaleController {
   }
 
   @Delete(':baseLocaleId')
-  @ApiOperation({ summary: 'Delete one base locale' })
+  @ApiOperation({
+    summary: 'Delete one base locale',
+    operationId: 'deleteBaseLocale',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @ApiBearerAuth('admin-token')
@@ -196,7 +213,10 @@ export class BaseLocaleController {
   }
 
   @Put(':baseLocaleId/transform-to-draft')
-  @ApiOperation({ summary: 'Update one base locale status to draft' })
+  @ApiOperation({
+    summary: 'Update one base locale status to draft',
+    operationId: 'updateBaseLocaleDemoToDraft',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBaseLocaleDemoDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
@@ -217,7 +237,10 @@ export class BaseLocaleController {
   }
 
   @Post(':baseLocaleId/upload')
-  @ApiOperation({ summary: 'Upload a CSV BAL file' })
+  @ApiOperation({
+    summary: 'Upload a CSV BAL file',
+    operationId: 'uploadCsvBalFile',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -259,10 +282,12 @@ export class BaseLocaleController {
   }
 
   @Post('recovery')
-  @ApiOperation({ summary: 'Recover BAL access' })
+  @ApiOperation({
+    summary: 'Recover BAL access',
+    operationId: 'recoveryBasesLocales',
+  })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   async recoverBALAccess(
-    @Req() req: Request,
     @Body() recoverBaseLocaleDTO: RecoverBaseLocaleDTO,
     @Res() res: Response,
   ) {
@@ -272,7 +297,10 @@ export class BaseLocaleController {
   }
 
   @Get(':baseLocaleId/:token/recovery')
-  @ApiOperation({ summary: 'Restore deleted BAL' })
+  @ApiOperation({
+    summary: 'Restore deleted BAL',
+    operationId: 'recoveryBaseLocale',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiParam({ name: 'token', required: true, type: String })
   @ApiResponse({ status: HttpStatus.TEMPORARY_REDIRECT })
@@ -290,7 +318,10 @@ export class BaseLocaleController {
   }
 
   @Post(':baseLocaleId/populate')
-  @ApiOperation({ summary: 'Populate Base Locale' })
+  @ApiOperation({
+    summary: 'Populate Base Locale',
+    operationId: 'populateBaseLocale',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
@@ -304,7 +335,10 @@ export class BaseLocaleController {
   }
 
   @Post(':baseLocaleId/token/renew')
-  @ApiOperation({ summary: 'Renew Base Locale token' })
+  @ApiOperation({
+    summary: 'Renew Base Locale token',
+    operationId: 'renewTokenBaseLocale',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
@@ -316,7 +350,10 @@ export class BaseLocaleController {
   }
 
   @Get(':baseLocaleId/parcelles')
-  @ApiOperation({ summary: 'Find Base_Locale parcelles' })
+  @ApiOperation({
+    summary: 'Find Base_Locale parcelles',
+    operationId: 'findBaseLocaleParcelles',
+  })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -332,7 +369,10 @@ export class BaseLocaleController {
   }
 
   @Post(':baseLocaleId/sync/exec')
-  @ApiOperation({ summary: 'Publish base locale', operationId: 'publishBal' })
+  @ApiOperation({
+    summary: 'Publish base locale',
+    operationId: 'publishBaseLocale',
+  })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
@@ -346,7 +386,7 @@ export class BaseLocaleController {
   @Post(':baseLocaleId/sync/pause')
   @ApiOperation({
     summary: 'Update isPaused sync BAL to true',
-    operationId: 'pauseBal',
+    operationId: 'pauseBaseLocale',
   })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
@@ -359,7 +399,7 @@ export class BaseLocaleController {
   @Post(':baseLocaleId/sync/resume')
   @ApiOperation({
     summary: 'Update isPaused sync BAL to false',
-    operationId: 'resumeBal',
+    operationId: 'resumeBaseLocale',
   })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')

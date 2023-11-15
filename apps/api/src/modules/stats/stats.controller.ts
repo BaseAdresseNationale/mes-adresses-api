@@ -33,7 +33,10 @@ export class StatsController {
   constructor(private statsService: StatsService) {}
 
   @Post('bals')
-  @ApiOperation({ summary: 'Find all Bals (filtered by codeCommune)' })
+  @ApiOperation({
+    summary: 'Find all Bals (filtered by codeCommune)',
+    operationId: 'findBalsStats',
+  })
   @ApiQuery({ name: 'fields', type: String, required: false, isArray: true })
   @ApiBody({ type: CodeCommuneDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale, isArray: true })
@@ -52,7 +55,10 @@ export class StatsController {
   }
 
   @Get('bals/status')
-  @ApiOperation({ summary: 'Find all Bals status' })
+  @ApiOperation({
+    summary: 'Find all Bals status',
+    operationId: 'findBalsStatusStats',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: BasesLocalesStatusDto,
@@ -65,7 +71,10 @@ export class StatsController {
   }
 
   @Get('bals/creations')
-  @ApiOperation({ summary: 'Find all created Bals between date' })
+  @ApiOperation({
+    summary: 'Find all created Bals between date',
+    operationId: 'findBalsCreationStats',
+  })
   @ApiQuery({ name: 'from', type: String, required: true })
   @ApiQuery({ name: 'to', type: String, required: true })
   @ApiResponse({
