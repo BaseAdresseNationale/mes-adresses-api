@@ -156,7 +156,7 @@ describe('VOIE MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/voies/${voieId}/numeros`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
       expect(response.body.length).toEqual(1);
       expect(response.body[0]._id).toEqual(numeroId1.toString());
@@ -185,7 +185,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(201);
       expect(response.body.numero).toEqual(1);
       expect(response.body._bal).toEqual(balId.toString());
@@ -231,7 +231,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(201);
 
       expect(response.body.numero).toEqual(1);
@@ -278,7 +278,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(404);
 
       expect(response.text).toEqual(
@@ -318,7 +318,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(404);
 
       expect(response.text).toEqual(
@@ -347,7 +347,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(400);
 
       expect(response.text).toEqual(
@@ -381,7 +381,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
         .send(createdNumero)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(400);
 
       expect(response.text).toEqual(
@@ -400,7 +400,7 @@ describe('VOIE MODULE', () => {
       const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
       await request(app.getHttpServer())
         .put(`/voies/${voieId}/convert-to-toponyme`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       const toponyme: Toponyme = await toponymeModel.findOne({
@@ -419,7 +419,7 @@ describe('VOIE MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/voies/${voieId}/convert-to-toponyme`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(400);
 
       expect(response.text).toEqual(
@@ -475,7 +475,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .put(`/voies/${voieId}`)
         .send(changes)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
       expect(response.body._id).toEqual(voieId.toString());
       expect(response.body._bal).toEqual(balId.toString());
@@ -502,7 +502,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .put(`/voies/${voieId}`)
         .send(changes)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
       expect(response.body._id).toEqual(voieId.toString());
       expect(response.body._bal).toEqual(balId.toString());
@@ -560,7 +560,7 @@ describe('VOIE MODULE', () => {
       });
       const response = await request(app.getHttpServer())
         .put(`/voies/${voieId}/soft-delete`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(response.body._deleted).not.toBeNull();
@@ -604,7 +604,7 @@ describe('VOIE MODULE', () => {
       const response = await request(app.getHttpServer())
         .put(`/voies/${voieId}/restore`)
         .send({ numerosIds: [numeroId] })
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(response.body._deleted).toBeNull();
@@ -661,7 +661,7 @@ describe('VOIE MODULE', () => {
       });
       await request(app.getHttpServer())
         .delete(`/voies/${voieId}`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(204);
 
       const voie = await voieModel.findOne(voieId);

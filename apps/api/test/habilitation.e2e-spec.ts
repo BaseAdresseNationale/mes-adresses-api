@@ -99,7 +99,7 @@ describe('BASE LOCAL MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/bases-locales/${balId}/habilitation`)
-        .set('Authorization', `Token ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(JSON.stringify(response.body)).toEqual(
@@ -156,7 +156,7 @@ describe('BASE LOCAL MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/bases-locales/${balId}/habilitation`)
-        .set('Authorization', `Token ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(404);
 
       expect(response.body).toEqual(responseBody);
@@ -188,7 +188,7 @@ describe('BASE LOCAL MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation`)
-        .set('Authorization', `Token ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(201);
 
       expect(JSON.stringify(response.body)).toEqual(
@@ -225,7 +225,7 @@ describe('BASE LOCAL MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation`)
-        .set('Authorization', `Token ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(412);
 
       expect(response.body).toEqual({
@@ -271,7 +271,7 @@ describe('BASE LOCAL MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/send-pin-code`)
-        .set('Authorization', `Token ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(response.body).toEqual({
@@ -306,7 +306,7 @@ describe('BASE LOCAL MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/send-pin-code`)
-        .set('Authorization', `Token ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(412);
 
       expect(response.body).toEqual({
@@ -354,7 +354,7 @@ describe('BASE LOCAL MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/validate-pin-code`)
-        .set('Authorization', `Token ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({ code: '123456' })
         .expect(200);
 
@@ -401,7 +401,7 @@ describe('BASE LOCAL MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/validate-pin-code`)
-        .set('Authorization', `Token ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({ code: '123456' })
         .expect(200);
 
@@ -436,7 +436,7 @@ describe('BASE LOCAL MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/validate-pin-code`)
-        .set('Authorization', `Token ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({ code: '123456' })
         .expect(200);
 

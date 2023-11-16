@@ -202,7 +202,7 @@ describe('BASE LOCAL MODULE', () => {
       const response = await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(response.body.modifiedCount).toEqual(2);
@@ -280,7 +280,7 @@ describe('BASE LOCAL MODULE', () => {
       await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(400);
     });
 
@@ -301,7 +301,7 @@ describe('BASE LOCAL MODULE', () => {
       await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(400);
     });
 
@@ -324,7 +324,7 @@ describe('BASE LOCAL MODULE', () => {
       await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(404);
     });
 
@@ -347,7 +347,7 @@ describe('BASE LOCAL MODULE', () => {
       await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/numeros/batch`)
         .send(updateBtach)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(404);
     });
   });
@@ -387,7 +387,7 @@ describe('BASE LOCAL MODULE', () => {
       const response = await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/numeros/batch/soft-delete`)
         .send(deleteBtach)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(response.body.modifiedCount).toEqual(2);
@@ -436,7 +436,7 @@ describe('BASE LOCAL MODULE', () => {
       await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/numeros/batch/soft-delete`)
         .send(deleteBtach)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(400);
     });
   });
@@ -476,7 +476,7 @@ describe('BASE LOCAL MODULE', () => {
       await request(app.getHttpServer())
         .delete(`/bases-locales/${balId}/numeros/batch/`)
         .send(deleteBtach)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(204);
 
       const numero1After: Numero = await numeroModel.findOne({
@@ -522,7 +522,7 @@ describe('BASE LOCAL MODULE', () => {
       await request(app.getHttpServer())
         .delete(`/bases-locales/${balId}/numeros/batch`)
         .send(deleteBtach)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(400);
     });
   });
@@ -760,7 +760,7 @@ voie;rue de paris;1;1ter`;
 
       const response = await request(app.getHttpServer())
         .get(`/bases-locales/${balId}`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(Object.keys(response.body).sort()).toEqual(
@@ -898,7 +898,7 @@ voie;rue de paris;1;1ter`;
 
       const response = await request(app.getHttpServer())
         .put(`/bases-locales/${balId}`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .send(updateBALDTO)
         .expect(200);
 
@@ -942,7 +942,7 @@ voie;rue de paris;1;1ter`;
 
       const response = await request(app.getHttpServer())
         .put(`/bases-locales/${balId}`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .send(updateBALDTO)
         .expect(400);
 
@@ -972,7 +972,7 @@ voie;rue de paris;1;1ter`;
 
       await request(app.getHttpServer())
         .put(`/bases-locales/${balId}`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .send(updateBALDTO)
         .expect(412);
     });
@@ -991,7 +991,7 @@ voie;rue de paris;1;1ter`;
 
       await request(app.getHttpServer())
         .put(`/bases-locales/${balId}`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .send(updateBALDTO)
         .expect(412);
     });
@@ -1008,7 +1008,7 @@ voie;rue de paris;1;1ter`;
 
       const response = await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/transform-to-draft`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .send({ nom: 'bar', email: 'me@mail.co' })
         .expect(200);
 
@@ -1029,7 +1029,7 @@ voie;rue de paris;1;1ter`;
 
       const response = await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/transform-to-draft`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .send({ nom: 'bar', email: 'me@mail.co' })
         .expect(412);
 
@@ -1051,7 +1051,7 @@ voie;rue de paris;1;1ter`;
 
       await request(app.getHttpServer())
         .delete(`/bases-locales/${balId}`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(204);
 
       const baseLocale = await balModel.findOne({ _id: balId });
@@ -1069,7 +1069,7 @@ voie;rue de paris;1;1ter`;
 
       await request(app.getHttpServer())
         .delete(`/bases-locales/${balId}`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(204);
 
       const baseLocale = await balModel.findOne({ _id: balId });
@@ -1234,7 +1234,7 @@ voie;rue de paris;1;1ter`;
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/voies`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .send(voie)
         .expect(201);
 
@@ -1317,7 +1317,7 @@ voie;rue de paris;1;1ter`;
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/toponymes`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .send(toponyme)
         .expect(201);
 

@@ -221,7 +221,7 @@ describe('BASE LOCAL MODULE', () => {
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
       expect(sendMailMock).toHaveBeenCalled();
 
@@ -340,7 +340,7 @@ describe('BASE LOCAL MODULE', () => {
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(sendMailMock).not.toHaveBeenCalled();
@@ -428,7 +428,7 @@ describe('BASE LOCAL MODULE', () => {
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(sendMailMock).not.toHaveBeenCalled();
@@ -459,7 +459,7 @@ describe('BASE LOCAL MODULE', () => {
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(412);
 
       expect(response.text).toEqual(
@@ -482,7 +482,7 @@ describe('BASE LOCAL MODULE', () => {
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(412);
 
       expect(response.text).toEqual(
@@ -518,7 +518,7 @@ describe('BASE LOCAL MODULE', () => {
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(412);
 
       expect(response.text).toEqual(
@@ -554,7 +554,7 @@ describe('BASE LOCAL MODULE', () => {
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(412);
 
       expect(response.text).toEqual(
@@ -590,7 +590,7 @@ describe('BASE LOCAL MODULE', () => {
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(412);
 
       expect(response.text).toEqual(

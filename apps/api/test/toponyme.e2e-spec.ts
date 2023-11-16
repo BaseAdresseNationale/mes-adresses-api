@@ -178,7 +178,7 @@ describe('TOPONYME MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/toponymes/${toponymeId}/numeros`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(response.body.length).toEqual(2);
@@ -209,7 +209,7 @@ describe('TOPONYME MODULE', () => {
       const response = await request(app.getHttpServer())
         .put(`/toponymes/${toponymeId}`)
         .send(changes)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(response.body._id).toEqual(toponymeId.toString());
@@ -265,7 +265,7 @@ describe('TOPONYME MODULE', () => {
       });
       const response = await request(app.getHttpServer())
         .put(`/toponymes/${toponymeId}/soft-delete`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(response.body._deleted).not.toBeNull();
@@ -305,7 +305,7 @@ describe('TOPONYME MODULE', () => {
       });
       const response = await request(app.getHttpServer())
         .put(`/toponymes/${toponymeId}/restore`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(response.body._deleted).toBeNull();
@@ -343,7 +343,7 @@ describe('TOPONYME MODULE', () => {
       });
       await request(app.getHttpServer())
         .delete(`/toponymes/${toponymeId}`)
-        .set('authorization', `Token ${token}`)
+        .set('authorization', `Bearer ${token}`)
         .expect(204);
 
       const voie = await toponymeModel.findOne(toponymeId);

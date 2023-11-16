@@ -13,9 +13,9 @@ import {
   ApiParam,
   ApiTags,
   ApiResponse,
-  ApiHeader,
   ApiBody,
   ApiOperation,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
@@ -37,7 +37,7 @@ export class HabilitationController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: 200 })
-  @ApiHeader({ name: 'Token' })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async getHabilitation(@Req() req: CustomRequest, @Res() res: Response) {
     try {
@@ -58,7 +58,7 @@ export class HabilitationController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: 201 })
-  @ApiHeader({ name: 'Token' })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createHabilitation(@Req() req: CustomRequest, @Res() res: Response) {
     const habilitation = await this.habilitationService.createOne(
@@ -75,7 +75,7 @@ export class HabilitationController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: 200 })
-  @ApiHeader({ name: 'Token' })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async sendPinCode(@Req() req: CustomRequest, @Res() res: Response) {
     const sendPinCodeResponse = await this.habilitationService.sendPinCode(
@@ -96,7 +96,7 @@ export class HabilitationController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: ValidatePinCodeDTO, required: true })
   @ApiResponse({ status: 200 })
-  @ApiHeader({ name: 'Token' })
+  @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async validatePinCode(
     @Req() req: CustomRequest,

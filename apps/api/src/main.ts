@@ -38,7 +38,7 @@ async function bootstrap() {
     .setVersion('2.0')
     .addBearerAuth(
       {
-        description: `Please enter token in following format: Token xxx`,
+        description: `Please enter the authentication token`,
         name: 'Authorization',
         type: 'http',
         in: 'Header',

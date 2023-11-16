@@ -8,13 +8,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
-import {
-  ApiParam,
-  ApiTags,
-  ApiQuery,
-  ApiHeader,
-  ApiOperation,
-} from '@nestjs/swagger';
+import { ApiParam, ApiTags, ApiQuery, ApiOperation } from '@nestjs/swagger';
 import * as geojsonvt from 'geojson-vt';
 import * as vtpbf from 'vt-pbf';
 import * as zlib from 'zlib';
@@ -43,7 +37,6 @@ export class TilesController {
   @ApiParam({ name: 'x', required: true, type: String })
   @ApiParam({ name: 'y', required: true, type: String })
   @ApiQuery({ name: 'colorblindMode', type: Boolean })
-  @ApiHeader({ name: 'Token' })
   async getTiles(
     @Req() req: CustomRequest,
     @Param('z') z: string,
