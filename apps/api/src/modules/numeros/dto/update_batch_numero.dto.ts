@@ -4,25 +4,25 @@ import { Types } from 'mongoose';
 import {
   IsMongoId,
   ValidateNested,
-  ArrayNotEmpty,
   IsNotEmptyObject,
+  IsOptional,
 } from 'class-validator';
 
-import { UpdateBatchNumeroChnageDto } from '@/modules/numeros/dto/update_batch_numero_change.dto';
+import { UpdateBatchNumeroChangeDto } from '@/modules/numeros/dto/update_batch_numero_change.dto';
 
 export class UpdateBatchNumeroDto {
-  @ArrayNotEmpty()
+  @IsOptional()
   @IsMongoId({ each: true })
-  @ApiProperty({ required: true, nullable: false, isArray: true })
+  @ApiProperty({ required: false, nullable: true, isArray: true })
   numerosIds?: Types.ObjectId[];
 
   @IsNotEmptyObject()
   @ValidateNested()
-  @Type(() => UpdateBatchNumeroChnageDto)
+  @Type(() => UpdateBatchNumeroChangeDto)
   @ApiProperty({
-    type: () => UpdateBatchNumeroChnageDto,
+    type: () => UpdateBatchNumeroChangeDto,
     required: true,
     nullable: false,
   })
-  changes?: UpdateBatchNumeroChnageDto;
+  changes?: UpdateBatchNumeroChangeDto;
 }

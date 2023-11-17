@@ -271,6 +271,14 @@ export class NumeroService {
     baseLocale: BaseLocale,
     { numerosIds, changes }: UpdateBatchNumeroDto,
   ): Promise<any> {
+    if (!numerosIds) {
+      const allNumeros = await this.findMany(
+        { _bal: baseLocale._id },
+        { _id: 1 },
+      );
+      const allNumerosIds = allNumeros.map((n) => n._id);
+      numerosIds = allNumerosIds;
+    }
     const { voieIds, toponymeIds } =
       await this.getDistinctVoiesAndToponymesByNumeroIds(
         numerosIds,
