@@ -265,23 +265,33 @@ describe('BASE LOCAL MODULE', () => {
       expect(balAfter._updated).not.toEqual(_updated.toISOString());
     });
 
-    it('Batch 400 without numeroIds', async () => {
+    it('Batch 200 without numeroIds (certify all numeros)', async () => {
       const balId = await createBal();
+      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const numeroId = await createNumero({
+        _bal: balId,
+        voie: voieId,
+        numero: 99,
+        positions: createPositions(),
+        certifie: false,
+      });
 
-      const updateBtach: UpdateBatchNumeroDto = {
-        numerosIds: [],
+      const updateBatch: UpdateBatchNumeroDto = {
         changes: {
-          positionType: PositionTypeEnum.DELIVRANCE_POSTALE,
           certifie: true,
-          comment: 'coucou',
         },
       };
 
       await request(app.getHttpServer())
         .put(`/bases-locales/${balId}/numeros/batch`)
-        .send(updateBtach)
+        .send(updateBatch)
         .set('authorization', `Bearer ${token}`)
-        .expect(400);
+        .expect(200);
+
+      const numeroAfter: Numero = await numeroModel.findOne({
+        _id: numeroId,
+      });
+      expect(numeroAfter.certifie).toBeTruthy();
     });
 
     it('Batch 400 without changes', async () => {
