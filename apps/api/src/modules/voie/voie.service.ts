@@ -148,6 +148,8 @@ export class VoieService {
           code: rawVoie.code || null,
           commune: rawVoie.commune,
           nomAlt: getNomAltDefault(rawVoie.nomAlt),
+          typeNumerotation: rawVoie.typeNumerotation,
+          trace: rawVoie.trace || null,
         } as Partial<Voie>;
 
         if (rawVoie._updated && rawVoie._created) {

@@ -199,6 +199,8 @@ export class ToponymeService {
           _id: rawToponyme._id,
           _bal: baseLocale._id,
           nom: cleanNom(rawToponyme.nom),
+          positions: rawToponyme.positions || [],
+          parcelles: rawToponyme.parcelles || [],
           code: rawToponyme.code || null,
           commune: rawToponyme.commune,
           nomAlt: getNomAltDefault(rawToponyme.nomAlt),

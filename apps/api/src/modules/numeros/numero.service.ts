@@ -106,6 +106,9 @@ export class NumeroService {
 
         const numero = {
           _bal: baseLocale._id,
+          numero: rawNumero.numero,
+          comment: rawNumero.comment,
+          toponyme: rawNumero.toponyme,
           commune: rawNumero.commune,
           voie: rawNumero.voie,
           ...(rawNumero.suffixe && {
