@@ -5,7 +5,7 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
+import { FilterQuery, Model, ProjectionType, SortOrder, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { omit, uniq } from 'lodash';
 
@@ -66,10 +66,15 @@ export class NumeroService {
   async findMany(
     filter: FilterQuery<Numero>,
     projection: ProjectionType<Numero> = null,
+    sort: { [key: string]: SortOrder } = null,
   ): Promise<Numero[]> {
     const query = this.numeroModel.find(filter);
     if (projection) {
       query.projection(projection);
+      query.sort();
+    }
+    if (sort) {
+      query.sort(sort);
     }
 
     return query.exec();

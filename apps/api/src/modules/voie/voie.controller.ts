@@ -128,10 +128,14 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiBearerAuth('admin-token')
   async findNumerosByVoie(@Req() req: CustomRequest, @Res() res: Response) {
-    const numeros: Numero[] = await this.numeroService.findMany({
-      voie: req.voie._id,
-      _deleted: null,
-    });
+    const numeros: Numero[] = await this.numeroService.findMany(
+      {
+        voie: req.voie._id,
+        _deleted: null,
+      },
+      null,
+      { numero: 1 },
+    );
     const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
   }
