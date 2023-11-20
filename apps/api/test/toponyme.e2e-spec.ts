@@ -263,6 +263,11 @@ describe('TOPONYME MODULE', () => {
         _bal: balId,
         commune: '97800',
       });
+      const numeroId = await createNumero({
+        numero: 1,
+        toponyme: toponymeId,
+      });
+
       const response = await request(app.getHttpServer())
         .put(`/toponymes/${toponymeId}/soft-delete`)
         .set('authorization', `Bearer ${token}`)
@@ -272,6 +277,9 @@ describe('TOPONYME MODULE', () => {
 
       const bal = await balModel.findOne(balId);
       expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+
+      const numero = await numeroModel.findOne(numeroId);
+      expect(numero.toponyme).toBeNull();
     });
 
     it('Return 403', async () => {

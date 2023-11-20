@@ -159,6 +159,14 @@ export class ToponymeService {
       { returnDocument: 'after' },
     );
 
+    await this.numeroService.updateMany(
+      { toponyme: toponyme._id },
+      {
+        toponyme: null,
+        _updated: toponymeUpdated._updated,
+      },
+    );
+
     // SET _updated OF TOPONYME
     await this.baseLocaleService.touch(toponyme._bal);
     return toponymeUpdated;
