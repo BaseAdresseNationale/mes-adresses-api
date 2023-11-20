@@ -14,12 +14,12 @@ import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 import { Position } from '@/shared/schemas/position.schema';
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
-import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
-import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
+import { UpdateBatchNumeroDTO } from '@/modules/numeros/dto/update_batch_numero.dto';
+import { DeleteBatchNumeroDTO } from '@/modules/numeros/dto/delete_batch_numero.dto';
 import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
-import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
+import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
-import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
+import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 
 const baseLocaleAdminProperties = ['token', 'emails'];
 const baseLocalePublicProperties = [
@@ -188,7 +188,7 @@ describe('BASE LOCAL MODULE', () => {
         toponyme: toponymeId2,
       });
 
-      const updateBtach: UpdateBatchNumeroDto = {
+      const updateBtach: UpdateBatchNumeroDTO = {
         numerosIds: [numeroId1, numeroId2],
         changes: {
           voie: voieId3,
@@ -276,7 +276,7 @@ describe('BASE LOCAL MODULE', () => {
         certifie: false,
       });
 
-      const updateBatch: UpdateBatchNumeroDto = {
+      const updateBatch: UpdateBatchNumeroDTO = {
         changes: {
           certifie: true,
         },
@@ -303,7 +303,7 @@ describe('BASE LOCAL MODULE', () => {
         numero: 99,
         positions: createPositions(),
       });
-      const updateBtach: UpdateBatchNumeroDto = {
+      const updateBtach: UpdateBatchNumeroDTO = {
         numerosIds: [numeroId],
         changes: {},
       };
@@ -324,7 +324,7 @@ describe('BASE LOCAL MODULE', () => {
         numero: 99,
         positions: createPositions(),
       });
-      const updateBtach: UpdateBatchNumeroDto = {
+      const updateBtach: UpdateBatchNumeroDTO = {
         numerosIds: [numeroId],
         changes: {
           voie: new Types.ObjectId(),
@@ -347,7 +347,7 @@ describe('BASE LOCAL MODULE', () => {
         numero: 99,
         positions: createPositions(),
       });
-      const updateBtach: UpdateBatchNumeroDto = {
+      const updateBtach: UpdateBatchNumeroDTO = {
         numerosIds: [numeroId],
         changes: {
           toponyme: new Types.ObjectId(),
@@ -390,7 +390,7 @@ describe('BASE LOCAL MODULE', () => {
         toponyme: toponymeId2,
       });
 
-      const deleteBtach: DeleteBatchNumeroDto = {
+      const deleteBtach: DeleteBatchNumeroDTO = {
         numerosIds: [numeroId1, numeroId2],
       };
 
@@ -439,7 +439,7 @@ describe('BASE LOCAL MODULE', () => {
 
     it('Soft Delete 400: Bad request', async () => {
       const balId = await createBal();
-      const deleteBtach: DeleteBatchNumeroDto = {
+      const deleteBtach: DeleteBatchNumeroDTO = {
         numerosIds: [],
       };
 
@@ -479,7 +479,7 @@ describe('BASE LOCAL MODULE', () => {
         toponyme: toponymeId2,
       });
 
-      const deleteBtach: DeleteBatchNumeroDto = {
+      const deleteBtach: DeleteBatchNumeroDTO = {
         numerosIds: [numeroId1, numeroId2],
       };
 
@@ -525,7 +525,7 @@ describe('BASE LOCAL MODULE', () => {
 
     it('Delete 400: Bad request', async () => {
       const balId = await createBal();
-      const deleteBtach: DeleteBatchNumeroDto = {
+      const deleteBtach: DeleteBatchNumeroDTO = {
         numerosIds: [],
       };
 
@@ -576,7 +576,7 @@ describe('BASE LOCAL MODULE', () => {
         commune: '91534',
       });
 
-      const deleteBtach: DeleteBatchNumeroDto = {
+      const deleteBtach: DeleteBatchNumeroDTO = {
         numerosIds: [numeroId1, numeroId2],
       };
 
@@ -637,7 +637,7 @@ describe('BASE LOCAL MODULE', () => {
         _updated: new Date('2000-01-01'),
       });
 
-      const deleteBtach: DeleteBatchNumeroDto = {
+      const deleteBtach: DeleteBatchNumeroDTO = {
         numerosIds: [numeroId1, numeroId2],
       };
 
@@ -1235,7 +1235,7 @@ voie;rue de paris;1;1ter`;
         emails: ['me@domain.co'],
       });
 
-      const voie: CreateVoieDto = {
+      const voie: CreateVoieDTO = {
         nom: 'rue de la paix',
         nomAlt: null,
         trace: null,
@@ -1270,7 +1270,7 @@ voie;rue de paris;1;1ter`;
         emails: ['me@domain.co'],
       });
 
-      const voie: CreateVoieDto = {
+      const voie: CreateVoieDTO = {
         nom: 'rue de la paix',
         nomAlt: null,
         trace: null,
@@ -1320,7 +1320,7 @@ voie;rue de paris;1;1ter`;
         emails: ['me@domain.co'],
       });
 
-      const toponyme: CreateToponymeDto = {
+      const toponyme: CreateToponymeDTO = {
         nom: 'rue de la paix',
         nomAlt: null,
       };
@@ -1346,7 +1346,7 @@ voie;rue de paris;1;1ter`;
         emails: ['me@domain.co'],
       });
 
-      const toponyme: CreateToponymeDto = {
+      const toponyme: CreateToponymeDTO = {
         nom: 'rue de la paix',
         nomAlt: null,
       };

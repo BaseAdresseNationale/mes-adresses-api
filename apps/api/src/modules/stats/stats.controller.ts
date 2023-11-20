@@ -24,8 +24,8 @@ import {
   checkQueryDateFromTo,
   createDateObject,
 } from '@/modules/stats/utils/dates.utils';
-import { BasesLocalesStatusDto } from '@/modules/stats/dto/bases_locales_status.dto';
-import { BasesLocalesCreationDto } from '@/modules/stats/dto/bases_locales_creations.dto';
+import { BasesLocalesStatusDTO } from '@/modules/stats/dto/bases_locales_status.dto';
+import { BasesLocalesCreationDTO } from '@/modules/stats/dto/bases_locales_creations.dto';
 
 @ApiTags('stats')
 @Controller('stats')
@@ -61,11 +61,11 @@ export class StatsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: BasesLocalesStatusDto,
+    type: BasesLocalesStatusDTO,
     isArray: true,
   })
   async getBalsStatus(@Res() res: Response) {
-    const result: BasesLocalesStatusDto[] =
+    const result: BasesLocalesStatusDTO[] =
       await this.statsService.findBalsStatusRepartition();
     res.status(HttpStatus.OK).json(result);
   }
@@ -79,7 +79,7 @@ export class StatsController {
   @ApiQuery({ name: 'to', type: String, required: true })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: BasesLocalesCreationDto,
+    type: BasesLocalesCreationDTO,
     isArray: true,
   })
   async getBalsCreations(
@@ -89,7 +89,7 @@ export class StatsController {
   ) {
     checkQueryDateFromTo(from, to);
     const dates: { from: Date; to: Date } = createDateObject(from, to);
-    const result: BasesLocalesCreationDto[] =
+    const result: BasesLocalesCreationDTO[] =
       await this.statsService.findBalsCreationByDays(dates);
     res.status(HttpStatus.OK).json(result);
   }

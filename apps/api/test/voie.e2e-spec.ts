@@ -12,8 +12,8 @@ import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 
 import { VoieModule } from '@/modules/voie/voie.module';
-import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
-import { UpdateVoieDto } from '@/modules/voie/dto/update_voie.dto';
+import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
+import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 
 describe('VOIE MODULE', () => {
@@ -168,7 +168,7 @@ describe('VOIE MODULE', () => {
     it('Create 201 numero', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
-      const createdNumero: CreateNumeroDto = {
+      const createdNumero: CreateNumeroDTO = {
         numero: 1,
         positions: [
           {
@@ -210,7 +210,7 @@ describe('VOIE MODULE', () => {
     it('Create 201 numero with meta', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
-      const createdNumero: CreateNumeroDto = {
+      const createdNumero: CreateNumeroDTO = {
         numero: 1,
         suffixe: 'bis',
         parcelles: ['97613000AS0120'],
@@ -261,7 +261,7 @@ describe('VOIE MODULE', () => {
         _bal: balId,
         _deleted: new Date(),
       });
-      const createdNumero: CreateNumeroDto = {
+      const createdNumero: CreateNumeroDTO = {
         numero: 1,
         positions: [
           {
@@ -300,7 +300,7 @@ describe('VOIE MODULE', () => {
         nom: 'rue de la paix',
         _bal: balId,
       });
-      const createdNumero: CreateNumeroDto = {
+      const createdNumero: CreateNumeroDTO = {
         numero: 1,
         toponyme: new Types.ObjectId(),
         positions: [
@@ -340,7 +340,7 @@ describe('VOIE MODULE', () => {
         nom: 'rue de la paix',
         _bal: balId,
       });
-      const createdNumero: CreateNumeroDto = {
+      const createdNumero: CreateNumeroDTO = {
         numero: 1,
       };
 
@@ -365,7 +365,7 @@ describe('VOIE MODULE', () => {
         nom: 'rue de la paix',
         _bal: balId,
       });
-      const createdNumero: CreateNumeroDto = {
+      const createdNumero: CreateNumeroDTO = {
         positions: [
           {
             type: PositionTypeEnum.ENTREE,
@@ -459,7 +459,7 @@ describe('VOIE MODULE', () => {
     it('Return 200', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
-      const changes: UpdateVoieDto = {
+      const changes: UpdateVoieDTO = {
         nom: 'coucou',
         nomAlt: null,
         typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
@@ -492,7 +492,7 @@ describe('VOIE MODULE', () => {
     it('Return 200 trace empty', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
-      const changes: UpdateVoieDto = {
+      const changes: UpdateVoieDTO = {
         nom: 'coucou',
         nomAlt: null,
         typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
@@ -523,7 +523,7 @@ describe('VOIE MODULE', () => {
         _bal: balId,
         trace: null,
       });
-      const changes: UpdateVoieDto = {
+      const changes: UpdateVoieDTO = {
         nom: 'coucou',
         nomAlt: null,
         typeNumerotation: TypeNumerotationEnum.NUMERIQUE,

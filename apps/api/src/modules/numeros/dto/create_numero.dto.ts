@@ -13,7 +13,7 @@ import {
 
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 
-export class CreateNumeroDto {
+export class CreateNumeroDTO {
   @Validate(ValidatorBal, ['numero'])
   @ApiProperty({ required: true, nullable: false })
   numero?: number;

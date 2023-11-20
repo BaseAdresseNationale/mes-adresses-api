@@ -15,10 +15,10 @@ import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { normalizeSuffixe } from '@/shared/utils/numero.utils';
 
-import { UpdateNumeroDto } from '@/modules/numeros/dto/update_numero.dto';
-import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
-import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
-import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
+import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
+import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
+import { UpdateBatchNumeroDTO } from '@/modules/numeros/dto/update_batch_numero.dto';
+import { DeleteBatchNumeroDTO } from '@/modules/numeros/dto/delete_batch_numero.dto';
 import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
@@ -143,7 +143,7 @@ export class NumeroService {
 
   public async create(
     voie: Voie,
-    createNumeroDto: CreateNumeroDto,
+    createNumeroDto: CreateNumeroDTO,
   ): Promise<Numero> {
     // CHECK IF VOIE EXIST
     if (voie._deleted) {
@@ -189,7 +189,7 @@ export class NumeroService {
 
   public async update(
     numero: Numero,
-    updateNumeroDto: UpdateNumeroDto,
+    updateNumeroDto: UpdateNumeroDTO,
   ): Promise<Numero> {
     // CHECK IF VOIE EXIST
     if (
@@ -272,7 +272,7 @@ export class NumeroService {
 
   public async updateBatch(
     baseLocale: BaseLocale,
-    { numerosIds, changes }: UpdateBatchNumeroDto,
+    { numerosIds, changes }: UpdateBatchNumeroDTO,
   ): Promise<any> {
     if (!numerosIds) {
       const allNumeros = await this.findMany(
@@ -357,7 +357,7 @@ export class NumeroService {
 
   public async softDeleteBatch(
     baseLocale: BaseLocale,
-    { numerosIds }: DeleteBatchNumeroDto,
+    { numerosIds }: DeleteBatchNumeroDTO,
   ): Promise<any> {
     const { voieIds, toponymeIds } =
       await this.getDistinctVoiesAndToponymesByNumeroIds(
@@ -399,7 +399,7 @@ export class NumeroService {
 
   public async deleteBatch(
     baseLocale: BaseLocale,
-    { numerosIds }: DeleteBatchNumeroDto,
+    { numerosIds }: DeleteBatchNumeroDTO,
   ): Promise<any> {
     const { voieIds, toponymeIds } =
       await this.getDistinctVoiesAndToponymesByNumeroIds(

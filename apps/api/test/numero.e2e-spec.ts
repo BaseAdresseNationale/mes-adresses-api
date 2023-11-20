@@ -11,7 +11,7 @@ import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 
 import { NumeroModule } from '@/modules/numeros/numero.module';
-import { UpdateNumeroDto } from '@/modules/numeros/dto/update_numero.dto';
+import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 
 describe('NUMERO', () => {
   let app: INestApplication;
@@ -167,7 +167,7 @@ describe('NUMERO', () => {
         numero: 99,
       });
 
-      const updatedNumero: UpdateNumeroDto = {
+      const updatedNumero: UpdateNumeroDTO = {
         numero: 100,
       };
 
@@ -192,7 +192,7 @@ describe('NUMERO', () => {
     });
 
     it('Update 404 Numero Not Found', async () => {
-      const updatedNumero: UpdateNumeroDto = {
+      const updatedNumero: UpdateNumeroDTO = {
         numero: 100,
       };
 
@@ -213,7 +213,7 @@ describe('NUMERO', () => {
         numero: 99,
       });
 
-      const updatedNumero: UpdateNumeroDto = {
+      const updatedNumero: UpdateNumeroDTO = {
         voie: new Types.ObjectId(),
       };
 
@@ -233,7 +233,7 @@ describe('NUMERO', () => {
         numero: 99,
       });
 
-      const updatedNumero: UpdateNumeroDto = {
+      const updatedNumero: UpdateNumeroDTO = {
         toponyme: new Types.ObjectId(),
       };
 
@@ -253,7 +253,7 @@ describe('NUMERO', () => {
         numero: 99,
       });
 
-      const updatedNumero: UpdateNumeroDto = {
+      const updatedNumero: UpdateNumeroDTO = {
         numero: 100,
       };
 
@@ -282,7 +282,7 @@ describe('NUMERO', () => {
       const voieDbBefore = await voieModel.findOne({ _id: voieId });
       const balDbBefore = await balModel.findOne({ _id: balId });
 
-      const updatedNumero: UpdateNumeroDto = {
+      const updatedNumero: UpdateNumeroDTO = {
         numero: 100,
       };
 
@@ -307,7 +307,7 @@ describe('NUMERO', () => {
         numero: 99,
       });
 
-      const updatedNumero: UpdateNumeroDto = {
+      const updatedNumero: UpdateNumeroDTO = {
         numero: 100,
       };
 
@@ -338,7 +338,7 @@ describe('NUMERO', () => {
       const numeroDbBefore = await numeroModel.findOne({ _id: numeroId });
       const voieDbBefore = await voieModel.findOne({ _id: voieId });
 
-      const updatedNumero: UpdateNumeroDto = {
+      const updatedNumero: UpdateNumeroDTO = {
         positions: [
           {
             type: PositionTypeEnum.ENTREE,
@@ -386,7 +386,7 @@ describe('NUMERO', () => {
 
       const voie1DbBefore: Voie = await voieModel.findOne({ _id: voieId1 });
 
-      const updatedNumero: UpdateNumeroDto = {
+      const updatedNumero: UpdateNumeroDTO = {
         voie: voieId2,
       };
 

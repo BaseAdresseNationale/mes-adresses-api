@@ -36,17 +36,17 @@ import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { CustomRequest } from '@/lib/types/request.type';
-import { UpdateBatchNumeroDto } from '@/modules/numeros/dto/update_batch_numero.dto';
+import { UpdateBatchNumeroDTO } from '@/modules/numeros/dto/update_batch_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
-import { DeleteBatchNumeroDto } from '@/modules/numeros/dto/delete_batch_numero.dto';
+import { DeleteBatchNumeroDTO } from '@/modules/numeros/dto/delete_batch_numero.dto';
 import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
-import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
-import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
-import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
+import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
+import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';
+import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
-import { ExtendedBaseLocale } from './dto/extended_base_locale';
-import { ExtendedVoie } from '../voie/dto/extended_voie.dto';
+import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
+import { ExtendedVoieDTO } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
@@ -136,11 +136,11 @@ export class BaseLocaleController {
       offset,
     );
     const count: number = await this.baseLocaleService.count(filters);
-    const results: Omit<ExtendedBaseLocale, 'token' | 'emails'>[] = [];
+    const results: Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'>[] = [];
     for (const bal of basesLocales) {
-      const balExtended: ExtendedBaseLocale =
+      const balExtended: ExtendedBaseLocaleDTO =
         await this.baseLocaleService.extendWithNumeros(bal);
-      const balExtendedFiltered: Omit<ExtendedBaseLocale, 'token' | 'emails'> =
+      const balExtendedFiltered: Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'> =
         filterSensitiveFields(balExtended);
       results.push(balExtendedFiltered);
     }
@@ -161,7 +161,7 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: ExtendedBaseLocale,
+    type: ExtendedBaseLocaleDTO,
   })
   @ApiBearerAuth('admin-token')
   async findOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
@@ -433,13 +433,13 @@ export class BaseLocaleController {
     operationId: 'updateNumeros',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: UpdateBatchNumeroDto, required: true })
+  @ApiBody({ type: UpdateBatchNumeroDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async batchNumeros(
     @Req() req: CustomRequest,
-    @Body() updateBatchNumeroDto: UpdateBatchNumeroDto,
+    @Body() updateBatchNumeroDto: UpdateBatchNumeroDTO,
     @Res() res: Response,
   ) {
     const result: any = await this.numeroService.updateBatch(
@@ -455,13 +455,13 @@ export class BaseLocaleController {
     operationId: 'softDeleteNumeros',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: DeleteBatchNumeroDto, required: true })
+  @ApiBody({ type: DeleteBatchNumeroDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDeleteNumeros(
     @Req() req: CustomRequest,
-    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDto,
+    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDTO,
     @Res() res: Response,
   ) {
     const result: any = await this.numeroService.softDeleteBatch(
@@ -477,13 +477,13 @@ export class BaseLocaleController {
     operationId: 'deleteNumeros',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: DeleteBatchNumeroDto, required: true })
+  @ApiBody({ type: DeleteBatchNumeroDTO, required: true })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async deleteNumeros(
     @Req() req: CustomRequest,
-    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDto,
+    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDTO,
     @Res() res: Response,
   ) {
     await this.numeroService.deleteBatch(req.baseLocale, deleteBatchNumeroDto);
@@ -506,7 +506,7 @@ export class BaseLocaleController {
       _bal: req.baseLocale._id,
       _deleted: null,
     });
-    const extendedVoie: ExtendedVoie[] =
+    const extendedVoie: ExtendedVoieDTO[] =
       await this.voieService.extendVoies(voies);
     res.status(HttpStatus.OK).json(extendedVoie);
   }
@@ -514,13 +514,13 @@ export class BaseLocaleController {
   @Post(':baseLocaleId/voies')
   @ApiOperation({ summary: 'Create Voie in Bal', operationId: 'createVoie' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: CreateVoieDto, required: true })
+  @ApiBody({ type: CreateVoieDTO, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Voie, isArray: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createVoie(
     @Req() req: CustomRequest,
-    @Body() createVoieDto: CreateVoieDto,
+    @Body() createVoieDto: CreateVoieDTO,
     @Res() res: Response,
   ) {
     const voie: Voie = await this.voieService.create(
@@ -536,14 +536,14 @@ export class BaseLocaleController {
     operationId: 'findBaseLocaleToponymes',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme, isArray: true })
+  @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponymeDTO, isArray: true })
   @ApiBearerAuth('admin-token')
   async findToponymeByBal(@Req() req: CustomRequest, @Res() res: Response) {
     const toponymes: Toponyme[] = await this.toponymeService.findMany({
       _bal: req.baseLocale._id,
       _deleted: null,
     });
-    const extendedToponyme: ExtentedToponyme[] =
+    const extendedToponyme: ExtentedToponymeDTO[] =
       await this.toponymeService.extendToponymes(toponymes);
     res.status(HttpStatus.OK).json(extendedToponyme);
   }
@@ -554,13 +554,13 @@ export class BaseLocaleController {
     operationId: 'createToponyme',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: CreateToponymeDto, required: true })
+  @ApiBody({ type: CreateToponymeDTO, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme, isArray: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async create(
     @Req() req: CustomRequest,
-    @Body() createToponymeDto: CreateToponymeDto,
+    @Body() createToponymeDto: CreateToponymeDTO,
     @Res() res: Response,
   ) {
     const toponyme: Toponyme = await this.toponymeService.create(

@@ -12,7 +12,7 @@ import {
 import { LineString } from '@/shared/schemas/geometry/line_string.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 
-export class CreateVoieDto {
+export class CreateVoieDTO {
   @Validate(ValidatorBal, ['voie_nom'])
   @ApiProperty({ required: true, nullable: false })
   nom: string;

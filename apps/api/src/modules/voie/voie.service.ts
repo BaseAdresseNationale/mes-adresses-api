@@ -13,10 +13,10 @@ import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
-import { ExtendedVoie } from '@/modules/voie/dto/extended_voie.dto';
-import { UpdateVoieDto } from '@/modules/voie/dto/update_voie.dto';
-import { CreateVoieDto } from '@/modules/voie/dto/create_voie.dto';
-import { RestoreVoieDto } from '@/modules/voie/dto/restore_voie.dto';
+import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
+import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
+import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
+import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
@@ -30,7 +30,7 @@ import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { BBox as BboxTurf } from '@turf/helpers';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
-import { CreateToponymeDto } from '../toponyme/dto/create_toponyme.dto';
+import { CreateToponymeDTO } from '../toponyme/dto/create_toponyme.dto';
 import {
   getTilesByLineString,
   getTilesByPosition,
@@ -81,7 +81,7 @@ export class VoieService {
     return this.voieModel.deleteMany(filters);
   }
 
-  async extendVoies(voies: Voie[]): Promise<ExtendedVoie[]> {
+  async extendVoies(voies: Voie[]): Promise<ExtendedVoieDTO[]> {
     const numeros = await this.numeroService.findMany({
       voie: { $in: voies.map(({ _id }) => _id) },
     });
@@ -94,7 +94,7 @@ export class VoieService {
     }));
   }
 
-  async extendVoie(voie: Voie): Promise<ExtendedVoie> {
+  async extendVoie(voie: Voie): Promise<ExtendedVoieDTO> {
     const numeros = await this.numeroService.findMany({
       voie: voie._id,
     });
@@ -107,7 +107,7 @@ export class VoieService {
 
   public async create(
     bal: BaseLocale,
-    createVoieDto: CreateVoieDto,
+    createVoieDto: CreateVoieDTO,
   ): Promise<Voie> {
     // CREATE OBJECT VOIE
     const voie: Partial<Voie> = {
@@ -228,7 +228,7 @@ export class VoieService {
       .exec();
   }
 
-  async update(voie: Voie, updateVoieDto: UpdateVoieDto): Promise<Voie> {
+  async update(voie: Voie, updateVoieDto: UpdateVoieDTO): Promise<Voie> {
     if (updateVoieDto.nom) {
       updateVoieDto.nom = cleanNom(updateVoieDto.nom);
     }
@@ -289,7 +289,7 @@ export class VoieService {
 
   public async restore(
     voie: Voie,
-    { numerosIds }: RestoreVoieDto,
+    { numerosIds }: RestoreVoieDTO,
   ): Promise<Voie> {
     const updatedVoie = await this.voieModel.findOneAndUpdate(
       { _id: voie._id },
@@ -367,7 +367,7 @@ export class VoieService {
     );
 
     // CREATE TOPONYME
-    const payload: CreateToponymeDto = {
+    const payload: CreateToponymeDTO = {
       nom: voie.nom,
       nomAlt: voie.nomAlt,
     };

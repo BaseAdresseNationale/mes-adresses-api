@@ -11,7 +11,7 @@ import {
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { Position } from '@/shared/schemas/position.schema';
 
-export class UpdateToponymeDto {
+export class UpdateToponymeDTO {
   @IsOptional()
   @Validate(ValidatorBal, ['nom_voie'])
   @ApiProperty({ required: false, nullable: false })

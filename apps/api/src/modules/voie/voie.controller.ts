@@ -30,10 +30,10 @@ import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { VoieService } from '@/modules/voie/voie.service';
-import { ExtendedVoie } from '@/modules/voie/dto/extended_voie.dto';
-import { UpdateVoieDto } from '@/modules/voie/dto/update_voie.dto';
-import { RestoreVoieDto } from '@/modules/voie/dto/restore_voie.dto';
-import { CreateNumeroDto } from '@/modules/numeros/dto/create_numero.dto';
+import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
+import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
+import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
+import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 
@@ -49,10 +49,10 @@ export class VoieController {
   @Get(':voieId')
   @ApiOperation({ summary: 'Find Voie by id', operationId: 'findVoie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoie })
+  @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoieDTO })
   @ApiBearerAuth('admin-token')
   async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const voieExtended: ExtendedVoie = await this.voieService.extendVoie(
+    const voieExtended: ExtendedVoieDTO = await this.voieService.extendVoie(
       req.voie,
     );
     res.status(HttpStatus.OK).json(voieExtended);
@@ -62,12 +62,12 @@ export class VoieController {
   @ApiOperation({ summary: 'Update Voie by id', operationId: 'updateVoie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
-  @ApiBody({ type: UpdateVoieDto, required: true })
+  @ApiBody({ type: UpdateVoieDTO, required: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
-    @Body() updateVoieDto: UpdateVoieDto,
+    @Body() updateVoieDto: UpdateVoieDTO,
     @Res() res: Response,
   ) {
     const result: Voie = await this.voieService.update(req.voie, updateVoieDto);
@@ -91,13 +91,13 @@ export class VoieController {
   @Put(':voieId/restore')
   @ApiOperation({ summary: 'Restore Voie by id', operationId: 'restoreVoie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
-  @ApiBody({ type: RestoreVoieDto, required: true })
+  @ApiBody({ type: RestoreVoieDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async restore(
     @Req() req: CustomRequest,
-    @Body() restoreVoieDto: RestoreVoieDto,
+    @Body() restoreVoieDto: RestoreVoieDTO,
     @Res() res: Response,
   ) {
     const result: Voie = await this.voieService.restore(
@@ -142,13 +142,13 @@ export class VoieController {
     operationId: 'createNumero',
   })
   @ApiParam({ name: 'voieId', required: true, type: String })
-  @ApiBody({ type: CreateNumeroDto, required: true })
+  @ApiBody({ type: CreateNumeroDTO, required: true })
   @ApiResponse({ status: HttpStatus.CREATED, type: Numero })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createNumero(
     @Req() req: CustomRequest,
-    @Body() createNumeroDto: CreateNumeroDto,
+    @Body() createNumeroDto: CreateNumeroDTO,
     @Res() res: Response,
   ) {
     const result: Numero = await this.numeroService.create(

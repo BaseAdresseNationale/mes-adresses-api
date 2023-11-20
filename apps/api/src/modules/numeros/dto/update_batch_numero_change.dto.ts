@@ -12,7 +12,7 @@ import {
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 
-export class UpdateBatchNumeroChangeDto {
+export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
   @MaxLength(5000)
   @ApiProperty({ required: false, nullable: true })

@@ -13,7 +13,7 @@ import {
 import { Position } from '@/shared/schemas/position.schema';
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 
-export class UpdateNumeroDto {
+export class UpdateNumeroDTO {
   @IsOptional()
   @Validate(ValidatorBal, ['numero'])
   @ApiProperty({ required: false, nullable: false })

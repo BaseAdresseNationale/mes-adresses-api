@@ -25,7 +25,7 @@ import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from '@/modules/numeros/numero.service';
-import { UpdateNumeroDto } from '@/modules/numeros/dto/update_numero.dto';
+import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 
 @ApiTags('numeros')
 @Controller('numeros')
@@ -54,12 +54,12 @@ export class NumeroController {
   })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
-  @ApiBody({ type: UpdateNumeroDto, required: true })
+  @ApiBody({ type: UpdateNumeroDTO, required: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
-    @Body() updateNumeroDto: UpdateNumeroDto,
+    @Body() updateNumeroDto: UpdateNumeroDTO,
     @Res() res: Response,
   ) {
     const result: Numero = await this.numeroService.update(

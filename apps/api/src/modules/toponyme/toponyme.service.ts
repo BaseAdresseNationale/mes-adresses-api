@@ -12,10 +12,10 @@ import { groupBy } from 'lodash';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
-import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
+import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
-import { UpdateToponymeDto } from '@/modules/toponyme/dto/update_toponyme.dto';
-import { CreateToponymeDto } from '@/modules/toponyme/dto/create_toponyme.dto';
+import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
+import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
@@ -75,7 +75,7 @@ export class ToponymeService {
     return this.toponymeModel.deleteMany(filters);
   }
 
-  async extendToponymes(toponymes: Toponyme[]): Promise<ExtentedToponyme[]> {
+  async extendToponymes(toponymes: Toponyme[]): Promise<ExtentedToponymeDTO[]> {
     const numeros = await this.numeroService.findMany({
       toponyme: { $in: toponymes.map(({ _id }) => _id) },
       _deleted: null,
@@ -89,7 +89,7 @@ export class ToponymeService {
     }));
   }
 
-  async extendToponyme(toponyme: Toponyme): Promise<ExtentedToponyme> {
+  async extendToponyme(toponyme: Toponyme): Promise<ExtentedToponymeDTO> {
     const numeros = await this.numeroService.findMany({
       toponyme: toponyme._id,
       _deleted: null,
@@ -103,7 +103,7 @@ export class ToponymeService {
 
   public async create(
     bal: BaseLocale,
-    createToponymeDto: CreateToponymeDto,
+    createToponymeDto: CreateToponymeDTO,
   ): Promise<Toponyme> {
     // CREATE OBJECT TOPONYME
     const toponyme: Partial<Toponyme> = {
@@ -127,7 +127,7 @@ export class ToponymeService {
 
   async update(
     toponyme: Toponyme,
-    updateToponymeDto: UpdateToponymeDto,
+    updateToponymeDto: UpdateToponymeDTO,
   ): Promise<Toponyme> {
     if (updateToponymeDto.nom) {
       updateToponymeDto.nom = cleanNom(updateToponymeDto.nom);

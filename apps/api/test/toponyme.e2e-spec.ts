@@ -11,7 +11,7 @@ import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
-import { UpdateToponymeDto } from '@/modules/toponyme/dto/update_toponyme.dto';
+import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 import { Position } from '@/shared/schemas/position.schema';
 
@@ -199,7 +199,7 @@ describe('TOPONYME MODULE', () => {
         _bal: balId,
         commune: '97800',
       });
-      const changes: UpdateToponymeDto = {
+      const changes: UpdateToponymeDTO = {
         nom: 'coucou',
         nomAlt: null,
         parcelles: ['12345000AA0002', '12345000AA0005'],
@@ -233,7 +233,7 @@ describe('TOPONYME MODULE', () => {
         commune: '97800',
       });
 
-      const changes: UpdateToponymeDto = {
+      const changes: UpdateToponymeDTO = {
         nom: 'coucou',
         nomAlt: null,
         parcelles: ['12345000AA0002', '12345000AA0005'],

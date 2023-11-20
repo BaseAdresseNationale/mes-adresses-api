@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { IsMongoId, ArrayNotEmpty } from 'class-validator';
 
-export class DeleteBatchNumeroDto {
+export class DeleteBatchNumeroDTO {
   @ArrayNotEmpty()
   @IsMongoId({ each: true })
   @ApiProperty({ required: true, nullable: false, isArray: true })

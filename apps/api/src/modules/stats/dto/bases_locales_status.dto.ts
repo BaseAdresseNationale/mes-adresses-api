@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 
-export class BasesLocalesStatusDto {
+export class BasesLocalesStatusDTO {
   @ApiProperty()
   status: Types.ObjectId;
 

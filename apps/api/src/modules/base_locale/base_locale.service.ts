@@ -29,7 +29,7 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { generateBase62String } from '@/lib/utils/token.utils';
-import { ExtendedBaseLocale } from './dto/extended_base_locale';
+import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
@@ -360,7 +360,7 @@ export class BaseLocaleService {
     return baseLocale;
   }
 
-  async extendWithNumeros(baseLocale: BaseLocale): Promise<ExtendedBaseLocale> {
+  async extendWithNumeros(baseLocale: BaseLocale): Promise<ExtendedBaseLocaleDTO> {
     const numeros = await this.numeroService.findMany(
       {
         _bal: baseLocale._id,

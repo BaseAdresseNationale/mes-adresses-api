@@ -6,8 +6,8 @@ import { format } from 'date-fns';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { BasesLocalesStatusDto } from '@/modules/stats/dto/bases_locales_status.dto';
-import { BasesLocalesCreationDto } from '@/modules/stats/dto/bases_locales_creations.dto';
+import { BasesLocalesStatusDTO } from '@/modules/stats/dto/bases_locales_status.dto';
+import { BasesLocalesCreationDTO } from '@/modules/stats/dto/bases_locales_creations.dto';
 
 @Injectable()
 export class StatsService {
@@ -35,7 +35,7 @@ export class StatsService {
     return this.baseLocaleService.findMany(filters, selector);
   }
 
-  public async findBalsStatusRepartition(): Promise<BasesLocalesStatusDto[]> {
+  public async findBalsStatusRepartition(): Promise<BasesLocalesStatusDTO[]> {
     const aggregation: PipelineStage[] = [
       { $group: { _id: '$status', count: { $sum: 1 } } },
     ];
@@ -48,7 +48,7 @@ export class StatsService {
   public async findBalsCreationByDays(dates: {
     from: Date;
     to: Date;
-  }): Promise<BasesLocalesCreationDto[]> {
+  }): Promise<BasesLocalesCreationDTO[]> {
     const filter: FilterQuery<BaseLocale> = {
       _created: {
         $gte: dates.from,

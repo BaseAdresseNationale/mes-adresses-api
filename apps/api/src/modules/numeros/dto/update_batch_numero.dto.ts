@@ -8,9 +8,9 @@ import {
   IsOptional,
 } from 'class-validator';
 
-import { UpdateBatchNumeroChangeDto } from '@/modules/numeros/dto/update_batch_numero_change.dto';
+import { UpdateBatchNumeroChangeDTO } from '@/modules/numeros/dto/update_batch_numero_change.dto';
 
-export class UpdateBatchNumeroDto {
+export class UpdateBatchNumeroDTO {
   @IsOptional()
   @IsMongoId({ each: true })
   @ApiProperty({ required: false, nullable: true, isArray: true })
@@ -18,11 +18,11 @@ export class UpdateBatchNumeroDto {
 
   @IsNotEmptyObject()
   @ValidateNested()
-  @Type(() => UpdateBatchNumeroChangeDto)
+  @Type(() => UpdateBatchNumeroChangeDTO)
   @ApiProperty({
-    type: () => UpdateBatchNumeroChangeDto,
+    type: () => UpdateBatchNumeroChangeDTO,
     required: true,
     nullable: false,
   })
-  changes?: UpdateBatchNumeroChangeDto;
+  changes?: UpdateBatchNumeroChangeDTO;
 }

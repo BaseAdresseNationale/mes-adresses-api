@@ -1,10 +1,10 @@
 import { omit } from 'lodash';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { ExtendedBaseLocale } from '../dto/extended_base_locale';
+import { ExtendedBaseLocaleDTO } from '../dto/extended_base_locale.dto';
 
 export function filterSensitiveFields(
-  baseLocale: BaseLocale | ExtendedBaseLocale,
-): Omit<BaseLocale | ExtendedBaseLocale, 'token' | 'emails'> {
+  baseLocale: BaseLocale | ExtendedBaseLocaleDTO,
+): Omit<BaseLocale | ExtendedBaseLocaleDTO, 'token' | 'emails'> {
   return omit(baseLocale, 'token', 'emails');
 }
 

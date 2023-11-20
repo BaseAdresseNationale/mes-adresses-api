@@ -28,8 +28,8 @@ import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
-import { ExtentedToponyme } from '@/modules/toponyme/dto/extended_toponyme.dto';
-import { UpdateToponymeDto } from '@/modules/toponyme/dto/update_toponyme.dto';
+import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';
+import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 
 @ApiTags('toponymes')
@@ -44,10 +44,10 @@ export class ToponymeController {
   @Get(':toponymeId')
   @ApiOperation({ summary: 'Find Toponyme by id', operationId: 'findToponyme' })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponyme })
+  @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponymeDTO })
   @ApiBearerAuth('admin-token')
   async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const toponymeExtended: ExtentedToponyme =
+    const toponymeExtended: ExtentedToponymeDTO =
       await this.toponymeService.extendToponyme(req.toponyme);
     res.status(HttpStatus.OK).json(toponymeExtended);
   }
@@ -59,12 +59,12 @@ export class ToponymeController {
   })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
-  @ApiBody({ type: UpdateToponymeDto, required: true })
+  @ApiBody({ type: UpdateToponymeDTO, required: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
-    @Body() updateToponymeDto: UpdateToponymeDto,
+    @Body() updateToponymeDto: UpdateToponymeDTO,
     @Res() res: Response,
   ) {
     const result: Toponyme = await this.toponymeService.update(
