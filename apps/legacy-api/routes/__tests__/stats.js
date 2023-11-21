@@ -3,7 +3,6 @@ const request = require('supertest')
 const express = require('express')
 const {MongoMemoryServer} = require('mongodb-memory-server')
 const mongo = require('../../util/mongo')
-const {prepareContoursCommunes} = require('../../util/contours-communes')
 const routes = require('../stats')
 
 function getApp() {
@@ -19,10 +18,6 @@ let mongod
 test.before('start server', async () => {
   mongod = await MongoMemoryServer.create()
   await mongo.connect(mongod.getUri())
-})
-
-test.before('prepare contours communes', async () => {
-  await prepareContoursCommunes()
 })
 
 test.after.always('cleanup', async () => {

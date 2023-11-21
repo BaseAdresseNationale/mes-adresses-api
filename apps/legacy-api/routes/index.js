@@ -96,14 +96,6 @@ app.param('toponymeId', w(async (req, res, next) => {
 
 // DONE
 app.route('/bases-locales')
-  .get(w(async (req, res) => {
-    const basesLocales = await BaseLocale.fetchAll()
-    const basesLocalesExpanded = await Promise.all(
-      basesLocales.map(baseLocale => expandBalWithNumeros(baseLocale))
-    )
-
-    res.send(basesLocalesExpanded.map(bal => BaseLocale.filterSensitiveFields(bal)))
-  }))
   .post(w(async (req, res) => {
     const baseLocale = await BaseLocale.create(req.body)
     const baseLocaleExpanded = await expandBalWithNumeros(baseLocale)
