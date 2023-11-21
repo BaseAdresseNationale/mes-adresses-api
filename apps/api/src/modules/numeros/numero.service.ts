@@ -441,7 +441,7 @@ export class NumeroService {
   }
 
   private async getDistinctVoiesAndToponymesByNumeroIds(
-    numeroIds: Types.ObjectId[],
+    numeroIds: Types.ObjectId[] | string[],
     _bal: Types.ObjectId,
   ): Promise<{ voieIds: Types.ObjectId[]; toponymeIds: Types.ObjectId[] }> {
     const voieIds = await this.numeroModel.distinct('voie', {

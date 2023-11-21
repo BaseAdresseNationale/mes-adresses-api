@@ -391,7 +391,7 @@ describe('BASE LOCAL MODULE', () => {
       });
 
       const deleteBtach: DeleteBatchNumeroDTO = {
-        numerosIds: [numeroId1, numeroId2],
+        numerosIds: [numeroId1.toString(), numeroId2.toString()],
       };
 
       const response = await request(app.getHttpServer())
@@ -480,7 +480,7 @@ describe('BASE LOCAL MODULE', () => {
       });
 
       const deleteBtach: DeleteBatchNumeroDTO = {
-        numerosIds: [numeroId1, numeroId2],
+        numerosIds: [numeroId1.toString(), numeroId2.toString()],
       };
 
       await request(app.getHttpServer())
@@ -577,7 +577,7 @@ describe('BASE LOCAL MODULE', () => {
       });
 
       const deleteBtach: DeleteBatchNumeroDTO = {
-        numerosIds: [numeroId1, numeroId2],
+        numerosIds: [numeroId1.toString(), numeroId2.toString()],
       };
 
       const response = await request(app.getHttpServer())
@@ -638,7 +638,7 @@ describe('BASE LOCAL MODULE', () => {
       });
 
       const deleteBtach: DeleteBatchNumeroDTO = {
-        numerosIds: [numeroId1, numeroId2],
+        numerosIds: [numeroId1.toString(), numeroId2.toString()],
       };
 
       const response = await request(app.getHttpServer())

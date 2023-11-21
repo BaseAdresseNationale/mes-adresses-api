@@ -62,6 +62,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
+import { Numero } from '@/shared/schemas/numero/numero.schema';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -140,8 +141,10 @@ export class BaseLocaleController {
     for (const bal of basesLocales) {
       const balExtended: ExtendedBaseLocaleDTO =
         await this.baseLocaleService.extendWithNumeros(bal);
-      const balExtendedFiltered: Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'> =
-        filterSensitiveFields(balExtended);
+      const balExtendedFiltered: Omit<
+        ExtendedBaseLocaleDTO,
+        'token' | 'emails'
+      > = filterSensitiveFields(balExtended);
       results.push(balExtendedFiltered);
     }
     const page: PageBaseLocaleDTO = {
@@ -363,7 +366,8 @@ export class BaseLocaleController {
     @Req() req: CustomRequest,
     @Res() res: Response,
   ) {
-    const parcelles = await this.baseLocaleService.getParcelles(req.baseLocale);
+    const parcelles: (Toponyme | Numero)[] =
+      await this.baseLocaleService.getParcelles(req.baseLocale);
 
     res.status(HttpStatus.OK).json(parcelles);
   }
@@ -418,7 +422,6 @@ export class BaseLocaleController {
   @ApiResponse({
     type: AllDeletedInBalDTO,
     status: HttpStatus.OK,
-    isArray: true,
   })
   @ApiBearerAuth('admin-token')
   async findAllDeletedByBal(@Req() req: CustomRequest, @Res() res: Response) {
@@ -536,7 +539,11 @@ export class BaseLocaleController {
     operationId: 'findBaseLocaleToponymes',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: ExtentedToponymeDTO, isArray: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: ExtentedToponymeDTO,
+    isArray: true,
+  })
   @ApiBearerAuth('admin-token')
   async findToponymeByBal(@Req() req: CustomRequest, @Res() res: Response) {
     const toponymes: Toponyme[] = await this.toponymeService.findMany({

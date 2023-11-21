@@ -24,6 +24,7 @@ import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { HabilitationService } from './habilitation.service';
 import { ValidatePinCodeDTO } from './dto/validate-pin-code.dto';
+import { HabilitationDTO } from './dto/habilitation.dto';
 
 @ApiTags('habilitation')
 @Controller('')
@@ -36,7 +37,7 @@ export class HabilitationController {
     operationId: 'findHabilitation',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 200, type: HabilitationDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async getHabilitation(@Req() req: CustomRequest, @Res() res: Response) {
@@ -57,7 +58,7 @@ export class HabilitationController {
     operationId: 'createHabilitation',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: 201 })
+  @ApiResponse({ status: 201, type: HabilitationDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createHabilitation(@Req() req: CustomRequest, @Res() res: Response) {
