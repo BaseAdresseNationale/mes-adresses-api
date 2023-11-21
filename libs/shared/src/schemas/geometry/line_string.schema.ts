@@ -15,12 +15,23 @@ export type LineStringDocument = HydratedDocument<LineString>;
 })
 export class LineString implements LineStringTurf {
   @Equals('LineString')
-  @ApiProperty()
+  @ApiProperty({
+    enum: ['LineString'],
+    type: String,
+  })
   @Prop({ type: SchemaTypes.String, required: true, nullable: false })
   type: 'LineString';
 
   @Validate(LineStringValidator)
-  @ApiProperty({ type: Array, isArray: true })
+  @ApiProperty({
+    type: 'array',
+    items: {
+      type: 'array',
+      items: {
+        type: 'number',
+      },
+    },
+  })
   @Prop({ type: [[SchemaTypes.Number]], required: true, nullable: false })
   coordinates: PositionTurf[];
 }
