@@ -7,14 +7,19 @@ import * as nodemailer from 'nodemailer';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { Numero, NumeroSchema } from '@/shared/schemas/numero/numero.schema';
+import { Voie, VoieSchema } from '@/shared/schemas/voie/voie.schema';
+import {
+  Toponyme,
+  ToponymeSchema,
+} from '@/shared/schemas/toponyme/toponyme.schema';
+import {
+  BaseLocale,
+  BaseLocaleSchema,
+} from '@/shared/schemas/base_locale/base_locale.schema';
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 import { Position } from '@/shared/schemas/position.schema';
 
-import { CronModule } from '../src/cron.module';
 import { DetectOutdatedTask } from '../src/tasks/detect_outdated.task';
 import {
   StatusBaseLocalEnum,
@@ -35,6 +40,11 @@ import {
   StatusHabiliation,
 } from '@/shared/modules/api_depot/types/habilitation.type';
 import { SyncOutdatedTask } from '../src/tasks/sync_outdated.task';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
+import { CacheModule } from '@/shared/modules/cache/cache.module';
+import { PublicationModule } from '@/shared/modules/publication/publication.module';
+import { CronService } from '../src/cron.service';
 
 jest.mock('nodemailer');
 
@@ -70,7 +80,25 @@ describe('TASK MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), CronModule],
+      imports: [
+        MongooseModule.forRoot(uri),
+        MongooseModule.forFeature([
+          { name: BaseLocale.name, schema: BaseLocaleSchema },
+          { name: Numero.name, schema: NumeroSchema },
+          { name: Toponyme.name, schema: ToponymeSchema },
+          { name: Voie.name, schema: VoieSchema },
+        ]),
+        ScheduleModule.forRoot(),
+        ApiDepotModule,
+        CacheModule,
+        PublicationModule,
+      ],
+      providers: [
+        CronService,
+        DetectOutdatedTask,
+        DetectConflictTask,
+        SyncOutdatedTask,
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
