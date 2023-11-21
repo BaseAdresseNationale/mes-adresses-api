@@ -84,6 +84,7 @@ export class VoieService {
   async extendVoies(voies: Voie[]): Promise<ExtendedVoieDTO[]> {
     const numeros = await this.numeroService.findMany({
       voie: { $in: voies.map(({ _id }) => _id) },
+      _deleted: null,
     });
 
     const numerosByVoies = groupBy(numeros, 'voie');

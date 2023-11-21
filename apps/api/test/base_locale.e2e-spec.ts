@@ -1212,9 +1212,20 @@ voie;rue de paris;1;1ter`;
         nom: 'rue de la paix',
       });
 
-      await createVoie({
-        _bal: balId,
-        nom: 'rue de paris',
+      createNumero({
+        voie: voieId,
+        numero: 1,
+      });
+
+      createNumero({
+        voie: voieId,
+        numero: 1,
+        certifie: true,
+      });
+
+      createNumero({
+        voie: voieId,
+        numero: 1,
         _deleted: new Date(),
       });
 
@@ -1224,6 +1235,9 @@ voie;rue de paris;1;1ter`;
 
       expect(response.body).toHaveLength(1);
       expect(response.body[0]._id).toEqual(voieId.toString());
+      expect(response.body[0].nbNumeros).toEqual(2);
+      expect(response.body[0].nbNumerosCertifies).toEqual(1);
+      expect(response.body[0].isAllCertified).toBeFalsy();
     });
   });
 
