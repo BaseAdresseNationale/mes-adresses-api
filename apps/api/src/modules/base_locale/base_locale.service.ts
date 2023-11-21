@@ -360,7 +360,9 @@ export class BaseLocaleService {
     return baseLocale;
   }
 
-  async extendWithNumeros(baseLocale: BaseLocale): Promise<ExtendedBaseLocaleDTO> {
+  async extendWithNumeros(
+    baseLocale: BaseLocale,
+  ): Promise<ExtendedBaseLocaleDTO> {
     const numeros = await this.numeroService.findMany(
       {
         _bal: baseLocale._id,

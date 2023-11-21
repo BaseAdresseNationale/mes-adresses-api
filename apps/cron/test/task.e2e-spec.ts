@@ -130,18 +130,6 @@ describe('TASK MODULE', () => {
     return voieId;
   }
 
-  async function createToponyme(props: Partial<Toponyme> = {}) {
-    const toponymeId = new Types.ObjectId();
-    const toponyme: Partial<Toponyme> = {
-      _id: toponymeId,
-      _created,
-      _updated,
-      ...props,
-    };
-    await toponymeModel.create(toponyme);
-    return toponymeId;
-  }
-
   async function createNumero(props: Partial<Numero> = {}) {
     const numeroId = new Types.ObjectId();
     const numero: Partial<Numero> = {
