@@ -12,6 +12,9 @@ export class NumeroPopulate extends BaseEntity {
   numero: number;
 
   @ApiProperty()
+  numeroComplet: string;
+
+  @ApiProperty()
   commune: string;
 
   @ApiProperty()

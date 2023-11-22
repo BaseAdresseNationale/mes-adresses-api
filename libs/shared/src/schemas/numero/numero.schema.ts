@@ -24,6 +24,9 @@ export class Numero extends BaseEntity {
   numero: number;
 
   @ApiProperty()
+  numeroComplet: string;
+
+  @ApiProperty()
   @Prop({ type: SchemaTypes.String })
   commune: string;
 
