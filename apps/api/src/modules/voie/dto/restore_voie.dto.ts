@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsMongoId } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class RestoreVoieDTO {
   @IsMongoId({ each: true })
-  @ApiProperty({ required: true, nullable: true })
-  numerosIds?: string[];
+  @ApiProperty({ type: String, required: true, nullable: true, isArray: true })
+  numerosIds?: Types.ObjectId[];
 }

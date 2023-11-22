@@ -15,7 +15,7 @@ export type NumeroDocument = HydratedDocument<Numero>;
   },
 })
 export class Numero extends BaseEntity {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @Prop({ type: SchemaTypes.ObjectId })
   _bal: Types.ObjectId;
 
@@ -35,11 +35,11 @@ export class Numero extends BaseEntity {
   @Prop({ type: SchemaTypes.String })
   comment?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @Prop({ type: SchemaTypes.ObjectId })
   toponyme?: Types.ObjectId;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @Prop({ type: SchemaTypes.ObjectId, ref: Voie.name })
   voie: Types.ObjectId;
 

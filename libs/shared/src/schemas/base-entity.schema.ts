@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SchemaTypes, Types } from 'mongoose';
 
 export class BaseEntity {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @Prop({ type: SchemaTypes.ObjectId, auto: true })
   _id: Types.ObjectId;
 

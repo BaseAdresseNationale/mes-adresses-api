@@ -5,7 +5,7 @@ import { Position } from '../position.schema';
 import { BaseEntity } from '../base-entity.schema';
 
 export class NumeroPopulate extends BaseEntity {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   _bal: Types.ObjectId;
 
   @ApiProperty()
@@ -20,7 +20,7 @@ export class NumeroPopulate extends BaseEntity {
   @ApiProperty()
   comment?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   toponyme?: Types.ObjectId;
 
   @ApiProperty()

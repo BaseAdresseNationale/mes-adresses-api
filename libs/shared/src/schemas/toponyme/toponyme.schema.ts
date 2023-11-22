@@ -8,7 +8,7 @@ export type ToponymeDocument = HydratedDocument<Toponyme>;
 
 @Schema({ collection: 'toponymes' })
 export class Toponyme extends BaseEntity {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @Prop({ type: SchemaTypes.ObjectId })
   _bal: Types.ObjectId;
 

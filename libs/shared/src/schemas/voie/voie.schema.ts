@@ -10,7 +10,7 @@ export type VoieDocument = HydratedDocument<Voie>;
 
 @Schema({ collection: 'voies' })
 export class Voie extends BaseEntity {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @Prop({ type: SchemaTypes.ObjectId })
   _bal: Types.ObjectId;
 

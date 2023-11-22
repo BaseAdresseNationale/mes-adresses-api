@@ -20,13 +20,13 @@ export class UpdateBatchNumeroChangeDTO {
 
   @IsOptional()
   @IsMongoId()
-  @ApiProperty({ required: false, nullable: true })
+  @ApiProperty({ type: String, required: false, nullable: true })
   toponyme?: Types.ObjectId;
 
   @IsOptional()
   @IsNotEmpty()
   @IsMongoId()
-  @ApiProperty({ required: false, nullable: false })
+  @ApiProperty({ type: String, required: false, nullable: false })
   voie?: Types.ObjectId;
 
   @IsOptional()

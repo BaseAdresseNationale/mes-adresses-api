@@ -30,7 +30,7 @@ export class CreateNumeroDTO {
 
   @IsOptional()
   @IsMongoId()
-  @ApiProperty({ required: false, nullable: true })
+  @ApiProperty({ type: String, required: false, nullable: true })
   toponyme?: Types.ObjectId;
 
   @IsOptional()

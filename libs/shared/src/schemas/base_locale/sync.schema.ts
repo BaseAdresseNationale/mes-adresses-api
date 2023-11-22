@@ -17,7 +17,7 @@ export class Sync {
   @Prop({ type: SchemaTypes.Boolean })
   isPaused?: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @Prop({ type: SchemaTypes.ObjectId })
   lastUploadedRevisionId: Types.ObjectId;
 
