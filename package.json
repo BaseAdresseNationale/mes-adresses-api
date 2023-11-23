@@ -52,7 +52,9 @@
     "@nestjs/schedule": "^3.0.4",
     "@nestjs/swagger": "^7.1.13",
     "@turf/turf": "^6.5.0",
+    "@types/express": "^4.17.17",
     "@types/geojson-vt": "^3.2.3",
+    "@types/multer": "^1.4.10",
     "axios": "^1.5.1",
     "axios-mock-adapter": "^1.22.0",
     "bluebird": "^3.7.2",
@@ -61,7 +63,6 @@
     "class-validator": "^0.14.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "cron": "^3.1.1",
     "csv-write-stream": "^2.0.0",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",
@@ -80,10 +81,8 @@
     "randomcolor": "^0.6.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "vt-pbf": "^3.1.3",
-    "@types/multer": "^1.4.10",
-    "@types/express": "^4.17.17",
-    "ts-loader": "^9.4.3"
+    "ts-loader": "^9.4.3",
+    "vt-pbf": "^3.1.3"
   },
   "devDependencies": {
     "@nestjs/schematics": "^10.0.0",
