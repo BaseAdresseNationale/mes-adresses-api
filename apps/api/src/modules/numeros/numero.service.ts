@@ -287,6 +287,15 @@ export class NumeroService {
       const allNumerosIds = allNumeros.map((n) => n._id);
       numerosIds = allNumerosIds;
     }
+
+    if (changes.voie === null) {
+      delete changes.voie;
+    }
+
+    if (changes.toponyme === null) {
+      delete changes.toponyme;
+    }
+
     const { voieIds, toponymeIds } =
       await this.getDistinctVoiesAndToponymesByNumeroIds(
         numerosIds,
