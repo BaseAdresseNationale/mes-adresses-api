@@ -25,6 +25,8 @@ import { AdminGuard } from '@/lib/guards/admin.guard';
 import { HabilitationService } from './habilitation.service';
 import { ValidatePinCodeDTO } from './dto/validate-pin-code.dto';
 import { HabilitationDTO } from './dto/habilitation.dto';
+import { SendPinCodeResponseDTO } from './dto/send_pin_code.response.dto';
+import { ValidatePinCodeResponseDTO } from './dto/validate_pin_code.response.dto';
 
 @ApiTags('habilitation')
 @Controller('')
@@ -75,13 +77,12 @@ export class HabilitationController {
     operationId: 'sendPinCodeHabilitation',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 200, type: SendPinCodeResponseDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async sendPinCode(@Req() req: CustomRequest, @Res() res: Response) {
-    const sendPinCodeResponse = await this.habilitationService.sendPinCode(
-      req.baseLocale._habilitation,
-    );
+    const sendPinCodeResponse: SendPinCodeResponseDTO =
+      await this.habilitationService.sendPinCode(req.baseLocale._habilitation);
 
     return res.status(sendPinCodeResponse.code).send({
       code: sendPinCodeResponse.code,
@@ -96,7 +97,7 @@ export class HabilitationController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: ValidatePinCodeDTO, required: true })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 200, type: ValidatePinCodeResponseDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async validatePinCode(
@@ -105,14 +106,18 @@ export class HabilitationController {
     @Res() res: Response,
   ) {
     try {
-      const validationResponse = await this.habilitationService.validatePinCode(
-        req.baseLocale._habilitation,
-        body.code,
-      );
+      const validationResponse: ValidatePinCodeResponseDTO =
+        await this.habilitationService.validatePinCode(
+          req.baseLocale._habilitation,
+          body.code,
+        );
 
-      return res.status(200).send({ code: 200, ...validationResponse });
+      return res.status(200).send(validationResponse);
     } catch (error) {
-      return res.status(200).send({ code: 200, message: error.message });
+      return res.status(200).send({
+        validated: false,
+        message: error.message,
+      });
     }
   }
 }
