@@ -24,6 +24,7 @@ import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { calcMetaTilesNumero } from '../base_locale/sub_modules/tiles/utils/tiles.utils';
+import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
 
 @Injectable()
 export class NumeroService {
@@ -278,7 +279,7 @@ export class NumeroService {
   public async updateBatch(
     baseLocale: BaseLocale,
     { numerosIds, changes }: UpdateBatchNumeroDTO,
-  ): Promise<any> {
+  ): Promise<BatchNumeroResponseDTO> {
     if (!numerosIds) {
       const allNumeros = await this.findMany(
         { _bal: baseLocale._id },
@@ -372,7 +373,7 @@ export class NumeroService {
   public async softDeleteBatch(
     baseLocale: BaseLocale,
     { numerosIds }: DeleteBatchNumeroDTO,
-  ): Promise<any> {
+  ): Promise<BatchNumeroResponseDTO> {
     const { voieIds, toponymeIds } =
       await this.getDistinctVoiesAndToponymesByNumeroIds(
         numerosIds,
