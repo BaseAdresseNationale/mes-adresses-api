@@ -360,14 +360,16 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
+    type: String,
     isArray: true,
   })
   async getBaseLocaleParcelles(
     @Req() req: CustomRequest,
     @Res() res: Response,
   ) {
-    const parcelles: (Toponyme | Numero)[] =
-      await this.baseLocaleService.getParcelles(req.baseLocale);
+    const parcelles: string[] = await this.baseLocaleService.getParcelles(
+      req.baseLocale,
+    );
 
     res.status(HttpStatus.OK).json(parcelles);
   }

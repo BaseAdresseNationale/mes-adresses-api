@@ -374,7 +374,7 @@ export class BaseLocaleService {
     return extendWithNumeros(baseLocale, numeros);
   }
 
-  async getParcelles(basesLocale: BaseLocale): Promise<(Toponyme | Numero)[]> {
+  async getParcelles(basesLocale: BaseLocale): Promise<string[]> {
     const toponymesWithParcelles = await this.toponymeService.findDistinct(
       {
         _bal: basesLocale._id,
