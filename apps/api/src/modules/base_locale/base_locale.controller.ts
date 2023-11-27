@@ -504,6 +504,7 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
+    type: ExtendedVoieDTO,
     isArray: true,
   })
   @ApiBearerAuth('admin-token')
