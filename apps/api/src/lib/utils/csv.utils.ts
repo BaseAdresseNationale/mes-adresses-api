@@ -5,6 +5,8 @@ import { beautifyUppercased, beautifyNomAlt } from './string.utils';
 import { ObjectId } from 'mongodb';
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 
+const RELAX_PROFILE = 'relax';
+
 export function extractCodeCommune({ parsedValues, additionalValues }) {
   return (
     parsedValues.commune_insee || additionalValues?.cle_interop?.codeCommune
@@ -136,7 +138,7 @@ export function extractData(rows, codeCommune) {
 
 export async function extractFromCsv(file: Buffer, codeCommune: string) {
   try {
-    const { rows, parseOk } = await validate(file, { profile: '1.3-relax' });
+    const { rows, parseOk } = await validate(file, { profile: RELAX_PROFILE });
 
     if (!parseOk) {
       return { isValid: false };
