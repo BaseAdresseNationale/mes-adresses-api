@@ -17,7 +17,7 @@ export class FeaturePoint implements FeatureTurf<PointTurf> {
 
   @IsOptional()
   @ApiProperty()
-  @Prop({ type: SchemaTypes.Map })
+  @Prop({ type: Object })
   properties: Record<string, unknown>;
 
   @ValidateNested()
