@@ -37,10 +37,7 @@ export class PublicationService {
     const baseLocale = await this.baseLocaleModel.findOne(balId);
 
     // On vérifie que la BAL n'est pas en DEMO ou DRAFT
-    if (
-      baseLocale.status === StatusBaseLocalEnum.DEMO ||
-      baseLocale.status === StatusBaseLocalEnum.DRAFT
-    ) {
+    if (baseLocale.status === StatusBaseLocalEnum.DEMO) {
       throw new HttpException(
         'La synchronisation pas possibles pour les Bases Adresses Locales de démo ou en mode brouillon',
         HttpStatus.PRECONDITION_FAILED,
@@ -94,7 +91,7 @@ export class PublicationService {
     }
 
     // On traite ensuite le cas de la première publication
-    if (baseLocale.status === StatusBaseLocalEnum.READY_TO_PUBLISH) {
+    if (baseLocale.status === StatusBaseLocalEnum.DRAFT) {
       // On créer le fichier BAL CSV
       const file: string = await this.exportCsvService.exportToCsv(baseLocale);
       // On créer la publication sur l'api-depot

@@ -203,20 +203,6 @@ export class BaseLocaleService {
       );
     }
 
-    const numeroCount = await this.numeroService.count({
-      _bal: baseLocale._id,
-      _deleted: null,
-    });
-    if (
-      numeroCount === 0 &&
-      update.status === StatusBaseLocalEnum.READY_TO_PUBLISH
-    ) {
-      throw new HttpException(
-        'La base locale ne possède aucune adresse',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
     const updatedBaseLocale = await this.baseLocaleModel.findOneAndUpdate(
       { _id: baseLocale._id },
       { $set: update },
