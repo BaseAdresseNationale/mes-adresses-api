@@ -55,7 +55,6 @@ export class VoieController {
     const voieExtended: ExtendedVoieDTO = await this.voieService.extendVoie(
       req.voie,
     );
-    console.log(voieExtended);
     res.status(HttpStatus.OK).json(voieExtended);
   }
 
