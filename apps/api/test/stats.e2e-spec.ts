@@ -11,7 +11,7 @@ import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { StatsModule } from '@/modules/stats/stats.module';
 import { CodeCommuneDTO } from '@/modules/stats/dto/code_commune.dto';
 
-describe('TOPONYME MODULE', () => {
+describe('STATS MODULE', () => {
   let app: INestApplication;
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
@@ -63,7 +63,7 @@ describe('TOPONYME MODULE', () => {
       await createBal({
         commune: '54084',
         _created: new Date('2019-01-01'),
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
       });
       const balId1 = await createBal({
         commune: '37003',
@@ -107,7 +107,7 @@ describe('TOPONYME MODULE', () => {
       await createBal({
         commune: '54084',
         _created: new Date('2019-01-01'),
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
       });
       await createBal({
         commune: '37003',
@@ -127,11 +127,7 @@ describe('TOPONYME MODULE', () => {
       const expectedRes = [
         {
           status: StatusBaseLocalEnum.DRAFT,
-          count: 1,
-        },
-        {
-          status: StatusBaseLocalEnum.READY_TO_PUBLISH,
-          count: 1,
+          count: 2,
         },
         {
           status: StatusBaseLocalEnum.PUBLISHED,
@@ -141,7 +137,6 @@ describe('TOPONYME MODULE', () => {
 
       expect(response.body).toContainEqual(expectedRes[0]);
       expect(response.body).toContainEqual(expectedRes[1]);
-      expect(response.body).toContainEqual(expectedRes[2]);
     });
   });
 
@@ -150,7 +145,7 @@ describe('TOPONYME MODULE', () => {
       await createBal({
         commune: '54084',
         _created: new Date('2019-01-01'),
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
       });
       await createBal({
         commune: '37003',
@@ -174,8 +169,8 @@ describe('TOPONYME MODULE', () => {
             54084: {
               total: 1,
               published: 0,
-              draft: 0,
-              readyToPublish: 1,
+              draft: 1,
+              readyToPublish: 0,
               demo: 0,
             },
           },

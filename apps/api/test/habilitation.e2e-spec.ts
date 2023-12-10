@@ -17,7 +17,7 @@ import {
 } from '@/shared/modules/api_depot/types/habilitation.type';
 import { add } from 'date-fns';
 
-describe('BASE LOCAL MODULE', () => {
+describe('HABILITATION MODULE', () => {
   let app: INestApplication;
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
@@ -172,7 +172,7 @@ describe('BASE LOCAL MODULE', () => {
         commune,
         emails: ['test@test.fr'],
         token,
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
       });
 
       const habilitation: Habilitation = {
@@ -207,7 +207,7 @@ describe('BASE LOCAL MODULE', () => {
         commune,
         emails: ['test@test.fr'],
         token,
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         _habilitation: habilitationId.toString(),
       });
 
@@ -244,7 +244,7 @@ describe('BASE LOCAL MODULE', () => {
         commune,
         emails: ['test@test.fr'],
         token,
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         _habilitation: habilitationId.toString(),
       });
 
@@ -288,7 +288,7 @@ describe('BASE LOCAL MODULE', () => {
         commune,
         emails: ['test@test.fr'],
         token,
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         _habilitation: habilitationId.toString(),
       });
 
@@ -325,7 +325,7 @@ describe('BASE LOCAL MODULE', () => {
         commune,
         emails: ['test@test.fr'],
         token,
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         _habilitation: habilitationId.toString(),
       });
 
@@ -359,7 +359,7 @@ describe('BASE LOCAL MODULE', () => {
         .expect(200);
 
       expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify({ code: 200, ...acceptedHabilitation }),
+        JSON.stringify(acceptedHabilitation),
       );
     });
 
@@ -371,7 +371,7 @@ describe('BASE LOCAL MODULE', () => {
         commune,
         emails: ['test@test.fr'],
         token,
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         _habilitation: habilitationId.toString(),
       });
 
@@ -406,7 +406,7 @@ describe('BASE LOCAL MODULE', () => {
         .expect(200);
 
       expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify({ code: 200, ...validationResponse }),
+        JSON.stringify(validationResponse),
       );
     });
 
@@ -418,7 +418,7 @@ describe('BASE LOCAL MODULE', () => {
         commune,
         emails: ['test@test.fr'],
         token,
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         _habilitation: habilitationId.toString(),
       });
 
@@ -441,7 +441,7 @@ describe('BASE LOCAL MODULE', () => {
         .expect(200);
 
       expect(response.body).toEqual({
-        code: 200,
+        validated: false,
         message: 'Aucune demande d’habilitation en attente',
       });
     });
