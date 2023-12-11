@@ -40,7 +40,9 @@ export class HabilitationService {
     return habilitation;
   }
 
-  async sendPinCode(habilitationId: string) {
+  async sendPinCode(
+    habilitationId: string,
+  ): Promise<{ code: number; message: string }> {
     const habilitation = await this.findOne(habilitationId);
 
     if (habilitation.status !== 'pending') {
@@ -50,16 +52,13 @@ export class HabilitationService {
       );
     }
 
-    const data =
+    const data: { code: number; message: string } =
       await this.apiDepotService.sendPinCodeHabiliation(habilitationId);
 
     return data;
   }
 
-  async validatePinCode(
-    habilitationId: string,
-    code: number,
-  ): Promise<{ validated: boolean }> {
+  async validatePinCode(habilitationId: string, code: number): Promise<any> {
     const habilitation = await this.findOne(habilitationId);
 
     if (habilitation.status !== 'pending') {

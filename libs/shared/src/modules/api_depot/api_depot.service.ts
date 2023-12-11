@@ -54,10 +54,10 @@ export class ApiDepotService {
   async validatePinCodeHabiliation(
     habilitationId: string,
     code: number,
-  ): Promise<{ validated: boolean }> {
+  ): Promise<any> {
     const { data } = await firstValueFrom(
       this.httpService
-        .post<{ validated: boolean }>(
+        .post<any>(
           `habilitations/${habilitationId}/authentication/email/validate-pin-code`,
           { code },
         )

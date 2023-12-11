@@ -359,7 +359,7 @@ describe('BASE LOCAL MODULE', () => {
         .expect(200);
 
       expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify({ code: 200, ...acceptedHabilitation }),
+        JSON.stringify({ validated: true }),
       );
     });
 
@@ -406,7 +406,7 @@ describe('BASE LOCAL MODULE', () => {
         .expect(200);
 
       expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify({ code: 200, ...validationResponse }),
+        JSON.stringify({ validated: false }),
       );
     });
 
@@ -441,7 +441,7 @@ describe('BASE LOCAL MODULE', () => {
         .expect(200);
 
       expect(response.body).toEqual({
-        code: 200,
+        validated: false,
         message: 'Aucune demande d’habilitation en attente',
       });
     });
