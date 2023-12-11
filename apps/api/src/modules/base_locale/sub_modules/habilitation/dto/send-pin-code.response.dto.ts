@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SendPinCodeResponseDTO {
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: true, nullable: false })
   code: number;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true, nullable: false })
   message: string;
 }

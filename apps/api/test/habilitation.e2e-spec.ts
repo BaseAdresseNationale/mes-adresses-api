@@ -359,7 +359,7 @@ describe('HABILITATION MODULE', () => {
         .expect(200);
 
       expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify(acceptedHabilitation),
+        JSON.stringify({ validated: true }),
       );
     });
 
@@ -406,7 +406,7 @@ describe('HABILITATION MODULE', () => {
         .expect(200);
 
       expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify(validationResponse),
+        JSON.stringify({ validated: false }),
       );
     });
 

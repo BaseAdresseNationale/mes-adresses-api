@@ -18,15 +18,18 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
+import {
+  Habilitation,
+  StatusHabiliation,
+} from '@/shared/modules/api_depot/types/habilitation.type';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { HabilitationService } from './habilitation.service';
 import { ValidatePinCodeDTO } from './dto/validate-pin-code.dto';
 import { HabilitationDTO } from './dto/habilitation.dto';
-import { SendPinCodeResponseDTO } from './dto/send_pin_code.response.dto';
-import { ValidatePinCodeResponseDTO } from './dto/validate_pin_code.response.dto';
+import { SendPinCodeResponseDTO } from './dto/send-pin-code.response.dto';
+import { ValidatePinCodeResponseDTO } from './dto/validate-pin-code.response.dto';
 
 @ApiTags('habilitation')
 @Controller('')
@@ -127,18 +130,22 @@ export class HabilitationController {
     @Res() res: Response,
   ) {
     try {
-      const validationResponse: ValidatePinCodeResponseDTO =
-        await this.habilitationService.validatePinCode(
-          req.baseLocale._habilitation,
-          body.code,
-        );
+      const validationResponse = await this.habilitationService.validatePinCode(
+        req.baseLocale._habilitation,
+        body.code,
+      );
+      const response: ValidatePinCodeResponseDTO = {
+        validated: validationResponse.status === StatusHabiliation.ACCEPTED,
+      };
 
-      return res.status(200).send(validationResponse);
+      return res.status(200).send(response);
     } catch (error) {
-      return res.status(200).send({
+      const response: ValidatePinCodeResponseDTO = {
         validated: false,
         message: error.message,
-      });
+      };
+
+      return res.status(200).send(response);
     }
   }
 }
