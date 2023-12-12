@@ -14,10 +14,10 @@ export class PopulateService {
 
   private async extractFromApiDepot(codeCommune: string) {
     try {
-      const response =
+      const fileData =
         await this.apiDepotService.downloadCurrentRevisionFile(codeCommune);
 
-      const result = await extractFromCsv(response.data, codeCommune);
+      const result = await extractFromCsv(fileData, codeCommune);
 
       if (!result.isValid) {
         throw new Error('Invalid CSV file');
