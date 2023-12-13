@@ -7,10 +7,14 @@ import * as hasha from 'hasha';
 import { Habilitation } from './types/habilitation.type';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiDepotService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async findOneHabiliation(habilitationId: string): Promise<Habilitation> {
     const { data } = await firstValueFrom(
@@ -200,8 +204,11 @@ export class ApiDepotService {
     return revisions;
   }
 
-  public async downloadCurrentRevisionFile(codeCommune: string) {
-    const currentRevisionUrl = `/communes/${codeCommune}/current-revision/files/bal/download`;
+  public async downloadCurrentRevisionFile(
+    codeCommune: string,
+  ): Promise<Buffer> {
+    const apiDepotUrl = this.configService.get<string>('API_DEPOT_URL');
+    const currentRevisionUrl = `${apiDepotUrl}/communes/${codeCommune}/current-revision/files/bal/download`;
 
     const response = await this.httpService.axiosRef({
       url: currentRevisionUrl,

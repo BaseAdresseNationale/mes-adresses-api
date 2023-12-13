@@ -21,7 +21,6 @@ export class CommuneController {
     const { codeCommune } = req.params;
     const communeExtraData =
       await this.communeService.getCommuneExtraData(codeCommune);
-    console.log(communeExtraData);
     res.status(HttpStatus.OK).json(communeExtraData);
   }
 }

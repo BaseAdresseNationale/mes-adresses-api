@@ -6,6 +6,7 @@ import { ApiDepotService } from './api_depot.service';
 
 @Module({
   imports: [
+    ConfigModule,
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

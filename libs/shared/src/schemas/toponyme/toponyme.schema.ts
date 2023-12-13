@@ -21,7 +21,7 @@ export class Toponyme extends BaseEntity {
   commune: string;
 
   @ApiProperty()
-  @Prop({ type: SchemaTypes.Map })
+  @Prop({ type: Object })
   nomAlt: Record<string, string>;
 
   @ApiProperty()
