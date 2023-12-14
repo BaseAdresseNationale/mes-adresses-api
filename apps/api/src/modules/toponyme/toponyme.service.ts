@@ -40,7 +40,7 @@ export class ToponymeService {
     const filter = {
       _id: toponymeId,
     };
-    const toponyme = await this.toponymeModel.findOne(filter).exec();
+    const toponyme = await this.toponymeModel.findOne(filter).lean().exec();
 
     if (!toponyme) {
       throw new HttpException(
@@ -61,7 +61,7 @@ export class ToponymeService {
       query.projection(projection);
     }
 
-    return query.exec();
+    return query.lean().exec();
   }
 
   async findDistinct(

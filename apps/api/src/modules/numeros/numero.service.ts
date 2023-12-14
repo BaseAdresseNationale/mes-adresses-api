@@ -44,7 +44,7 @@ export class NumeroService {
     const filter = {
       _id: numeroId,
     };
-    const numero = await this.numeroModel.findOne(filter).exec();
+    const numero = await this.numeroModel.findOne(filter).lean().exec();
     if (!numero) {
       throw new HttpException(
         `Numero ${numeroId} not found`,
@@ -52,7 +52,7 @@ export class NumeroService {
       );
     }
 
-    return numero.toObject();
+    return numero;
   }
 
   public async findManyPopulateVoie(
@@ -78,7 +78,7 @@ export class NumeroService {
       query.sort(sort);
     }
 
-    return query.exec();
+    return query.lean().exec();
   }
 
   async findDistinct(
@@ -140,7 +140,12 @@ export class NumeroService {
       return;
     }
 
-    await this.numeroModel.insertMany(numeros);
+    // INSERT NUMEROS BY CHUNK OF 500
+    // TO LIMIT MEMORY USAGE
+    do {
+      const numerosChunk = numeros.splice(0, 500);
+      await this.numeroModel.insertMany(numerosChunk);
+    } while (numeros.length > 0);
 
     // UPDATE TILES OF VOIES
     const voieIds = uniq(numeros.map((n) => n.voie));
