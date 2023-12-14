@@ -432,6 +432,20 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(allDeleted);
   }
 
+  @Put(':baseLocaleId/numeros/certify-all')
+  @ApiOperation({
+    summary: 'Certify all numeros in Bal',
+    operationId: 'certifyAllNumeros',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async certifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
+    await this.numeroService.certifyAllNumeros(req.baseLocale);
+    res.status(HttpStatus.OK).json(true);
+  }
+
   @Put(':baseLocaleId/numeros/batch')
   @ApiOperation({
     summary: 'Multi update numeros',

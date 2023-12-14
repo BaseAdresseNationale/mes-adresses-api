@@ -276,19 +276,23 @@ export class NumeroService {
     return numeroUpdated;
   }
 
+  public async certifyAllNumeros(baseLocale: BaseLocale): Promise<void> {
+    const numeros = await this.findMany(
+      { _bal: baseLocale._id, certifie: false, _deleted: null },
+      { _id: 1 },
+    );
+    const numerosIds = numeros.map((n) => n._id);
+    await this.numeroModel.updateMany(
+      { _id: { $in: numerosIds } },
+      { $set: { certifie: true, _updated: new Date() } },
+    );
+    await this.baseLocaleService.touch(baseLocale._id);
+  }
+
   public async updateBatch(
     baseLocale: BaseLocale,
     { numerosIds, changes }: UpdateBatchNumeroDTO,
   ): Promise<BatchNumeroResponseDTO> {
-    if (!numerosIds) {
-      const allNumeros = await this.findMany(
-        { _bal: baseLocale._id },
-        { _id: 1 },
-      );
-      const allNumerosIds = allNumeros.map((n) => n._id);
-      numerosIds = allNumerosIds;
-    }
-
     if (changes.voie === null) {
       delete changes.voie;
     }

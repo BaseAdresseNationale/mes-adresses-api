@@ -265,7 +265,7 @@ describe('BASE LOCAL MODULE', () => {
       expect(balAfter._updated).not.toEqual(_updated.toISOString());
     });
 
-    it('Batch 200 without numeroIds (certify all numeros)', async () => {
+    it('PUT /bases-locales/numeros/certify-all', async () => {
       const balId = await createBal();
       const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
       const numeroId = await createNumero({
@@ -276,15 +276,8 @@ describe('BASE LOCAL MODULE', () => {
         certifie: false,
       });
 
-      const updateBatch: UpdateBatchNumeroDTO = {
-        changes: {
-          certifie: true,
-        },
-      };
-
       await request(app.getHttpServer())
-        .put(`/bases-locales/${balId}/numeros/batch`)
-        .send(updateBatch)
+        .put(`/bases-locales/${balId}/numeros/certify-all`)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
 

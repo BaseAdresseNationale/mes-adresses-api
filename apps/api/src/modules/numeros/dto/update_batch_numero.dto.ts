@@ -13,8 +13,8 @@ import { UpdateBatchNumeroChangeDTO } from '@/modules/numeros/dto/update_batch_n
 export class UpdateBatchNumeroDTO {
   @IsOptional()
   @IsMongoId({ each: true })
-  @ApiProperty({ type: String, required: false, nullable: true, isArray: true })
-  numerosIds?: Types.ObjectId[];
+  @ApiProperty({ type: String, required: true, nullable: false, isArray: true })
+  numerosIds: Types.ObjectId[];
 
   @IsNotEmptyObject()
   @ValidateNested()
@@ -24,5 +24,5 @@ export class UpdateBatchNumeroDTO {
     required: true,
     nullable: false,
   })
-  changes?: UpdateBatchNumeroChangeDTO;
+  changes: UpdateBatchNumeroChangeDTO;
 }
