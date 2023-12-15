@@ -5,7 +5,6 @@ import {
   IsOptional,
   ValidateNested,
   IsNotEmptyObject,
-  ArrayNotEmpty,
 } from 'class-validator';
 
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
@@ -29,7 +28,6 @@ export class CreateToponymeDTO {
 
   @IsOptional()
   @ValidateNested({ each: true, message: 'positions must be an array' })
-  @ArrayNotEmpty()
   @Type(() => Position)
   @ApiProperty({
     type: () => Position,
