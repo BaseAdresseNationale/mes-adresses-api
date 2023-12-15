@@ -44,7 +44,10 @@ export class NumeroService {
     const filter = {
       _id: numeroId,
     };
-    const numero = await this.numeroModel.findOne(filter).lean().exec();
+    const numero = await this.numeroModel
+      .findOne(filter)
+      .lean({ virtuals: true })
+      .exec();
     if (!numero) {
       throw new HttpException(
         `Numero ${numeroId} not found`,
@@ -78,7 +81,7 @@ export class NumeroService {
       query.sort(sort);
     }
 
-    return query.lean().exec();
+    return query.lean({ virtuals: true }).exec();
   }
 
   async findDistinct(
