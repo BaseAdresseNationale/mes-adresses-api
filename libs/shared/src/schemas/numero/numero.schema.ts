@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
+import { mongooseLeanVirtuals } from 'mongoose-lean-virtuals';
 import { Position, PositionSchema } from '../position.schema';
 import { BaseEntity } from '../base-entity.schema';
 import { displaySuffix } from '../../utils/numero.utils';
@@ -70,6 +71,9 @@ export const NumeroSchema = SchemaFactory.createForClass(Numero);
 NumeroSchema.virtual('numeroComplet').get(function () {
   return this.numero + displaySuffix(this);
 });
+
+// Return virtuals when using lean()
+NumeroSchema.plugin(mongooseLeanVirtuals);
 
 // INDEXES
 

@@ -62,7 +62,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -360,14 +360,16 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
+    type: String,
     isArray: true,
   })
   async getBaseLocaleParcelles(
     @Req() req: CustomRequest,
     @Res() res: Response,
   ) {
-    const parcelles: (Toponyme | Numero)[] =
-      await this.baseLocaleService.getParcelles(req.baseLocale);
+    const parcelles: string[] = await this.baseLocaleService.getParcelles(
+      req.baseLocale,
+    );
 
     res.status(HttpStatus.OK).json(parcelles);
   }
@@ -430,6 +432,20 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(allDeleted);
   }
 
+  @Put(':baseLocaleId/numeros/certify-all')
+  @ApiOperation({
+    summary: 'Certify all numeros in Bal',
+    operationId: 'certifyAllNumeros',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async certifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
+    await this.numeroService.certifyAllNumeros(req.baseLocale);
+    res.status(HttpStatus.OK).json(true);
+  }
+
   @Put(':baseLocaleId/numeros/batch')
   @ApiOperation({
     summary: 'Multi update numeros',
@@ -437,7 +453,7 @@ export class BaseLocaleController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: UpdateBatchNumeroDTO, required: true })
-  @ApiResponse({ status: HttpStatus.OK })
+  @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async batchNumeros(
@@ -445,7 +461,7 @@ export class BaseLocaleController {
     @Body() updateBatchNumeroDto: UpdateBatchNumeroDTO,
     @Res() res: Response,
   ) {
-    const result: any = await this.numeroService.updateBatch(
+    const result: BatchNumeroResponseDTO = await this.numeroService.updateBatch(
       req.baseLocale,
       updateBatchNumeroDto,
     );
@@ -459,7 +475,7 @@ export class BaseLocaleController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: DeleteBatchNumeroDTO, required: true })
-  @ApiResponse({ status: HttpStatus.OK })
+  @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDeleteNumeros(
@@ -467,10 +483,11 @@ export class BaseLocaleController {
     @Body() deleteBatchNumeroDto: DeleteBatchNumeroDTO,
     @Res() res: Response,
   ) {
-    const result: any = await this.numeroService.softDeleteBatch(
-      req.baseLocale,
-      deleteBatchNumeroDto,
-    );
+    const result: BatchNumeroResponseDTO =
+      await this.numeroService.softDeleteBatch(
+        req.baseLocale,
+        deleteBatchNumeroDto,
+      );
     res.status(HttpStatus.OK).json(result);
   }
 
@@ -501,6 +518,7 @@ export class BaseLocaleController {
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
+    type: ExtendedVoieDTO,
     isArray: true,
   })
   @ApiBearerAuth('admin-token')

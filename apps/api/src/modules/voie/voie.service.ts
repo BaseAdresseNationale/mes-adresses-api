@@ -56,7 +56,7 @@ export class VoieService {
     const filter = {
       _id: voieId,
     };
-    const voie = await this.voieModel.findOne(filter).exec();
+    const voie = await this.voieModel.findOne(filter).lean().exec();
 
     if (!voie) {
       throw new HttpException(`Voie ${voieId} not found`, HttpStatus.NOT_FOUND);
@@ -74,7 +74,7 @@ export class VoieService {
       query.projection(projection);
     }
 
-    return query.exec();
+    return query.lean().exec();
   }
 
   public deleteMany(filters: FilterQuery<Voie>): Promise<any> {

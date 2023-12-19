@@ -22,6 +22,7 @@ export class ApiDepotService {
         .get<Habilitation>(`habilitations/${habilitationId}`)
         .pipe(
           catchError((error: AxiosError) => {
+            console.error('error', error.response.data);
             throw error;
           }),
         ),
@@ -36,6 +37,7 @@ export class ApiDepotService {
         .post<Habilitation>(`communes/${baseLocale.commune}/habilitations`)
         .pipe(
           catchError((error: AxiosError) => {
+            console.error('error', error.response.data);
             throw error;
           }),
         ),
@@ -48,9 +50,16 @@ export class ApiDepotService {
     habilitationId: string,
   ): Promise<{ code: number; message: string }> {
     const { data } = await firstValueFrom(
-      this.httpService.post<{ code: number; message: string }>(
-        `habilitations/${habilitationId}/authentication/email/send-pin-code`,
-      ),
+      this.httpService
+        .post<{ code: number; message: string }>(
+          `habilitations/${habilitationId}/authentication/email/send-pin-code`,
+        )
+        .pipe(
+          catchError((error: AxiosError) => {
+            console.error('error', error.response.data);
+            throw error;
+          }),
+        ),
     );
     return data;
   }
@@ -58,15 +67,16 @@ export class ApiDepotService {
   async validatePinCodeHabiliation(
     habilitationId: string,
     code: number,
-  ): Promise<{ validated: boolean }> {
+  ): Promise<any> {
     const { data } = await firstValueFrom(
       this.httpService
-        .post<{ validated: boolean }>(
+        .post<any>(
           `habilitations/${habilitationId}/authentication/email/validate-pin-code`,
           { code },
         )
         .pipe(
           catchError((error: AxiosError) => {
+            console.error('error', error.response.data);
             throw error;
           }),
         ),
@@ -86,6 +96,7 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
+            console.error('error', error.response.data);
             throw error;
           }),
         ),
@@ -104,6 +115,7 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
+            console.error('error', error.response.data);
             throw error;
           }),
         ),
@@ -116,6 +128,7 @@ export class ApiDepotService {
         .post<Revision>(`/revisions/${revisionId}/compute`)
         .pipe(
           catchError((error: AxiosError) => {
+            console.error('error', error.response.data);
             throw error;
           }),
         ),
@@ -134,6 +147,7 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
+            console.error('error', error.response.data);
             throw error;
           }),
         ),
@@ -175,6 +189,7 @@ export class ApiDepotService {
             if (error.response && error.response.status === 404) {
               return of({ data: null });
             }
+            console.error('error', error.response.data);
             throw error;
           }),
         ),
@@ -196,6 +211,7 @@ export class ApiDepotService {
             if (error.response && error.response.status === 404) {
               return of({ data: null });
             }
+            console.error('error', error.response.data);
             throw error;
           }),
         ),

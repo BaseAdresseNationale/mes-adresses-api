@@ -3,6 +3,7 @@ import { Response, Request } from 'express';
 import { ApiParam, ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 
 import { CommuneService } from './commune.service';
+import { CommuneExtraDTO } from './dto/commune.dto';
 
 @ApiTags('commune')
 @Controller('commune')
@@ -15,7 +16,7 @@ export class CommuneController {
     operationId: 'findCommune',
   })
   @ApiParam({ name: 'codeCommune', required: true, type: String })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 200, type: CommuneExtraDTO })
   async getCommuneExtraData(@Req() req: Request, @Res() res: Response) {
     const { codeCommune } = req.params;
     const communeExtraData =
