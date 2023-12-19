@@ -21,11 +21,25 @@
     // For legacy JavaScript
     "allowJs": true,
     "paths": {
-      "@/modules/*": ["apps/api/src/modules/*"],
-      "@/lib/*": ["apps/api/src/lib/*"],
-      "@/shared/*": ["libs/shared/src/*"]
+      "@/modules/*": [
+        "apps/api/src/modules/*"
+      ],
+      "@/lib/*": [
+        "apps/api/src/lib/*"
+      ],
+      "@/shared/*": [
+        "libs/shared/src/*"
+      ]
     }
   },
-  "include": ["apps/**/*", "libs/**/*", "migrations/*"],
-  "exclude": ["node_modules", "dist", "apps/**/*.spec.ts", "libs/**/*.spec.ts"]
+  "include": [
+    "apps/**/*",
+    "libs/**/*",
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "apps/**/*.spec.ts",
+    "libs/**/*.spec.ts",
+  ]
 }

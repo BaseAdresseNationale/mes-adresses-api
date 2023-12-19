@@ -118,7 +118,7 @@ export class NumeroService {
           commune: rawNumero.commune,
           voie: rawNumero.voie,
           ...(rawNumero.suffixe && {
-            suffix: normalizeSuffixe(rawNumero.suffixe),
+            suffixe: normalizeSuffixe(rawNumero.suffixe),
           }),
           positions: rawNumero.positions || [],
           parcelles: rawNumero.parcelles || [],
