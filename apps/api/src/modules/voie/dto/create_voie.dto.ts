@@ -13,13 +13,13 @@ import { LineString } from '@/shared/schemas/geometry/line_string.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 
 export class CreateVoieDTO {
-  @Validate(ValidatorBal, ['voie_nom'])
+  @Validate(ValidatorBal, ['nom'])
   @ApiProperty({ required: true, nullable: false })
   nom: string;
 
   @IsOptional()
   @IsNotEmptyObject()
-  @Validate(ValidatorBal, ['nom_alt_voie'])
+  @Validate(ValidatorBal, ['nom_alt'])
   @ApiProperty({ required: false, nullable: true })
   nomAlt: Record<string, string>;
 

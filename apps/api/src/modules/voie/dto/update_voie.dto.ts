@@ -14,13 +14,13 @@ import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.en
 
 export class UpdateVoieDTO {
   @IsOptional()
-  @Validate(ValidatorBal, ['voie_nom'])
+  @Validate(ValidatorBal, ['nom'])
   @ApiProperty({ required: false, nullable: false })
   nom: string;
 
   @IsOptional()
   @IsNotEmptyObject()
-  @Validate(ValidatorBal, ['nom_alt_voie'])
+  @Validate(ValidatorBal, ['nom_alt'])
   @ApiProperty({ required: false, nullable: true })
   nomAlt: Record<string, string>;
 

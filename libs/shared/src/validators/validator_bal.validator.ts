@@ -21,15 +21,16 @@ export class ValidatorBal implements ValidatorConstraintInterface {
   async validate(value: any, args: ValidationArguments) {
     try {
       const field = args.constraints[0];
-      if (
-        ['numero', 'suffixe', 'position', 'source', 'voie_nom'].includes(field)
-      ) {
+      if (['numero', 'suffixe', 'position', 'source'].includes(field)) {
         const { errors } = await validateurBAL(value.toString(), field);
         return errors.length === 0;
       } else if (field === 'cad_parcelles') {
         const { errors } = await validateurBAL(value.join('|'), field);
         return errors.length === 0;
-      } else if (field === 'nom_alt_voie') {
+      } else if (field === 'nom') {
+        const { errors } = await validateurBAL(value.toString(), 'voie_nom');
+        return errors.length === 0;
+      } else if (field === 'nom_alt') {
         Object.keys(value).forEach(async (codeISO) => {
           if (supportedNomAlt.has(codeISO)) {
             const nomVoie = value[codeISO];

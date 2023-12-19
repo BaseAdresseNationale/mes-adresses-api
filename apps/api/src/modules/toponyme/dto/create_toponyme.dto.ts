@@ -11,13 +11,13 @@ import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { Position } from '@/shared/schemas/position.schema';
 
 export class CreateToponymeDTO {
-  @Validate(ValidatorBal, ['voie_nom'])
+  @Validate(ValidatorBal, ['nom'])
   @ApiProperty({ required: true, nullable: false })
   nom: string;
 
   @IsOptional()
   @IsNotEmptyObject()
-  @Validate(ValidatorBal, ['nom_alt_voie'])
+  @Validate(ValidatorBal, ['nom_alt'])
   @ApiProperty({ required: false, nullable: true })
   nomAlt: Record<string, string>;
 
