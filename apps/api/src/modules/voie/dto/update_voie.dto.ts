@@ -14,7 +14,7 @@ import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.en
 
 export class UpdateVoieDTO {
   @IsOptional()
-  @Validate(ValidatorBal, ['nom_voie'])
+  @Validate(ValidatorBal, ['voie_nom'])
   @ApiProperty({ required: false, nullable: false })
   nom: string;
 

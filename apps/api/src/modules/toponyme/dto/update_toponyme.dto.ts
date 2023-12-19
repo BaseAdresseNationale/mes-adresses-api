@@ -12,7 +12,7 @@ import { Position } from '@/shared/schemas/position.schema';
 
 export class UpdateToponymeDTO {
   @IsOptional()
-  @Validate(ValidatorBal, ['nom_voie'])
+  @Validate(ValidatorBal, ['voie_nom'])
   @ApiProperty({ required: false, nullable: false })
   nom: string;
 
