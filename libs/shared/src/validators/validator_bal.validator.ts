@@ -30,7 +30,7 @@ export class ValidatorBal implements ValidatorConstraintInterface {
       } else if (field === 'nom') {
         const { errors } = await validateurBAL(value.toString(), 'voie_nom');
         return errors.length === 0;
-      } else if (field === 'nom_alt') {
+      } else if (field === 'langAlt') {
         Object.keys(value).forEach(async (codeISO) => {
           if (supportedNomAlt.has(codeISO)) {
             const nomVoie = value[codeISO];

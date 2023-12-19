@@ -20,7 +20,7 @@ export class UpdateVoieDTO {
 
   @IsOptional()
   @IsNotEmptyObject()
-  @Validate(ValidatorBal, ['nom_alt'])
+  @Validate(ValidatorBal, ['langAlt'])
   @ApiProperty({ required: false, nullable: true })
   nomAlt: Record<string, string>;
 
