@@ -65,7 +65,7 @@ export class BaseLocaleService {
     const filter = {
       _id: id,
     };
-    const baseLocale = await this.baseLocaleModel.findOne(filter).exec();
+    const baseLocale = await this.baseLocaleModel.findOne(filter).lean().exec();
 
     if (!baseLocale) {
       throw new HttpException(
@@ -78,7 +78,7 @@ export class BaseLocaleService {
   }
 
   async findOne(filter?: FilterQuery<BaseLocale>): Promise<BaseLocale> {
-    return this.baseLocaleModel.findOne(filter);
+    return this.baseLocaleModel.findOne(filter).lean();
   }
 
   async count(filter?: FilterQuery<BaseLocale>): Promise<number> {
@@ -106,7 +106,7 @@ export class BaseLocaleService {
       query.skip(offset);
     }
 
-    return query.exec();
+    return query.lean().exec();
   }
 
   async createOne(createInput: CreateBaseLocaleDTO): Promise<BaseLocale> {
@@ -315,7 +315,7 @@ export class BaseLocaleService {
     const voiesPopulate: PopulateVoie[] = [];
     for (const voie of voies) {
       const voiePopulate: PopulateVoie = {
-        ...voie.toObject(),
+        ...voie,
         numeros: numerosByVoieId[voie._id.toString()] || [],
       };
       voiesPopulate.push(voiePopulate);

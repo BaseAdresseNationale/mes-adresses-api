@@ -44,7 +44,10 @@ export class NumeroService {
     const filter = {
       _id: numeroId,
     };
-    const numero = await this.numeroModel.findOne(filter).exec();
+    const numero = await this.numeroModel
+      .findOne(filter)
+      .lean({ virtuals: true })
+      .exec();
     if (!numero) {
       throw new HttpException(
         `Numero ${numeroId} not found`,
@@ -52,7 +55,7 @@ export class NumeroService {
       );
     }
 
-    return numero.toObject();
+    return numero;
   }
 
   public async findManyPopulateVoie(
@@ -78,7 +81,7 @@ export class NumeroService {
       query.sort(sort);
     }
 
-    return query.exec();
+    return query.lean({ virtuals: true }).exec();
   }
 
   async findDistinct(
@@ -140,7 +143,12 @@ export class NumeroService {
       return;
     }
 
-    await this.numeroModel.insertMany(numeros);
+    // INSERT NUMEROS BY CHUNK OF 500
+    // TO LIMIT MEMORY USAGE
+    do {
+      const numerosChunk = numeros.splice(0, 500);
+      await this.numeroModel.insertMany(numerosChunk);
+    } while (numeros.length > 0);
 
     // UPDATE TILES OF VOIES
     const voieIds = uniq(numeros.map((n) => n.voie));
@@ -276,19 +284,23 @@ export class NumeroService {
     return numeroUpdated;
   }
 
+  public async certifyAllNumeros(baseLocale: BaseLocale): Promise<void> {
+    const numeros = await this.findMany(
+      { _bal: baseLocale._id, certifie: false, _deleted: null },
+      { _id: 1 },
+    );
+    const numerosIds = numeros.map((n) => n._id);
+    await this.numeroModel.updateMany(
+      { _id: { $in: numerosIds } },
+      { $set: { certifie: true, _updated: new Date() } },
+    );
+    await this.baseLocaleService.touch(baseLocale._id);
+  }
+
   public async updateBatch(
     baseLocale: BaseLocale,
     { numerosIds, changes }: UpdateBatchNumeroDTO,
   ): Promise<BatchNumeroResponseDTO> {
-    if (!numerosIds) {
-      const allNumeros = await this.findMany(
-        { _bal: baseLocale._id },
-        { _id: 1 },
-      );
-      const allNumerosIds = allNumeros.map((n) => n._id);
-      numerosIds = allNumerosIds;
-    }
-
     if (changes.voie === null) {
       delete changes.voie;
     }

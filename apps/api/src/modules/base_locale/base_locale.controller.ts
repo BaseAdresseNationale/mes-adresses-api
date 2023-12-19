@@ -63,7 +63,6 @@ import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -431,6 +430,20 @@ export class BaseLocaleController {
     const allDeleted: AllDeletedInBalDTO =
       await this.baseLocaleService.findAllDeletedByBal(req.baseLocale);
     res.status(HttpStatus.OK).json(allDeleted);
+  }
+
+  @Put(':baseLocaleId/numeros/certify-all')
+  @ApiOperation({
+    summary: 'Certify all numeros in Bal',
+    operationId: 'certifyAllNumeros',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async certifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
+    await this.numeroService.certifyAllNumeros(req.baseLocale);
+    res.status(HttpStatus.OK).json(true);
   }
 
   @Put(':baseLocaleId/numeros/batch')

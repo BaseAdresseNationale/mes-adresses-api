@@ -5,20 +5,19 @@ import {
   IsOptional,
   ValidateNested,
   IsNotEmptyObject,
-  ArrayNotEmpty,
 } from 'class-validator';
 
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { Position } from '@/shared/schemas/position.schema';
 
 export class CreateToponymeDTO {
-  @Validate(ValidatorBal, ['nom_voie'])
+  @Validate(ValidatorBal, ['nom'])
   @ApiProperty({ required: true, nullable: false })
   nom: string;
 
   @IsOptional()
   @IsNotEmptyObject()
-  @Validate(ValidatorBal, ['nom_alt_voie'])
+  @Validate(ValidatorBal, ['langAlt'])
   @ApiProperty({ required: false, nullable: true })
   nomAlt: Record<string, string>;
 
@@ -29,7 +28,6 @@ export class CreateToponymeDTO {
 
   @IsOptional()
   @ValidateNested({ each: true, message: 'positions must be an array' })
-  @ArrayNotEmpty()
   @Type(() => Position)
   @ApiProperty({
     type: () => Position,

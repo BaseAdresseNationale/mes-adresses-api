@@ -49,13 +49,12 @@ export class PopulateService {
   }
 
   public async extract(codeCommune: string) {
-    const fromApiDepot = await this.extractFromApiDepot(codeCommune);
-    const fromBan = await this.extractFromBAN(codeCommune);
+    const data =
+      (await this.extractFromApiDepot(codeCommune)) ||
+      (await this.extractFromBAN(codeCommune));
 
-    const result = fromApiDepot || fromBan;
-
-    if (result) {
-      return result;
+    if (data) {
+      return data;
     }
 
     console.error(

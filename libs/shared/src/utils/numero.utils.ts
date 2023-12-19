@@ -34,7 +34,7 @@ export function extendWithNumeros<T>(
   const nbNumerosCertifies = numeros.filter((n) => n.certifie === true).length;
 
   const extendedEntity = {
-    ...(entity as any).toObject(),
+    ...entity,
     nbNumeros: numeros.length,
     nbNumerosCertifies: nbNumerosCertifies,
     isAllCertified: numeros.length > 0 && numeros.length === nbNumerosCertifies,
