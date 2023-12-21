@@ -127,12 +127,12 @@ export class PublicationService {
       const currentRevision =
         await this.apiDepotService.getCurrentRevision(codeCommune);
       // On récupère le fichier BAL de la révision courante
-      const currentRevisionBalFile = currentRevision.files.find(
+      const currentRevisionBalFile = currentRevision?.files.find(
         (f) => f.type === 'bal',
       );
       // On traite si le hash du fichier BAL CSV est différent du fichier de la révision courante
       // Cela veut dire qu'il y a eu un changement dans le fichier
-      if (currentRevisionBalFile.hash !== hash) {
+      if (currentRevisionBalFile?.hash !== hash) {
         // On créer la publication sur l'api-depot
         const publishedRevision = await this.apiDepotService.publishNewRevision(
           codeCommune,
@@ -260,7 +260,7 @@ export class PublicationService {
 
     // On vérifie si la dernière publication de la BAL est la révision courante
     if (
-      new Types.ObjectId(currentRevision._id) !==
+      new Types.ObjectId(currentRevision?._id) !==
       baseLocale.sync.lastUploadedRevisionId
     ) {
       return this.updateSync(baseLocale, {
