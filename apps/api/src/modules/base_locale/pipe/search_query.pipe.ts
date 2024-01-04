@@ -8,6 +8,7 @@ import { FilterQuery } from 'mongoose';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { getCommune } from '@/shared/utils/cog.utils';
+import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 
 import { checkValidEmail } from '@/modules/base_locale/utils/base_locale.utils';
 
@@ -74,9 +75,12 @@ export class SearchQueryPipe implements PipeTransform {
     if (query.status) {
       if (
         typeof query.status === 'string' &&
-        ['demo', 'draft', 'ready-to-publish', 'published', 'replaced'].includes(
-          query.status,
-        )
+        [
+          StatusBaseLocalEnum.DEMO,
+          StatusBaseLocalEnum.DRAFT,
+          StatusBaseLocalEnum.PUBLISHED,
+          StatusBaseLocalEnum.REPLACED,
+        ].includes(query.status)
       ) {
         filters.status = { $eq: query.status };
       } else {

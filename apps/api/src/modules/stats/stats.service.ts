@@ -4,6 +4,7 @@ import { groupBy, mapValues } from 'lodash';
 import { format } from 'date-fns';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BasesLocalesStatusDTO } from '@/modules/stats/dto/bases_locales_status.dto';
@@ -66,13 +67,12 @@ export class StatsService {
         createdBAL: mapValues(balsGroupedByCommune, (balsByCommune) => ({
           total: balsByCommune.length,
           published: balsByCommune.filter(
-            ({ status }) => status === 'published',
+            ({ status }) => status === StatusBaseLocalEnum.PUBLISHED,
           ).length,
-          draft: balsByCommune.filter(({ status }) => status === 'draft')
-            .length,
-          readyToPublish: balsByCommune.filter(
-            ({ status }) => status === 'ready-to-publish',
+          draft: balsByCommune.filter(
+            ({ status }) => status === StatusBaseLocalEnum.DRAFT,
           ).length,
+          readyToPublish: 0,
           demo: balsByCommune.filter(({ status }) => status === 'demo').length,
         })),
       };
