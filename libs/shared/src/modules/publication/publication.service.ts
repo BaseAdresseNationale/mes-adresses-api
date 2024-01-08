@@ -39,7 +39,7 @@ export class PublicationService {
     // On vérifie que la BAL n'est pas en DEMO ou DRAFT
     if (baseLocale.status === StatusBaseLocalEnum.DEMO) {
       throw new HttpException(
-        'La synchronisation pas possibles pour les Bases Adresses Locales de démo ou en mode brouillon',
+        'La synchronisation pas possibles pour les Bases Adresses Locales de démo',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
