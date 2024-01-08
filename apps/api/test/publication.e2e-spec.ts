@@ -466,7 +466,7 @@ describe('PUBLICATION MODULE', () => {
         JSON.stringify({
           statusCode: 412,
           message:
-            'La synchronisation pas possibles pour les Bases Adresses Locales de démo ou en mode brouillon',
+            'La synchronisation pas possibles pour les Bases Adresses Locales de démo',
         }),
       );
     });
