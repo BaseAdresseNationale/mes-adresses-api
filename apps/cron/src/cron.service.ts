@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -17,7 +17,6 @@ import { TaskQueue } from './task_queue.class';
 
 @Injectable()
 export class CronService {
-  private readonly logger = new Logger(CronService.name);
   private queue: TaskQueue = new TaskQueue();
 
   constructor(
@@ -54,23 +53,23 @@ export class CronService {
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async removeSoftDeletedBALsOlderThanOneYear() {
-    this.logger.debug('Task start : purge old deleted BALs');
+    console.debug('Task start : purge old deleted BALs');
     const deleteTime = subMonths(new Date(), 12);
     const filter: FilterQuery<BaseLocale> = { _deleted: { $lt: deleteTime } };
     await this.removeBals(filter);
-    this.logger.debug('Task end : purge old deleted BALs');
+    console.debug('Task end : purge old deleted BALs');
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async removeDemoBALsOlderThanAMonth() {
-    this.logger.debug('Task start : purge demo BALs');
+    console.debug('Task start : purge demo BALs');
     const creationTime = subMonths(new Date(), 1);
     const filter: FilterQuery<BaseLocale> = {
       status: StatusBaseLocalEnum.DEMO,
       _created: { $lt: creationTime },
     };
     await this.removeBals(filter);
-    this.logger.debug('Task end : purge demo BALs');
+    console.debug('Task end : purge demo BALs');
   }
 
   private async removeBals(filter: FilterQuery<BaseLocale>) {
