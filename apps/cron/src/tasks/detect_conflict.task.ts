@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -18,7 +18,6 @@ export const KEY_DETECT_CONFLICT_PUBLISHED_SINCE =
 
 @Injectable()
 export class DetectConflictTask implements Task {
-  private readonly logger = new Logger(DetectConflictTask.name);
   title: string = 'Detect conflict';
 
   constructor(
@@ -47,14 +46,9 @@ export class DetectConflictTask implements Task {
       try {
         await this.updateConflictStatus(codeCommune);
       } catch (error) {
-        this.logger.error(`Unable to detect conflict for ${codeCommune}`);
-        this.logger.error(error);
+        console.error(`Unable to detect conflict for ${codeCommune}`, error);
       }
     }
-  }
-
-  private async wait(ms: number): Promise<unknown> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private async updateConflictStatus(codeCommune: string) {
@@ -73,7 +67,7 @@ export class DetectConflictTask implements Task {
       await this.apiDepotService.getCurrentRevision(codeCommune);
 
     if (!currentRevision) {
-      this.logger.error(
+      console.error(
         `Comportement inattendu : pas de révision courante pour la commune ${codeCommune}`,
       );
       return;
