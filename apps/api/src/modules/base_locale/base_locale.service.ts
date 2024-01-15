@@ -206,7 +206,7 @@ export class BaseLocaleService {
     const updatedBaseLocale = await this.baseLocaleModel.findOneAndUpdate(
       { _id: baseLocale._id },
       { $set: update },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     // If emails fields is overrided, we compare with current array to send a notification to new email addresses
@@ -246,7 +246,7 @@ export class BaseLocaleService {
           status: StatusBaseLocalEnum.DRAFT,
         },
       },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     const templateEmail = createBalCreationNotificationEmail({
@@ -419,7 +419,7 @@ export class BaseLocaleService {
     const recoveredBaseLocale = await this.baseLocaleModel.findByIdAndUpdate(
       { _id: baseLocale._id },
       { $set: { _deleted: null, _updated: now } },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     return recoveredBaseLocale;
@@ -430,7 +430,7 @@ export class BaseLocaleService {
     const updatedBaseLocale = await this.baseLocaleModel.findByIdAndUpdate(
       { _id: baseLocale._id },
       { $set: { token } },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     const email = createTokenRenewalNotificationEmail({

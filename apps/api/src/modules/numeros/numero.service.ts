@@ -235,7 +235,7 @@ export class NumeroService {
     const numeroUpdated: Numero = await this.numeroModel.findOneAndUpdate(
       { _id: numero._id, _deleted: null },
       { $set: { ...updateNumeroDto, _updated: new Date() } },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     if (numeroUpdated) {
@@ -273,7 +273,7 @@ export class NumeroService {
     const numeroUpdated: Numero = await this.numeroModel.findOneAndUpdate(
       { _id: numero._id },
       { $set: { _deleted: new Date() } },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     // UPDATE TILES VOIE

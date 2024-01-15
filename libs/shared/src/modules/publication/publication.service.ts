@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as hasha from 'hasha';
+import { assignIn } from 'lodash';
 
 import {
   Habilitation,
@@ -171,7 +172,7 @@ export class PublicationService {
         },
       },
       { $set: { 'sync.isPaused': isPaused } },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     if (!baseLocale) {
@@ -188,21 +189,19 @@ export class PublicationService {
     baseLocale: BaseLocale,
     syncChanges: Partial<Sync>,
   ): Promise<Sync> {
+    const sync: Sync = baseLocale.sync;
+    assignIn(sync, syncChanges);
     const changes: Partial<BaseLocale> = {
-      sync: {
-        ...baseLocale.sync,
-        ...syncChanges,
-      },
+      sync,
       ...(syncChanges.status === 'conflict' && {
         status: StatusBaseLocalEnum.REPLACED,
       }),
     };
-
     const baseLocaleChanged: BaseLocale =
       await this.baseLocaleModel.findOneAndUpdate(
         { _id: baseLocale._id },
         { $set: changes },
-        { returnDocument: 'after' },
+        { new: true },
       );
 
     return baseLocaleChanged.sync;
@@ -223,7 +222,7 @@ export class PublicationService {
       await this.baseLocaleModel.findOneAndUpdate(
         { _id: baseLocale._id },
         { $set: { status: StatusBaseLocalEnum.PUBLISHED, sync } },
-        { returnDocument: 'after' },
+        { new: true },
       );
 
     return baseLocaleSynced;
@@ -257,8 +256,7 @@ export class PublicationService {
 
     // On vérifie si la dernière publication de la BAL est la révision courante
     if (
-      new Types.ObjectId(currentRevision?._id) !==
-      baseLocale.sync.lastUploadedRevisionId
+      currentRevision?._id !== baseLocale.sync.lastUploadedRevisionId.toString()
     ) {
       return this.updateSync(baseLocale, {
         status: StatusSyncEnum.CONFLICT,
@@ -268,7 +266,7 @@ export class PublicationService {
 
     // Si la date du changement de BAL est la même que la date du currentUpdated du sync de la BAL
     // On met le status du sync de la BAL a sync et on le retourne
-    // ???
+
     if (baseLocale._updated === baseLocale.sync.currentUpdated) {
       if (baseLocale.sync.status === StatusSyncEnum.SYNCED) {
         return baseLocale.sync;

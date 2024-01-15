@@ -140,7 +140,7 @@ export class ToponymeService {
     const toponymeUpdated = await this.toponymeModel.findOneAndUpdate(
       { _id: toponyme._id, _deleted: null },
       { $set: { ...updateToponymeDto, _updated: new Date() } },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     // SET _updated BAL
@@ -156,7 +156,7 @@ export class ToponymeService {
     const toponymeUpdated: Toponyme = await this.toponymeModel.findOneAndUpdate(
       { _id: toponyme._id },
       { $set: { _deleted: new Date(), _updated: new Date() } },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     await this.numeroService.updateMany(
@@ -176,7 +176,7 @@ export class ToponymeService {
     const updatedToponyme = await this.toponymeModel.findOneAndUpdate(
       { _id: toponyme._id },
       { $set: { _deleted: null, _updated: new Date() } },
-      { returnDocument: 'after' },
+      { new: true },
     );
     // SET _updated OF TOPONYME
     await this.baseLocaleService.touch(toponyme._bal);
