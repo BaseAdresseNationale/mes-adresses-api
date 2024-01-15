@@ -36,6 +36,27 @@ import { ValidatePinCodeResponseDTO } from './dto/validate-pin-code.response.dto
 export class HabilitationController {
   constructor(private habilitationService: HabilitationService) {}
 
+  @Get('/bases-locales/:baseLocaleId/habilitation/is-valid')
+  @ApiOperation({
+    summary: 'Find habiliation is Valid',
+    operationId: 'findIsValid',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: 200, type: Boolean })
+  async getHabilitationIsValid(
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+  ) {
+    try {
+      const isValid: boolean = await this.habilitationService.isValid(
+        req.baseLocale._habilitation,
+      );
+      res.status(HttpStatus.OK).json(isValid);
+    } catch (err) {
+      res.status(HttpStatus.OK).json(false);
+    }
+  }
+
   @Get('/bases-locales/:baseLocaleId/habilitation')
   @ApiOperation({
     summary: 'Find habiliation',

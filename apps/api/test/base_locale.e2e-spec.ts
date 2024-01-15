@@ -953,7 +953,7 @@ voie;rue de paris;1;1ter`;
         error: 'Bad Request',
         message: [
           'nom should not be empty',
-          'status must be one of the following values: draft, ready-to-publish, published, demo, replaced',
+          'status must be one of the following values: draft, published, demo, replaced',
           'emails should not be empty',
         ],
         statusCode: 400,

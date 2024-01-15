@@ -34,7 +34,7 @@ jest.mock('nodemailer');
 
 const createTransport = nodemailer.createTransport;
 
-describe('BASE LOCAL MODULE', () => {
+describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
@@ -136,13 +136,13 @@ describe('BASE LOCAL MODULE', () => {
   }
 
   describe('POST /bases-locales/sync/exec', () => {
-    it('Publish 200 READY_TO_PUBLISH', async () => {
+    it('Publish 200 DRAFT', async () => {
       const commune = '91534';
       const habilitationId = new Types.ObjectId();
       const balId = await createBal({
         commune,
         _habilitation: habilitationId.toString(),
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         emails: ['test@test.fr'],
       });
       const voieId = await createVoie({
@@ -466,7 +466,7 @@ describe('BASE LOCAL MODULE', () => {
         JSON.stringify({
           statusCode: 412,
           message:
-            'La synchronisation pas possibles pour les Bases Adresses Locales de démo ou en mode brouillon',
+            'La synchronisation pas possibles pour les Bases Adresses Locales de démo',
         }),
       );
     });
@@ -475,7 +475,7 @@ describe('BASE LOCAL MODULE', () => {
       const commune = '91534';
       const balId = await createBal({
         commune,
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         emails: ['test@test.fr'],
       });
 
@@ -499,7 +499,7 @@ describe('BASE LOCAL MODULE', () => {
       const balId = await createBal({
         commune,
         _habilitation: habilitationId.toString(),
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         emails: ['test@test.fr'],
       });
 
@@ -535,7 +535,7 @@ describe('BASE LOCAL MODULE', () => {
       const balId = await createBal({
         commune,
         _habilitation: habilitationId.toString(),
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         emails: ['test@test.fr'],
       });
 
@@ -571,7 +571,7 @@ describe('BASE LOCAL MODULE', () => {
       const balId = await createBal({
         commune,
         _habilitation: habilitationId.toString(),
-        status: StatusBaseLocalEnum.READY_TO_PUBLISH,
+        status: StatusBaseLocalEnum.DRAFT,
         emails: ['test@test.fr'],
       });
 
