@@ -272,7 +272,7 @@ export class VoieService {
     const voieUpdated: Voie = await this.voieModel.findOneAndUpdate(
       { _id: voie._id },
       { $set: { _deleted: new Date(), _updated: new Date() } },
-      { returnDocument: 'after' },
+      { new: true },
     );
 
     // SET _updated OF VOIE
