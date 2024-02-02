@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as hasha from 'hasha';
-import { assignIn } from 'lodash';
 
 import {
   Habilitation,
@@ -35,7 +34,7 @@ export class PublicationService {
     balId: Types.ObjectId,
     options: { force?: boolean } = {},
   ): Promise<BaseLocale> {
-    const baseLocale = await this.baseLocaleModel.findOne(balId);
+    const baseLocale = await this.baseLocaleModel.findOne(balId).lean();
 
     // On vérifie que la BAL n'est pas en DEMO ou DRAFT
     if (baseLocale.status === StatusBaseLocalEnum.DEMO) {
@@ -110,7 +109,7 @@ export class PublicationService {
       return this.markAsSynced(baseLocale, publishedRevision._id);
     }
 
-    const sync = await this.updateSyncInfo(balId);
+    const sync = await this.updateSyncInfo(baseLocale);
 
     // On traite les BAL dont le sync est en conflit ou outdated
     if (
@@ -149,7 +148,7 @@ export class PublicationService {
       );
     }
 
-    return this.baseLocaleModel.findOne(balId);
+    return this.baseLocaleModel.findOne(balId).lean();
   }
 
   public async pause(balId: Types.ObjectId) {
@@ -164,16 +163,18 @@ export class PublicationService {
     balId: Types.ObjectId,
     isPaused: boolean,
   ): Promise<BaseLocale> {
-    const baseLocale: BaseLocale = await this.baseLocaleModel.findOneAndUpdate(
-      {
-        _id: balId,
-        'sync.status': {
-          $in: [StatusSyncEnum.SYNCED, StatusSyncEnum.OUTDATED],
+    const baseLocale: BaseLocale = await this.baseLocaleModel
+      .findOneAndUpdate(
+        {
+          _id: balId,
+          'sync.status': {
+            $in: [StatusSyncEnum.SYNCED, StatusSyncEnum.OUTDATED],
+          },
         },
-      },
-      { $set: { 'sync.isPaused': isPaused } },
-      { new: true },
-    );
+        { $set: { 'sync.isPaused': isPaused } },
+        { new: true },
+      )
+      .lean();
 
     if (!baseLocale) {
       throw new HttpException(
@@ -189,20 +190,23 @@ export class PublicationService {
     baseLocale: BaseLocale,
     syncChanges: Partial<Sync>,
   ): Promise<Sync> {
-    const sync: Sync = baseLocale.sync;
-    assignIn(sync, syncChanges);
     const changes: Partial<BaseLocale> = {
-      sync,
-      ...(syncChanges.status === 'conflict' && {
+      sync: {
+        ...baseLocale.sync,
+        ...syncChanges,
+      },
+      ...(syncChanges.status === StatusSyncEnum.CONFLICT && {
         status: StatusBaseLocalEnum.REPLACED,
       }),
     };
-    const baseLocaleChanged: BaseLocale =
-      await this.baseLocaleModel.findOneAndUpdate(
+
+    const baseLocaleChanged: BaseLocale = await this.baseLocaleModel
+      .findOneAndUpdate(
         { _id: baseLocale._id },
         { $set: changes },
         { new: true },
-      );
+      )
+      .lean();
 
     return baseLocaleChanged.sync;
   }
@@ -218,21 +222,19 @@ export class PublicationService {
       lastUploadedRevisionId: new Types.ObjectId(lastUploadedRevisionId),
     };
 
-    const baseLocaleSynced: BaseLocale =
-      await this.baseLocaleModel.findOneAndUpdate(
+    const baseLocaleSynced: BaseLocale = await this.baseLocaleModel
+      .findOneAndUpdate(
         { _id: baseLocale._id },
         { $set: { status: StatusBaseLocalEnum.PUBLISHED, sync } },
         { new: true },
-      );
+      )
+      .lean();
 
     return baseLocaleSynced;
   }
 
-  private async updateSyncInfo(balId: Types.ObjectId): Promise<Sync> {
-    // On récupère la BAL
-    const baseLocale = await this.baseLocaleModel.findOne(balId);
-
-    // Si le status de la BAL est PUBLISHED on retourne sync
+  private async updateSyncInfo(baseLocale: BaseLocale): Promise<Sync> {
+    // Si le status de la BAL est différent de PUBLISHED on retourne sync
     if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
       return baseLocale.sync;
     }
