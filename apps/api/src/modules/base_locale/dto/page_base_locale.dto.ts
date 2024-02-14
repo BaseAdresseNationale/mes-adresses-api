@@ -17,5 +17,7 @@ export class PageBaseLocaleDTO {
     type: () => ExtendedBaseLocaleDTO,
     isArray: true,
   })
-  results?: Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'>[];
+  results?: Array<
+    ExtendedBaseLocaleDTO | Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'>
+  >;
 }

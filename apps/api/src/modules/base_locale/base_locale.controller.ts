@@ -63,6 +63,7 @@ import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
+import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -127,6 +128,7 @@ export class BaseLocaleController {
   })
   @ApiBearerAuth('admin-token')
   async searchBaseLocale(
+    @Req() req: CustomRequest,
     @Query(SearchQueryPipe) { filters, limit, offset }: SearchQueryTransformed,
     @Res() res: Response,
   ) {
@@ -137,14 +139,18 @@ export class BaseLocaleController {
       offset,
     );
     const count: number = await this.baseLocaleService.count(filters);
-    const results: Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'>[] = [];
+    const results: Array<
+      ExtendedBaseLocaleDTO | Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'>
+    > = [];
+
     for (const bal of basesLocales) {
       const balExtended: ExtendedBaseLocaleDTO =
         await this.baseLocaleService.extendWithNumeros(bal);
-      const balExtendedFiltered: Omit<
-        ExtendedBaseLocaleDTO,
-        'token' | 'emails'
-      > = filterSensitiveFields(balExtended);
+      const balExtendedFiltered:
+        | ExtendedBaseLocaleDTO
+        | Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'> = isSuperAdmin(req)
+        ? balExtended
+        : filterSensitiveFields(balExtended);
       results.push(balExtendedFiltered);
     }
     const page: PageBaseLocaleDTO = {
