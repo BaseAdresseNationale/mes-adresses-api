@@ -15,10 +15,14 @@
   },
   "scripts": {
     "build": "nest build api && nest build cron",
+    "build:api": "nest build api",
+    "build:cron": "nest build cron",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
-    "start": "node dist/apps/api/main.js",
-    "start:api": "node dist/apps/api/main",
-    "start:cron": "node dist/apps/cron/main",
+    "start": "nest start",
+    "start:api": "nest start api",
+    "start:cron": "nest start cron",
+    "start:prod:api": "node dist/apps/api/main",
+    "start:prod:cron": "node dist/apps/cron/main",
     "start:debug": "nest start --debug --watch",
     "dev": "nest start --watch",
     "dev:api": "nest start api --watch",
@@ -33,7 +37,13 @@
     "test:e2e": "yarn test:api && yarn test:cron",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
     "update-contours": "node ./scripts/update-contours-communes.js",
-    "push-staging": "./scripts/push-staging.sh"
+    "push-staging": "./scripts/push-staging.sh",
+    "docker:build:api": "docker buildx build --platform=linux/amd64 -f Dockerfile.api -t mes-adresses-api .",
+    "docker:run:api": "docker run -p 3000:3000 mes-adresses-api",
+    "docker:push:api": "docker tag mes-adresses-api rg.fr-par.scw.cloud/tmp-poc/mes-adresses-cron:latest && docker push rg.fr-par.scw.cloud/tmp-poc/mes-adresses-cron:latest",
+    "docker:build:cron": "docker buildx build --platform=linux/amd64 -f Dockerfile.cron -t mes-adresses-cron .",
+    "docker:run:cron": "docker run mes-adresses-cron",
+    "docker:push:cron": "docker tag mes-adresses-cron rg.fr-par.scw.cloud/tmp-poc/mes-adresses-cron:latest && docker push rg.fr-par.scw.cloud/tmp-poc/mes-adresses-cron:latest"
   },
   "dependencies": {
     "@ban-team/adresses-util": "^0.9.0",
