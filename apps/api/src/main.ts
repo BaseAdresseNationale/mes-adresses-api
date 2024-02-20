@@ -5,7 +5,6 @@ import * as cors from 'cors';
 import * as morgan from 'morgan';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import { printMemoryUsage } from './lib/utils/memory-usage.utils';
 
 import { ApiModule } from './api.module';
 import * as apiLegacy from '../../legacy-api/routes';
@@ -51,10 +50,6 @@ async function bootstrap() {
   app.setGlobalPrefix('v2');
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
-  if (process.env.PRINT_MEMORY_USAGE === 'true') {
-    setInterval(printMemoryUsage, 1000);
-  }
 
   await app.listen(process.env.PORT || 5000);
 }
