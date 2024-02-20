@@ -28,6 +28,7 @@ type RowType = {
   parcelles: string[];
   position?: any;
   _updated: Date;
+  comment?: string;
 };
 
 type CsvRowType = {
@@ -48,6 +49,7 @@ type CsvRowType = {
   cad_parcelles: string;
   source: string;
   date_der_maj: string;
+  commentaire?: string;
 };
 
 function formatCleInterop(
@@ -89,7 +91,7 @@ function extractHeaders(csvRows: CsvRowType[]): string[] {
 }
 
 /* eslint camelcase: off */
-function createRow(obj: RowType): CsvRowType {
+function createRow(obj: RowType, withComment: boolean): CsvRowType {
   const row: CsvRowType = {
     cle_interop: formatCleInterop(
       obj.codeCommune,
@@ -114,6 +116,10 @@ function createRow(obj: RowType): CsvRowType {
     source: DEFAULT_SOURCE,
     date_der_maj: obj._updated ? obj._updated.toISOString().slice(0, 10) : '',
   };
+
+  if (withComment) {
+    row.commentaire = obj.comment;
+  }
 
   if (obj.nomVoieAlt) {
     Object.keys(obj.nomVoieAlt).forEach((o) => {
@@ -147,6 +153,7 @@ export async function exportBalToCsv(
   voies: Voie[],
   toponymes: Toponyme[],
   numeros: Numero[],
+  withComment: boolean,
 ): Promise<string> {
   const voiesIndex: Record<string, Voie> = keyBy(voies, (v) =>
     v._id.toHexString(),
@@ -183,6 +190,7 @@ export async function exportBalToCsv(
           nomToponymeAlt: toponyme?.nomAlt || null,
           parcelles: n.parcelles,
           position: p,
+          comment: n.comment,
         });
       });
     }
@@ -215,7 +223,7 @@ export async function exportBalToCsv(
     }
   });
 
-  const csvRows: CsvRowType[] = rows.map((row) => createRow(row));
+  const csvRows: CsvRowType[] = rows.map((row) => createRow(row, withComment));
   const headers: string[] = extractHeaders(csvRows);
 
   return getStream(

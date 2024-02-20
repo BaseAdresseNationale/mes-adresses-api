@@ -33,12 +33,15 @@ export class ExportCsvService {
     return { voies, toponymes, numeros };
   }
 
-  async exportToCsv(baseLocale: BaseLocale): Promise<string> {
+  async exportToCsv(
+    baseLocale: BaseLocale,
+    withComment: boolean = false,
+  ): Promise<string> {
     const { voies, toponymes, numeros } = await this.getAllFromBal(
       baseLocale._id,
     );
 
-    return exportBalToCsv(voies, toponymes, numeros);
+    return exportBalToCsv(voies, toponymes, numeros, withComment);
   }
 
   async exportVoiesToCsv(baseLocale: BaseLocale): Promise<string> {
