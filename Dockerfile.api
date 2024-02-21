@@ -16,5 +16,8 @@ COPY . .
 # Creates a "dist" folder with the production build
 RUN yarn build:api
 
+ENV PORT=8000
+ENV NODE_ENV=production
+
 # Start the server using the production build
 CMD [ "yarn", "start:prod:api" ]
