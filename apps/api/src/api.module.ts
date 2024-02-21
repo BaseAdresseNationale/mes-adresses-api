@@ -25,6 +25,7 @@ import { StatsModule } from './modules/stats/stats.module';
           options.tls = true;
           options.tlsCAFile = path;
           options.authMechanism = 'PLAIN';
+          options.tlsInsecure = true;
         }
 
         return options;
