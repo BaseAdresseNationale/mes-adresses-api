@@ -8,6 +8,7 @@ import {
   BaseLocaleSchema,
 } from '@/shared/schemas/base_locale/base_locale.schema';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
+import { writeFileSync } from 'node:fs';
 
 import { CronService } from './cron.service';
 import { DetectOutdatedTask } from './tasks/detect_outdated.task';
@@ -27,10 +28,23 @@ import { Voie, VoieSchema } from '@/shared/schemas/voie/voie.schema';
     ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
-        uri: config.get('MONGODB_URL'),
-        dbName: config.get('MONGODB_DBNAME'),
-      }),
+      useFactory: async (config: ConfigService) => {
+        const options: any = {
+          uri: config.get('MONGODB_URL'),
+          dbName: config.get('MONGODB_DBNAME'),
+        };
+
+        if (config.get('MONGODB_CERTIFICATE')) {
+          const path = `${__dirname}/../../certificate.pem`;
+          writeFileSync(path, config.get('MONGODB_CERTIFICATE'));
+          options.tls = true;
+          options.tlsCAFile = path;
+          options.authMechanism = 'PLAIN';
+          options.tlsInsecure = true;
+        }
+
+        return options;
+      },
       inject: [ConfigService],
     }),
     MongooseModule.forFeature([

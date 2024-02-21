@@ -19,6 +19,7 @@ import { StatsModule } from './modules/stats/stats.module';
           uri: config.get('MONGODB_URL'),
           dbName: config.get('MONGODB_DBNAME'),
         };
+
         if (config.get('MONGODB_CERTIFICATE')) {
           const path = `${__dirname}/../../certificate.pem`;
           writeFileSync(path, config.get('MONGODB_CERTIFICATE'));
