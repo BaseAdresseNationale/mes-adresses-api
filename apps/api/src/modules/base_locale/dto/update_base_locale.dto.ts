@@ -1,6 +1,7 @@
 import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  ArrayMaxSize,
   ArrayNotEmpty,
   IsEmail,
   IsEnum,
@@ -22,6 +23,7 @@ export class UpdateBaseLocaleDTO {
   @IsOptional()
   @ApiProperty({ required: true, nullable: false })
   @ArrayNotEmpty()
+  @ArrayMaxSize(100)
   @IsEmail({}, { each: true })
   emails?: Array<string>;
 }
