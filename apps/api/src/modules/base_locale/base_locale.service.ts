@@ -109,17 +109,22 @@ export class BaseLocaleService {
     return query.lean().exec();
   }
 
-  async createOne(createInput: CreateBaseLocaleDTO): Promise<BaseLocale> {
+  async createOne(
+    createInput: CreateBaseLocaleDTO,
+    sendMail: boolean = true,
+  ): Promise<BaseLocale> {
     const newBaseLocale = await this.baseLocaleModel.create({
       ...createInput,
       token: generateBase62String(20),
       status: StatusBaseLocalEnum.DRAFT,
     });
 
-    const email = createBalCreationNotificationEmail({
-      baseLocale: newBaseLocale,
-    });
-    await this.mailerService.sendMail(email, newBaseLocale.emails);
+    if (sendMail) {
+      const email = createBalCreationNotificationEmail({
+        baseLocale: newBaseLocale,
+      });
+      await this.mailerService.sendMail(email, newBaseLocale.emails);
+    }
 
     return newBaseLocale;
   }
@@ -334,8 +339,11 @@ export class BaseLocaleService {
   async populate(
     baseLocale: BaseLocale,
     data: { voies: Voie[]; toponymes: Toponyme[]; numeros: Numero[] },
+    deleteData: boolean = true,
   ): Promise<BaseLocale> {
-    await this.deleteData(baseLocale);
+    if (deleteData) {
+      await this.deleteData(baseLocale);
+    }
 
     const { voies, toponymes, numeros } = data;
 
@@ -440,6 +448,19 @@ export class BaseLocaleService {
     await this.mailerService.sendMail(email, updatedBaseLocale.emails);
 
     return updatedBaseLocale;
+  }
+
+  async findMetas(balId: string) {
+    const voies: Voie[] = await this.voieService.findMany({
+      _bal: balId,
+    });
+    const toponymes: Toponyme[] = await this.toponymeService.findMany({
+      _bal: balId,
+    });
+    const numeros: Numero[] = await this.numeroService.findMany({
+      _bal: balId,
+    });
+    return { voies, toponymes, numeros };
   }
 
   touch(baseLocaleId: Types.ObjectId, _updated: Date = new Date()) {
