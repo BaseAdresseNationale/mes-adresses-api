@@ -32,7 +32,9 @@
     "test:cron": "jest --config ./apps/cron/test/jest-e2e.json",
     "test:e2e": "yarn test:api && yarn test:cron",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
-    "push-staging": "./scripts/push-staging.sh"
+    "update-contours": "node ./scripts/update-contours-communes.js",
+    "push-staging": "./scripts/push-staging.sh",
+    "generate:openapi:signalement": "openapi --input http://localhost:5005/api-json --output ./apps/api/src/modules/base_locale/sub_modules/signalement/openapi"
   },
   "dependencies": {
     "@ban-team/adresses-util": "^0.9.0",
@@ -101,6 +103,7 @@
     "mongodb-memory-server": "^8.15.1",
     "nock": "^13.3.3",
     "nyc": "^15.1.0",
+    "openapi-typescript-codegen": "^0.27.0",
     "prettier": "^3.0.0",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.3",

@@ -26,6 +26,7 @@ import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
 import { SearchQueryPipe } from './pipe/search_query.pipe';
+import { SignalementModule } from './sub_modules/signalement/signalement.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { SearchQueryPipe } from './pipe/search_query.pipe';
     forwardRef(() => ToponymeModule),
     forwardRef(() => CommuneModule),
     forwardRef(() => PopulateModule),
+    forwardRef(() => SignalementModule),
   ],
   providers: [BaseLocaleMiddleware, BaseLocaleService, SearchQueryPipe],
   controllers: [BaseLocaleController],
