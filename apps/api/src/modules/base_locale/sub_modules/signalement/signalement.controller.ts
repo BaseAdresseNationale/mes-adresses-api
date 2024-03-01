@@ -1,10 +1,32 @@
-import { Controller, Res, Req, HttpStatus, Get } from '@nestjs/common';
+import {
+  Controller,
+  Res,
+  Req,
+  HttpStatus,
+  Get,
+  Put,
+  Body,
+} from '@nestjs/common';
 import { Response } from 'express';
-import { ApiParam, ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiParam,
+  ApiTags,
+  ApiResponse,
+  ApiOperation,
+  ApiBody,
+  ApiProperty,
+  // ApiBody,
+} from '@nestjs/swagger';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { SignalementService } from './signalement.service';
-import { Signalement } from './openapi';
+import { Signalement, UpdateSignalementDTO } from './openapi';
+
+// TODO : remove
+class _UpdateSignalementDTO {
+  @ApiProperty({ required: true, nullable: false })
+  id: string;
+}
 
 @ApiTags('signalement')
 @Controller('')
@@ -29,5 +51,23 @@ export class SignalementController {
       console.log('err', err);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json([]);
     }
+  }
+
+  @Put('/signalements')
+  @ApiOperation({
+    summary: 'Update a given signalement',
+    operationId: 'updateSignalement',
+  })
+  @ApiBody({ type: _UpdateSignalementDTO, required: true })
+  @ApiResponse({ status: 200, type: Array<Signalement> })
+  async updateSignalement(
+    @Req() req: CustomRequest,
+    @Body() updateSignalementDTO: UpdateSignalementDTO,
+    @Res() res: Response,
+  ) {
+    const updatedSignalement =
+      await this.signalementService.updateSignalement(updateSignalementDTO);
+
+    res.status(HttpStatus.OK).json(updatedSignalement);
   }
 }

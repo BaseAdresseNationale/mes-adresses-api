@@ -4,6 +4,5 @@
 /* eslint-disable */
 export type ExistingLocation = {
     type: string;
-    label: string;
 };
 
