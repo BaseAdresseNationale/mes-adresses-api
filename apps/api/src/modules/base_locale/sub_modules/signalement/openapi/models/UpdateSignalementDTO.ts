@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type ExistingLocationDTO = {
-    type: string;
-    label: string;
+export type UpdateSignalementDTO = {
+    id: string;
 };
 

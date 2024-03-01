@@ -13,9 +13,9 @@ export type { ChangesRequested } from './models/ChangesRequested';
 export type { ChangesRequestedDTO } from './models/ChangesRequestedDTO';
 export type { CreateSignalementDTO } from './models/CreateSignalementDTO';
 export type { ExistingLocation } from './models/ExistingLocation';
-export type { ExistingLocationDTO } from './models/ExistingLocationDTO';
 export type { Point } from './models/Point';
 export { Position } from './models/Position';
 export type { Signalement } from './models/Signalement';
+export type { UpdateSignalementDTO } from './models/UpdateSignalementDTO';
 
 export { DefaultService } from './services/DefaultService';
