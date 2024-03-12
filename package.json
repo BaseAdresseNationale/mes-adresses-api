@@ -32,7 +32,6 @@
     "test:cron": "jest --config ./apps/cron/test/jest-e2e.json",
     "test:e2e": "yarn test:api && yarn test:cron",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
-    "update-contours": "node ./scripts/update-contours-communes.js",
     "push-staging": "./scripts/push-staging.sh"
   },
   "dependencies": {
