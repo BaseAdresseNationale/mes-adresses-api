@@ -447,18 +447,15 @@ export class BaseLocaleService {
     return updatedBaseLocale;
   }
 
-  async findBalMetas(balId: string) {
+  async findMetas(balId: string) {
     const voies: Voie[] = await this.voieService.findMany({
       _bal: balId,
-      _deleted: null,
     });
     const toponymes: Toponyme[] = await this.toponymeService.findMany({
       _bal: balId,
-      _deleted: null,
     });
     const numeros: Numero[] = await this.numeroService.findMany({
       _bal: balId,
-      _deleted: null,
     });
     return { voies, toponymes, numeros };
   }

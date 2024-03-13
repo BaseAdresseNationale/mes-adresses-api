@@ -15,7 +15,7 @@ export class CommuneBalDTO {
 export class FusionCommunesDTO {
   @ApiProperty({ required: true, nullable: false })
   @IsString()
-  coodeCommune: string;
+  codeCommune: string;
 
   @ApiProperty({ required: true, nullable: false })
   @IsString()

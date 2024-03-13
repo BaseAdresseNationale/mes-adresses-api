@@ -15,25 +15,24 @@ export class AdminService {
   ) {}
 
   public async fusionCommunes({
-    coodeCommune,
+    codeCommune,
     nom,
     emails,
     communes,
   }: FusionCommunesDTO): Promise<BaseLocale> {
     const newbaseLocale: BaseLocale = await this.baseLocaleService.createOne(
-      { commune: coodeCommune, nom, emails },
+      { commune: codeCommune, nom, emails },
       false,
     );
 
     const fusionEmails = emails;
     for (const { codeCommune, balId } of communes) {
       if (balId) {
-        const baseLocale: BaseLocale = await this.baseLocaleService.findOne({
-          commune: codeCommune,
-        });
+        const baseLocale: BaseLocale =
+          await this.baseLocaleService.findOneOrFail(balId);
         fusionEmails.push(...baseLocale.emails);
         const { numeros, voies, toponymes } =
-          await this.baseLocaleService.findBalMetas(codeCommune);
+          await this.baseLocaleService.findMetas(balId);
         await this.baseLocaleService.populate(newbaseLocale, {
           numeros,
           voies,
