@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsString, ValidateNested } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class CommuneBalDTO {
   @ApiProperty({ required: true, nullable: false })
@@ -8,6 +14,8 @@ export class CommuneBalDTO {
   codeCommune: string;
 
   @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsMongoId()
   @IsString()
   balId?: string;
 }

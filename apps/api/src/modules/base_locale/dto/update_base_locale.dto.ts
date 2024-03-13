@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsOptional,
+  MaxLength,
 } from 'class-validator';
 
 export class UpdateBaseLocaleDTO {
@@ -22,6 +23,7 @@ export class UpdateBaseLocaleDTO {
   @IsOptional()
   @ApiProperty({ required: true, nullable: false })
   @ArrayNotEmpty()
+  @MaxLength(100)
   @IsEmail({}, { each: true })
   emails?: Array<string>;
 }
