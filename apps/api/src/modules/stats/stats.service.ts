@@ -72,7 +72,6 @@ export class StatsService {
           draft: balsByCommune.filter(
             ({ status }) => status === StatusBaseLocalEnum.DRAFT,
           ).length,
-          readyToPublish: 0,
           demo: balsByCommune.filter(({ status }) => status === 'demo').length,
         })),
       };
