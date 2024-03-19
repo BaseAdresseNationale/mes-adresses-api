@@ -542,7 +542,7 @@ export class BaseLocaleController {
   @ApiOperation({ summary: 'Create Voie in Bal', operationId: 'createVoie' })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateVoieDTO, required: true })
-  @ApiResponse({ status: HttpStatus.CREATED, type: Voie, isArray: true })
+  @ApiResponse({ status: HttpStatus.CREATED, type: Voie })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createVoie(
