@@ -11,7 +11,6 @@ export class BasesLocalesCreationDTO {
       total: number;
       published: number;
       draft: number;
-      readyToPublish: number;
       demo: number;
     }
   >;
