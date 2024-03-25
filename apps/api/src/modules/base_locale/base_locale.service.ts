@@ -339,8 +339,11 @@ export class BaseLocaleService {
   async populate(
     baseLocale: BaseLocale,
     data: { voies: Voie[]; toponymes: Toponyme[]; numeros: Numero[] },
+    deleteData: boolean = true,
   ): Promise<BaseLocale> {
-    await this.deleteData(baseLocale);
+    if (deleteData) {
+      await this.deleteData(baseLocale);
+    }
 
     const { voies, toponymes, numeros } = data;
 

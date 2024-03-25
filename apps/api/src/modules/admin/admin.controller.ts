@@ -6,7 +6,13 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBody, ApiResponse, ApiTags, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiResponse,
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
@@ -27,6 +33,7 @@ export class AdminController {
   })
   @ApiBody({ type: FusionCommunesDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale, isArray: true })
+  @ApiBearerAuth('admin-token')
   @UseGuards(SuperAdminGuard)
   async fusionCommunes(
     @Body() fusionCommunesDTO: FusionCommunesDTO,
