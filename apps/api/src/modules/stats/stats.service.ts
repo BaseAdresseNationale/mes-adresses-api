@@ -7,6 +7,7 @@ import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
 import { BasesLocalesStatusDTO } from '@/modules/stats/dto/bases_locales_status.dto';
 import { BasesLocalesCreationDTO } from '@/modules/stats/dto/bases_locales_creations.dto';
 
@@ -20,20 +21,25 @@ export class StatsService {
   public async findBalInCodeCommuneWithFields(
     fields: string[] = [],
     codeCommunes: string[] = [],
-  ): Promise<BaseLocale[]> {
+  ): Promise<Omit<BaseLocale, 'token' | 'emails'>[]> {
     const filters: FilterQuery<BaseLocale> = {
       status: { $ne: 'demo' },
       _deleted: null,
       ...(codeCommunes && { commune: { $in: codeCommunes } }),
     };
-    let selector: Record<string, number> = null;
+    const selector: Record<string, number> = {};
     if (fields.length > 0) {
-      selector = {};
       fields.forEach((f) => {
         selector[f] = 1;
       });
     }
-    return this.baseLocaleService.findMany(filters, selector);
+
+    const bals: BaseLocale[] = await this.baseLocaleService.findMany(
+      filters,
+      selector,
+    );
+
+    return bals.map((bal) => filterSensitiveFields(bal));
   }
 
   public async findBalsStatusRepartition(): Promise<BasesLocalesStatusDTO[]> {
