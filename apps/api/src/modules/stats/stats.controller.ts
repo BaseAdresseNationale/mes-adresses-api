@@ -41,13 +41,13 @@ export class StatsController {
   @ApiBody({ type: CodeCommuneDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale, isArray: true })
   async getBalsStats(
-    @Query('fields') fields: string[],
+    @Query('fields') fields: string[] | string,
     @Body() codeCommeDto: CodeCommuneDTO,
     @Res() res: Response,
   ) {
-    const result: BaseLocale[] =
+    const result: Omit<BaseLocale, 'token' | 'emails'>[] =
       await this.statsService.findBalInCodeCommuneWithFields(
-        fields,
+        typeof fields === 'string' ? [fields] : fields,
         codeCommeDto.codeCommunes,
       );
 
