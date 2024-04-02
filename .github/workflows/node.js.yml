@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  URL_CONTOURS_COMMUNES: http://etalab-datasets.geo.data.gouv.fr/contours-administratifs/2023/geojson/communes-100m.geojson
-
 jobs:
   build:
 
@@ -16,17 +13,22 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - run: yarn
-    - run: yarn lint
-    - run: yarn test:e2e
+    - name: Install dependencies
+      run: yarn
+    - name: Lint the codebase
+      run: yarn lint
+    - name: Test our code
+      run: yarn test
+    - name: Build
+      run: yarn build
 
   scan:
     name: gitleaks

@@ -8,6 +8,7 @@
     "Guillaume Fay <guillaume.fay@beta.gouv.fr>",
     "Fabien Tafforeau <fabien.tafforeau@beta.gouv.fr>"
   ],
+  "author": "Équipe Adresse <adresse@data.gouv.fr>",
   "license": "MIT",
   "private": false,
   "publishConfig": {
@@ -24,13 +25,9 @@
     "dev:api": "nest start api --watch",
     "dev:cron": "nest start cron --watch",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test": "yarn test:api && yarn test:cron",
     "test:api": "jest --config ./apps/api/test/jest-e2e.json",
     "test:cron": "jest --config ./apps/cron/test/jest-e2e.json",
-    "test:e2e": "yarn test:api && yarn test:cron",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
     "push-staging": "./scripts/push-staging.sh"
   },
