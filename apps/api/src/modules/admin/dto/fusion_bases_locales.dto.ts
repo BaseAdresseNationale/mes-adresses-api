@@ -32,7 +32,7 @@ export class FusionCommunesDTO {
 
   @ApiProperty({ required: true, nullable: false })
   @ArrayNotEmpty()
-  @IsEmail(null, { each: true })
+  @IsEmail({}, { each: true })
   emails: string[];
 
   @ApiProperty({

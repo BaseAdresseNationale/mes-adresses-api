@@ -29,7 +29,6 @@ export class AdminService {
 
     for (const voie of voies) {
       voie._bal = bal._id;
-      voie.commune = bal.commune;
       const newId = new ObjectId();
       idVoies[voie._id.toHexString()] = newId;
       voie._id = newId;
@@ -37,7 +36,6 @@ export class AdminService {
 
     for (const toponyme of toponymes) {
       toponyme._bal = bal._id;
-      toponyme.commune = bal.commune;
       const newId = new ObjectId();
       idToponymes[toponyme._id.toHexString()] = newId;
       toponyme._id = newId;
@@ -45,12 +43,30 @@ export class AdminService {
 
     for (const numero of numeros) {
       numero._bal = bal._id;
-      numero.commune = bal.commune;
       numero._id = new ObjectId();
       numero.voie = idVoies[numero.voie.toHexString()];
       numero.toponyme = numero.toponyme
         ? idToponymes[numero.toponyme.toHexString()]
         : null;
+    }
+  }
+
+  private replaceBalCommune(
+    bal: BaseLocale,
+    voies: Voie[],
+    toponymes: Toponyme[],
+    numeros: Numero[],
+  ) {
+    for (const voie of voies) {
+      voie.commune = bal.commune;
+    }
+
+    for (const toponyme of toponymes) {
+      toponyme.commune = bal.commune;
+    }
+
+    for (const numero of numeros) {
+      numero.commune = bal.commune;
     }
   }
 
@@ -69,6 +85,7 @@ export class AdminService {
         const { numeros, voies, toponymes } =
           await this.baseLocaleService.findMetas(balId);
         this.replaceBalIds(newbaseLocale, voies, toponymes, numeros);
+        this.replaceBalCommune(newbaseLocale, voies, toponymes, numeros);
         await this.baseLocaleService.populate(
           newbaseLocale,
           {
@@ -81,6 +98,7 @@ export class AdminService {
       } else {
         const { numeros, voies, toponymes } =
           await this.populateService.extract(codeCommune);
+        this.replaceBalCommune(newbaseLocale, voies, toponymes, numeros);
         await this.baseLocaleService.populate(
           newbaseLocale,
           {
