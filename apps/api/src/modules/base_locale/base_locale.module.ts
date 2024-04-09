@@ -26,9 +26,13 @@ import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
 import { SearchQueryPipe } from './pipe/search_query.pipe';
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule,
+    HttpModule,
     MongooseModule.forFeature([
       { name: BaseLocale.name, schema: BaseLocaleSchema },
     ]),

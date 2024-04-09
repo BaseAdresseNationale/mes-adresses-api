@@ -8,6 +8,7 @@ import axios from 'axios';
 import { add, sub } from 'date-fns';
 import MockAdapter from 'axios-mock-adapter';
 import * as nodemailer from 'nodemailer';
+import { uuid } from 'uuidv4';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
@@ -139,19 +140,25 @@ describe('PUBLICATION MODULE', () => {
     it('Publish 200 DRAFT', async () => {
       const commune = '91534';
       const habilitationId = new Types.ObjectId();
+      const communeUuid = uuid();
       const balId = await createBal({
         commune,
+        banId: communeUuid,
         _habilitation: habilitationId.toString(),
         status: StatusBaseLocalEnum.DRAFT,
         emails: ['test@test.fr'],
       });
+      const toponymeUuid = uuid();
       const voieId = await createVoie({
         nom: 'rue de la paix',
         commune,
         _bal: balId,
+        banId: toponymeUuid,
       });
+      const numeroUuid = uuid();
       await createNumero({
         _bal: balId,
+        banId: numeroUuid,
         voie: voieId,
         numero: 1,
         suffixe: 'bis',
@@ -190,8 +197,8 @@ describe('PUBLICATION MODULE', () => {
 
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
-      const csvFile = `cle_interop;uid_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-    91534_xxxx_00001_bis;;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+    91534_xxxx_00001_bis;${communeUuid};${toponymeUuid};${numeroUuid};rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -263,8 +270,10 @@ describe('PUBLICATION MODULE', () => {
       };
 
       // BAL
+      const communeUuid = uuid();
       const balId = await createBal({
         commune,
+        banId: communeUuid,
         _habilitation: habilitationId.toString(),
         status: StatusBaseLocalEnum.PUBLISHED,
         emails: ['test@test.fr'],
@@ -273,13 +282,17 @@ describe('PUBLICATION MODULE', () => {
           lastUploadedRevisionId: revisionId,
         },
       });
+      const toponymeUuid = uuid();
       const voieId = await createVoie({
         nom: 'rue de la paix',
         commune,
         _bal: balId,
+        banId: toponymeUuid,
       });
+      const numeroUuid = uuid();
       await createNumero({
         _bal: balId,
+        banId: numeroUuid,
         voie: voieId,
         numero: 1,
         suffixe: 'bis',
@@ -309,8 +322,8 @@ describe('PUBLICATION MODULE', () => {
 
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
-      const csvFile = `cle_interop;uid_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-    91534_xxxx_00001_bis;;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+    91534_xxxx_00001_bis;${communeUuid};${toponymeUuid};${numeroUuid};rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -377,7 +390,7 @@ describe('PUBLICATION MODULE', () => {
         files: [
           {
             type: 'bal',
-            hash: '64efb8a258712e11e6409b60fcd4b1fee8f748286101c52a63a81dfd5e106369',
+            hash: '8d0cda05e7b8b58a92a18cd40d0549c1d3f8ac1ac9586243aa0e3f885bb870c4',
           },
         ],
       };

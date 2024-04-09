@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { groupBy } from 'lodash';
+import { uuid } from 'uuidv4';
 
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
@@ -30,7 +31,6 @@ import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { BBox as BboxTurf } from '@turf/helpers';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
-import { CreateToponymeDTO } from '../toponyme/dto/create_toponyme.dto';
 import {
   getTilesByLineString,
   getTilesByPosition,
@@ -113,6 +113,7 @@ export class VoieService {
     // CREATE OBJECT VOIE
     const voie: Partial<Voie> = {
       _bal: bal._id,
+      banId: uuid(),
       commune: bal.commune,
       nom: createVoieDto.nom,
       typeNumerotation:
@@ -145,6 +146,7 @@ export class VoieService {
         const voie = {
           _id: rawVoie._id,
           _bal: baseLocale._id,
+          banId: rawVoie.banId || uuid(),
           nom: cleanNom(rawVoie.nom),
           code: rawVoie.code || null,
           commune: rawVoie.commune,
@@ -368,9 +370,10 @@ export class VoieService {
     );
 
     // CREATE TOPONYME
-    const payload: CreateToponymeDTO = {
+    const payload: Partial<Toponyme> = {
       nom: voie.nom,
       nomAlt: voie.nomAlt,
+      banId: voie.banId,
     };
     const toponyme: Toponyme = await this.toponymeService.create(
       baseLocale,
