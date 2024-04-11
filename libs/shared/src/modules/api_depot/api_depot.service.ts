@@ -8,6 +8,7 @@ import { Habilitation } from './types/habilitation.type';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
 import { ConfigService } from '@nestjs/config';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class ApiDepotService {
@@ -17,6 +18,13 @@ export class ApiDepotService {
   ) {}
 
   async findOneHabiliation(habilitationId: string): Promise<Habilitation> {
+    if (!ObjectId.isValid(habilitationId)) {
+      throw new HttpException(
+        'L’identifiant de l’habilitation est invalide',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     const { data } = await firstValueFrom(
       this.httpService
         .get<Habilitation>(`habilitations/${habilitationId}`)
