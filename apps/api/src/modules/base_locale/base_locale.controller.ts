@@ -586,7 +586,7 @@ export class BaseLocaleController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateToponymeDTO, required: true })
-  @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme, isArray: true })
+  @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async create(
