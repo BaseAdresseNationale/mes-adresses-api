@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayNotEmpty, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CodeCommuneDTO {
   @ApiProperty({ required: true, nullable: false })
-  @ArrayNotEmpty()
+  @IsOptional()
   @IsString({ each: true })
   codeCommunes: Array<string>;
 }

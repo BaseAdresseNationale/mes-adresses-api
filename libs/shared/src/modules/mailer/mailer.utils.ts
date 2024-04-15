@@ -29,7 +29,7 @@ export function getEditorUrl(baseLocale) {
 }
 
 export function getApiRecoveryUrl(baseLocale) {
-  return `${getApiUrl()}/v1/bases-locales/${baseLocale._id}/${
+  return `${getApiUrl()}/v2/bases-locales/${baseLocale._id}/${
     baseLocale.token
   }/recovery`;
 }
