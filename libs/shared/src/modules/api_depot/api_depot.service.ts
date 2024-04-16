@@ -30,8 +30,8 @@ export class ApiDepotService {
         .get<Habilitation>(`habilitations/${habilitationId}`)
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('error', error.response.data);
-            throw error;
+            const { message, code } = error.response.data as any;
+            throw new HttpException(message, code);
           }),
         ),
     );

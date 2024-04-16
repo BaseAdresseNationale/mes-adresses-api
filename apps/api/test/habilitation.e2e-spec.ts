@@ -159,7 +159,12 @@ describe('HABILITATION MODULE', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(404);
 
-      expect(response.body).toEqual(responseBody);
+      const responseExpected = {
+        statusCode: 404,
+        message: 'L’identifiant de l’habilitation demandé n’existe pas',
+      };
+
+      expect(response.body).toEqual(responseExpected);
     });
   });
 
