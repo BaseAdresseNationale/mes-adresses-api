@@ -15,8 +15,6 @@ import {
   PipelineStage,
 } from 'mongoose';
 import { uniq, difference, groupBy } from 'lodash';
-import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { MailerService } from '@/shared/modules/mailer/mailer.service';
@@ -47,14 +45,11 @@ import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { PopulateVoie } from '@/shared/schemas/voie/voie.populate';
-import { catchError, firstValueFrom } from 'rxjs';
-import { AxiosError } from 'axios';
+import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 
 @Injectable()
 export class BaseLocaleService {
   constructor(
-    private configService: ConfigService,
-    private readonly httpService: HttpService,
     @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
     private readonly mailerService: MailerService,
     @Inject(forwardRef(() => VoieService))
@@ -65,6 +60,8 @@ export class BaseLocaleService {
     private numeroService: NumeroService,
     @Inject(forwardRef(() => PopulateService))
     private populateService: PopulateService,
+    @Inject(forwardRef(() => BanPlateformService))
+    private banPlateformService: BanPlateformService,
   ) {}
 
   async findOneOrFail(id: string): Promise<BaseLocale> {
@@ -115,27 +112,13 @@ export class BaseLocaleService {
     return query.lean().exec();
   }
 
-  public async getIdBanCommune(codeCommune: string): Promise<string> {
-    const banApiUrl = this.configService.get<string>('BAN_API_URL');
-    const url = `${banApiUrl}/api/district/cog/${codeCommune}`;
-
-    const { data } = await firstValueFrom(
-      await this.httpService.get<any>(url).pipe(
-        catchError((error: AxiosError) => {
-          console.error('error', error.response.data);
-          throw error;
-        }),
-      ),
-    );
-
-    return data.response[0].id;
-  }
-
   async createOne(
     createInput: CreateBaseLocaleDTO,
     sendMail: boolean = true,
   ): Promise<BaseLocale> {
-    const banId: string = await this.getIdBanCommune(createInput.commune);
+    const banId: string = await this.banPlateformService.getIdBanCommune(
+      createInput.commune,
+    );
     const newBaseLocale = await this.baseLocaleModel.create({
       banId,
       ...createInput,
@@ -157,7 +140,9 @@ export class BaseLocaleService {
     createDemoInput: CreateDemoBaseLocaleDTO,
   ): Promise<BaseLocale> {
     const { commune, populate } = createDemoInput;
-    const banId: string = await this.getIdBanCommune(createDemoInput.commune);
+    const banId: string = await this.banPlateformService.getIdBanCommune(
+      createDemoInput.commune,
+    );
     const newDemoBaseLocale = await this.baseLocaleModel.create({
       banId,
       token: generateBase62String(20),

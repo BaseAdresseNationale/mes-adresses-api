@@ -1,16 +1,14 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { PopulateService } from './populate.service';
-import { ConfigModule } from '@nestjs/config';
-import { HttpModule } from '@nestjs/axios';
 import { BaseLocaleModule } from '../../base_locale.module';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
+import { BanPlateformModule } from '@/shared/modules/ban_plateform/ban_plateform.module';
 
 @Module({
   imports: [
-    ConfigModule,
-    HttpModule,
     forwardRef(() => BaseLocaleModule),
     forwardRef(() => ApiDepotModule),
+    forwardRef(() => BanPlateformModule),
   ],
   providers: [PopulateService],
   exports: [PopulateService],
