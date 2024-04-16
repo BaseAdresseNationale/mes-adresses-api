@@ -385,6 +385,7 @@ export class BaseLocaleController {
     summary: 'Publish base locale',
     operationId: 'publishBaseLocale',
   })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
@@ -400,6 +401,7 @@ export class BaseLocaleController {
     summary: 'Update isPaused sync BAL to true',
     operationId: 'pauseBaseLocale',
   })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
@@ -413,6 +415,7 @@ export class BaseLocaleController {
     summary: 'Update isPaused sync BAL to false',
     operationId: 'resumeBaseLocale',
   })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
