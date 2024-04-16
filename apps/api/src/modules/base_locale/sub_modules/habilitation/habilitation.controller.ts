@@ -67,15 +67,10 @@ export class HabilitationController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async getHabilitation(@Req() req: CustomRequest, @Res() res: Response) {
-    try {
-      const result: Habilitation = await this.habilitationService.findOne(
-        req.baseLocale._habilitation,
-      );
-      res.status(HttpStatus.OK).json(result);
-    } catch (err) {
-      const { response } = err;
-      res.status(response.status).json(response.data);
-    }
+    const result: Habilitation = await this.habilitationService.findOne(
+      req.baseLocale._habilitation,
+    );
+    res.status(HttpStatus.OK).json(result);
   }
 
   @Post('/bases-locales/:baseLocaleId/habilitation')
