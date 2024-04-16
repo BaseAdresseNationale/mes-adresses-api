@@ -8,7 +8,7 @@ import {
 import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { groupBy } from 'lodash';
-import { uuid } from 'uuidv4';
+import { v4 as uuid } from 'uuid';
 
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';

@@ -19,8 +19,8 @@ export function extractIdBanAdresse({
   additionalValues,
 }: Row): string | null {
   return (
-    parsedValues.id_ban_adresse ||
-    additionalValues?.uid_adresse.idBanAdresse ||
+    parsedValues?.id_ban_adresse ||
+    additionalValues?.uid_adresse?.idBanAdresse ||
     null
   );
 }
@@ -30,8 +30,8 @@ export function extractIdBanToponyme({
   additionalValues,
 }: Row): string | null {
   return (
-    parsedValues.id_ban_toponyme ||
-    additionalValues?.uid_adresse.idBanToponyme ||
+    parsedValues?.id_ban_toponyme ||
+    additionalValues?.uid_adresse?.idBanToponyme ||
     null
   );
 }

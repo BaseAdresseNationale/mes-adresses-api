@@ -8,7 +8,7 @@ import {
 import { FilterQuery, Model, ProjectionType, SortOrder, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { omit, uniq } from 'lodash';
-import { uuid } from 'uuidv4';
+import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { NumeroPopulate } from '@/shared/schemas/numero/numero.populate';

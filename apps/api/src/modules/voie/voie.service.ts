@@ -8,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { groupBy } from 'lodash';
-import { uuid } from 'uuidv4';
+import { v4 as uuid } from 'uuid';
 
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
