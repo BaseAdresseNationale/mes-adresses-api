@@ -111,9 +111,10 @@ export class HabilitationController {
         message: sendPinCodeResponse.message,
       });
     } catch (error) {
-      const errorCode = error.code || 500;
-      return res.status(errorCode).send({
-        code: errorCode || 500,
+      const statusCode = error.code || error.status || 500;
+
+      return res.status(statusCode).send({
+        statusCode,
         message: error.message,
       });
     }
