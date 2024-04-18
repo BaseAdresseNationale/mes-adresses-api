@@ -139,9 +139,15 @@ export class HabilitationController {
         req.baseLocale._habilitation,
         body.code,
       );
-      const response: ValidatePinCodeResponseDTO = {
-        validated: validationResponse.status === StatusHabiliation.ACCEPTED,
-      };
+      const response: ValidatePinCodeResponseDTO =
+        validationResponse.status === StatusHabiliation.ACCEPTED
+          ? {
+              validated: true,
+            }
+          : {
+              validated: false,
+              error: validationResponse.error,
+            };
 
       return res.status(200).send(response);
     } catch (error) {
