@@ -8,7 +8,7 @@ import axios from 'axios';
 import { add, sub } from 'date-fns';
 import MockAdapter from 'axios-mock-adapter';
 import * as nodemailer from 'nodemailer';
-import { uuid } from 'uuidv4';
+import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';

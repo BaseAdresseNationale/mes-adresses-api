@@ -7,7 +7,7 @@ import { Connection, connect, Model, Types } from 'mongoose';
 import * as nodemailer from 'nodemailer';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { uuid } from 'uuidv4';
+import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
