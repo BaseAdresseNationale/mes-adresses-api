@@ -25,7 +25,8 @@ export class StatsService {
     const filters: FilterQuery<BaseLocale> = {
       status: { $ne: 'demo' },
       _deleted: null,
-      ...(codeCommunes && { commune: { $in: codeCommunes } }),
+      ...(codeCommunes &&
+        codeCommunes.length > 0 && { commune: { $in: codeCommunes } }),
     };
     const selector: Record<string, number> = {};
     if (fields.length > 0) {
