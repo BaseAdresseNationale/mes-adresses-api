@@ -1,0 +1,487 @@
+uid_adresse;cle_interop;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;voie_nom;lieudit_complement_nom;numero;suffixe;position;x;y;long;lat;cad_parcelles;source;date_der_maj;certification_commune
+;54084_0200_00001;54084;Mont-Bonvillers;;;Rue Joffre;;1;;segment;906010.92;6917321.29;5.833622;49.322203;;inconnue;;0
+;54084_0200_00002;54084;Mont-Bonvillers;;;Rue Joffre;;2;;segment;906030.59;6917318.43;5.833891;49.322171;;inconnue;;0
+;54084_0200_00004;54084;Mont-Bonvillers;;;Rue Joffre;;4;;entrée;906003.4;6917309.89;5.833513;49.322103;;inconnue;;0
+;54084_0200_00005;54084;Mont-Bonvillers;;;Rue Joffre;;5;;segment;905995.7;6917323.64;5.833414;49.322229;;inconnue;;0
+;54084_0200_00006;54084;Mont-Bonvillers;;;Rue Joffre;;6;;entrée;905997.28;6917324.25;5.833436;49.322234;;inconnue;;0
+;54084_0200_00007;54084;Mont-Bonvillers;;;Rue Joffre;;7;;entrée;905989.03;6917324.96;5.833323;49.322243;;inconnue;;0
+;54084_0200_00008;54084;Mont-Bonvillers;;;Rue Joffre;;8;;segment;906030.59;6917318.43;5.833891;49.322171;;inconnue;;0
+;54084_0200_00009;54084;Mont-Bonvillers;;;Rue Joffre;;9;;entrée;905985.02;6917325.15;5.833268;49.322246;;inconnue;;0
+;54084_0200_00010;54084;Mont-Bonvillers;;;Rue Joffre;;10;;entrée;905980.48;6917325.99;5.833206;49.322255;;inconnue;;0
+;54084_0200_00011;54084;Mont-Bonvillers;;;Rue Joffre;;11;;entrée;905973.48;6917326.4;5.83311;49.322261;;inconnue;;0
+;54084_0200_00014;54084;Mont-Bonvillers;;;Rue Joffre;;14;;segment;906030.59;6917318.43;5.833891;49.322171;;inconnue;;0
+;54084_0200_00015;54084;Mont-Bonvillers;;;Rue Joffre;;15;;entrée;905956.98;6917328.04;5.832884;49.322281;;inconnue;;0
+;54084_0200_00016;54084;Mont-Bonvillers;;;Rue Joffre;;16;;entrée;905952.23;6917328.53;5.832819;49.322287;;inconnue;;0
+;54084_0200_00017;54084;Mont-Bonvillers;;;Rue Joffre;;17;;entrée;905947.98;6917329.16;5.832761;49.322294;;inconnue;;0
+;54084_0200_00018;54084;Mont-Bonvillers;;;Rue Joffre;;18;;entrée;905944.27;6917329.36;5.83271;49.322297;;inconnue;;0
+;54084_0200_00020;54084;Mont-Bonvillers;;;Rue Joffre;;20;;entrée;905936;6917330.51;5.832597;49.32231;;inconnue;;0
+;54084_0200_00021;54084;Mont-Bonvillers;;;Rue Joffre;;21;;entrée;905931.48;6917330.91;5.832535;49.322315;;inconnue;;0
+;54084_0200_00022;54084;Mont-Bonvillers;;;Rue Joffre;;22;;entrée;905927.03;6917331.19;5.832474;49.322319;;inconnue;;0
+;54084_0200_00023;54084;Mont-Bonvillers;;;Rue Joffre;;23;;entrée;905921.03;6917331.98;5.832392;49.322328;;inconnue;;0
+;54084_0200_00025;54084;Mont-Bonvillers;;;Rue Joffre;;25;;entrée;906027.51;6917327.45;5.833853;49.322253;;inconnue;;0
+;54084_0200_00026;54084;Mont-Bonvillers;;;Rue Joffre;;26;;entrée;906016.19;6917328.49;5.833698;49.322266;;inconnue;;0
+;54084_0200_00027;54084;Mont-Bonvillers;;;Rue Joffre;;27;;entrée;905999.99;6917329.69;5.833476;49.322282;;inconnue;;0
+;54084_0200_00028;54084;Mont-Bonvillers;;;Rue Joffre;;28;;entrée;905991.89;6917330.51;5.833365;49.322292;;inconnue;;0
+;54084_0200_00029;54084;Mont-Bonvillers;;;Rue Joffre;;29;;entrée;905975.8;6917332.72;5.833145;49.322317;;inconnue;;0
+;54084_0200_00030;54084;Mont-Bonvillers;;;Rue Joffre;;30;;entrée;905958.93;6917334.45;5.832914;49.322338;;inconnue;;0
+;54084_0200_00031;54084;Mont-Bonvillers;;;Rue Joffre;;31;;entrée;905946.26;6917334.55;5.83274;49.322343;;inconnue;;0
+;54084_0200_00032;54084;Mont-Bonvillers;;;Rue Joffre;;32;;entrée;905929.53;6917336.51;5.832511;49.322366;;inconnue;;0
+;54084_0200_00033;54084;Mont-Bonvillers;;;Rue Joffre;;33;;entrée;905912.92;6917343.15;5.832286;49.322431;;inconnue;;0
+;54084_0200_00034;54084;Mont-Bonvillers;;;Rue Joffre;;34;;entrée;905907.39;6917353.2;5.832215;49.322523;;inconnue;;0
+;54084_b114_00001;54084;Mont-Bonvillers;;;Bonvillers Village;;1;;segment;906445.3;6917277.57;5.83957;49.32167;;inconnue;;0
+;54084_b114_00002;54084;Mont-Bonvillers;;;Bonvillers Village;;2;;segment;906457.74;6917322.1;5.839763;49.322066;;inconnue;;0
+;54084_b114_00003;54084;Mont-Bonvillers;;;Bonvillers Village;;3;;segment;906483.41;6917389.37;5.840149;49.322662;;inconnue;;0
+;54084_b114_00004;54084;Mont-Bonvillers;;;Bonvillers Village;;4;;segment;906487.67;6917402.32;5.840214;49.322777;;inconnue;;0
+;54084_b114_00005;54084;Mont-Bonvillers;;;Bonvillers Village;;5;;segment;906491.68;6917414.15;5.840275;49.322882;;inconnue;;0
+;54084_b114_00006;54084;Mont-Bonvillers;;;Bonvillers Village;;6;;segment;906498.07;6917430.75;5.840371;49.323029;;inconnue;;0
+;54084_b114_00007;54084;Mont-Bonvillers;;;Bonvillers Village;;7;;segment;906505.28;6917442.59;5.840476;49.323133;;inconnue;;0
+;54084_b114_00008;54084;Mont-Bonvillers;;;Bonvillers Village;;8;;segment;906511.43;6917449.71;5.840564;49.323195;;inconnue;;0
+;54084_b114_00009;54084;Mont-Bonvillers;;;Bonvillers Village;;9;;segment;906520.72;6917460.39;5.840697;49.323288;;inconnue;;0
+;54084_b114_00010;54084;Mont-Bonvillers;;;Bonvillers Village;;10;;segment;906525.47;6917465.91;5.840765;49.323336;;inconnue;;0
+;54084_b114_00011;54084;Mont-Bonvillers;;;Bonvillers Village;;11;;segment;906533.74;6917472.89;5.840882;49.323396;;inconnue;;0
+;54084_b114_00012;54084;Mont-Bonvillers;;;Bonvillers Village;;12;;segment;906536.9;6917463.87;5.840921;49.323314;;inconnue;;0
+;54084_b114_00013;54084;Mont-Bonvillers;;;Bonvillers Village;;13;;segment;906549.32;6917474.45;5.841097;49.323405;;inconnue;;0
+;54084_b114_00014;54084;Mont-Bonvillers;;;Bonvillers Village;;14;;segment;906612.4;6917484.73;5.841969;49.323477;;inconnue;;0
+;54084_b114_00015;54084;Mont-Bonvillers;;;Bonvillers Village;;15;;segment;906629.31;6917512.39;5.842215;49.32372;;inconnue;;0
+;54084_b114_00016;54084;Mont-Bonvillers;;;Bonvillers Village;;16;;segment;906636.83;6917507.65;5.842316;49.323675;;inconnue;;0
+;54084_b114_00017;54084;Mont-Bonvillers;;;Bonvillers Village;;17;;segment;906599.41;6917451.43;5.841774;49.323182;;inconnue;;0
+;54084_b114_00018;54084;Mont-Bonvillers;;;Bonvillers Village;;18;;segment;906595.63;6917461.53;5.841727;49.323274;;inconnue;;0
+;54084_b114_00019;54084;Mont-Bonvillers;;;Bonvillers Village;;19;;segment;906589.66;6917453.53;5.841641;49.323204;;inconnue;;0
+;54084_b114_00020;54084;Mont-Bonvillers;;;Bonvillers Village;;20;;segment;906556.29;6917418.37;5.841165;49.322899;;inconnue;;0
+;54084_b114_00021;54084;Mont-Bonvillers;;;Bonvillers Village;;21;;segment;906568.14;6917416.57;5.841327;49.322879;;inconnue;;0
+;54084_b114_00023;54084;Mont-Bonvillers;;;Bonvillers Village;;23;;segment;906549.24;6917401.98;5.84106;49.322754;;inconnue;;0
+;54084_b114_00024;54084;Mont-Bonvillers;;;Bonvillers Village;;24;;entrée;906539.47;6917390.49;5.84092;49.322654;;inconnue;;0
+;54084_b114_00025;54084;Mont-Bonvillers;;;Bonvillers Village;;25;;segment;906529.03;6917387.22;5.840775;49.322628;;inconnue;;0
+;54084_b114_00026;54084;Mont-Bonvillers;;;Bonvillers Village;;26;;segment;906512.03;6917374.48;5.840535;49.322519;;inconnue;;0
+;54084_b114_00027;54084;Mont-Bonvillers;;;Bonvillers Village;;27;;segment;906576.62;6917356.99;5.841414;49.322341;;inconnue;;0
+;54084_b114_00028;54084;Mont-Bonvillers;;;Bonvillers Village;;28;;segment;906488.03;6917355.8;5.840196;49.322359;;inconnue;;0
+;54084_b114_00029;54084;Mont-Bonvillers;;;Bonvillers Village;;29;;segment;906479.62;6917342.81;5.840074;49.322245;;inconnue;;0
+;54084_b114_00030;54084;Mont-Bonvillers;;;Bonvillers Village;;30;;segment;906473.45;6917332.35;5.839984;49.322153;;inconnue;;0
+;54084_b114_00031;54084;Mont-Bonvillers;;;Bonvillers Village;;31;;segment;906469.56;6917325.31;5.839927;49.322091;;inconnue;;0
+;54084_b114_00032;54084;Mont-Bonvillers;;;Bonvillers Village;;32;;segment;906466.84;6917319.98;5.839887;49.322044;;inconnue;;0
+;54084_b114_00033;54084;Mont-Bonvillers;;;Bonvillers Village;;33;;entrée;906469.03;6917317.72;5.839916;49.322023;;inconnue;;0
+;54084_b114_00034;54084;Mont-Bonvillers;;;Bonvillers Village;;34;;segment;906458.56;6917295.3;5.839761;49.321825;;inconnue;;0
+;54084_b114_00035;54084;Mont-Bonvillers;;;Bonvillers Village;;35;;entrée;906451.3;6917266.43;5.839647;49.321568;;inconnue;;0
+;54084_b114_00036;54084;Mont-Bonvillers;;;Bonvillers Village;;36;;segment;906447.08;6917248.25;5.83958;49.321406;;inconnue;;0
+;54084_b114_00016_b;54084;Mont-Bonvillers;;;Bonvillers Village;;16;b;entrée;906609.88;6917459.71;5.841922;49.323253;;inconnue;;0
+;54084_b114_00016_a;54084;Mont-Bonvillers;;;Bonvillers Village;;16;a;segment;906616.18;6917474.74;5.842016;49.323386;;inconnue;;0
+;54084_b114_00005_bis;54084;Mont-Bonvillers;;;Bonvillers Village;;5;bis;entrée;906371.02;6917356.05;5.838588;49.322399;;inconnue;;0
+;54084_b114_00017_bis;54084;Mont-Bonvillers;;;Bonvillers Village;;17;bis;entrée;906587.02;6917429.94;5.841593;49.322993;;inconnue;;0
+;54084_b114_00003_bis;54084;Mont-Bonvillers;;;Bonvillers Village;;3;bis;segment;906483.24;6917363.76;5.840134;49.322432;;inconnue;;0
+;54084_b114_00003_ter;54084;Mont-Bonvillers;;;Bonvillers Village;;3;ter;segment;906482.86;6917382.33;5.840138;49.322599;;inconnue;;0
+;54084_b114_00001_bis;54084;Mont-Bonvillers;;;Bonvillers Village;;1;bis;segment;906450.9;6917301.93;5.839659;49.321887;;inconnue;;0
+;54084_b114_00016_t;54084;Mont-Bonvillers;;;Bonvillers Village;;16;t;segment;906632.45;6917562.49;5.842283;49.324169;;inconnue;;0
+;54084_b114_00002_bis;54084;Mont-Bonvillers;;;Bonvillers Village;;2;bis;segment;906468.53;6917341.63;5.839921;49.322238;;inconnue;;0
+;54084_0135_00001;54084;Mont-Bonvillers;;;Rue des Fronts;;1;;entrée;905655.37;6917817.14;5.82898;49.326772;;inconnue;;0
+;54084_0135_00002;54084;Mont-Bonvillers;;;Rue des Fronts;;2;;entrée;905660.69;6917819.01;5.829054;49.326787;;inconnue;;0
+;54084_0135_00003;54084;Mont-Bonvillers;;;Rue des Fronts;;3;;entrée;905676.43;6917824.36;5.829273;49.32683;;inconnue;;0
+;54084_0135_00004;54084;Mont-Bonvillers;;;Rue des Fronts;;4;;entrée;905681.18;6917825.97;5.829339;49.326843;;inconnue;;0
+;54084_0135_00005;54084;Mont-Bonvillers;;;Rue des Fronts;;5;;entrée;905697.5;6917831.46;5.829566;49.326887;;inconnue;;0
+;54084_0135_00006;54084;Mont-Bonvillers;;;Rue des Fronts;;6;;entrée;905702.38;6917833.19;5.829634;49.326901;;inconnue;;0
+;54084_0135_00007;54084;Mont-Bonvillers;;;Rue des Fronts;;7;;entrée;905717.83;6917838.53;5.829849;49.326944;;inconnue;;0
+;54084_0135_00008;54084;Mont-Bonvillers;;;Rue des Fronts;;8;;entrée;905722.29;6917840.03;5.829911;49.326956;;inconnue;;0
+;54084_0135_00009;54084;Mont-Bonvillers;;;Rue des Fronts;;9;;entrée;905738.82;6917845.74;5.830141;49.327002;;inconnue;;0
+;54084_0135_00010;54084;Mont-Bonvillers;;;Rue des Fronts;;10;;entrée;905744.5;6917847.72;5.83022;49.327018;;inconnue;;0
+;54084_0135_00011;54084;Mont-Bonvillers;;;Rue des Fronts;;11;;entrée;905759.52;6917852.72;5.830429;49.327058;;inconnue;;0
+;54084_0135_00012;54084;Mont-Bonvillers;;;Rue des Fronts;;12;;entrée;905764.7;6917854.46;5.830501;49.327072;;inconnue;;0
+;54084_0135_00013;54084;Mont-Bonvillers;;;Rue des Fronts;;13;;entrée;905779.29;6917859.55;5.830704;49.327113;;inconnue;;0
+;54084_0135_00014;54084;Mont-Bonvillers;;;Rue des Fronts;;14;;entrée;905784.53;6917861.4;5.830777;49.327128;;inconnue;;0
+;54084_0135_00015;54084;Mont-Bonvillers;;;Rue des Fronts;;15;;entrée;905799.77;6917866.52;5.830989;49.327169;;inconnue;;0
+;54084_0135_00016;54084;Mont-Bonvillers;;;Rue des Fronts;;16;;entrée;905804.73;6917868.25;5.831058;49.327183;;inconnue;;0
+;54084_0135_00017;54084;Mont-Bonvillers;;;Rue des Fronts;;17;;entrée;905820;6917874.48;5.831271;49.327234;;inconnue;;0
+;54084_0135_00018;54084;Mont-Bonvillers;;;Rue des Fronts;;18;;entrée;905825.68;6917876.46;5.83135;49.32725;;inconnue;;0
+;54084_0135_00019;54084;Mont-Bonvillers;;;Rue des Fronts;;19;;entrée;905870.73;6917898.45;5.83198;49.327433;;inconnue;;0
+;54084_0135_00020;54084;Mont-Bonvillers;;;Rue des Fronts;;20;;entrée;905876;6917901.53;5.832054;49.327459;;inconnue;;0
+;54084_0135_00021;54084;Mont-Bonvillers;;;Rue des Fronts;;21;;entrée;905892.49;6917910.47;5.832285;49.327534;;inconnue;;0
+;54084_0135_00022;54084;Mont-Bonvillers;;;Rue des Fronts;;22;;entrée;905897.2;6917912.98;5.832351;49.327555;;inconnue;;0
+;54084_0135_00023;54084;Mont-Bonvillers;;;Rue des Fronts;;23;;entrée;905914.47;6917922.5;5.832593;49.327635;;inconnue;;0
+;54084_0135_00024;54084;Mont-Bonvillers;;;Rue des Fronts;;24;;entrée;905919.03;6917925.01;5.832657;49.327656;;inconnue;;0
+;54084_0135_00025;54084;Mont-Bonvillers;;;Rue des Fronts;;25;;entrée;905936.81;6917934.55;5.832906;49.327736;;inconnue;;0
+;54084_0135_00026;54084;Mont-Bonvillers;;;Rue des Fronts;;26;;entrée;905941.73;6917937.18;5.832975;49.327758;;inconnue;;0
+;54084_0135_00027;54084;Mont-Bonvillers;;;Rue des Fronts;;27;;entrée;905958;6917946.22;5.833203;49.327834;;inconnue;;0
+;54084_0135_00028;54084;Mont-Bonvillers;;;Rue des Fronts;;28;;entrée;905963.21;6917948.97;5.833276;49.327857;;inconnue;;0
+;54084_0135_00029;54084;Mont-Bonvillers;;;Rue des Fronts;;29;;entrée;905976.91;6917946.45;5.833463;49.32783;;inconnue;;0
+;54084_0135_00030;54084;Mont-Bonvillers;;;Rue des Fronts;;30;;segment;905979.83;6917950.12;5.833505;49.327862;;inconnue;;0
+;54084_0135_00031;54084;Mont-Bonvillers;;;Rue des Fronts;;31;;entrée;905937.9;6917924.35;5.832916;49.327644;;inconnue;;0
+;54084_0135_00032;54084;Mont-Bonvillers;;;Rue des Fronts;;32;;entrée;905930.03;6917920.73;5.832806;49.327614;;inconnue;;0
+;54084_0135_00033;54084;Mont-Bonvillers;;;Rue des Fronts;;33;;entrée;905915.33;6917912.74;5.8326;49.327547;;inconnue;;0
+;54084_0135_00034;54084;Mont-Bonvillers;;;Rue des Fronts;;34;;entrée;905909.2;6917909.18;5.832514;49.327517;;inconnue;;0
+;54084_0135_00035;54084;Mont-Bonvillers;;;Rue des Fronts;;35;;entrée;905896.49;6917902.49;5.832336;49.327461;;inconnue;;0
+;54084_0135_00036;54084;Mont-Bonvillers;;;Rue des Fronts;;36;;entrée;905888.7;6917898.54;5.832227;49.327428;;inconnue;;0
+;54084_0135_00037;54084;Mont-Bonvillers;;;Rue des Fronts;;37;;entrée;905748.19;6917819.69;5.830257;49.326765;;inconnue;;0
+;54084_0135_00038;54084;Mont-Bonvillers;;;Rue des Fronts;;38;;segment;905982.62;6917951.56;5.833544;49.327874;;inconnue;;0
+;54084_0135_00039;54084;Mont-Bonvillers;;;Rue des Fronts;;39;;;905667.44;6917805.11;5.82914;49.32666;;arcep;;0
+;54084_0135_00030_bis;54084;Mont-Bonvillers;;;Rue des Fronts;;30;bis;entrée;905974.52;6917917.76;5.833416;49.327573;;inconnue;;0
+;54084_0135_00005_bis;54084;Mont-Bonvillers;;;Rue des Fronts;;5;bis;entrée;905933.36;6918279.96;5.833029;49.33084;;inconnue;;0
+;54084_0045_00001;54084;Mont-Bonvillers;;;Chemin de la Barre;;1;;entrée;906135.99;6917961.52;5.835657;49.327914;;inconnue;;0
+;54084_0045_00002;54084;Mont-Bonvillers;;;Chemin de la Barre;;2;;entrée;906139.43;6917952.96;5.8357;49.327836;;inconnue;;0
+;54084_0045_00003;54084;Mont-Bonvillers;;;Chemin de la Barre;;3;;entrée;906134.49;6917977.05;5.835644;49.328054;;inconnue;;0
+;54084_0045_00006;54084;Mont-Bonvillers;;;Chemin de la Barre;;6;;entrée;906139.3;6917999.04;5.835721;49.32825;;inconnue;;0
+;54084_0120_00001;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;1;;entrée;905614.53;6917858.54;5.828439;49.327157;;inconnue;;0
+;54084_0120_00002;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;2;;entrée;905622.17;6917860.48;5.828545;49.327172;;inconnue;;0
+;54084_0120_00003;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;3;;entrée;905649.32;6917870.25;5.828923;49.327251;;inconnue;;0
+;54084_0120_00004;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;4;;entrée;905654.21;6917871.98;5.828991;49.327265;;inconnue;;0
+;54084_0120_00005;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;5;;entrée;905683.18;6917881.7;5.829394;49.327343;;inconnue;;0
+;54084_0120_00006;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;6;;entrée;905692.4;6917884.37;5.829522;49.327364;;inconnue;;0
+;54084_0120_00007;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;7;;entrée;905717.39;6917893.39;5.82987;49.327437;;inconnue;;0
+;54084_0120_00008;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;8;;entrée;905721.99;6917895.01;5.829934;49.32745;;inconnue;;0
+;54084_0120_00009;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;9;;entrée;905750.89;6917904.73;5.830336;49.327528;;inconnue;;0
+;54084_0120_00010;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;10;;entrée;905756.71;6917906.72;5.830417;49.327544;;inconnue;;0
+;54084_0120_00011;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;11;;entrée;905785.42;6917917.65;5.830817;49.327633;;inconnue;;0
+;54084_0120_00012;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;12;;entrée;905790.03;6917918.93;5.830881;49.327643;;inconnue;;0
+;54084_0120_00013;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;13;;entrée;905834.5;6917937;5.831501;49.327791;;inconnue;;0
+;54084_0120_00014;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;14;;entrée;905840.99;6917940.46;5.831592;49.32782;;inconnue;;0
+;54084_0120_00015;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;15;;entrée;905854.78;6917947.52;5.831785;49.327879;;inconnue;;0
+;54084_0120_00016;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;16;;entrée;905861.33;6917951.43;5.831877;49.327912;;inconnue;;0
+;54084_0120_00017;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;17;;entrée;905875.54;6917959.18;5.832076;49.327977;;inconnue;;0
+;54084_0120_00018;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;18;;entrée;905882.32;6917962.65;5.832171;49.328006;;inconnue;;0
+;54084_0120_00019;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;19;;entrée;905893.52;6917968.95;5.832328;49.328059;;inconnue;;0
+;54084_0120_00020;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;20;;entrée;905900.51;6917972.88;5.832426;49.328092;;inconnue;;0
+;54084_0120_00021;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;21;;entrée;905912.58;6917981.1;5.832596;49.328162;;inconnue;;0
+;54084_0120_00022;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;22;;entrée;905920.49;6917983.72;5.832706;49.328183;;inconnue;;0
+;54084_0120_00025;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;25;;entrée;905936.16;6917984.95;5.832922;49.328189;;inconnue;;0
+;54084_0120_00026;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;26;;entrée;905931.03;6917981.99;5.83285;49.328164;;inconnue;;0
+;54084_0120_00027;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;27;;entrée;905915.33;6917973.52;5.83263;49.328093;;inconnue;;0
+;54084_0120_00028;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;28;;entrée;905907.99;6917969.25;5.832527;49.328057;;inconnue;;0
+;54084_0120_00029;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;29;;entrée;905895.49;6917962.68;5.832352;49.328002;;inconnue;;0
+;54084_0120_00030;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;30;;entrée;905890;6917959.47;5.832275;49.327975;;inconnue;;0
+;54084_0120_00031;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;31;;entrée;905874.37;6917951.01;5.832056;49.327904;;inconnue;;0
+;54084_0120_00032;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;32;;entrée;905868.88;6917947.92;5.831979;49.327878;;inconnue;;0
+;54084_0120_00033;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;33;;entrée;905853.73;6917938.25;5.831766;49.327796;;inconnue;;0
+;54084_0120_00034;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;34;;entrée;905849.37;6917935.98;5.831705;49.327777;;inconnue;;0
+;54084_0120_00035;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;35;;entrée;905809.91;6917916.53;5.831153;49.327615;;inconnue;;0
+;54084_0120_00036;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;36;;entrée;905803.24;6917913.95;5.83106;49.327594;;inconnue;;0
+;54084_0120_00037;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;37;;entrée;905789.39;6917910.45;5.830868;49.327567;;inconnue;;0
+;54084_0120_00038;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;38;;entrée;905783.2;6917908.67;5.830782;49.327553;;inconnue;;0
+;54084_0120_00039;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;39;;entrée;905771.49;6917904.46;5.830619;49.327519;;inconnue;;0
+;54084_0120_00040;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;40;;entrée;905762.99;6917902.04;5.830501;49.3275;;inconnue;;0
+;54084_0120_00041;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;41;;entrée;905746.31;6917896.44;5.830269;49.327455;;inconnue;;0
+;54084_0120_00043;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;43;;entrée;905727.72;6917889.53;5.83001;49.327399;;inconnue;;0
+;54084_0120_00044;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;44;;entrée;905718.01;6917886.4;5.829875;49.327374;;inconnue;;0
+;54084_0120_00045;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;45;;entrée;905705.5;6917882.17;5.829701;49.32734;;inconnue;;0
+;54084_0120_00046;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;46;;entrée;905698.52;6917880.03;5.829604;49.327323;;inconnue;;0
+;54084_0120_00047;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;47;;entrée;905683.42;6917874.92;5.829394;49.327282;;inconnue;;0
+;54084_0120_00048;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;48;;;905679.06;6917866.75;5.82933;49.32721;;arcep;;0
+;54084_0120_00049;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;49;;entrée;905660.99;6917867.44;5.829082;49.327222;;inconnue;;0
+;54084_0120_00050;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;50;;entrée;905652.51;6917864.46;5.828964;49.327198;;inconnue;;0
+;54084_0120_00051;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;51;;entrée;905639.87;6917860;5.828788;49.327162;;inconnue;;0
+;54084_0120_00052;54084;Mont-Bonvillers;;;Rue Fonds des Lits;;52;;entrée;905629.89;6917856.19;5.828649;49.327131;;inconnue;;0
+;54084_0270_00001;54084;Mont-Bonvillers;;;Rue de la République;;1;;segment;906088.22;6917814.98;5.834928;49.326613;;inconnue;;0
+;54084_0270_00002;54084;Mont-Bonvillers;;;Rue de la République;;2;;entrée;906076.37;6917814.66;5.834765;49.326614;;inconnue;;0
+;54084_0270_00003;54084;Mont-Bonvillers;;;Rue de la République;;3;;segment;906088.22;6917814.98;5.834928;49.326613;;inconnue;;0
+;54084_0270_00004;54084;Mont-Bonvillers;;;Rue de la République;;4;;entrée;906073.51;6917821.24;5.834729;49.326674;;inconnue;;0
+;54084_0270_00005;54084;Mont-Bonvillers;;;Rue de la République;;5;;entrée;906053.88;6917879.53;5.834488;49.327204;;inconnue;;0
+;54084_0270_00006;54084;Mont-Bonvillers;;;Rue de la République;;6;;segment;906061.98;6917844.65;5.834582;49.326888;;inconnue;;0
+;54084_0270_00007;54084;Mont-Bonvillers;;;Rue de la République;;7;;entrée;906045.47;6917895.04;5.83438;49.327346;;inconnue;;0
+;54084_0270_00008;54084;Mont-Bonvillers;;;Rue de la République;;8;;entrée;906018.91;6917923.36;5.834029;49.327609;;inconnue;;0
+;54084_0270_00009;54084;Mont-Bonvillers;;;Rue de la République;;9;;entrée;906033.92;6917914.88;5.834231;49.327528;;inconnue;;0
+;54084_0270_00011;54084;Mont-Bonvillers;;;Rue de la République;;11;;segment;906002.31;6917974.41;5.833826;49.328073;;inconnue;;0
+;54084_0270_00012;54084;Mont-Bonvillers;;;Rue de la République;;12;;entrée;906010.27;6917939.19;5.833918;49.327754;;inconnue;;0
+;54084_0270_00013;54084;Mont-Bonvillers;;;Rue de la République;;13;;segment;906002.31;6917974.41;5.833826;49.328073;;inconnue;;0
+;54084_0270_00014;54084;Mont-Bonvillers;;;Rue de la République;;14;;entrée;905987.41;6917951.73;5.83361;49.327874;;inconnue;;0
+;54084_0270_00015;54084;Mont-Bonvillers;;;Rue de la République;;15;;segment;906002.31;6917974.41;5.833826;49.328073;;inconnue;;0
+;54084_0270_00016;54084;Mont-Bonvillers;;;Rue de la République;;16;;entrée;905982.01;6917990.72;5.833555;49.328226;;inconnue;;0
+;54084_0270_00017;54084;Mont-Bonvillers;;;Rue de la République;;17;;segment;906002.31;6917974.41;5.833826;49.328073;;inconnue;;0
+;54084_0270_00018;54084;Mont-Bonvillers;;;Rue de la République;;18;;entrée;905965.28;6918020.95;5.83334;49.328503;;inconnue;;0
+;54084_0270_00019;54084;Mont-Bonvillers;;;Rue de la République;;19;;entrée;905980.02;6918013.69;5.833539;49.328433;;inconnue;;0
+;54084_0270_00020;54084;Mont-Bonvillers;;;Rue de la République;;20;;entrée;905956.52;6918036;5.833227;49.328641;;inconnue;;0
+;54084_0270_00021;54084;Mont-Bonvillers;;;Rue de la République;;21;;entrée;905963.33;6918046.93;5.833326;49.328737;;inconnue;;0
+;54084_0270_00022;54084;Mont-Bonvillers;;;Rue de la République;;22;;entrée;905953.23;6918042.45;5.833185;49.3287;;inconnue;;0
+;54084_0270_00023;54084;Mont-Bonvillers;;;Rue de la République;;23;;entrée;905958.43;6918055.88;5.833263;49.328819;;inconnue;;0
+;54084_0270_00006_a;54084;Mont-Bonvillers;;;Rue de la République;;6;a;segment;906061.97;6917844.76;5.834582;49.326889;;inconnue;;0
+;54084_0270_00019_bis;54084;Mont-Bonvillers;;;Rue de la République;;19;bis;entrée;905980.02;6918013.69;5.833539;49.328433;;inconnue;;0
+;54084_0270_00017_bis;54084;Mont-Bonvillers;;;Rue de la République;;17;bis;entrée;906023.3;6918028.04;5.834141;49.328548;;inconnue;;0
+;54084_0270_00006_b;54084;Mont-Bonvillers;;;Rue de la République;;6;b;segment;906061.97;6917844.76;5.834582;49.326889;;inconnue;;0
+;54084_0270_00009_bis;54084;Mont-Bonvillers;;;Rue de la République;;9;bis;segment;906027.81;6917926.91;5.834153;49.327638;;inconnue;;0
+;54084_0270_00005_bis;54084;Mont-Bonvillers;;;Rue de la République;;5;bis;segment;906057.58;6917871.76;5.834535;49.327133;;inconnue;;0
+;54084_0270_00019_ter;54084;Mont-Bonvillers;;;Rue de la République;;19;ter;segment;906057.58;6917871.76;5.834535;49.327133;;inconnue;;0
+;54084_0040_00001;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;1;;entrée;905877.02;6918055.74;5.832144;49.328844;;inconnue;;0
+;54084_0040_00002;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;2;;entrée;905699.32;6917955.2;5.829652;49.327998;;inconnue;;0
+;54084_0040_00003;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;3;;entrée;905869.17;6918051.34;5.832034;49.328807;;inconnue;;0
+;54084_0040_00004;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;4;;entrée;905675.31;6917946.99;5.829318;49.327932;;inconnue;;0
+;54084_0040_00005;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;5;;entrée;905848.39;6918036.46;5.831741;49.32868;;inconnue;;0
+;54084_0040_00006;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;6;;entrée;905660.21;6917941.99;5.829108;49.327892;;inconnue;;0
+;54084_0040_00007;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;7;;entrée;905839.97;6918029.92;5.831622;49.328624;;inconnue;;0
+;54084_0040_00008;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;8;;entrée;905640.01;6917935.04;5.828827;49.327836;;inconnue;;0
+;54084_0040_00009;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;9;;entrée;905783.28;6917991.49;5.830824;49.328297;;inconnue;;0
+;54084_0040_00010;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;10;;entrée;905629.17;6917931.2;5.828676;49.327805;;inconnue;;0
+;54084_0040_00011;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;11;;entrée;905751.38;6917980.44;5.83038;49.328208;;inconnue;;0
+;54084_0040_00012;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;12;;entrée;905605.52;6917923;5.828347;49.327739;;inconnue;;0
+;54084_0040_00013;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;13;;entrée;905718.97;6917969.15;5.829929;49.328117;;inconnue;;0
+;54084_0040_00014;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;14;;segment;905581.41;6917877.17;5.827993;49.327335;;inconnue;;0
+;54084_0040_00015;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;15;;entrée;905686.91;6917958.2;5.829483;49.328029;;inconnue;;0
+;54084_0040_00016;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;16;;entrée;905530.27;6917897.15;5.8273;49.327531;;inconnue;;0
+;54084_0040_00017;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;17;;entrée;905662.18;6917949.86;5.829139;49.327962;;inconnue;;0
+;54084_0040_00018;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;18;;segment;905577.64;6917913.43;5.827959;49.327662;;inconnue;;0
+;54084_0040_00019;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;19;;entrée;905632.67;6917938.89;5.828728;49.327873;;inconnue;;0
+;54084_0040_00021;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;21;;entrée;905618.92;6917934.95;5.828537;49.327842;;inconnue;;0
+;54084_0040_00023;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;23;;entrée;905603.32;6917929.71;5.82832;49.3278;;inconnue;;0
+;54084_0040_00025;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;25;;entrée;905586;6917923.75;5.828079;49.327752;;inconnue;;0
+;54084_0040_00027;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;27;;segment;905570.4;6917920.52;5.827863;49.327728;;inconnue;;0
+;54084_0040_00002_bis;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;2;bis;entrée;905871.96;6918044.54;5.832069;49.328745;;inconnue;;0
+;54084_0040_00003_bis;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;3;bis;entrée;905842.97;6918023.24;5.83166;49.328563;;inconnue;;0
+;54084_0040_00001_bis;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;1;bis;entrée;905905.17;6918076.01;5.832541;49.329017;;inconnue;;0
+;54084_0040_00004_bis;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;4;bis;entrée;905827.2;6918012.55;5.831438;49.328472;;inconnue;;0
+;54084_0040_00016_bis;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;16;bis;segment;905577.64;6917913.43;5.827959;49.327662;;inconnue;;0
+;54084_0040_00014_bis;54084;Mont-Bonvillers;;;Rue Baron d’Huart;;14;bis;entrée;905586.93;6917863.23;5.828062;49.327208;;inconnue;;0
+;54084_0210_00001;54084;Mont-Bonvillers;;;Rue Nationale;;1;;entrée;905957.73;6918119.87;5.833285;49.329394;;inconnue;;0
+;54084_0210_00002;54084;Mont-Bonvillers;;;Rue Nationale;;2;;entrée;905919.9;6918125.74;5.832768;49.329459;;inconnue;;0
+;54084_0210_00003;54084;Mont-Bonvillers;;;Rue Nationale;;3;;entrée;905910.83;6918141.45;5.832651;49.329603;;inconnue;;0
+;54084_0210_00004;54084;Mont-Bonvillers;;;Rue Nationale;;4;;entrée;905907.51;6918148.9;5.832609;49.329671;;inconnue;;0
+;54084_0210_00005;54084;Mont-Bonvillers;;;Rue Nationale;;5;;entrée;905899.48;6918163.75;5.832506;49.329807;;inconnue;;0
+;54084_0210_00006;54084;Mont-Bonvillers;;;Rue Nationale;;6;;entrée;905897.68;6918167.25;5.832483;49.329839;;inconnue;;0
+;54084_0210_00007;54084;Mont-Bonvillers;;;Rue Nationale;;7;;entrée;905892.47;6918176.52;5.832416;49.329924;;inconnue;;0
+;54084_0210_00008;54084;Mont-Bonvillers;;;Rue Nationale;;8;;entrée;905890.27;6918181.01;5.832388;49.329965;;inconnue;;0
+;54084_0210_00009;54084;Mont-Bonvillers;;;Rue Nationale;;9;;entrée;905882.28;6918194.86;5.832285;49.330092;;inconnue;;0
+;54084_0210_00011;54084;Mont-Bonvillers;;;Rue Nationale;;11;;entrée;905878.98;6918201.75;5.832243;49.330155;;inconnue;;0
+;54084_0210_00012;54084;Mont-Bonvillers;;;Rue Nationale;;12;;entrée;905874.83;6918207.95;5.832189;49.330212;;inconnue;;0
+;54084_0210_00013;54084;Mont-Bonvillers;;;Rue Nationale;;13;;entrée;905871.98;6918214.41;5.832153;49.330271;;inconnue;;0
+;54084_0210_00014;54084;Mont-Bonvillers;;;Rue Nationale;;14;;segment;905805.94;6918333.38;5.831304;49.331361;;inconnue;;0
+;54084_0210_00015;54084;Mont-Bonvillers;;;Rue Nationale;;15;;entrée;905860.68;6918233.16;5.832007;49.330443;;inconnue;;0
+;54084_0210_00017;54084;Mont-Bonvillers;;;Rue Nationale;;17;;segment;905857.68;6918237.95;5.831968;49.330487;;inconnue;;0
+;54084_0210_00019;54084;Mont-Bonvillers;;;Rue Nationale;;19;;entrée;905847.5;6918258.06;5.831838;49.330671;;inconnue;;0
+;54084_0210_00021;54084;Mont-Bonvillers;;;Rue Nationale;;21;;entrée;905844.71;6918264.86;5.831803;49.330733;;inconnue;;0
+;54084_0210_00022;54084;Mont-Bonvillers;;;Rue Nationale;;22;;entrée;905840.7;6918270.95;5.831751;49.330789;;inconnue;;0
+;54084_0210_00023;54084;Mont-Bonvillers;;;Rue Nationale;;23;;entrée;905838.01;6918277.2;5.831717;49.330846;;inconnue;;0
+;54084_0210_00024;54084;Mont-Bonvillers;;;Rue Nationale;;24;;entrée;905835.42;6918282.23;5.831684;49.330892;;inconnue;;0
+;54084_0210_00025;54084;Mont-Bonvillers;;;Rue Nationale;;25;;entrée;905827.7;6918296.65;5.831585;49.331024;;inconnue;;0
+;54084_0210_00027;54084;Mont-Bonvillers;;;Rue Nationale;;27;;entrée;905825.37;6918302.8;5.831556;49.33108;;inconnue;;0
+;54084_0210_00028;54084;Mont-Bonvillers;;;Rue Nationale;;28;;entrée;905822.72;6918307.93;5.831522;49.331127;;inconnue;;0
+;54084_0210_00029;54084;Mont-Bonvillers;;;Rue Nationale;;29;;entrée;905818.5;6918316.02;5.831468;49.331201;;inconnue;;0
+;54084_0210_00030;54084;Mont-Bonvillers;;;Rue Nationale;;30;;entrée;905816.23;6918320.39;5.831439;49.331241;;inconnue;;0
+;54084_0210_00031;54084;Mont-Bonvillers;;;Rue Nationale;;31;;entrée;905812.17;6918328.15;5.831387;49.331312;;inconnue;;0
+;54084_0210_00032;54084;Mont-Bonvillers;;;Rue Nationale;;32;;entrée;905809.37;6918333.28;5.831351;49.331359;;inconnue;;0
+;54084_0210_00033;54084;Mont-Bonvillers;;;Rue Nationale;;33;;entrée;905816;6918344.99;5.831448;49.331462;;inconnue;;0
+;54084_0210_00034;54084;Mont-Bonvillers;;;Rue Nationale;;34;;entrée;905795.87;6918336.25;5.831167;49.33139;;inconnue;;0
+;54084_0210_00035;54084;Mont-Bonvillers;;;Rue Nationale;;35;;entrée;905849.19;6918235.19;5.83185;49.330465;;inconnue;;0
+;54084_0210_00036;54084;Mont-Bonvillers;;;Rue Nationale;;36;;;905843.64;6918227.76;5.83177;49.3304;;arcep;;0
+;54084_0210_00037;54084;Mont-Bonvillers;;;Rue Nationale;;37;;entrée;905855.97;6918222.74;5.831937;49.330351;;inconnue;;0
+;54084_0210_00038;54084;Mont-Bonvillers;;;Rue Nationale;;38;;;905851.46;6918212.45;5.83187;49.33026;;arcep;;0
+;54084_0210_00039;54084;Mont-Bonvillers;;;Rue Nationale;;39;;entrée;905865.23;6918205.93;5.832056;49.330197;;inconnue;;0
+;54084_0210_00040;54084;Mont-Bonvillers;;;Rue Nationale;;40;;entrée;905867.88;6918200.91;5.83209;49.330151;;inconnue;;0
+;54084_0210_00041;54084;Mont-Bonvillers;;;Rue Nationale;;41;;segment;905870.5;6918192.76;5.832122;49.330077;;inconnue;;0
+;54084_0210_00042;54084;Mont-Bonvillers;;;Rue Nationale;;42;;entrée;905875.9;6918186.17;5.832193;49.330016;;inconnue;;0
+;54084_0210_00043;54084;Mont-Bonvillers;;;Rue Nationale;;43;;entrée;905881.43;6918176.01;5.832264;49.329923;;inconnue;;0
+;54084_0210_00044;54084;Mont-Bonvillers;;;Rue Nationale;;44;;entrée;905883.98;6918171.88;5.832297;49.329885;;inconnue;;0
+;54084_0210_00045;54084;Mont-Bonvillers;;;Rue Nationale;;45;;entrée;905889;6918161.7;5.832361;49.329792;;inconnue;;0
+;54084_0210_00046;54084;Mont-Bonvillers;;;Rue Nationale;;46;;entrée;905891.69;6918157.68;5.832396;49.329755;;inconnue;;0
+;54084_0210_00047;54084;Mont-Bonvillers;;;Rue Nationale;;47;;entrée;905897.02;6918147.19;5.832464;49.329659;;inconnue;;0
+;54084_0210_00048;54084;Mont-Bonvillers;;;Rue Nationale;;48;;entrée;905899.43;6918142.71;5.832495;49.329618;;inconnue;;0
+;54084_0210_00049;54084;Mont-Bonvillers;;;Rue Nationale;;49;;entrée;905903.5;6918134.95;5.832547;49.329547;;inconnue;;0
+;54084_0210_00050;54084;Mont-Bonvillers;;;Rue Nationale;;50;;entrée;905907.29;6918128.52;5.832596;49.329488;;inconnue;;0
+;54084_0210_00035_ter;54084;Mont-Bonvillers;;;Rue Nationale;;35;ter;segment;905835.39;6918260.97;5.831673;49.330701;;inconnue;;0
+;54084_0210_00032_bis;54084;Mont-Bonvillers;;;Rue Nationale;;32;bis;segment;905807.5;6918330.54;5.831324;49.331335;;inconnue;;0
+;54084_0210_00033_bis;54084;Mont-Bonvillers;;;Rue Nationale;;33;bis;entrée;905752.42;6918340.92;5.830572;49.331446;;inconnue;;0
+;54084_0210_00031_bis;54084;Mont-Bonvillers;;;Rue Nationale;;31;bis;segment;905826.39;6918296.71;5.831567;49.331025;;inconnue;;0
+;54084_0210_00035_bis;54084;Mont-Bonvillers;;;Rue Nationale;;35;bis;entrée;905798.16;6918244.05;5.831153;49.330561;;inconnue;;0
+;54084_0210_00034_bis;54084;Mont-Bonvillers;;;Rue Nationale;;34;bis;entrée;905603.49;6918205.01;5.828458;49.330273;;inconnue;;0
+;54084_0020_00001;54084;Mont-Bonvillers;;;Allee des Acacias;;1;;entrée;906094.38;6917651.45;5.834932;49.325142;;inconnue;;0
+;54084_0020_00002;54084;Mont-Bonvillers;;;Allee des Acacias;;2;;entrée;906105.21;6917675.99;5.835093;49.325359;;inconnue;;0
+;54084_0020_00003;54084;Mont-Bonvillers;;;Allee des Acacias;;3;;entrée;906091.67;6917631.65;5.834885;49.324965;;inconnue;;0
+;54084_0020_00004;54084;Mont-Bonvillers;;;Allee des Acacias;;4;;entrée;906089.02;6917652.7;5.834859;49.325155;;inconnue;;0
+;54084_0020_00005;54084;Mont-Bonvillers;;;Allee des Acacias;;5;;entrée;906072.53;6917609.48;5.834611;49.324772;;inconnue;;0
+;54084_0020_00006;54084;Mont-Bonvillers;;;Allee des Acacias;;6;;entrée;906069.67;6917630.52;5.834582;49.324962;;inconnue;;0
+;54084_0020_00007;54084;Mont-Bonvillers;;;Allee des Acacias;;7;;entrée;906088.48;6917576.65;5.834814;49.324472;;inconnue;;0
+;54084_0020_00008;54084;Mont-Bonvillers;;;Allee des Acacias;;8;;entrée;906029.99;6917608.95;5.834026;49.324781;;inconnue;;0
+;54084_0020_00009;54084;Mont-Bonvillers;;;Allee des Acacias;;9;;entrée;906090.68;6917564.15;5.834838;49.324359;;inconnue;;0
+;54084_0020_00010;54084;Mont-Bonvillers;;;Allee des Acacias;;10;;entrée;906021.68;6917619.45;5.833917;49.324878;;inconnue;;0
+;54084_0020_00011;54084;Mont-Bonvillers;;;Allee des Acacias;;11;;entrée;906079.21;6917561.18;5.834679;49.324336;;inconnue;;0
+;54084_0020_00012;54084;Mont-Bonvillers;;;Allee des Acacias;;12;;entrée;906014.87;6917616.53;5.833822;49.324854;;inconnue;;0
+;54084_0020_00013;54084;Mont-Bonvillers;;;Allee des Acacias;;13;;entrée;906076.98;6917572.68;5.834654;49.32444;;inconnue;;0
+;54084_0020_00014;54084;Mont-Bonvillers;;;Allee des Acacias;;14;;entrée;906011.03;6917581.55;5.833752;49.324541;;inconnue;;0
+;54084_0020_00015;54084;Mont-Bonvillers;;;Allee des Acacias;;15;;entrée;906019.97;6917559.72;5.833864;49.324342;;inconnue;;0
+;54084_0020_00016;54084;Mont-Bonvillers;;;Allee des Acacias;;16;;entrée;905979.89;6917585.67;5.833326;49.324588;;inconnue;;0
+;54084_0020_00017;54084;Mont-Bonvillers;;;Allee des Acacias;;17;;segment;905990.35;6917578.14;5.833466;49.324517;;inconnue;;0
+;54084_0020_00018;54084;Mont-Bonvillers;;;Allee des Acacias;;18;;entrée;905958.99;6917588.15;5.83304;49.324617;;inconnue;;0
+;54084_0020_00019;54084;Mont-Bonvillers;;;Allee des Acacias;;19;;entrée;905993;6917552.85;5.83349;49.324289;;inconnue;;0
+;54084_0020_00020;54084;Mont-Bonvillers;;;Allee des Acacias;;20;;entrée;905943.19;6917588.47;5.832823;49.324625;;inconnue;;0
+;54084_0020_00021;54084;Mont-Bonvillers;;;Allee des Acacias;;21;;entrée;905958;6917555.05;5.83301;49.32432;;inconnue;;0
+;54084_0020_00022;54084;Mont-Bonvillers;;;Allee des Acacias;;22;;entrée;905944.49;6917572.49;5.832833;49.324481;;inconnue;;0
+;54084_0020_00023;54084;Mont-Bonvillers;;;Allee des Acacias;;23;;entrée;905994.77;6917507.72;5.833492;49.323883;;inconnue;;0
+;54084_0020_00024;54084;Mont-Bonvillers;;;Allee des Acacias;;24;;segment;905955.07;6917541.25;5.832963;49.324197;;inconnue;;0
+;54084_0020_00025;54084;Mont-Bonvillers;;;Allee des Acacias;;25;;entrée;905998.49;6917487.15;5.833533;49.323697;;inconnue;;0
+;54084_0020_00026;54084;Mont-Bonvillers;;;Allee des Acacias;;26;;entrée;905965.22;6917526.03;5.833095;49.324057;;inconnue;;0
+;54084_0020_00027;54084;Mont-Bonvillers;;;Allee des Acacias;;27;;entrée;906011.31;6917460.45;5.833696;49.323453;;inconnue;;0
+;54084_0020_00028;54084;Mont-Bonvillers;;;Allee des Acacias;;28;;entrée;905978.27;6917497;5.83326;49.323792;;inconnue;;0
+;54084_0020_00029;54084;Mont-Bonvillers;;;Allee des Acacias;;29;;entrée;906033.99;6917426.65;5.833991;49.323142;;inconnue;;0
+;54084_0020_00030;54084;Mont-Bonvillers;;;Allee des Acacias;;30;;entrée;905990.52;6917471.95;5.833416;49.323563;;inconnue;;0
+;54084_0020_00031;54084;Mont-Bonvillers;;;Allee des Acacias;;31;;entrée;906056.39;6917457.17;5.834314;49.323409;;inconnue;;0
+;54084_0020_00032;54084;Mont-Bonvillers;;;Allee des Acacias;;32;;entrée;906004.99;6917439.74;5.833599;49.323269;;inconnue;;0
+;54084_0020_00033;54084;Mont-Bonvillers;;;Allee des Acacias;;33;;entrée;906041.21;6917488.91;5.834121;49.323699;;inconnue;;0
+;54084_0020_00034;54084;Mont-Bonvillers;;;Allee des Acacias;;34;;entrée;906017.03;6917412.46;5.833751;49.32302;;inconnue;;0
+;54084_0020_00035;54084;Mont-Bonvillers;;;Allee des Acacias;;35;;segment;906044;6917510.49;5.83417;49.323892;;inconnue;;0
+;54084_0020_00036;54084;Mont-Bonvillers;;;Allee des Acacias;;36;;entrée;906027.28;6917414.72;5.833893;49.323037;;inconnue;;0
+;54084_0020_00037;54084;Mont-Bonvillers;;;Allee des Acacias;;37;;entrée;906005.97;6917521.93;5.833653;49.324007;;inconnue;;0
+;54084_0020_00038;54084;Mont-Bonvillers;;;Allee des Acacias;;38;;entrée;906047.68;6917442.5;5.834187;49.32328;;inconnue;;0
+;54084_0020_00039;54084;Mont-Bonvillers;;;Allee des Acacias;;39;;entrée;905948.4;6917633.85;5.832917;49.325031;;inconnue;;0
+;54084_0020_00040;54084;Mont-Bonvillers;;;Allee des Acacias;;40;;entrée;906069.47;6917474;5.834502;49.323556;;inconnue;;0
+;54084_0020_00041;54084;Mont-Bonvillers;;;Allee des Acacias;;41;;entrée;905950.7;6917650.85;5.832957;49.325183;;inconnue;;0
+;54084_0020_00042;54084;Mont-Bonvillers;;;Allee des Acacias;;42;;entrée;906086.29;6917487.74;5.83474;49.323674;;inconnue;;0
+;54084_0020_00043;54084;Mont-Bonvillers;;;Allee des Acacias;;43;;entrée;905961.39;6917663.15;5.83311;49.32529;;inconnue;;0
+;54084_0020_00044;54084;Mont-Bonvillers;;;Allee des Acacias;;44;;entrée;906069.92;6917499.74;5.834521;49.323787;;inconnue;;0
+;54084_0020_00045;54084;Mont-Bonvillers;;;Allee des Acacias;;45;;entrée;905979.97;6917674.5;5.833371;49.325386;;inconnue;;0
+;54084_0020_00046;54084;Mont-Bonvillers;;;Allee des Acacias;;46;;entrée;906047.89;6917515.53;5.834226;49.323936;;inconnue;;0
+;54084_0020_00047;54084;Mont-Bonvillers;;;Allee des Acacias;;47;;entrée;905957.53;6917655.22;5.833053;49.32522;;inconnue;;0
+;54084_0020_00048;54084;Mont-Bonvillers;;;Allee des Acacias;;48;;entrée;906027.99;6917553.22;5.833971;49.324281;;inconnue;;0
+;54084_0020_00049;54084;Mont-Bonvillers;;;Allee des Acacias;;49;;entrée;905985.7;6917666.92;5.833446;49.325316;;inconnue;;0
+;54084_0140_00001;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;1;;entrée;905798.52;6918075.97;5.831075;49.329051;;inconnue;;0
+;54084_0140_00002;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;2;;entrée;905831.27;6918101.97;5.831538;49.329274;;inconnue;;0
+;54084_0140_00003;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;3;;entrée;905792.17;6918076.41;5.830988;49.329057;;inconnue;;0
+;54084_0140_00004;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;4;;entrée;905836.79;6918104.17;5.831615;49.329292;;inconnue;;0
+;54084_0140_00005;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;5;;entrée;905792.91;6918116.73;5.831018;49.329419;;inconnue;;0
+;54084_0140_00006;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;6;;entrée;905820.46;6918139.54;5.831408;49.329615;;inconnue;;0
+;54084_0140_00007;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;7;;entrée;905787.82;6918116.55;5.830948;49.329419;;inconnue;;0
+;54084_0140_00008;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;8;;entrée;905825.41;6918141.72;5.831477;49.329633;;inconnue;;0
+;54084_0140_00009;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;9;;entrée;905779.49;6918155.99;5.830853;49.329776;;inconnue;;0
+;54084_0140_00010;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;10;;entrée;905803.83;6918175.23;5.831197;49.329941;;inconnue;;0
+;54084_0140_00011;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;11;;entrée;905773.53;6918155.89;5.830771;49.329777;;inconnue;;0
+;54084_0140_00012;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;12;;entrée;905809.72;6918177.45;5.831279;49.329959;;inconnue;;0
+;54084_0140_00013;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;13;;entrée;905763.66;6918201.85;5.830658;49.330193;;inconnue;;0
+;54084_0140_00014;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;14;;entrée;905785.63;6918210.09;5.830964;49.33026;;inconnue;;0
+;54084_0140_00015;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;15;;entrée;905757.61;6918202.18;5.830575;49.330198;;inconnue;;0
+;54084_0140_00016;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;16;;entrée;905790.43;6918212.04;5.831031;49.330276;;inconnue;;0
+;54084_0140_00017;54084;Mont-Bonvillers;;;Impasse du 8 Mai 1945;;17;;entrée;905749.52;6918218.93;5.830472;49.330351;;inconnue;;0
+;54084_0150_00001;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;1;;entrée;906075.78;6917369.15;5.834537;49.322612;;inconnue;;0
+;54084_0150_00003;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;3;;entrée;906079.03;6917375.94;5.834585;49.322672;;inconnue;;0
+;54084_0150_00004;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;4;;entrée;906081.9;6917381.17;5.834627;49.322718;;inconnue;;0
+;54084_0150_00005;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;5;;entrée;906083.19;6917383.55;5.834646;49.322739;;inconnue;;0
+;54084_0150_00006;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;6;;entrée;906085.44;6917387.97;5.834679;49.322778;;inconnue;;0
+;54084_0150_00007;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;7;;entrée;906087.36;6917391.05;5.834707;49.322805;;inconnue;;0
+;54084_0150_00008;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;8;;entrée;906091.98;6917400.23;5.834775;49.322886;;inconnue;;0
+;54084_0150_00009;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;9;;segment;906091.49;6917407.78;5.834772;49.322954;;inconnue;;0
+;54084_0150_00011;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;11;;entrée;906104.78;6917428.74;5.834965;49.323138;;inconnue;;0
+;54084_0150_00012;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;12;;entrée;906105.48;6917431.44;5.834976;49.323162;;inconnue;;0
+;54084_0150_00013;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;13;;entrée;906107.5;6917436.19;5.835006;49.323204;;inconnue;;0
+;54084_0150_00014;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;14;;segment;906102.27;6917433.88;5.834933;49.323185;;inconnue;;0
+;54084_0150_00015;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;15;;entrée;906110.48;6917444.2;5.835051;49.323275;;inconnue;;0
+;54084_0150_00016;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;16;;entrée;906112.02;6917448.04;5.835074;49.323309;;inconnue;;0
+;54084_0150_00017;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;17;;entrée;906113.48;6917451.87;5.835096;49.323343;;inconnue;;0
+;54084_0150_00018;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;18;;entrée;906115.23;6917455.95;5.835122;49.323379;;inconnue;;0
+;54084_0150_00019;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;19;;segment;906110.59;6917457.45;5.835059;49.323394;;inconnue;;0
+;54084_0150_00020;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;20;;entrée;906118.98;6917464.99;5.835178;49.323459;;inconnue;;0
+;54084_0150_00021;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;21;;entrée;906121.53;6917474.87;5.835218;49.323547;;inconnue;;0
+;54084_0150_00023;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;23;;entrée;906122.8;6917482.15;5.835239;49.323612;;inconnue;;0
+;54084_0150_00024;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;24;;entrée;906123.47;6917485.85;5.83525;49.323645;;inconnue;;0
+;54084_0150_00025;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;25;;;906125.51;6917489.82;5.83528;49.32368;;arcep;;0
+;54084_0150_00026;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;26;;segment;906120.18;6917492.3;5.835208;49.323704;;inconnue;;0
+;54084_0150_00027;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;27;;entrée;906124.88;6917493.03;5.835273;49.323709;;inconnue;;0
+;54084_0150_00028;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;28;;entrée;906126.49;6917500.99;5.835299;49.32378;;inconnue;;0
+;54084_0150_00029;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;29;;entrée;906127.73;6917506.93;5.835319;49.323833;;inconnue;;0
+;54084_0150_00030;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;30;;segment;906123.21;6917509.22;5.835258;49.323855;;inconnue;;0
+;54084_0150_00032;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;32;;entrée;906131.39;6917524.54;5.835378;49.32399;;inconnue;;0
+;54084_0150_00033;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;33;;entrée;906133.47;6917529.51;5.835409;49.324034;;inconnue;;0
+;54084_0150_00035;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;35;;entrée;906138.23;6917538.7;5.835479;49.324115;;inconnue;;0
+;54084_0150_00037;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;37;;entrée;906141.04;6917543.7;5.83552;49.324159;;inconnue;;0
+;54084_0150_00038;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;38;;entrée;906142.97;6917548.44;5.835549;49.324201;;inconnue;;0
+;54084_0150_00039;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;39;;segment;906111.78;6917460.83;5.835077;49.323424;;inconnue;;0
+;54084_0150_00001_bis;54084;Mont-Bonvillers;;;Rue Jeanne d’Arc;;1;bis;segment;906072.02;6917370.35;5.834486;49.322624;;inconnue;;0
+;54084_0100_00001;54084;Mont-Bonvillers;;;Rue de l’Eglise;;1;;entrée;906227.89;6917663.93;5.836773;49.325211;;inconnue;;0
+;54084_0100_00002;54084;Mont-Bonvillers;;;Rue de l’Eglise;;2;;entrée;906196.9;6917718.25;5.836374;49.325709;;inconnue;;0
+;54084_0100_00003;54084;Mont-Bonvillers;;;Rue de l’Eglise;;3;;entrée;906229.82;6917761.96;5.836848;49.326091;;inconnue;;0
+;54084_0100_00004;54084;Mont-Bonvillers;;;Rue de l’Eglise;;4;;entrée;906219.77;6917825.05;5.836741;49.326661;;inconnue;;0
+;54084_0100_00005;54084;Mont-Bonvillers;;;Rue de l’Eglise;;5;;entrée;906180.49;6917757.73;5.836168;49.326069;;inconnue;;0
+;54084_0100_00006;54084;Mont-Bonvillers;;;Rue de l’Eglise;;6;;entrée;906172.48;6917794.51;5.836076;49.326402;;inconnue;;0
+;54084_0100_00007;54084;Mont-Bonvillers;;;Rue de l’Eglise;;7;;entrée;906157.28;6917790.18;5.835865;49.326368;;inconnue;;0
+;54084_0100_00008;54084;Mont-Bonvillers;;;Rue de l’Eglise;;8;;entrée;906135.41;6917773.15;5.835556;49.326222;;inconnue;;0
+;54084_0100_00018;54084;Mont-Bonvillers;;;Rue de l’Eglise;;18;;segment;906186.24;6917794.23;5.836265;49.326395;;inconnue;;0
+;54084_0170_00001;54084;Mont-Bonvillers;;;Rue de Landres;;1;;entrée;906040.5;6917373;5.834054;49.322658;;inconnue;;0
+;54084_0170_00002;54084;Mont-Bonvillers;;;Rue de Landres;;2;;entrée;905962.22;6917386.67;5.832985;49.322806;;inconnue;;0
+;54084_0170_00003;54084;Mont-Bonvillers;;;Rue de Landres;;3;;entrée;906021.4;6917375.99;5.833793;49.322691;;inconnue;;0
+;54084_0170_00004;54084;Mont-Bonvillers;;;Rue de Landres;;4;;entrée;905954.53;6917387.95;5.83288;49.32282;;inconnue;;0
+;54084_0170_00005;54084;Mont-Bonvillers;;;Rue de Landres;;5;;entrée;906003.04;6917378.67;5.833542;49.322721;;inconnue;;0
+;54084_0170_00007;54084;Mont-Bonvillers;;;Rue de Landres;;7;;entrée;905993.31;6917379.99;5.833409;49.322736;;inconnue;;0
+;54084_0170_00009;54084;Mont-Bonvillers;;;Rue de Landres;;9;;entrée;905981.91;6917381.47;5.833253;49.322753;;inconnue;;0
+;54084_0170_00011;54084;Mont-Bonvillers;;;Rue de Landres;;11;;entrée;905963.77;6917384.16;5.833005;49.322783;;inconnue;;0
+;54084_0170_00013;54084;Mont-Bonvillers;;;Rue de Landres;;13;;entrée;905951.93;6917385.52;5.832843;49.322799;;inconnue;;0
+;54084_0170_00015;54084;Mont-Bonvillers;;;Rue de Landres;;15;;entrée;905941.69;6917386.93;5.832703;49.322815;;inconnue;;0
+;54084_0170_00017;54084;Mont-Bonvillers;;;Rue de Landres;;17;;entrée;905930.01;6917387.96;5.832543;49.322828;;inconnue;;0
+;54084_0170_00019;54084;Mont-Bonvillers;;;Rue de Landres;;19;;entrée;905912.77;6917391.9;5.832308;49.322869;;inconnue;;0
+;54084_0170_00021;54084;Mont-Bonvillers;;;Rue de Landres;;21;;segment;905822.51;6917425.4;5.831084;49.323199;;inconnue;;0
+;54084_0170_00023;54084;Mont-Bonvillers;;;Rue de Landres;;23;;segment;905664.68;6917445.79;5.828925;49.323433;;inconnue;;0
+;54084_0170_00025;54084;Mont-Bonvillers;;;Rue de Landres;;25;;segment;905833.4;6917419.89;5.831231;49.323146;;inconnue;;0
+;54084_0220_00001;54084;Mont-Bonvillers;;;Cités Nouvelles;;1;;entrée;905808.4;6917857.25;5.831103;49.327083;;inconnue;;0
+;54084_0220_00002;54084;Mont-Bonvillers;;;Cités Nouvelles;;2;;entrée;905816.82;6917851.65;5.831216;49.32703;;inconnue;;0
+;54084_0220_00003;54084;Mont-Bonvillers;;;Cités Nouvelles;;3;;entrée;905824.18;6917845.35;5.831314;49.326971;;inconnue;;0
+;54084_0220_00004;54084;Mont-Bonvillers;;;Cités Nouvelles;;4;;;905827.52;6917825.32;5.83135;49.32679;;arcep;;0
+;54084_0220_00005;54084;Mont-Bonvillers;;;Cités Nouvelles;;5;;entrée;905843.03;6917841.02;5.831571;49.326926;;inconnue;;0
+;54084_0220_00006;54084;Mont-Bonvillers;;;Cités Nouvelles;;6;;entrée;905852.18;6917841.46;5.831697;49.326927;;inconnue;;0
+;54084_0220_00007;54084;Mont-Bonvillers;;;Cités Nouvelles;;7;;entrée;905860.01;6917799.88;5.831784;49.326551;;inconnue;;0
+;54084_0220_00008;54084;Mont-Bonvillers;;;Cités Nouvelles;;8;;entrée;905842.39;6917798.03;5.831541;49.32654;;inconnue;;0
+;54084_0220_00009;54084;Mont-Bonvillers;;;Cités Nouvelles;;9;;segment;905832.5;6917840.64;5.831426;49.326926;;inconnue;;0
+;54084_0220_00010;54084;Mont-Bonvillers;;;Cités Nouvelles;;10;;entrée;905806.49;6917806.98;5.831052;49.326632;;inconnue;;0
+;54084_0220_00011;54084;Mont-Bonvillers;;;Cités Nouvelles;;11;;entrée;905789;6917817.93;5.830817;49.326736;;inconnue;;0
+;54084_0220_00012;54084;Mont-Bonvillers;;;Cités Nouvelles;;12;;entrée;905778.52;6917828.24;5.830678;49.326832;;inconnue;;0
+;54084_0220_00013;54084;Mont-Bonvillers;;;Cités Nouvelles;;13;;segment;905878.59;6917795.09;5.832037;49.326502;;inconnue;;0
+;54084_0220_00014;54084;Mont-Bonvillers;;;Cités Nouvelles;;14;;segment;905867;6917791.56;5.831876;49.326474;;inconnue;;0
+;54084_0050_00001;54084;Mont-Bonvillers;;;Rue Bernadette;;1;;entrée;906003.47;6917277.5;5.833498;49.321812;;inconnue;;0
+;54084_0050_00002;54084;Mont-Bonvillers;;;Rue Bernadette;;2;;entrée;906042.51;6917314.74;5.834053;49.322134;;inconnue;;0
+;54084_0050_00003;54084;Mont-Bonvillers;;;Rue Bernadette;;3;;segment;905976.9;6917251.28;5.83312;49.321585;;inconnue;;0
+;54084_0050_00004;54084;Mont-Bonvillers;;;Rue Bernadette;;4;;segment;906037.57;6917312.56;5.833984;49.322116;;inconnue;;0
+;54084_0050_00006;54084;Mont-Bonvillers;;;Rue Bernadette;;6;;entrée;906039.77;6917310.19;5.834013;49.322094;;inconnue;;0
+;54084_0050_00008;54084;Mont-Bonvillers;;;Rue Bernadette;;8;;entrée;906037.37;6917305.99;5.833978;49.322057;;inconnue;;0
+;54084_0050_00010;54084;Mont-Bonvillers;;;Rue Bernadette;;10;;entrée;906035.39;6917302.35;5.833949;49.322025;;inconnue;;0
+;54084_0050_00012;54084;Mont-Bonvillers;;;Rue Bernadette;;12;;entrée;906032.98;6917298.48;5.833914;49.321991;;inconnue;;0
+;54084_0050_00014;54084;Mont-Bonvillers;;;Rue Bernadette;;14;;entrée;906031.2;6917295.52;5.833888;49.321965;;inconnue;;0
+;54084_0050_00016;54084;Mont-Bonvillers;;;Rue Bernadette;;16;;entrée;906028.72;6917291.65;5.833852;49.321931;;inconnue;;0
+;54084_0050_00018;54084;Mont-Bonvillers;;;Rue Bernadette;;18;;entrée;906026.87;6917288.36;5.833825;49.321902;;inconnue;;0
+;54084_0050_00020;54084;Mont-Bonvillers;;;Rue Bernadette;;20;;entrée;906024.97;6917284.5;5.833797;49.321868;;inconnue;;0
+;54084_0050_00021;54084;Mont-Bonvillers;;;Rue Bernadette;;21;;segment;905972.39;6917245.21;5.833055;49.321532;;inconnue;;0
+;54084_0050_00022;54084;Mont-Bonvillers;;;Rue Bernadette;;22;;entrée;906022;6917280.17;5.833754;49.32183;;inconnue;;0
+;54084_0050_00024;54084;Mont-Bonvillers;;;Rue Bernadette;;24;;segment;906018.57;6917280.49;5.833707;49.321834;;inconnue;;0
+;54084_0050_00026;54084;Mont-Bonvillers;;;Rue Bernadette;;26;;segment;906016.79;6917277.31;5.833681;49.321806;;inconnue;;0
+;54084_0050_00028;54084;Mont-Bonvillers;;;Rue Bernadette;;28;;segment;906012.48;6917269.58;5.833618;49.321738;;inconnue;;0
+;54084_0050_00030;54084;Mont-Bonvillers;;;Rue Bernadette;;30;;entrée;906015.41;6917269.02;5.833658;49.321732;;inconnue;;0
+;54084_0050_00032;54084;Mont-Bonvillers;;;Rue Bernadette;;32;;entrée;906013.01;6917265.04;5.833623;49.321697;;inconnue;;0
+;54084_0050_00034;54084;Mont-Bonvillers;;;Rue Bernadette;;34;;entrée;906010.73;6917261.73;5.83359;49.321668;;inconnue;;0
+;54084_0050_00036;54084;Mont-Bonvillers;;;Rue Bernadette;;36;;entrée;906008.68;6917257.87;5.83356;49.321634;;inconnue;;0
+;54084_0050_00038;54084;Mont-Bonvillers;;;Rue Bernadette;;38;;entrée;906006.48;6917254.45;5.833528;49.321604;;inconnue;;0
+;54084_0050_00040;54084;Mont-Bonvillers;;;Rue Bernadette;;40;;entrée;906004.71;6917251.05;5.833502;49.321574;;inconnue;;0
+;54084_0050_00042;54084;Mont-Bonvillers;;;Rue Bernadette;;42;;entrée;906002.51;6917247.41;5.83347;49.321542;;inconnue;;0
+;54084_0050_00044;54084;Mont-Bonvillers;;;Rue Bernadette;;44;;entrée;906000.83;6917243.45;5.833445;49.321507;;inconnue;;0
+;54084_0050_00046;54084;Mont-Bonvillers;;;Rue Bernadette;;46;;entrée;905997.52;6917238.43;5.833397;49.321463;;inconnue;;0
+;54084_0050_00048;54084;Mont-Bonvillers;;;Rue Bernadette;;48;;segment;906012.48;6917269.58;5.833618;49.321738;;inconnue;;0
+;54084_0050_00002_bis;54084;Mont-Bonvillers;;;Rue Bernadette;;2;bis;entrée;906058.02;6917322.65;5.83427;49.3222;;inconnue;;0
+;54084_0060_00001;54084;Mont-Bonvillers;;;Rue de Bonvillers;;1;;entrée;906144.01;6917706;5.835641;49.325616;;inconnue;;0
+;54084_0060_00002;54084;Mont-Bonvillers;;;Rue de Bonvillers;;2;;segment;906428.37;6917321.26;5.839359;49.322068;;inconnue;;0
+;54084_0060_00003;54084;Mont-Bonvillers;;;Rue de Bonvillers;;3;;entrée;906238.53;6917602.53;5.836889;49.324656;;inconnue;;0
+;54084_0060_00005;54084;Mont-Bonvillers;;;Rue de Bonvillers;;5;;;906375.89;6917366.35;5.83866;49.32249;;arcep;;0
+;54084_0060_00002_bis;54084;Mont-Bonvillers;;;Rue de Bonvillers;;2;bis;entrée;906387.99;6917341.41;5.838814;49.322262;;inconnue;;0
+;54084_0060_00003_bis;54084;Mont-Bonvillers;;;Rue de Bonvillers;;3;bis;entrée;906389.76;6917346.7;5.838841;49.322309;;inconnue;;0
+;54084_0060_00001_bis;54084;Mont-Bonvillers;;;Rue de Bonvillers;;1;bis;;906428.15;6917309.23;5.83935;49.32196;;arcep;;0
+;54084_0060_00003_ter;54084;Mont-Bonvillers;;;Rue de Bonvillers;;3;ter;;906455.41;6917340.27;5.83974;49.32223;;arcep;;0
+;54084_0290_00048;54084;Mont-Bonvillers;;;Allée du Stade;;48;;segment;905921.11;6917773.8;5.832611;49.326297;;inconnue;;0
+;54084_0081_00001;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;1;;entrée;906078.8;6917876.53;5.834829;49.327169;;inconnue;;0
+;54084_0081_00002;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;2;;entrée;906095.5;6917877.46;5.835059;49.327172;;inconnue;;0
+;54084_0081_00003;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;3;;entrée;906095.53;6917927.22;5.835084;49.327619;;inconnue;;0
+;54084_0081_00004;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;4;;entrée;906124.67;6917891.87;5.835467;49.327292;;inconnue;;0
+;54084_0081_00005;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;5;;entrée;906135.37;6917904.05;5.83562;49.327398;;inconnue;;0
+;54084_0081_00006;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;6;;segment;906141.79;6917891.26;5.835702;49.327281;;inconnue;;0
+;54084_0081_00007;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;7;;entrée;906151;6917902.39;5.835834;49.327378;;inconnue;;0
+;54084_0081_00008;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;8;;segment;906143.9;6917889.22;5.83573;49.327262;;inconnue;;0
+;54084_0081_00009;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;9;;entrée;906170.31;6917893.4;5.836095;49.327291;;inconnue;;0
+;54084_0081_00010;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;10;;segment;906146.58;6917883.42;5.835764;49.327209;;inconnue;;0
+;54084_0081_00011;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;11;;entrée;906231.22;6917905.05;5.836938;49.327376;;inconnue;;0
+;54084_0081_00012;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;12;;entrée;906139.28;6917855.88;5.83565;49.326964;;inconnue;;0
+;54084_0081_00013;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;13;;entrée;906170.47;6917884.72;5.836093;49.327213;;inconnue;;0
+;54084_0081_00015;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;15;;entrée;906160.53;6917857.87;5.835943;49.326975;;inconnue;;0
+;54084_0081_00017;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;17;;entrée;906129.21;6917842.39;5.835505;49.326846;;inconnue;;0
+;54084_0081_00019;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;19;;entrée;906119.29;6917839.02;5.835367;49.326819;;inconnue;;0
+;54084_0081_00013_bis;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;13;bis;entrée;906193.23;6917893.44;5.83641;49.327284;;inconnue;;0
+;54084_0081_00001_bis;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;1;bis;entrée;906096.39;6917885.18;5.835075;49.327241;;inconnue;;0
+;54084_0081_00017_bis;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;17;bis;entrée;906135.98;6917844.52;5.835599;49.326863;;inconnue;;0
+;54084_0081_00009_bis;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;9;bis;entrée;906195.7;6917897.43;5.836446;49.327319;;inconnue;;0
+;54084_0081_00015_bis;54084;Mont-Bonvillers;;;Rue du Vieux Mont;;15;bis;entrée;906160.53;6917857.87;5.835943;49.326975;;inconnue;;0
+;54084_0090_00001;54084;Mont-Bonvillers;;;Place du 19 Mars 1962;;1;;segment;906131.3;6917648.55;5.835438;49.325104;;inconnue;;0
+;54084_0090_00002;54084;Mont-Bonvillers;;;Place du 19 Mars 1962;;2;;segment;906129.91;6917547.64;5.835369;49.324198;;inconnue;;0
+;54084_0090_00003;54084;Mont-Bonvillers;;;Place du 19 Mars 1962;;3;;segment;906131.3;6917648.55;5.835438;49.325104;;inconnue;;0
+;54084_0090_00004;54084;Mont-Bonvillers;;;Place du 19 Mars 1962;;4;;entrée;906150.9;6917573;5.83567;49.324419;;inconnue;;0
+;54084_0090_00005;54084;Mont-Bonvillers;;;Place du 19 Mars 1962;;5;;entrée;906156.47;6917583.99;5.835752;49.324516;;inconnue;;0
+;54084_0090_00006;54084;Mont-Bonvillers;;;Place du 19 Mars 1962;;6;;entrée;906166.88;6917601.96;5.835904;49.324674;;inconnue;;0
+;54084_0130_00001;54084;Mont-Bonvillers;;;Chemin des Fronts;;1;;segment;905956.48;6918118.15;5.833267;49.329379;;inconnue;;0
+;54084_0130_00002;54084;Mont-Bonvillers;;;Chemin des Fronts;;2;;entrée;905966.19;6918133.53;5.833408;49.329514;;inconnue;;0
+;54084_0130_00003;54084;Mont-Bonvillers;;;Chemin des Fronts;;3;;entrée;905975.49;6918148;5.833543;49.329641;;inconnue;;0
+;54084_0130_00004;54084;Mont-Bonvillers;;;Chemin des Fronts;;4;;entrée;905991.31;6918173.5;5.833773;49.329865;;inconnue;;0
+;54084_0130_00005;54084;Mont-Bonvillers;;;Chemin des Fronts;;5;;entrée;905993.03;6918182.25;5.833801;49.329943;;inconnue;;0
+;54084_0240_00001;54084;Mont-Bonvillers;;;Rue de la Paix;;1;;entrée;905830.9;6917911.38;5.831439;49.327562;;inconnue;;0
+;54084_0240_00002;54084;Mont-Bonvillers;;;Rue de la Paix;;2;;entrée;905837.7;6917898.38;5.831526;49.327443;;inconnue;;0
+;54084_0240_00003;54084;Mont-Bonvillers;;;Rue de la Paix;;3;;segment;905824.91;6917924.3;5.831363;49.32768;;inconnue;;0

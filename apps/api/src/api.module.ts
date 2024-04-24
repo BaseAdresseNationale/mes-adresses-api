@@ -1,8 +1,6 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 
 import { NumeroModule } from './modules/numeros/numero.module';
 import { BaseLocaleModule } from './modules/base_locale/base_locale.module';
@@ -14,10 +12,6 @@ import { CronModule } from 'apps/cron/src/cron.module';
 
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '../../../'),
-      renderPath: 'public/',
-    }),
     ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
