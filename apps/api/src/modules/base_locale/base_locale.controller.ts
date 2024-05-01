@@ -415,12 +415,18 @@ export class BaseLocaleController {
     operationId: 'pauseBaseLocale',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiResponse({ status: HttpStatus.OK, type: Boolean })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async pauseBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.pause(req.baseLocale._id);
-    res.status(HttpStatus.OK).json(baseLocale);
+    if (!req.baseLocale.sync.status) {
+      throw new HttpException(
+        'Le statut de synchronisation doit être actif pour modifier l’état de pause',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+    await this.publicationService.pause(req.baseLocale._id);
+    res.status(HttpStatus.OK).json(true);
   }
 
   @Post(':baseLocaleId/sync/resume')
@@ -429,12 +435,18 @@ export class BaseLocaleController {
     operationId: 'resumeBaseLocale',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiResponse({ status: HttpStatus.OK, type: Boolean })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async resumeBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.resume(req.baseLocale._id);
-    res.status(HttpStatus.OK).json(baseLocale);
+    if (!req.baseLocale.sync.status) {
+      throw new HttpException(
+        'Le statut de synchronisation doit être actif pour modifier l’état de pause',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+    await this.publicationService.resume(req.baseLocale._id);
+    res.status(HttpStatus.OK).json(true);
   }
 
   @Get(':baseLocaleId/all/deleted')

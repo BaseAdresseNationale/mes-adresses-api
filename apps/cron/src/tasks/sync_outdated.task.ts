@@ -25,6 +25,7 @@ export class SyncOutdatedTask implements Task {
       '_id',
       {
         'sync.status': StatusSyncEnum.OUTDATED,
+        'sync.isPaused': { $ne: true },
         _updated: { $lt: timeLimit },
       },
     );
