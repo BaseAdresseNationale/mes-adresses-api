@@ -25,7 +25,7 @@ export class CreateVoieDTO {
 
   @IsOptional()
   @IsEnum(TypeNumerotationEnum)
-  @ApiProperty({ required: false, nullable: false })
+  @ApiProperty({ required: false, nullable: false, enum: TypeNumerotationEnum })
   typeNumerotation: TypeNumerotationEnum;
 
   @IsOptional()

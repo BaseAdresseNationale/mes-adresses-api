@@ -11,17 +11,17 @@ import {
 
 export class UpdateBaseLocaleDTO {
   @IsOptional()
-  @ApiProperty({ required: true, nullable: false })
+  @ApiProperty({ required: false, nullable: false })
   @IsNotEmpty()
   nom?: string;
 
   @IsOptional()
-  @ApiProperty({ required: true, nullable: false })
+  @ApiProperty({ required: false, nullable: false, enum: StatusBaseLocalEnum })
   @IsEnum(StatusBaseLocalEnum)
   status?: StatusBaseLocalEnum;
 
   @IsOptional()
-  @ApiProperty({ required: true, nullable: false })
+  @ApiProperty({ required: false, nullable: false })
   @ArrayNotEmpty()
   @ArrayMaxSize(100)
   @IsEmail({}, { each: true })

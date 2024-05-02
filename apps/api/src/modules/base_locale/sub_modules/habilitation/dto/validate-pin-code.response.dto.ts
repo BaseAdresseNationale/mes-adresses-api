@@ -5,5 +5,8 @@ export class ValidatePinCodeResponseDTO {
   validated: boolean;
 
   @ApiProperty({ required: false, nullable: true })
-  message?: string;
+  error?: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  remainingAttempts?: number;
 }
