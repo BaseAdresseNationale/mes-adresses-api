@@ -3,8 +3,10 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   Inject,
+  ParseBoolPipe,
   ParseFilePipeBuilder,
   Post,
   Put,
@@ -167,13 +169,24 @@ export class BaseLocaleController {
     summary: 'Find Base_Locale by id',
     operationId: 'findBaseLocale',
   })
+  @ApiQuery({ name: 'isExist', required: false, type: Boolean })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
     type: ExtendedBaseLocaleDTO,
   })
   @ApiBearerAuth('admin-token')
-  async findOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+  async findOneBaseLocale(
+    @Req() req: CustomRequest,
+    @Query('isExist', new ParseBoolPipe({ optional: true })) isExist: boolean,
+    @Res() res: Response,
+  ) {
+    if (isExist && req.baseLocale._deleted) {
+      throw new HttpException(
+        `BaseLocale ${req.baseLocale._id} est supprimé`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
     const baseLocale = await this.baseLocaleService.extendWithNumeros(
       req.baseLocale,
     );
