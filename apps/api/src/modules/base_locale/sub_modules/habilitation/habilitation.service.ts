@@ -80,7 +80,7 @@ export class HabilitationService {
     return data;
   }
 
-  async validatePinCode(habilitationId: string, code: number): Promise<any> {
+  async validatePinCode(habilitationId: string, code: string): Promise<any> {
     const habilitation = await this.findOne(habilitationId);
 
     if (habilitation.status !== 'pending') {
