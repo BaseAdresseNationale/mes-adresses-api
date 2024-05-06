@@ -64,6 +64,7 @@ export class BaseLocaleService {
   async findOneOrFail(id: string): Promise<BaseLocale> {
     const filter = {
       _id: id,
+      _deleted: null,
     };
     const baseLocale = await this.baseLocaleModel.findOne(filter).lean().exec();
 

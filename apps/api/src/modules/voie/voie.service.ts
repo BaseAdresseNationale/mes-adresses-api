@@ -55,6 +55,7 @@ export class VoieService {
   async findOneOrFail(voieId: string): Promise<Voie> {
     const filter = {
       _id: voieId,
+      _deleted: null,
     };
     const voie = await this.voieModel.findOne(filter).lean().exec();
 

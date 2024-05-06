@@ -39,6 +39,7 @@ export class ToponymeService {
   async findOneOrFail(toponymeId: string): Promise<Toponyme> {
     const filter = {
       _id: toponymeId,
+      _deleted: null,
     };
     const toponyme = await this.toponymeModel.findOne(filter).lean().exec();
 

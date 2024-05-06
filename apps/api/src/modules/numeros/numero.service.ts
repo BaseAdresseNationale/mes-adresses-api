@@ -43,6 +43,7 @@ export class NumeroService {
   async findOneOrFail(numeroId: string): Promise<Numero> {
     const filter = {
       _id: numeroId,
+      _deleted: null,
     };
     const numero = await this.numeroModel
       .findOne(filter)
