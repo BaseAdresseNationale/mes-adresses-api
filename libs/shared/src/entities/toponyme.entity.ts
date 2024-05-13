@@ -23,10 +23,15 @@ export class Toponyme extends GlobalEntity {
   @Column('simple-array', { nullable: true, array: true })
   parcelles?: string[] | null;
 
-  @OneToMany(() => Position, (position) => position.toponyme)
+  @OneToMany(() => Position, (position) => position.toponyme, {
+    eager: true,
+    cascade: true,
+  })
   positions: Position[];
 
-  @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.toponymes)
+  @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.toponymes, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'bal_id' })
   baseLocale: BaseLocale;
 

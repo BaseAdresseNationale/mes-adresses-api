@@ -9,10 +9,18 @@ import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Voie as VoieP } from '@/shared/entities/voie.entity';
+import { BaseLocale as BaseLocaleP } from '@/shared/entities/base_locale.entity';
 
 @Injectable()
 export class ExportCsvService {
   constructor(
+    @InjectRepository(VoieP)
+    private voieRepository: Repository<VoieP>,
+    @InjectRepository(BaseLocaleP)
+    private balRepository: Repository<BaseLocaleP>,
     @InjectModel(BaseLocale.name) private baseLocalModel: Model<BaseLocale>,
     @InjectModel(Voie.name) private voieModel: Model<Voie>,
     @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
@@ -317,5 +325,17 @@ export class ExportCsvService {
     console.log('EXPORT CSV POSITIONS');
     await this.exportPoisitionCsv();
     console.log('END EXPORT CSV');
+  }
+
+  public async test() {
+    // const voie = await this.voieRepository.findOne({
+    //   where: { id: '6051bb3de5ccc4108c38fec2' },
+    //   relations: ['numeros', 'baseLocale'],
+    // });
+    // await this.voieRepository.update({ id: '6051bb3de5ccc4108c38fec2' }, {});
+    // console.log(voie);
+    // const res = await this.balRepository.delete({
+    //   id: '6051bb3ae5ccc4108c38fec1',
+    // });
   }
 }

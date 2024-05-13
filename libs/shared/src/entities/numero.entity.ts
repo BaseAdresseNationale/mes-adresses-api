@@ -60,14 +60,19 @@ export class Numero extends GlobalEntity {
   @Column('boolean', { nullable: false, default: false })
   certifie?: boolean;
 
-  @OneToMany(() => Position, (position) => position.numero)
+  @OneToMany(() => Position, (position) => position.numero, {
+    eager: true,
+    cascade: true,
+  })
   positions: Position[];
 
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.numeros)
   @JoinColumn({ name: 'bal_id' })
   baseLocale: BaseLocale;
 
-  @ManyToOne(() => Voie, (voie) => voie.numeros)
+  @ManyToOne(() => Voie, (voie) => voie.numeros, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'voie_id' })
   voie: Voie;
 

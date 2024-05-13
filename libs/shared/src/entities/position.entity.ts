@@ -57,11 +57,15 @@ export class Position {
   @Column('geometry', { nullable: false, spatialFeatureType: 'Point' })
   point: Point;
 
-  @ManyToOne(() => Toponyme, (toponyme) => toponyme.positions)
+  @ManyToOne(() => Toponyme, (toponyme) => toponyme.positions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'toponyme_id' })
   toponyme: Toponyme;
 
-  @ManyToOne(() => Numero, (numero) => numero.positions)
+  @ManyToOne(() => Numero, (numero) => numero.positions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'numero_id' })
   numero: Numero;
 

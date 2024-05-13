@@ -6,7 +6,8 @@ async function bootstrap() {
   const app = await NestFactory.createApplicationContext(ExportCsvModule);
   const exportCsvService = app.get(ExportCsvService);
   console.log('START');
-  await exportCsvService.exportCsvs();
+  // await exportCsvService.exportCsvs();
+  await exportCsvService.test();
   console.log('END');
   await app.close();
 }

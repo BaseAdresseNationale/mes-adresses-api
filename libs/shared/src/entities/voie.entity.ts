@@ -47,7 +47,9 @@ export class Voie extends GlobalEntity {
   @Column('geometry', { nullable: true, spatialFeatureType: 'LineString' })
   trace: LineString | null;
 
-  @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.voies)
+  @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.voies, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'bal_id' })
   baseLocale: BaseLocale;
 
