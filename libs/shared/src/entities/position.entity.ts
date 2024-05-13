@@ -30,15 +30,15 @@ export class Position {
   id: number;
 
   @ApiProperty()
-  @Column('text', { name: 'bal_id', nullable: false })
+  @Column('varchar', { name: 'bal_id', nullable: false, length: 24 })
   balId: string;
 
   @ApiProperty()
-  @Column('text', { name: 'toponyme_id', nullable: true })
+  @Column('varchar', { name: 'toponyme_id', nullable: true, length: 24 })
   toponymeId: string;
 
   @ApiProperty()
-  @Column('text', { name: 'numero_id', nullable: true })
+  @Column('varchar', { name: 'numero_id', nullable: true, length: 24 })
   numeroId: string;
 
   @ApiProperty({ enum: PositionTypeEnum })

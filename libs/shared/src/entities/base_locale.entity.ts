@@ -20,9 +20,6 @@ export enum StatusSyncEnum {
 }
 
 export class BaseLocaleSync {
-  @ApiProperty()
-  id: string;
-
   @ApiProperty({ enum: StatusSyncEnum })
   status: StatusSyncEnum;
 
@@ -43,7 +40,7 @@ export class BaseLocale extends GlobalEntity {
   nom: string;
 
   @ApiProperty()
-  @Column('text', { nullable: false })
+  @Column('varchar', { nullable: false, length: 5 })
   commune: string;
 
   @ApiProperty()
@@ -51,7 +48,7 @@ export class BaseLocale extends GlobalEntity {
   emails: string[];
 
   @ApiProperty()
-  @Column('text', { nullable: false })
+  @Column('varchar', { nullable: false, length: 20 })
   token: string;
 
   @ApiProperty({ enum: StatusBaseLocalEnum })
@@ -59,7 +56,7 @@ export class BaseLocale extends GlobalEntity {
   status: StatusBaseLocalEnum;
 
   @ApiProperty()
-  @Column('text', { nullable: true })
+  @Column('varchar', { nullable: true, length: 20 })
   habilitation: string | null;
 
   @ApiProperty({ type: () => BaseLocaleSync })

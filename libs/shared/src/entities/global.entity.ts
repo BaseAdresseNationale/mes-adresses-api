@@ -10,7 +10,7 @@ import { ObjectId } from 'mongodb';
 
 export class GlobalEntity {
   @ApiProperty()
-  @PrimaryColumn('text')
+  @PrimaryColumn('varchar', { length: 24 })
   id?: string;
 
   @ApiProperty()
