@@ -463,6 +463,10 @@ export class BaseLocaleService {
     return { voies, toponymes, numeros };
   }
 
+  async findDistinct(field: string): Promise<any> {
+    return this.baseLocaleModel.distinct(field).exec();
+  }
+
   touch(baseLocaleId: Types.ObjectId, _updated: Date = new Date()) {
     return this.baseLocaleModel.updateOne(
       { _id: baseLocaleId },
