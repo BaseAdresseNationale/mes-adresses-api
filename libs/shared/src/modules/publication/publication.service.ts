@@ -48,6 +48,7 @@ export class PublicationService {
 
     // On vérifie que la BAL a une habilitation rattachée
     if (!baseLocale._habilitation) {
+      await this.pause(balId);
       throw new HttpException(
         'Aucune habilitation rattachée à cette Base Adresse Locale',
         HttpStatus.PRECONDITION_FAILED,
@@ -55,11 +56,22 @@ export class PublicationService {
     }
 
     // On récupère l'habilitation sur l'api-depot
-    const habilitation: Habilitation =
-      await this.apiDepotService.findOneHabiliation(baseLocale._habilitation);
+    let habilitation: Habilitation;
+    try {
+      habilitation = await this.apiDepotService.findOneHabiliation(
+        baseLocale._habilitation,
+      );
+    } catch (err) {
+      // Si l'habilitation est introuvable sur l'API dépot on met la BAL en pause
+      if (err.status === HttpStatus.NOT_FOUND) {
+        await this.pause(balId);
+      }
+      throw err;
+    }
 
     // On verifie que l'habilitation est valide
     if (habilitation.status !== StatusHabiliation.ACCEPTED) {
+      await this.pause(balId);
       throw new HttpException(
         'L’habilitation rattachée n’est pas une habilitation valide',
         HttpStatus.PRECONDITION_FAILED,
@@ -71,6 +83,7 @@ export class PublicationService {
       !habilitation.expiresAt ||
       new Date(habilitation.expiresAt) < new Date()
     ) {
+      await this.pause(balId);
       throw new HttpException(
         'L’habilitation rattachée a expiré',
         HttpStatus.PRECONDITION_FAILED,
@@ -151,39 +164,22 @@ export class PublicationService {
     return this.baseLocaleModel.findOne(balId).lean();
   }
 
-  public async pause(balId: Types.ObjectId) {
+  public pause(balId: Types.ObjectId) {
     return this.setIsPaused(balId, true);
   }
 
-  public async resume(balId: Types.ObjectId) {
+  public resume(balId: Types.ObjectId) {
     return this.setIsPaused(balId, false);
   }
 
   private async setIsPaused(
     balId: Types.ObjectId,
     isPaused: boolean,
-  ): Promise<BaseLocale> {
-    const baseLocale: BaseLocale = await this.baseLocaleModel
-      .findOneAndUpdate(
-        {
-          _id: balId,
-          'sync.status': {
-            $in: [StatusSyncEnum.SYNCED, StatusSyncEnum.OUTDATED],
-          },
-        },
-        { $set: { 'sync.isPaused': isPaused } },
-        { new: true },
-      )
-      .lean();
-
-    if (!baseLocale) {
-      throw new HttpException(
-        'Le statut de synchronisation doit être actif pour modifier l’état de pause',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
-    return baseLocale;
+  ): Promise<void> {
+    await this.baseLocaleModel.updateOne(
+      { _id: balId },
+      { $set: { 'sync.isPaused': isPaused } },
+    );
   }
 
   private async updateSync(
