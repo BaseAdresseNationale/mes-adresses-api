@@ -10,12 +10,20 @@ import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { getCommune } from '@/shared/utils/cog.utils';
 import { roundCoordinate } from '@/shared/utils/coor.utils';
+import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 
 const DEFAULT_CODE_VOIE = 'xxxx';
 const DEFAULT_NUMERO_TOPONYME = 99999;
 const DEFAULT_SOURCE = 'commune';
 
+type BanIdsType = {
+  commune: string;
+  toponyme: string;
+  adresse?: string;
+};
+
 type RowType = {
+  banIds: BanIdsType;
   codeCommune: string;
   codeVoie: string;
   numero: number;
@@ -32,8 +40,10 @@ type RowType = {
 };
 
 type CsvRowType = {
+  id_ban_commune: string;
+  id_ban_toponyme: string;
+  id_ban_adresse: string;
   cle_interop: string;
-  uid_adresse: string;
   voie_nom: string;
   lieudit_complement_nom: string;
   numero: string;
@@ -99,7 +109,9 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
       obj.numero,
       obj.suffixe,
     ),
-    uid_adresse: '',
+    id_ban_commune: obj.banIds.commune,
+    id_ban_toponyme: obj.banIds.toponyme,
+    id_ban_adresse: obj.banIds.adresse || '',
     voie_nom: obj.nomVoie,
     lieudit_complement_nom: obj.nomToponyme || '',
     numero: Number.isInteger(obj.numero) ? obj.numero.toString() : '',
@@ -150,6 +162,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
 }
 
 export async function exportBalToCsv(
+  baseLocale: BaseLocale,
   voies: Voie[],
   toponymes: Toponyme[],
   numeros: Numero[],
@@ -178,6 +191,11 @@ export async function exportBalToCsv(
     if (n.positions && n.positions.length > 0) {
       n.positions.forEach((p) => {
         rows.push({
+          banIds: {
+            commune: baseLocale.banId,
+            toponyme: v.banId,
+            adresse: n.banId,
+          },
           codeCommune: n.commune,
           codeVoie: DEFAULT_CODE_VOIE,
           numero: n.numero,
@@ -200,6 +218,10 @@ export async function exportBalToCsv(
     if (t.positions.length > 0) {
       t.positions.forEach((p) => {
         rows.push({
+          banIds: {
+            commune: baseLocale.banId,
+            toponyme: t.banId,
+          },
           codeCommune: t.commune,
           codeVoie: DEFAULT_CODE_VOIE,
           numero: DEFAULT_NUMERO_TOPONYME,
@@ -212,6 +234,10 @@ export async function exportBalToCsv(
       });
     } else {
       rows.push({
+        banIds: {
+          commune: baseLocale.banId,
+          toponyme: t.banId,
+        },
         codeCommune: t.commune,
         codeVoie: DEFAULT_CODE_VOIE,
         numero: DEFAULT_NUMERO_TOPONYME,

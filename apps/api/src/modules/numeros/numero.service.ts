@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { FilterQuery, Model, ProjectionType, SortOrder, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { v4 as uuid } from 'uuid';
 import { omit, uniq, chunk } from 'lodash';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
@@ -115,6 +116,7 @@ export class NumeroService {
 
         const numero = {
           _bal: baseLocale._id,
+          banId: rawNumero.banId || uuid(),
           numero: rawNumero.numero,
           comment: rawNumero.comment,
           toponyme: rawNumero.toponyme,
@@ -173,6 +175,7 @@ export class NumeroService {
     // CREATE NUMERO
     const numero: Partial<Numero> = {
       _bal: voie._bal,
+      banId: uuid(),
       commune: voie.commune,
       voie: voie._id,
       numero: createNumeroDto.numero,

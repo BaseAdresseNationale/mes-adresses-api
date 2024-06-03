@@ -7,6 +7,10 @@ export class BaseEntity {
   @Prop({ type: SchemaTypes.ObjectId, auto: true })
   _id: Types.ObjectId;
 
+  @ApiProperty({ type: String })
+  @Prop({ type: SchemaTypes.UUID })
+  banId: string;
+
   @ApiProperty()
   @Prop({ type: SchemaTypes.Date, default: Date.now })
   _created: Date;

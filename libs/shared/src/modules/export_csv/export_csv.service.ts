@@ -41,7 +41,7 @@ export class ExportCsvService {
       baseLocale._id,
     );
 
-    return exportBalToCsv(voies, toponymes, numeros, withComment);
+    return exportBalToCsv(baseLocale, voies, toponymes, numeros, withComment);
   }
 
   async exportVoiesToCsv(baseLocale: BaseLocale): Promise<string> {

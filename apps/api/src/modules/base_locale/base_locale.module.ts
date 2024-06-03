@@ -26,6 +26,7 @@ import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
 import { SearchQueryPipe } from './pipe/search_query.pipe';
+import { BanPlateformModule } from '@/shared/modules/ban_plateform/ban_plateform.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { SearchQueryPipe } from './pipe/search_query.pipe';
     ]),
     MailerModule,
     PublicationModule,
+    forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),
     forwardRef(() => ExportCsvModule),
     forwardRef(() => TilesModule),

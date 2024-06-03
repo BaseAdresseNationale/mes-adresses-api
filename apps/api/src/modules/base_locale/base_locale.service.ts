@@ -45,6 +45,7 @@ import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { PopulateVoie } from '@/shared/schemas/voie/voie.populate';
+import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 
 @Injectable()
 export class BaseLocaleService {
@@ -59,6 +60,8 @@ export class BaseLocaleService {
     private numeroService: NumeroService,
     @Inject(forwardRef(() => PopulateService))
     private populateService: PopulateService,
+    @Inject(forwardRef(() => BanPlateformService))
+    private banPlateformService: BanPlateformService,
   ) {}
 
   async findOneOrFail(id: string): Promise<BaseLocale> {
@@ -113,7 +116,11 @@ export class BaseLocaleService {
     createInput: CreateBaseLocaleDTO,
     sendMail: boolean = true,
   ): Promise<BaseLocale> {
+    const banId: string = await this.banPlateformService.getIdBanCommune(
+      createInput.commune,
+    );
     const newBaseLocale = await this.baseLocaleModel.create({
+      banId,
       ...createInput,
       token: generateBase62String(20),
       status: StatusBaseLocalEnum.DRAFT,
@@ -133,8 +140,11 @@ export class BaseLocaleService {
     createDemoInput: CreateDemoBaseLocaleDTO,
   ): Promise<BaseLocale> {
     const { commune, populate } = createDemoInput;
-
+    const banId: string = await this.banPlateformService.getIdBanCommune(
+      createDemoInput.commune,
+    );
     const newDemoBaseLocale = await this.baseLocaleModel.create({
+      banId,
       token: generateBase62String(20),
       commune,
       nom: `Adresses de ${getCommune(commune).nom} [démo]`,

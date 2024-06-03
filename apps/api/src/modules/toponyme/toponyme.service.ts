@@ -8,6 +8,7 @@ import {
 import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { groupBy } from 'lodash';
+import { v4 as uuid } from 'uuid';
 
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
@@ -103,11 +104,12 @@ export class ToponymeService {
 
   public async create(
     bal: BaseLocale,
-    createToponymeDto: CreateToponymeDTO,
+    createToponymeDto: CreateToponymeDTO | Partial<Toponyme>,
   ): Promise<Toponyme> {
     // CREATE OBJECT TOPONYME
     const toponyme: Partial<Toponyme> = {
       _bal: bal._id,
+      banId: uuid(),
       commune: bal.commune,
       nom: createToponymeDto.nom,
       positions: createToponymeDto.positions || [],
@@ -206,6 +208,7 @@ export class ToponymeService {
         const toponyme = {
           _id: rawToponyme._id,
           _bal: baseLocale._id,
+          banId: rawToponyme.banId || uuid(),
           nom: cleanNom(rawToponyme.nom),
           positions: rawToponyme.positions || [],
           parcelles: rawToponyme.parcelles || [],
