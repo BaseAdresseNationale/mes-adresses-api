@@ -411,7 +411,10 @@ describe('HABILITATION MODULE', () => {
         .expect(200);
 
       expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify({ validated: false }),
+        JSON.stringify({
+          validated: false,
+          error: 'Code non valide, 9 tentatives restantes',
+        }),
       );
     });
 
@@ -447,7 +450,7 @@ describe('HABILITATION MODULE', () => {
 
       expect(response.body).toEqual({
         validated: false,
-        message: 'Aucune demande d’habilitation en attente',
+        error: 'Aucune demande d’habilitation en attente',
       });
     });
   });

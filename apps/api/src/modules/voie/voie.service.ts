@@ -171,7 +171,8 @@ export class VoieService {
     await this.voieModel.insertMany(voies);
   }
 
-  async updateTiles(voies: Voie[]) {
+  async updateTiles(voieIds: string[]) {
+    const voies: Voie[] = await this.findMany({ _id: { $in: voieIds } });
     return Promise.all(
       voies.map(async (voie) => {
         const voieSet = await this.calcMetaTilesVoie(voie);

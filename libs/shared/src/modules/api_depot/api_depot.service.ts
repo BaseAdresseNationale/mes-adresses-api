@@ -74,7 +74,7 @@ export class ApiDepotService {
 
   async validatePinCodeHabiliation(
     habilitationId: string,
-    code: number,
+    code: string,
   ): Promise<any> {
     const { data } = await firstValueFrom(
       this.httpService
