@@ -7,7 +7,8 @@ import {
 } from '@nestjs/common';
 import { FilterQuery, Model, ProjectionType, SortOrder, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { omit, uniq } from 'lodash';
+import { v4 as uuid } from 'uuid';
+import { omit, uniq, chunk } from 'lodash';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { NumeroPopulate } from '@/shared/schemas/numero/numero.populate';
@@ -115,6 +116,7 @@ export class NumeroService {
 
         const numero = {
           _bal: baseLocale._id,
+          banId: rawNumero.banId || uuid(),
           numero: rawNumero.numero,
           comment: rawNumero.comment,
           toponyme: rawNumero.toponyme,
@@ -145,13 +147,11 @@ export class NumeroService {
 
     // INSERT NUMEROS BY CHUNK OF 500
     // TO LIMIT MEMORY USAGE
-    do {
-      const numerosChunk = numeros.splice(0, 500);
+    for (const numerosChunk of chunk(numeros, 500)) {
       await this.numeroModel.insertMany(numerosChunk);
-    } while (numeros.length > 0);
-
+    }
     // UPDATE TILES OF VOIES
-    const voieIds = uniq(numeros.map((n) => n.voie));
+    const voieIds: string[] = uniq(numeros.map((n) => n.voie.toString()));
     await this.voieService.updateTiles(voieIds);
   }
 
@@ -175,6 +175,7 @@ export class NumeroService {
     // CREATE NUMERO
     const numero: Partial<Numero> = {
       _bal: voie._bal,
+      banId: uuid(),
       commune: voie.commune,
       voie: voie._id,
       numero: createNumeroDto.numero,

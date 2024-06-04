@@ -159,7 +159,12 @@ describe('HABILITATION MODULE', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(404);
 
-      expect(response.body).toEqual(responseBody);
+      const responseExpected = {
+        statusCode: 404,
+        message: 'L’identifiant de l’habilitation demandé n’existe pas',
+      };
+
+      expect(response.body).toEqual(responseExpected);
     });
   });
 
@@ -406,7 +411,10 @@ describe('HABILITATION MODULE', () => {
         .expect(200);
 
       expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify({ validated: false }),
+        JSON.stringify({
+          validated: false,
+          error: 'Code non valide, 9 tentatives restantes',
+        }),
       );
     });
 
@@ -442,7 +450,7 @@ describe('HABILITATION MODULE', () => {
 
       expect(response.body).toEqual({
         validated: false,
-        message: 'Aucune demande d’habilitation en attente',
+        error: 'Aucune demande d’habilitation en attente',
       });
     });
   });

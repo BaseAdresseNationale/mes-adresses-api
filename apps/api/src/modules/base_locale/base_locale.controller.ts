@@ -3,8 +3,10 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   Inject,
+  ParseBoolPipe,
   ParseFilePipeBuilder,
   Post,
   Put,
@@ -167,13 +169,24 @@ export class BaseLocaleController {
     summary: 'Find Base_Locale by id',
     operationId: 'findBaseLocale',
   })
+  @ApiQuery({ name: 'isExist', required: false, type: Boolean })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
     type: ExtendedBaseLocaleDTO,
   })
   @ApiBearerAuth('admin-token')
-  async findOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+  async findOneBaseLocale(
+    @Req() req: CustomRequest,
+    @Query('isExist', new ParseBoolPipe({ optional: true })) isExist: boolean,
+    @Res() res: Response,
+  ) {
+    if (isExist && req.baseLocale._deleted) {
+      throw new HttpException(
+        `BaseLocale ${req.baseLocale._id} est supprimé`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
     const baseLocale = await this.baseLocaleService.extendWithNumeros(
       req.baseLocale,
     );
@@ -385,6 +398,7 @@ export class BaseLocaleController {
     summary: 'Publish base locale',
     operationId: 'publishBaseLocale',
   })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
@@ -400,12 +414,19 @@ export class BaseLocaleController {
     summary: 'Update isPaused sync BAL to true',
     operationId: 'pauseBaseLocale',
   })
-  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: Boolean })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async pauseBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.pause(req.baseLocale._id);
-    res.status(HttpStatus.OK).json(baseLocale);
+    if (!req.baseLocale.sync.status) {
+      throw new HttpException(
+        'Le statut de synchronisation doit être actif pour modifier l’état de pause',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+    await this.publicationService.pause(req.baseLocale._id);
+    res.status(HttpStatus.OK).json(true);
   }
 
   @Post(':baseLocaleId/sync/resume')
@@ -413,12 +434,19 @@ export class BaseLocaleController {
     summary: 'Update isPaused sync BAL to false',
     operationId: 'resumeBaseLocale',
   })
-  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: Boolean })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async resumeBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.resume(req.baseLocale._id);
-    res.status(HttpStatus.OK).json(baseLocale);
+    if (!req.baseLocale.sync.status) {
+      throw new HttpException(
+        'Le statut de synchronisation doit être actif pour modifier l’état de pause',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+    await this.publicationService.resume(req.baseLocale._id);
+    res.status(HttpStatus.OK).json(true);
   }
 
   @Get(':baseLocaleId/all/deleted')
@@ -586,7 +614,7 @@ export class BaseLocaleController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: CreateToponymeDTO, required: true })
-  @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme, isArray: true })
+  @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async create(
