@@ -28,7 +28,6 @@ import { AdminGuard } from '@/lib/guards/admin.guard';
 import { HabilitationService } from './habilitation.service';
 import { ValidatePinCodeDTO } from './dto/validate-pin-code.dto';
 import { HabilitationDTO } from './dto/habilitation.dto';
-import { SendPinCodeResponseDTO } from './dto/send-pin-code.response.dto';
 import { ValidatePinCodeResponseDTO } from './dto/validate-pin-code.response.dto';
 
 @ApiTags('habilitation')
@@ -96,28 +95,11 @@ export class HabilitationController {
     operationId: 'sendPinCodeHabilitation',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: 200, type: SendPinCodeResponseDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async sendPinCode(@Req() req: CustomRequest, @Res() res: Response) {
-    try {
-      const sendPinCodeResponse: SendPinCodeResponseDTO =
-        await this.habilitationService.sendPinCode(
-          req.baseLocale._habilitation,
-        );
-
-      return res.status(sendPinCodeResponse.code).send({
-        code: sendPinCodeResponse.code,
-        message: sendPinCodeResponse.message,
-      });
-    } catch (error) {
-      const statusCode = error.code || error.status || 500;
-
-      return res.status(statusCode).send({
-        statusCode,
-        message: error.message,
-      });
-    }
+    await this.habilitationService.sendPinCode(req.baseLocale._habilitation);
+    res.sendStatus(HttpStatus.OK);
   }
 
   @Post('/bases-locales/:baseLocaleId/habilitation/email/validate-pin-code')

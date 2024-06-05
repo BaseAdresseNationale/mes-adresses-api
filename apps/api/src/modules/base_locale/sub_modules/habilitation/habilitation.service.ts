@@ -62,11 +62,8 @@ export class HabilitationService {
     return habilitation;
   }
 
-  async sendPinCode(
-    habilitationId: string,
-  ): Promise<{ code: number; message: string }> {
+  async sendPinCode(habilitationId: string): Promise<void> {
     const habilitation = await this.findOne(habilitationId);
-
     if (habilitation.status !== 'pending') {
       throw new HttpException(
         'Aucune demande d’habilitation en attente',
@@ -74,10 +71,12 @@ export class HabilitationService {
       );
     }
 
-    const data: { code: number; message: string } =
+    try {
       await this.apiDepotService.sendPinCodeHabiliation(habilitationId);
-
-    return data;
+    } catch (error) {
+      const { statusCode, message } = error.response.data;
+      throw new HttpException(message, statusCode);
+    }
   }
 
   async validatePinCode(habilitationId: string, code: string): Promise<any> {
