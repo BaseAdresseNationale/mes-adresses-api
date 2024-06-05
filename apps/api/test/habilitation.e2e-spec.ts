@@ -274,15 +274,10 @@ describe('HABILITATION MODULE', () => {
           message: 'OK',
         });
 
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/send-pin-code`)
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
-
-      expect(response.body).toEqual({
-        code: 200,
-        message: 'OK',
-      });
     });
 
     it('expect 412 no pending habilitation', async () => {

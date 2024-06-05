@@ -54,12 +54,10 @@ export class ApiDepotService {
     return habilitation;
   }
 
-  async sendPinCodeHabiliation(
-    habilitationId: string,
-  ): Promise<{ code: number; message: string }> {
-    const { data } = await firstValueFrom(
+  async sendPinCodeHabiliation(habilitationId: string): Promise<void> {
+    await firstValueFrom(
       this.httpService
-        .post<{ code: number; message: string }>(
+        .post<void>(
           `habilitations/${habilitationId}/authentication/email/send-pin-code`,
         )
         .pipe(
@@ -69,7 +67,6 @@ export class ApiDepotService {
           }),
         ),
     );
-    return data;
   }
 
   async validatePinCodeHabiliation(
