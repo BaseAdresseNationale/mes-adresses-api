@@ -26,9 +26,8 @@ import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/schemas/position.schema';
 import * as turf from '@turf/turf';
 import bbox from '@turf/bbox';
-import { Feature as FeatureTurf } from '@turf/helpers';
+import { Feature as FeatureTurf, BBox as BboxTurf } from '@turf/helpers';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { BBox as BboxTurf } from '@turf/helpers';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import {
@@ -126,7 +125,7 @@ export class VoieService {
     };
     // CALC CENTROID AND TILES IF METRIQUE
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
-      await this.tilesService.calcMetaTilesVoieWithTrace(voie);
+      this.tilesService.calcMetaTilesVoieWithTrace(voie);
     }
     // REQUEST CREATE VOIE
     const voieCreated: Voie = await this.voieModel.create(voie);
@@ -348,7 +347,7 @@ export class VoieService {
   }
 
   async convertToToponyme(voie: Voie): Promise<Toponyme> {
-    if (!this.isVoieExist(voie._id)) {
+    if (!(await this.isVoieExist(voie._id))) {
       throw new HttpException(
         `Voie ${voie._id} is deleted`,
         HttpStatus.BAD_REQUEST,

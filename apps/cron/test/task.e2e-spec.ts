@@ -502,7 +502,6 @@ describe('TASK MODULE', () => {
 
   it('syncOutdated 412 habilitation PENDING', async () => {
     const commune = '91534';
-    // const habilitationId = new Types.ObjectId();
     // REVSION
     const revisionId = new Types.ObjectId();
     const revision: Revision = {
@@ -560,7 +559,6 @@ describe('TASK MODULE', () => {
 
   it('syncOutdated 412 habilitation expired', async () => {
     const commune = '91534';
-    // const habilitationId = new Types.ObjectId();
     // REVSION
     const revisionId = new Types.ObjectId();
     const revision: Revision = {
@@ -618,7 +616,6 @@ describe('TASK MODULE', () => {
 
   it('syncOutdated 412 no numero', async () => {
     const commune = '91534';
-    // const habilitationId = new Types.ObjectId();
     // REVSION
     const revisionId = new Types.ObjectId();
     const revision: Revision = {
