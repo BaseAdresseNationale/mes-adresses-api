@@ -337,11 +337,6 @@ describe('HABILITATION MODULE', () => {
         emailCommune: 'test@test.fr',
       };
 
-      const acceptedHabilitation: Habilitation = {
-        ...habilitation,
-        status: StatusHabiliation.ACCEPTED,
-      };
-
       axiosMock
         .onGet(`habilitations/${habilitationId}`)
         .reply(200, habilitation);
@@ -350,17 +345,13 @@ describe('HABILITATION MODULE', () => {
         .onPost(
           `habilitations/${habilitationId}/authentication/email/validate-pin-code`,
         )
-        .reply(200, acceptedHabilitation);
+        .reply(200);
 
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/validate-pin-code`)
         .set('Authorization', `Bearer ${token}`)
         .send({ code: '123456' })
         .expect(200);
-
-      expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify({ validated: true }),
-      );
     });
 
     it('expect 200 incorrect PIN code', async () => {
@@ -383,10 +374,9 @@ describe('HABILITATION MODULE', () => {
         emailCommune: 'test@test.fr',
       };
 
-      const validationResponse = {
-        validated: false,
-        error: 'Code non valide, 9 tentatives restantes',
-        remainingAttempts: 9,
+      const apiDepotResponse = {
+        message: 'Code non valide, 9 tentatives restantes',
+        statusCode: 412,
       };
 
       axiosMock
@@ -397,20 +387,18 @@ describe('HABILITATION MODULE', () => {
         .onPost(
           `habilitations/${habilitationId}/authentication/email/validate-pin-code`,
         )
-        .reply(200, validationResponse);
+        .reply(412, apiDepotResponse);
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/validate-pin-code`)
         .set('Authorization', `Bearer ${token}`)
         .send({ code: '123456' })
-        .expect(200);
+        .expect(412);
 
-      expect(JSON.stringify(response.body)).toEqual(
-        JSON.stringify({
-          validated: false,
-          error: 'Code non valide, 9 tentatives restantes',
-        }),
-      );
+      expect(response.body).toEqual({
+        statusCode: 412,
+        message: 'Code non valide, 9 tentatives restantes',
+      });
     });
 
     it('expect 412 no pending habilitation', async () => {
@@ -441,11 +429,11 @@ describe('HABILITATION MODULE', () => {
         .post(`/bases-locales/${balId}/habilitation/email/validate-pin-code`)
         .set('Authorization', `Bearer ${token}`)
         .send({ code: '123456' })
-        .expect(200);
+        .expect(412);
 
       expect(response.body).toEqual({
-        validated: false,
-        error: 'Aucune demande d’habilitation en attente',
+        statusCode: 412,
+        message: 'Aucune demande d’habilitation en attente',
       });
     });
   });
