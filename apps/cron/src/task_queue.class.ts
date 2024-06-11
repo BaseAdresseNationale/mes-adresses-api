@@ -1,6 +1,6 @@
 export type Task = {
   title: string;
-  run(): void;
+  run(): Promise<void>;
 };
 
 export class TaskQueue {

@@ -23,9 +23,8 @@ import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/schemas/position.schema';
 import * as turf from '@turf/turf';
 import bbox from '@turf/bbox';
-import { Feature as FeatureTurf } from '@turf/helpers';
+import { Feature as FeatureTurf, BBox as BboxTurf } from '@turf/helpers';
 import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { BBox as BboxTurf } from '@turf/helpers';
 
 @Injectable()
 export class ToponymeService {

@@ -798,8 +798,12 @@ voie;rue de paris;1;1ter`;
         .set('authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(Object.keys(response.body).sort()).toEqual(
-        [...baseLocaleAdminProperties, ...baseLocalePublicProperties].sort(),
+      expect(
+        Object.keys(response.body).sort((a, b) => a.localeCompare(b)),
+      ).toEqual(
+        [...baseLocaleAdminProperties, ...baseLocalePublicProperties].sort(
+          (a, b) => a.localeCompare(b),
+        ),
       );
     });
 
@@ -814,9 +818,9 @@ voie;rue de paris;1;1ter`;
         .get(`/bases-locales/${balId}`)
         .expect(200);
 
-      expect(Object.keys(response.body).sort()).toEqual(
-        baseLocalePublicProperties.sort(),
-      );
+      expect(
+        Object.keys(response.body).sort((a, b) => a.localeCompare(b)),
+      ).toEqual(baseLocalePublicProperties.sort((a, b) => a.localeCompare(b)));
     });
 
     it('Get 404 with invalid ID', async () => {
