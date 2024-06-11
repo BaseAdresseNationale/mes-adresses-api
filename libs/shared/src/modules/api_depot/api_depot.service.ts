@@ -72,8 +72,8 @@ export class ApiDepotService {
   async validatePinCodeHabiliation(
     habilitationId: string,
     code: string,
-  ): Promise<any> {
-    const { data } = await firstValueFrom(
+  ): Promise<void> {
+    await firstValueFrom(
       this.httpService
         .post<any>(
           `habilitations/${habilitationId}/authentication/email/validate-pin-code`,
@@ -86,8 +86,6 @@ export class ApiDepotService {
           }),
         ),
     );
-
-    return data;
   }
 
   private async createRevision(
@@ -114,7 +112,7 @@ export class ApiDepotService {
       this.httpService
         .put(`/revisions/${revisionId}/files/bal`, balFile, {
           headers: {
-            'Content-Type': 'application/csv',
+            'Content-Type': 'text/csv',
             'Content-MD5': hasha(balFile, { algorithm: 'md5' }),
           },
         })
