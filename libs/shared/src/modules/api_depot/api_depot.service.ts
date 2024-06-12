@@ -112,7 +112,7 @@ export class ApiDepotService {
       this.httpService
         .put(`/revisions/${revisionId}/files/bal`, balFile, {
           headers: {
-            'Content-Type': 'text/csv',
+            'Content-Type': 'application/csv',
             'Content-MD5': hasha(balFile, { algorithm: 'md5' }),
           },
         })
