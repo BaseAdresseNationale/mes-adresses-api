@@ -466,18 +466,32 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(allDeleted);
   }
 
+  @Put(':baseLocaleId/numeros/uncertify-all')
+  @ApiOperation({
+    summary: 'Uncertify all numeros in Bal',
+    operationId: 'uncertifyAllNumeros',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async uncertifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
+    await this.numeroService.toggleCertifieNumeros(req.baseLocale, false);
+    res.sendStatus(HttpStatus.OK);
+  }
+
   @Put(':baseLocaleId/numeros/certify-all')
   @ApiOperation({
     summary: 'Certify all numeros in Bal',
     operationId: 'certifyAllNumeros',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
+  @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async certifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.numeroService.certifyAllNumeros(req.baseLocale);
-    res.status(HttpStatus.OK).json(true);
+    await this.numeroService.toggleCertifieNumeros(req.baseLocale, true);
+    res.sendStatus(HttpStatus.OK);
   }
 
   @Put(':baseLocaleId/numeros/batch')
