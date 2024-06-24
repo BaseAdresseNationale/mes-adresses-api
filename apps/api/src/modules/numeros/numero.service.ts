@@ -285,15 +285,18 @@ export class NumeroService {
     return numeroUpdated;
   }
 
-  public async certifyAllNumeros(baseLocale: BaseLocale): Promise<void> {
+  public async toggleCertifieNumeros(
+    baseLocale: BaseLocale,
+    certifie: boolean,
+  ): Promise<void> {
     const numeros = await this.findMany(
-      { _bal: baseLocale._id, certifie: false, _deleted: null },
+      { _bal: baseLocale._id, certifie: !certifie, _deleted: null },
       { _id: 1 },
     );
     const numerosIds = numeros.map((n) => n._id);
     await this.numeroModel.updateMany(
       { _id: { $in: numerosIds } },
-      { $set: { certifie: true, _updated: new Date() } },
+      { $set: { certifie, _updated: new Date() } },
     );
     await this.baseLocaleService.touch(baseLocale._id);
   }
