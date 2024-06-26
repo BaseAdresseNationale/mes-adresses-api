@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
 import * as hasha from 'hasha';
 
 import {
@@ -16,9 +18,8 @@ import {
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
-import { MailerService } from '@/shared/modules/mailer/mailer.service';
-import { formatEmail as createPublicationNotificationEmail } from '@/shared/modules/mailer/templates/bal-publication-notification';
 import { Sync } from '@/shared/schemas/base_locale/sync.schema';
+import { getApiUrl, getEditorUrl } from '@/shared/utils/mailer.utils';
 
 @Injectable()
 export class PublicationService {
@@ -28,6 +29,7 @@ export class PublicationService {
     private readonly mailerService: MailerService,
     @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
     @InjectModel(Numero.name) private numeroModel: Model<Numero>,
+    private configService: ConfigService,
   ) {}
 
   async exec(
@@ -115,10 +117,23 @@ export class PublicationService {
           file,
           baseLocale._habilitation,
         );
-      // On envoie un mail de notification
-      const email = createPublicationNotificationEmail({ baseLocale });
-      await this.mailerService.sendMail(email, baseLocale.emails);
-      // On marque le sync de la BAL en published
+
+      // SEND MAIL
+      const editorUrl = getEditorUrl(baseLocale);
+      const apiUrl = getApiUrl();
+      await this.mailerService.sendMail({
+        to: baseLocale.emails,
+        subject: 'Publication de votre Base Adresse Locale',
+        template: 'bal-publication-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          baseLocale,
+          codeCommune,
+          editorUrl,
+          apiUrl,
+        },
+      });
+
       return this.markAsSynced(baseLocale, publishedRevision._id);
     }
 

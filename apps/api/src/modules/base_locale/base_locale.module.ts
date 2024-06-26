@@ -14,7 +14,6 @@ import {
 import { BaseLocaleController } from '@/modules/base_locale/base_locale.controller';
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { MailerModule } from '@/shared/modules/mailer/mailer.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 
 import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
@@ -27,13 +26,14 @@ import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
 import { SearchQueryPipe } from './pipe/search_query.pipe';
 import { BanPlateformModule } from '@/shared/modules/ban_plateform/ban_plateform.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule,
     MongooseModule.forFeature([
       { name: BaseLocale.name, schema: BaseLocaleSchema },
     ]),
-    MailerModule,
     PublicationModule,
     forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),

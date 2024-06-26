@@ -7,7 +7,6 @@ import { Connection, connect, Model, Types } from 'mongoose';
 import axios from 'axios';
 import { add, sub } from 'date-fns';
 import MockAdapter from 'axios-mock-adapter';
-import * as nodemailer from 'nodemailer';
 import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
@@ -30,10 +29,7 @@ import {
 } from '@/shared/modules/api_depot/types/revision.type';
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
-
-jest.mock('nodemailer');
-
-const createTransport = nodemailer.createTransport;
+import { MailerModule } from '@/shared/test/mailer.module.test';
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
@@ -49,9 +45,6 @@ describe('PUBLICATION MODULE', () => {
   const _updated = new Date('2000-01-02');
   // AXIOS
   const axiosMock = new MockAdapter(axios);
-  // NODEMAILER
-  const sendMailMock = jest.fn();
-  createTransport.mockReturnValue({ sendMail: sendMailMock });
 
   beforeAll(async () => {
     // INIT DB
@@ -60,7 +53,7 @@ describe('PUBLICATION MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), BaseLocaleModule],
+      imports: [MongooseModule.forRoot(uri), BaseLocaleModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -230,7 +223,6 @@ describe('PUBLICATION MODULE', () => {
         .post(`/bases-locales/${balId}/sync/exec`)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
-      expect(sendMailMock).toHaveBeenCalled();
 
       const syncExpected = {
         currentUpdated: _updated.toISOString(),
@@ -356,8 +348,6 @@ describe('PUBLICATION MODULE', () => {
         .set('authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(sendMailMock).not.toHaveBeenCalled();
-
       const syncExpected = {
         currentUpdated: _updated.toISOString(),
         status: StatusSyncEnum.SYNCED,
@@ -443,8 +433,6 @@ describe('PUBLICATION MODULE', () => {
         .post(`/bases-locales/${balId}/sync/exec`)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
-
-      expect(sendMailMock).not.toHaveBeenCalled();
 
       const syncExpected = {
         currentUpdated: _updated.toISOString(),

@@ -15,14 +15,18 @@ import {
   PipelineStage,
 } from 'mongoose';
 import { uniq, difference, groupBy } from 'lodash';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
 
 import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { MailerService } from '@/shared/modules/mailer/mailer.service';
-import { formatEmail as createBalCreationNotificationEmail } from '@/shared/modules/mailer/templates/bal-creation-notification';
-import { formatEmail as createNewAdminNotificationEmail } from '@/shared/modules/mailer/templates/new-admin-notification';
-import { formatEmail as createRecoveryNotificationEmail } from '@/shared/modules/mailer/templates/recovery-notification';
-import { formatEmail as createTokenRenewalNotificationEmail } from '@/shared/modules/mailer/templates/token-renewal-notification';
 import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
+import {
+  getApiRecoveryUrl,
+  getApiUrl,
+  getEditorUrl,
+} from '@/shared/utils/mailer.utils';
 
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
@@ -62,6 +66,7 @@ export class BaseLocaleService {
     private populateService: PopulateService,
     @Inject(forwardRef(() => BanPlateformService))
     private banPlateformService: BanPlateformService,
+    private configService: ConfigService,
   ) {}
 
   async findOneOrFail(id: string): Promise<BaseLocale> {
@@ -127,10 +132,19 @@ export class BaseLocaleService {
     });
 
     if (sendMail) {
-      const email = createBalCreationNotificationEmail({
-        baseLocale: newBaseLocale,
+      const editorUrl = getEditorUrl(newBaseLocale);
+      const apiUrl = getApiUrl();
+      await this.mailerService.sendMail({
+        to: newBaseLocale.emails,
+        subject: 'Création d’une nouvelle Base Adresse Locale',
+        template: 'bal-creation-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          baseLocale: newBaseLocale,
+          editorUrl,
+          apiUrl,
+        },
       });
-      await this.mailerService.sendMail(email, newBaseLocale.emails);
     }
 
     return newBaseLocale;
@@ -227,14 +241,19 @@ export class BaseLocaleService {
     // If emails fields is overrided, we compare with current array to send a notification to new email addresses
     if (update.emails) {
       const newCollaborators = difference(update.emails, baseLocale.emails);
-      const notification = createNewAdminNotificationEmail({
-        baseLocale: updatedBaseLocale,
+      const editorUrl = getEditorUrl(baseLocale);
+      const apiUrl = getApiUrl();
+      await this.mailerService.sendMail({
+        to: newCollaborators,
+        subject: 'Invitation à l’administration d’une Base Adresse Locale',
+        template: 'new-admin-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          baseLocale,
+          editorUrl,
+          apiUrl,
+        },
       });
-      await Promise.all(
-        newCollaborators.map((collaborator) =>
-          this.mailerService.sendMail(notification, [collaborator]),
-        ),
-      );
     }
 
     return updatedBaseLocale;
@@ -264,10 +283,19 @@ export class BaseLocaleService {
       { new: true },
     );
 
-    const templateEmail = createBalCreationNotificationEmail({
-      baseLocale: updatedBaseLocale,
+    const editorUrl = getEditorUrl(updatedBaseLocale);
+    const apiUrl = getApiUrl();
+    await this.mailerService.sendMail({
+      to: updatedBaseLocale.emails,
+      subject: 'Création d’une nouvelle Base Adresse Locale',
+      template: 'bal-creation-notification',
+      bcc: this.configService.get('SMTP_BCC'),
+      context: {
+        baseLocale: updatedBaseLocale,
+        editorUrl,
+        apiUrl,
+      },
     });
-    await this.mailerService.sendMail(templateEmail, updatedBaseLocale.emails);
 
     return updatedBaseLocale;
   }
@@ -422,8 +450,44 @@ export class BaseLocaleService {
     const basesLocales = await this.findMany(filters);
 
     if (basesLocales.length > 0) {
-      const template = createRecoveryNotificationEmail({ basesLocales });
-      await this.mailerService.sendMail(template, [email]);
+      const STATUS = {
+        [StatusBaseLocalEnum.DRAFT]: 'Brouillon',
+        [StatusBaseLocalEnum.PUBLISHED]: 'Publiée',
+        [StatusBaseLocalEnum.REPLACED]: 'Remplacée',
+      };
+
+      const apiUrl = getApiUrl();
+      const recoveryBals = basesLocales
+        .filter(({ _deleted }) => !_deleted)
+        .map((baseLocale) => ({
+          ...baseLocale,
+          recoveryUrl: getEditorUrl(baseLocale),
+          statusFr: STATUS[baseLocale.status],
+          createdAt: format(baseLocale._created, 'P', { locale: fr }),
+        }));
+
+      const deletedBals = basesLocales
+        .filter(({ _deleted }) => _deleted)
+        .map((baseLocale) => ({
+          ...baseLocale,
+          statusFr: 'Supprimée',
+          deletedRecoveryUrl: getApiRecoveryUrl(baseLocale),
+          deletedAt: baseLocale._deleted
+            ? format(baseLocale._deleted, 'P', { locale: fr })
+            : null,
+        }));
+
+      await this.mailerService.sendMail({
+        to: email,
+        subject: 'Demande de récupération de vos Bases Adresses Locales',
+        template: 'recovery-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          recoveryBals,
+          deletedBals,
+          apiUrl,
+        },
+      });
     } else {
       throw new HttpException(
         'Aucune base locale ne correspond à ces critères',
@@ -451,11 +515,19 @@ export class BaseLocaleService {
       { new: true },
     );
 
-    const email = createTokenRenewalNotificationEmail({
-      baseLocale: updatedBaseLocale,
+    const editorUrl = getEditorUrl(updatedBaseLocale);
+    const apiUrl = getApiUrl();
+    await this.mailerService.sendMail({
+      to: updatedBaseLocale.emails,
+      subject: 'Renouvellement de jeton de Base Adresse Locale',
+      template: 'bal-renewal-notification',
+      bcc: this.configService.get('SMTP_BCC'),
+      context: {
+        baseLocale: updatedBaseLocale,
+        editorUrl,
+        apiUrl,
+      },
     });
-
-    await this.mailerService.sendMail(email, updatedBaseLocale.emails);
 
     return updatedBaseLocale;
   }

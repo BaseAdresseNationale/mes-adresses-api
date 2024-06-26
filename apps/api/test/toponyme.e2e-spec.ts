@@ -14,6 +14,7 @@ import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 import { Position } from '@/shared/schemas/position.schema';
+import { MailerModule } from '@/shared/test/mailer.module.test';
 
 describe('TOPONYME MODULE', () => {
   let app: INestApplication;
@@ -35,7 +36,7 @@ describe('TOPONYME MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), ToponymeModule],
+      imports: [MongooseModule.forRoot(uri), ToponymeModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

@@ -9,17 +9,17 @@ import { Numero, NumeroSchema } from '@/shared/schemas/numero/numero.schema';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
 import { ExportCsvModule } from '@/shared/modules/export_csv/export_csv.module';
 import { PublicationService } from '@/shared/modules/publication/publication.service';
-import { MailerModule } from '@/shared/modules/mailer/mailer.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule,
     MongooseModule.forFeature([
       { name: BaseLocale.name, schema: BaseLocaleSchema },
       { name: Numero.name, schema: NumeroSchema },
     ]),
     ApiDepotModule,
     ExportCsvModule,
-    MailerModule,
   ],
   providers: [PublicationService],
   exports: [PublicationService],
