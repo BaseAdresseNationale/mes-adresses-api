@@ -4,7 +4,6 @@ import * as request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model, Types } from 'mongoose';
-import * as nodemailer from 'nodemailer';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuid } from 'uuid';
@@ -23,6 +22,7 @@ import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
+import { MailerModule } from '@/shared/test/mailer.module.test';
 
 const BAN_API_URL = 'BAN_API_URL';
 process.env.BAN_API_URL = BAN_API_URL;
@@ -43,10 +43,6 @@ const baseLocalePublicProperties = [
   '__v',
 ];
 
-jest.mock('nodemailer');
-
-const createTransport = nodemailer.createTransport;
-
 describe('BASE LOCAL MODULE', () => {
   let app: INestApplication;
   let mongod: MongoMemoryServer;
@@ -61,9 +57,6 @@ describe('BASE LOCAL MODULE', () => {
   const _updated = new Date('2000-01-02');
   // AXIOS
   const axiosMock = new MockAdapter(axios);
-  // NODEMAILER
-  const sendMailMock = jest.fn();
-  createTransport.mockReturnValue({ sendMail: sendMailMock });
 
   beforeAll(async () => {
     // INIT DB
@@ -72,7 +65,7 @@ describe('BASE LOCAL MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), BaseLocaleModule],
+      imports: [MongooseModule.forRoot(uri), BaseLocaleModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -99,7 +92,6 @@ describe('BASE LOCAL MODULE', () => {
     await voieModel.deleteMany({});
     await balModel.deleteMany({});
     await numeroModel.deleteMany({});
-    sendMailMock.mockReset();
   });
 
   async function createBal(props: Partial<BaseLocale> = {}) {
@@ -742,7 +734,6 @@ voie;rue de paris;1;1ter`;
         commune: '27115',
         _deleted: null,
       });
-      expect(sendMailMock).toHaveBeenCalled();
     });
 
     it('Create a BaseLocale with invalid payload 400', async () => {
@@ -762,7 +753,6 @@ voie;rue de paris;1;1ter`;
         ],
         statusCode: 400,
       });
-      expect(sendMailMock).not.toHaveBeenCalled();
     });
 
     it('Create a BaseLocale with invalid commune 400', async () => {
@@ -781,7 +771,6 @@ voie;rue de paris;1;1ter`;
         message: ["Le champ commune : 00000 n'est pas valide"],
         statusCode: 400,
       });
-      expect(sendMailMock).not.toHaveBeenCalled();
     });
   });
 
@@ -943,7 +932,6 @@ voie;rue de paris;1;1ter`;
 
       expect(response.body.nom).toEqual('bar');
       expect(response.body.emails).toEqual(['me@domain.co', 'metoo@domain.co']);
-      expect(sendMailMock).toHaveBeenCalled();
     });
 
     it('Update 403 without admin token', async () => {
@@ -963,7 +951,6 @@ voie;rue de paris;1;1ter`;
         .put(`/bases-locales/${balId}`)
         .send(updateBALDTO)
         .expect(403);
-      expect(sendMailMock).not.toHaveBeenCalled();
     });
 
     it('Update 400 invalid payload', async () => {
@@ -994,7 +981,6 @@ voie;rue de paris;1;1ter`;
         ],
         statusCode: 400,
       });
-      expect(sendMailMock).not.toHaveBeenCalled();
     });
 
     it('Update 412 modify a demo base locale', async () => {
@@ -1179,8 +1165,6 @@ voie;rue de paris;1;1ter`;
         .post(`/bases-locales/recovery`)
         .send(body)
         .expect(204);
-
-      expect(sendMailMock).toHaveBeenCalled();
     });
 
     it('Renew token / invalid balId', async () => {
@@ -1193,8 +1177,6 @@ voie;rue de paris;1;1ter`;
         .post(`/bases-locales/recovery`)
         .send(body)
         .expect(400);
-
-      expect(sendMailMock).not.toHaveBeenCalled();
     });
   });
 

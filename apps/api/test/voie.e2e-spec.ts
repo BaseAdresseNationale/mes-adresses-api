@@ -15,6 +15,7 @@ import { VoieModule } from '@/modules/voie/voie.module';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
+import { MailerModule } from '@/shared/test/mailer.module.test';
 
 describe('VOIE MODULE', () => {
   let app: INestApplication;
@@ -36,7 +37,7 @@ describe('VOIE MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), VoieModule],
+      imports: [MongooseModule.forRoot(uri), VoieModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

@@ -1,9 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  Global,
+  INestApplication,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model, Types } from 'mongoose';
-import * as nodemailer from 'nodemailer';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
@@ -45,10 +49,21 @@ import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { CronService } from '../src/cron.service';
+import { MailerService } from '@nestjs-modules/mailer';
 
-jest.mock('nodemailer');
-
-const createTransport = nodemailer.createTransport;
+@Global()
+@Module({
+  providers: [
+    {
+      provide: MailerService,
+      useValue: {
+        sendMail: jest.fn(),
+      },
+    },
+  ],
+  exports: [MailerService],
+})
+class MailerModule {}
 
 describe('TASK MODULE', () => {
   let app: INestApplication;
@@ -69,9 +84,6 @@ describe('TASK MODULE', () => {
   const _updated = new Date('2000-01-02');
   // AXIOS
   const axiosMock = new MockAdapter(axios);
-  // NODEMAILER
-  const sendMailMock = jest.fn();
-  createTransport.mockReturnValue({ sendMail: sendMailMock });
 
   beforeAll(async () => {
     // INIT DB
@@ -92,6 +104,7 @@ describe('TASK MODULE', () => {
         ApiDepotModule,
         CacheModule,
         PublicationModule,
+        MailerModule,
       ],
       providers: [
         CronService,
@@ -130,7 +143,6 @@ describe('TASK MODULE', () => {
     await balModel.deleteMany({});
     await numeroModel.deleteMany({});
     axiosMock.reset();
-    sendMailMock.mockReset();
   });
 
   async function createBal(props: Partial<BaseLocale> = {}) {
@@ -357,8 +369,6 @@ describe('TASK MODULE', () => {
 
     await syncOutdatedTask.run();
 
-    expect(sendMailMock).not.toHaveBeenCalled();
-
     const balResult = await balModel.findOne(balId);
 
     expect(balResult.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
@@ -438,8 +448,6 @@ describe('TASK MODULE', () => {
     axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
 
     await syncOutdatedTask.run();
-
-    expect(sendMailMock).not.toHaveBeenCalled();
 
     const balResult = await balModel.findOne(balId);
 

@@ -12,6 +12,7 @@ import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
 
 import { NumeroModule } from '@/modules/numeros/numero.module';
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
+import { MailerModule } from '@/shared/test/mailer.module.test';
 
 describe('NUMERO', () => {
   let app: INestApplication;
@@ -32,7 +33,7 @@ describe('NUMERO', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), NumeroModule],
+      imports: [MongooseModule.forRoot(uri), NumeroModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

@@ -10,6 +10,7 @@ import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 
 import { StatsModule } from '@/modules/stats/stats.module';
 import { CodeCommuneDTO } from '@/modules/stats/dto/code_commune.dto';
+import { MailerModule } from '@/shared/test/mailer.module.test';
 
 describe('STATS MODULE', () => {
   let app: INestApplication;
@@ -25,7 +26,7 @@ describe('STATS MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), StatsModule],
+      imports: [MongooseModule.forRoot(uri), StatsModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

@@ -11,6 +11,8 @@ import { ToponymeModule } from './modules/toponyme/toponyme.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { CronModule } from 'apps/cron/src/cron.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { MailerParams } from '@/shared/params/mailer.params';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { CronModule } from 'apps/cron/src/cron.module';
       }),
       inject: [ConfigService],
     }),
+    MailerModule.forRootAsync(MailerParams),
     NumeroModule,
     BaseLocaleModule,
     VoieModule,

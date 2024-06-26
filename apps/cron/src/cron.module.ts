@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 import {
   BaseLocale,
@@ -21,6 +22,7 @@ import {
   ToponymeSchema,
 } from '@/shared/schemas/toponyme/toponyme.schema';
 import { Voie, VoieSchema } from '@/shared/schemas/voie/voie.schema';
+import { MailerParams } from '@/shared/params/mailer.params';
 
 @Module({
   imports: [
@@ -39,6 +41,7 @@ import { Voie, VoieSchema } from '@/shared/schemas/voie/voie.schema';
       { name: Toponyme.name, schema: ToponymeSchema },
       { name: Voie.name, schema: VoieSchema },
     ]),
+    MailerModule.forRootAsync(MailerParams),
     ScheduleModule.forRoot(),
     ApiDepotModule,
     CacheModule,
