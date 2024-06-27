@@ -26,6 +26,7 @@ import { FusionCommunesDTO } from './dto/fusion_bases_locales.dto';
 import { AdminService } from './admin.service';
 import { SuperAdminGuard } from '@/lib/guards/admin.guard';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
+import { Voie } from '@/shared/schemas/voie/voie.schema';
 
 @ApiTags('admin')
 @Controller('admin')
@@ -77,5 +78,24 @@ export class AdminController {
       .attachment('emails.csv')
       .type('csv')
       .send(csvFile);
+  }
+
+  @Get('filaires-voies')
+  @ApiOperation({
+    summary: 'Get filaires voies from the published BALs',
+    operationId: 'getFilairesVoies',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Array<Partial<Voie>>,
+    isArray: true,
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(SuperAdminGuard)
+  async getFilairesVoies(@Res() res: Response) {
+    const filaires: Partial<Voie>[] =
+      await this.adminService.getFilairesVoies();
+
+    res.status(HttpStatus.OK).json(filaires);
   }
 }
