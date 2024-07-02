@@ -41,12 +41,14 @@ export class HabilitationService {
 
   async createOne(baseLocale: BaseLocale): Promise<Habilitation> {
     if (baseLocale._habilitation) {
-      const habilitation = await this.findOne(baseLocale._habilitation);
+      const habilitation: Habilitation = await this.findOne(
+        baseLocale._habilitation,
+      );
 
       const now = new Date();
       const { status, expiresAt } = habilitation;
 
-      if (status === 'accepted' && new Date(expiresAt) > now) {
+      if (status === StatusHabiliation.ACCEPTED && new Date(expiresAt) > now) {
         throw new HttpException(
           'Cette Base Adresse Locale possède déjà une habilitation',
           HttpStatus.PRECONDITION_FAILED,
@@ -63,8 +65,8 @@ export class HabilitationService {
   }
 
   async sendPinCode(habilitationId: string): Promise<void> {
-    const habilitation = await this.findOne(habilitationId);
-    if (habilitation.status !== 'pending') {
+    const habilitation: Habilitation = await this.findOne(habilitationId);
+    if (habilitation.status !== StatusHabiliation.PENDING) {
       throw new HttpException(
         'Aucune demande d’habilitation en attente',
         HttpStatus.PRECONDITION_FAILED,
@@ -80,20 +82,24 @@ export class HabilitationService {
   }
 
   async validatePinCode(habilitationId: string, code: string): Promise<any> {
-    const habilitation = await this.findOne(habilitationId);
+    const habilitation: Habilitation = await this.findOne(habilitationId);
 
-    if (habilitation.status !== 'pending') {
+    if (habilitation.status !== StatusHabiliation.PENDING) {
       throw new HttpException(
         'Aucune demande d’habilitation en attente',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    const data = await this.apiDepotService.validatePinCodeHabiliation(
-      habilitationId,
-      code,
-    );
-
-    return data;
+    try {
+      const data = await this.apiDepotService.validatePinCodeHabiliation(
+        habilitationId,
+        code,
+      );
+      return data;
+    } catch (error) {
+      const { statusCode, message } = error.response.data;
+      throw new HttpException(message, statusCode);
+    }
   }
 }
