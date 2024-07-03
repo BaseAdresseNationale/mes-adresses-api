@@ -276,12 +276,10 @@ describe('TASK MODULE', () => {
       validation: {
         valid: true,
       },
-      files: [
-        {
-          type: 'bal',
-          hash: '',
-        },
-      ],
+      file: {
+        type: 'bal',
+        hash: '',
+      },
     };
 
     // BAL
@@ -388,12 +386,10 @@ describe('TASK MODULE', () => {
       validation: {
         valid: true,
       },
-      files: [
-        {
-          type: 'bal',
-          hash: '8d0cda05e7b8b58a92a18cd40d0549c1d3f8ac1ac9586243aa0e3f885bb870c4',
-        },
-      ],
+      file: {
+        type: 'bal',
+        hash: '8d0cda05e7b8b58a92a18cd40d0549c1d3f8ac1ac9586243aa0e3f885bb870c4',
+      },
     };
 
     // BAL
@@ -469,12 +465,10 @@ describe('TASK MODULE', () => {
       validation: {
         valid: true,
       },
-      files: [
-        {
-          type: 'bal',
-          hash: '',
-        },
-      ],
+      file: {
+        type: 'bal',
+        hash: '',
+      },
     };
 
     // BAL
@@ -515,12 +509,10 @@ describe('TASK MODULE', () => {
       validation: {
         valid: true,
       },
-      files: [
-        {
-          type: 'bal',
-          hash: '',
-        },
-      ],
+      file: {
+        type: 'bal',
+        hash: '',
+      },
     };
 
     const habilitationId = new Types.ObjectId();
@@ -572,12 +564,10 @@ describe('TASK MODULE', () => {
       validation: {
         valid: true,
       },
-      files: [
-        {
-          type: 'bal',
-          hash: '',
-        },
-      ],
+      file: {
+        type: 'bal',
+        hash: '',
+      },
     };
 
     const habilitationId = new Types.ObjectId();
@@ -629,12 +619,10 @@ describe('TASK MODULE', () => {
       validation: {
         valid: true,
       },
-      files: [
-        {
-          type: 'bal',
-          hash: '',
-        },
-      ],
+      file: {
+        type: 'bal',
+        hash: '',
+      },
     };
 
     const habilitationId = new Types.ObjectId();

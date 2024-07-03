@@ -36,7 +36,7 @@ export type Revision = {
   client?: string;
   status?: StatusRevision;
   ready: boolean;
-  files?: FileRevision[];
+  file?: FileRevision;
   createdAt: Date;
   updatedAt: Date;
   publishedAt?: Date;
