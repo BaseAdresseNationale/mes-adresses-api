@@ -37,14 +37,5 @@
         "tsConfigPath": "libs/shared/tsconfig.lib.json"
       }
     },
-    "export-csv": {
-      "type": "application",
-      "root": "apps/export-csv",
-      "entryFile": "main",
-      "sourceRoot": "apps/export-csv/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/export-csv/tsconfig.app.json"
-      }
-    }
   }
 }
