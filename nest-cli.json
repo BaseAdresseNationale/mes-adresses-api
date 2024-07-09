@@ -36,6 +36,6 @@
       "compilerOptions": {
         "tsConfigPath": "libs/shared/tsconfig.lib.json"
       }
-    },
+    }
   }
 }
