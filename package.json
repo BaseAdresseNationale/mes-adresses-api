@@ -19,7 +19,6 @@
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "node dist/apps/api/main.js",
     "start:api": "node dist/apps/api/main",
-    "export:csv": "nest start export-csv",
     "start:cron": "node dist/apps/cron/main",
     "start:debug": "nest start --debug --watch",
     "dev": "nest start --watch",
