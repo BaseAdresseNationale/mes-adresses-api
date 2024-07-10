@@ -391,7 +391,7 @@ describe('TASK MODULE', () => {
       files: [
         {
           type: 'bal',
-          hash: '8d0cda05e7b8b58a92a18cd40d0549c1d3f8ac1ac9586243aa0e3f885bb870c4',
+          hash: '8e68ed7f8ca30946796fcbc6ebab92e1140e2daec87e1cc8314d497b1903605a',
         },
       ],
     };
