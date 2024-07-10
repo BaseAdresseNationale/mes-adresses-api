@@ -8,6 +8,8 @@ import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { FusionCommunesDTO } from './dto/fusion_bases_locales.dto';
 import { PopulateService } from '../base_locale/sub_modules/populate/populate.service';
+import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
+import { VoieService } from '../voie/voie.service';
 
 @Injectable()
 export class AdminService {
@@ -16,6 +18,8 @@ export class AdminService {
     private populateService: PopulateService,
     @Inject(forwardRef(() => BaseLocaleService))
     private baseLocaleService: BaseLocaleService,
+    @Inject(forwardRef(() => VoieService))
+    private voieService: VoieService,
   ) {}
 
   private replaceBalIds(
@@ -112,5 +116,27 @@ export class AdminService {
     }
 
     return newbaseLocale;
+  }
+
+  async getFilairesVoies(): Promise<Voie[]> {
+    const publishedBals = await this.baseLocaleService.findMany({
+      status: StatusBaseLocalEnum.PUBLISHED,
+    });
+
+    const filairesVoies = await this.voieService.findMany(
+      {
+        _bal: { $in: publishedBals.map((bal) => bal._id.toString()) },
+        trace: { $exists: true },
+      },
+      {
+        nom: 1,
+        commune: 1,
+        trace: 1,
+        _updated: 1,
+        _created: 1,
+      },
+    );
+
+    return filairesVoies.filter(({ trace }) => Boolean(trace));
   }
 }
