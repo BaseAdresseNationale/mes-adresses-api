@@ -6,9 +6,11 @@ import {
   IsOptional,
   IsEnum,
   IsNotEmpty,
+  Validate,
 } from 'class-validator';
 
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
+import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 
 export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
@@ -30,6 +32,7 @@ export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
   @IsNotEmpty()
   @IsEnum(PositionTypeEnum)
+  @Validate(ValidatorBal, ['position'])
   @ApiProperty({ required: false, nullable: false })
   positionType?: PositionTypeEnum;
 
