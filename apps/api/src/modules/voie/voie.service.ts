@@ -5,13 +5,10 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
 import { groupBy } from 'lodash';
 
-import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
@@ -37,11 +34,20 @@ import {
 } from '../base_locale/sub_modules/tiles/utils/tiles.utils';
 import { getPriorityPosition } from '@/lib/utils/positions.util';
 import { ZOOM } from '../base_locale/sub_modules/tiles/const/zoom.const';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  DeleteResult,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
+import { Voie } from '@/shared/entities/voie.entity';
 
 @Injectable()
 export class VoieService {
   constructor(
-    @InjectModel(Voie.name) private voieModel: Model<Voie>,
+    @InjectRepository(Voie)
+    private voiesRepository: Repository<Voie>,
     @Inject(forwardRef(() => BaseLocaleService))
     private baseLocaleService: BaseLocaleService,
     @Inject(forwardRef(() => NumeroService))
@@ -53,10 +59,10 @@ export class VoieService {
   ) {}
 
   async findOneOrFail(voieId: string): Promise<Voie> {
-    const filter = {
-      _id: voieId,
+    const where: FindOptionsWhere<Voie> = {
+      id: voieId,
     };
-    const voie = await this.voieModel.findOne(filter).lean().exec();
+    const voie = await this.voiesRepository.findOne({ where });
 
     if (!voie) {
       throw new HttpException(`Voie ${voieId} not found`, HttpStatus.NOT_FOUND);
@@ -66,38 +72,33 @@ export class VoieService {
   }
 
   async findMany(
-    filter: FilterQuery<Voie>,
-    projection?: ProjectionType<Voie>,
+    where: FindOptionsWhere<Voie>,
+    select?: FindOptionsSelect<Voie>,
   ): Promise<Voie[]> {
-    const query = this.voieModel.find(filter);
-    if (projection) {
-      query.projection(projection);
-    }
-
-    return query.lean().exec();
+    return this.voiesRepository.find({ where, select });
   }
 
-  public deleteMany(filters: FilterQuery<Voie>): Promise<any> {
-    return this.voieModel.deleteMany(filters);
+  public deleteMany(where: FindOptionsWhere<Voie>): Promise<any> {
+    return this.voiesRepository.delete(where);
   }
 
   async extendVoies(voies: Voie[]): Promise<ExtendedVoieDTO[]> {
     const numeros = await this.numeroService.findMany({
-      voie: { $in: voies.map(({ _id }) => _id) },
+      voie: { $in: voies.map(({ id }) => id) },
       _deleted: null,
     });
 
     const numerosByVoies = groupBy(numeros, 'voie');
 
     return voies.map((voie) => ({
-      ...extendWithNumeros(voie, numerosByVoies[voie._id] || []),
-      bbox: this.getBBOX(voie, numerosByVoies[voie._id] || []),
+      ...extendWithNumeros(voie, numerosByVoies[voie.id] || []),
+      bbox: this.getBBOX(voie, numerosByVoies[voie.id] || []),
     }));
   }
 
   async extendVoie(voie: Voie): Promise<ExtendedVoieDTO> {
     const numeros = await this.numeroService.findMany({
-      voie: voie._id,
+      voie: voie.id,
     });
 
     return {
@@ -112,25 +113,24 @@ export class VoieService {
   ): Promise<Voie> {
     // CREATE OBJECT VOIE
     const voie: Partial<Voie> = {
-      _bal: bal._id,
-      commune: bal.commune,
+      balId: bal.id,
       nom: createVoieDto.nom,
       typeNumerotation:
         createVoieDto.typeNumerotation || TypeNumerotationEnum.NUMERIQUE,
       trace: createVoieDto.trace || null,
       nomAlt: createVoieDto.nomAlt ? cleanNomAlt(createVoieDto.nomAlt) : null,
       centroid: null,
-      centroidTiles: null,
-      traceTiles: null,
+      // centroidTiles: null,
+      // traceTiles: null,
     };
     // CALC CENTROID AND TILES IF METRIQUE
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
       await this.tilesService.calcMetaTilesVoieWithTrace(voie);
     }
     // REQUEST CREATE VOIE
-    const voieCreated: Voie = await this.voieModel.create(voie);
+    const voieCreated: Voie = await this.voiesRepository.create(voie);
     // SET _updated BAL
-    await this.baseLocaleService.touch(bal._id, voieCreated._updated);
+    await this.baseLocaleService.touch(bal.id, voieCreated.updatedAt);
 
     return voieCreated;
   }
@@ -142,9 +142,9 @@ export class VoieService {
           return null;
         }
 
-        const voie = {
-          _id: rawVoie._id,
-          _bal: baseLocale._id,
+        const voie: Partial<Voie> = {
+          id: rawVoie.id,
+          balId: baseLocale.id,
           nom: cleanNom(rawVoie.nom),
           code: rawVoie.code || null,
           commune: rawVoie.commune,
@@ -154,8 +154,8 @@ export class VoieService {
         } as Partial<Voie>;
 
         if (rawVoie._updated && rawVoie._created) {
-          voie._created = rawVoie._created;
-          voie._updated = rawVoie._updated;
+          voie.createdAt = rawVoie._created;
+          voie.updatedAt = rawVoie._updated;
         }
 
         return voie;
@@ -166,68 +166,72 @@ export class VoieService {
       return;
     }
 
-    await this.voieModel.insertMany(voies);
+    await this.voiesRepository
+      .createQueryBuilder()
+      .insert()
+      .into(Voie)
+      .values(voies)
+      .execute();
   }
 
-  async updateTiles(voieIds: string[]) {
-    const voies: Voie[] = await this.findMany({ _id: { $in: voieIds } });
-    return Promise.all(
-      voies.map(async (voie) => {
-        const voieSet = await this.calcMetaTilesVoie(voie);
-        return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
-      }),
-    );
-  }
+  // async updateTiles(voieIds: string[]) {
+  //   const voies: Voie[] = await this.findMany({ _id: { $in: voieIds } });
+  //   return Promise.all(
+  //     voies.map(async (voie) => {
+  //       const voieSet = await this.calcMetaTilesVoie(voie);
+  //       return this.voieModel.updateOne({ _id: voie._id }, { $set: voieSet });
+  //     }),
+  //   );
+  // }
 
-  async calcMetaTilesVoie(voie: Voie) {
-    voie.centroid = null;
-    voie.centroidTiles = null;
-    voie.traceTiles = null;
+  // async calcMetaTilesVoie(voie: Voie) {
+  //   voie.centroid = null;
+  //   // voie.centroidTiles = null;
+  //   // voie.traceTiles = null;
 
-    try {
-      if (voie.typeNumerotation === 'metrique' && voie.trace) {
-        voie.centroid = turf.centroid(voie.trace);
-        voie.centroidTiles = getTilesByPosition(
-          voie.centroid.geometry,
-          ZOOM.VOIE_ZOOM,
-        );
-        voie.traceTiles = getTilesByLineString(voie.trace);
-      } else {
-        const numeros = await this.numeroService.findMany(
-          { voie: voie._id, _deleted: null },
-          { positions: 1, voie: 1 },
-        );
-        if (numeros.length > 0) {
-          const coordinatesNumeros = numeros
-            .filter((n) => n.positions && n.positions.length > 0)
-            .map((n) => getPriorityPosition(n.positions)?.point?.coordinates);
-          // CALC CENTROID
-          if (coordinatesNumeros.length > 0) {
-            const featureCollection = turf.featureCollection(
-              coordinatesNumeros.map((n) => turf.point(n)),
-            );
-            voie.centroid = turf.centroid(featureCollection);
-            voie.centroidTiles = getTilesByPosition(
-              voie.centroid.geometry,
-              ZOOM.VOIE_ZOOM,
-            );
-          }
-        }
-      }
-    } catch (error) {
-      console.error(error, voie);
-    }
+  //   try {
+  //     if (voie.typeNumerotation === 'metrique' && voie.trace) {
+  //       voie.centroid = turf.centroid(voie.trace);
+  //       voie.centroidTiles = getTilesByPosition(
+  //         voie.centroid.geometry,
+  //         ZOOM.VOIE_ZOOM,
+  //       );
+  //       voie.traceTiles = getTilesByLineString(voie.trace);
+  //     } else {
+  //       const numeros = await this.numeroService.findMany(
+  //         { voie: voie._id, _deleted: null },
+  //         { positions: 1, voie: 1 },
+  //       );
+  //       if (numeros.length > 0) {
+  //         const coordinatesNumeros = numeros
+  //           .filter((n) => n.positions && n.positions.length > 0)
+  //           .map((n) => getPriorityPosition(n.positions)?.point?.coordinates);
+  //         // CALC CENTROID
+  //         if (coordinatesNumeros.length > 0) {
+  //           const featureCollection = turf.featureCollection(
+  //             coordinatesNumeros.map((n) => turf.point(n)),
+  //           );
+  //           voie.centroid = turf.centroid(featureCollection);
+  //           voie.centroidTiles = getTilesByPosition(
+  //             voie.centroid.geometry,
+  //             ZOOM.VOIE_ZOOM,
+  //           );
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(error, voie);
+  //   }
 
-    return voie;
-  }
+  //   return voie;
+  // }
 
-  async updateOne(
-    voieId: Types.ObjectId,
-    update: Partial<Voie>,
-  ): Promise<Voie> {
-    return this.voieModel
-      .findOneAndUpdate({ _id: voieId }, { $set: update })
-      .exec();
+  async updateOne(voieId: string, update: Partial<Voie>): Promise<Voie> {
+    const where: FindOptionsWhere<Voie> = {
+      id: voieId,
+    };
+    this.voiesRepository.update(where, update);
+    return this.voiesRepository.findOne({ where });
   }
 
   async update(voie: Voie, updateVoieDto: UpdateVoieDTO): Promise<Voie> {
@@ -239,90 +243,85 @@ export class VoieService {
       updateVoieDto.nomAlt = cleanNomAlt(updateVoieDto.nomAlt);
     }
 
-    const voieUpdated = await this.voieModel.findOneAndUpdate(
-      { _id: voie._id, _deleted: null },
-      { $set: { ...updateVoieDto, _updated: new Date() } },
-      { new: true },
-    );
+    const where: FindOptionsWhere<Voie> = {
+      id: voie.id,
+      deletedAt: null,
+    };
+    this.voiesRepository.update(where, updateVoieDto);
+    const voieUpdated: Voie = await this.voiesRepository.findOne({ where });
+
     // SET TILES OF VOIES
-    await this.tilesService.updateVoieTiles(voieUpdated);
+    // await this.tilesService.updateVoieTiles(voieUpdated);
     // SET _updated BAL
-    await this.baseLocaleService.touch(voieUpdated._bal, voieUpdated._updated);
+    await this.baseLocaleService.touch(
+      voieUpdated.balId,
+      voieUpdated.updatedAt,
+    );
     return voieUpdated;
   }
 
   public async delete(voie: Voie) {
     // DELETE VOIE
-    const { deletedCount } = await this.voieModel.deleteOne({
-      _id: voie._id,
+    const { affected }: DeleteResult = await this.voiesRepository.delete({
+      id: voie.id,
     });
 
-    if (deletedCount >= 1) {
+    if (affected >= 1) {
       // SET _updated OF VOIE
-      await this.baseLocaleService.touch(voie._bal);
+      await this.baseLocaleService.touch(voie.balId);
       // DELETE NUMEROS OF VOIE
-      await this.numeroService.deleteMany({
-        voie: voie._id,
-        _bal: voie._bal,
-      });
+      // await this.numeroService.deleteMany({
+      //   voie: voie._id,
+      //   _bal: voie._bal,
+      // });
     }
   }
 
   public async softDelete(voie: Voie): Promise<Voie> {
+    const where: FindOptionsWhere<Voie> = {
+      id: voie.id,
+    };
     // SET _deleted OF VOIE
-    const voieUpdated: Voie = await this.voieModel.findOneAndUpdate(
-      { _id: voie._id },
-      { $set: { _deleted: new Date(), _updated: new Date() } },
-      { new: true },
-    );
+    await this.voiesRepository.softDelete({});
 
     // SET _updated OF VOIE
-    await this.baseLocaleService.touch(voie._bal);
+    await this.baseLocaleService.touch(voie.balId);
     // SET _deleted NUMERO FROM VOIE
-    await this.numeroService.updateMany(
-      { voie: voie._id },
-      {
-        _deleted: voieUpdated._updated,
-        _updated: voieUpdated._updated,
-      },
-    );
-    return voieUpdated;
+    await this.numeroService.softDeleteWhere({ voie: voie.id });
+    return this.voiesRepository.findOne({ where });
   }
 
   public async restore(
     voie: Voie,
     { numerosIds }: RestoreVoieDTO,
   ): Promise<Voie> {
-    const updatedVoie = await this.voieModel.findOneAndUpdate(
-      { _id: voie._id },
-      { $set: { _deleted: null, _updated: new Date() } },
-      { new: true },
-    );
+    const where: FindOptionsWhere<Voie> = {
+      id: voie.id,
+    };
+    await this.voiesRepository.restore(where);
     // SET _updated OF VOIE
-    await this.baseLocaleService.touch(voie._bal);
+    await this.baseLocaleService.touch(voie.balId);
     if (numerosIds.length > 0) {
       // SET _updated NUMERO FROM VOIE
-      const { modifiedCount } = await this.numeroService.updateMany(
-        { voie: voie._id, _id: { $in: numerosIds } },
-        { _deleted: null, _updated: updatedVoie._updated },
-      );
-      if (modifiedCount > 0) {
-        await this.tilesService.updateVoieTiles(updatedVoie);
-      }
+      // const { modifiedCount } =
+
+      await this.numeroService.restoreWhere({
+        id: numerosIds,
+      });
+      // if (modifiedCount > 0) {
+      //   await this.tilesService.updateVoieTiles(updatedVoie);
+      // }
     }
 
-    return updatedVoie;
+    return this.voiesRepository.findOne({ where });
   }
 
-  async isVoieExist(
-    _id: Types.ObjectId,
-    _bal: Types.ObjectId = null,
-  ): Promise<boolean> {
-    const query = { _id, _deleted: null };
-    if (_bal) {
-      query['_bal'] = _bal;
+  async isVoieExist(id: string, balId: string = null): Promise<boolean> {
+    const where: FindOptionsWhere<Voie> = { id, deletedAt: null };
+    if (balId) {
+      where.balId = balId;
     }
-    const voieExist = await this.voieModel.exists(query).exec();
+    const voieExist = await this.voiesRepository.exists({ where });
     return voieExist !== null;
   }
 
@@ -346,27 +345,25 @@ export class VoieService {
   }
 
   async convertToToponyme(voie: Voie): Promise<Toponyme> {
-    if (!this.isVoieExist(voie._id)) {
+    if (!this.isVoieExist(voie.id)) {
       throw new HttpException(
-        `Voie ${voie._id} is deleted`,
+        `Voie ${voie.id} is deleted`,
         HttpStatus.BAD_REQUEST,
       );
     }
 
     const numerosCount: number = await this.numeroService.count({
-      voie: voie._id,
+      voie: voie.id,
       _deleted: null,
     });
     if (numerosCount > 0) {
       throw new HttpException(
-        `Voie ${voie._id} has numero(s)`,
+        `Voie ${voie.id} has numero(s)`,
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    const baseLocale = await this.baseLocaleService.findOneOrFail(
-      voie._bal.toString(),
-    );
+    const baseLocale = await this.baseLocaleService.findOneOrFail(voie.balId);
 
     // CREATE TOPONYME
     const payload: CreateToponymeDTO = {
@@ -383,7 +380,7 @@ export class VoieService {
     return toponyme;
   }
 
-  touch(voieId: Types.ObjectId, _updated: Date = new Date()) {
-    return this.voieModel.updateOne({ _id: voieId }, { $set: { _updated } });
+  touch(voieId: string, updatedAt: Date = new Date()) {
+    return this.voiesRepository.update({ id: voieId }, { updatedAt });
   }
 }

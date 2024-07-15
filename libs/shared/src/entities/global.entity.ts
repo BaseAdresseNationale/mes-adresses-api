@@ -3,14 +3,14 @@ import {
   BeforeInsert,
   CreateDateColumn,
   DeleteDateColumn,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ObjectId } from 'mongodb';
 
 export class GlobalEntity {
   @ApiProperty()
-  @PrimaryColumn('varchar', { length: 24 })
+  @PrimaryGeneratedColumn('uuid')
   id?: string;
 
   @ApiProperty()
@@ -25,8 +25,8 @@ export class GlobalEntity {
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date | null;
 
-  @BeforeInsert()
-  generatedObjectId() {
-    this.id = new ObjectId().toHexString();
-  }
+  // @BeforeInsert()
+  // generatedObjectId() {
+  //   this.id = new ObjectId().toHexString();
+  // }
 }

@@ -23,8 +23,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 
-import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { Voie } from '@/shared/entities/voie.entity';
+import { Numero } from '@/shared/entities/numero.entity';
 import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 
 import { CustomRequest } from '@/lib/types/request.type';
@@ -130,7 +130,7 @@ export class VoieController {
   async findNumerosByVoie(@Req() req: CustomRequest, @Res() res: Response) {
     const numeros: Numero[] = await this.numeroService.findMany(
       {
-        voie: req.voie._id,
+        voie: req.voie.id,
         _deleted: null,
       },
       null,
