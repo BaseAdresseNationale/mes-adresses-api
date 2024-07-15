@@ -5,7 +5,19 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { omit, uniq, chunk } from 'lodash';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  DeleteResult,
+  FindOptionsOrder,
+  FindOptionsRelations,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  In,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
+
+import { omit, chunk } from 'lodash';
 
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
@@ -18,21 +30,9 @@ import { UpdateBatchNumeroDTO } from '@/modules/numeros/dto/update_batch_numero.
 import { DeleteBatchNumeroDTO } from '@/modules/numeros/dto/delete_batch_numero.dto';
 import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
-import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { calcMetaTilesNumero } from '../base_locale/sub_modules/tiles/utils/tiles.utils';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeleteResult,
-  FindOptionsOrder,
-  FindOptionsRelations,
-  FindOptionsSelect,
-  FindOptionsWhere,
-  In,
-  Repository,
-  UpdateResult,
-} from 'typeorm';
 
 @Injectable()
 export class NumeroService {
@@ -84,6 +84,10 @@ export class NumeroService {
       .where(where)
       .distinctOn([field])
       .getRawMany();
+  }
+
+  public async count(where: FindOptionsWhere<Numero>): Promise<number> {
+    return this.numerosRepository.count({ where });
   }
 
   public async updateMany(
@@ -155,8 +159,8 @@ export class NumeroService {
     }
     // Si il y a un toponyme, on vérifie qu'il existe
     if (
-      createNumeroDto.toponyme &&
-      !(await this.toponymeService.isToponymeExist(createNumeroDto.toponyme))
+      createNumeroDto.toponymeId &&
+      !(await this.toponymeService.isToponymeExist(createNumeroDto.toponymeId))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
@@ -168,7 +172,7 @@ export class NumeroService {
       suffixe: createNumeroDto.suffixe
         ? normalizeSuffixe(createNumeroDto.suffixe)
         : null,
-      toponymeId: createNumeroDto.toponyme || null,
+      toponymeId: createNumeroDto.toponymeId || null,
       positions: createNumeroDto.positions || [],
       comment: createNumeroDto.comment || null,
       parcelles: createNumeroDto.parcelles || [],
@@ -177,10 +181,9 @@ export class NumeroService {
     // On insert le numero dans postgres
     const numeroCreated: Numero = await this.numerosRepository.create(numero);
     // On calcule le centroid de la voie
-    const centroid = await this.findCentroidByVoie(voie.id);
-    await this.voieService.updateCentroid({ id: voie.id }, centroid);
-    // On met a jour le updated de la voie et Bal (et toponyme)
-    await this.touch(numeroCreated, numeroCreated.updatedAt);
+    await this.voieService.calcCentroid(voie.id);
+    // On met a jour le updatedAt de la Bal
+    this.baseLocaleService.touch(numero.balId);
     return numeroCreated;
   }
 
@@ -202,102 +205,81 @@ export class NumeroService {
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
-
-    // SET SUFFIXE IF CHANGE
+    // On normalize le suffix
     if (updateNumeroDto.suffixe) {
       updateNumeroDto.suffixe = normalizeSuffixe(updateNumeroDto.suffixe);
     }
-
+    // On créer la condition where
     const where: FindOptionsWhere<Numero> = {
       id: numero.id,
       deletedAt: null,
     };
-
-    // REQUEST UPDATE NUMERO
+    // On update le numéro dans postgres
     const { affected }: UpdateResult = await this.numerosRepository.update(
       where,
       updateNumeroDto,
     );
-
+    // On récupère le nouveau numéro modifié
     const numeroUpdated: Numero = await this.numerosRepository.findOne({
       where,
     });
-
+    // Si le numero a été modifié
     if (affected > 0) {
-      await this.touch(numeroUpdated, numeroUpdated.updatedAt);
       if (updateNumeroDto.voieId) {
+        // On recalcule le centroid de l'ancienne et la nouvelle voie si le numero a changé de voie
+        await this.voieService.calcCentroid(numero.voieId);
+        await this.voieService.calcCentroid(numeroUpdated.voieId);
       } else if (updateNumeroDto.positions) {
+        // On recalcule le centroid de la voie si les positions du numeros on changé
+        await this.voieService.calcCentroid(numero.voieId);
       }
+      // On met a jour le updatedAt de la BAL
+      this.baseLocaleService.touch(numero.balId);
     }
-    // CALCULER VOIE CENTROID SI VOIE OU POSITION CHANGE
-
-    // if (numeroUpdated) {
-    //   // UPDATE TILES VOIE IF VOIE OR POSITIONS CHANGE
-    //   if (updateNumeroDto.voie) {
-    // await this.tilesService.updateVoiesTiles([numero.voie, numeroUpdated.voie]);
-    //     await this.voieService.touch(numero.voie, numeroUpdated._updated);
-    //   } else if (updateNumeroDto.positions) {
-    //     await this.tilesService.updateVoiesTiles([numero.voie]);
-    //   }
-
-    //   // SET _updated VOIE, TOPONYME AND BAL
-    // }
 
     return numeroUpdated;
   }
 
   public async delete(numero: Numero): Promise<void> {
+    // On créer le where et on lance la requète
     const where: FindOptionsWhere<Numero> = {
       id: numero.id,
     };
     const { affected }: DeleteResult =
       await this.numerosRepository.delete(where);
+    // Si le numero a été suprimé
     if (affected > 0) {
-      // // UPDATE TILES VOIE
-      // await this.tilesService.updateVoiesTiles([numero.voie]);
-      // SET _updated VOIE, TOPONYME AND BAL
+      // On met a jour le updatedAt de la bal, la voie et le toponyme
       await this.touch(numero);
     }
   }
 
-  public deleteMany(where: FindOptionsWhere<Numero>): Promise<any> {
-    return this.numerosRepository.delete(where);
-  }
-
   public async softDelete(where: FindOptionsWhere<Numero>): Promise<Numero> {
+    // On créer le where et on lance la requète
     const { affected }: UpdateResult =
       await this.numerosRepository.softDelete(where);
-
     const deletedNumero: Numero = await this.numerosRepository.findOne({
       where,
     });
-
+    // Si le numero a été suprimé
     if (affected > 0) {
-      // // UPDATE TILES VOIE
-      // await this.tilesService.updateVoiesTiles([numeroUpdated.voie]);
-      // SET _updated VOIE, TOPONYME AND BAL
+      // On recalcule le centroid de la voie du numéro
+      await this.voieService.calcCentroid(deletedNumero.voieId);
+      // On met a jour le updatedAt de la bal, la voie et le toponyme
       await this.touch(deletedNumero);
     }
 
     return deletedNumero;
   }
 
-  public async restore(where: FindOptionsWhere<Numero>): Promise<Numero> {
-    const { affected }: UpdateResult =
-      await this.numerosRepository.restore(where);
-
-    const restoredNumero: Numero = await this.numerosRepository.findOne({
-      where,
+  public async softDeleteByVoie(voieId: string): Promise<void> {
+    await this.numerosRepository.softDelete({
+      voieId,
     });
+  }
 
-    if (affected > 0) {
-      // // UPDATE TILES VOIE
-      // await this.tilesService.updateVoiesTiles([numeroUpdated.voie]);
-      // SET _updated VOIE, TOPONYME AND BAL
-      await this.touch(restoredNumero);
-    }
-
-    return restoredNumero;
+  public async restore(where: FindOptionsWhere<Numero>): Promise<void> {
+    await this.numerosRepository.restore(where);
   }
 
   public async certifyAllNumeros(baseLocale: BaseLocale): Promise<void> {
@@ -315,14 +297,14 @@ export class NumeroService {
     baseLocale: BaseLocale,
     { numerosIds, changes }: UpdateBatchNumeroDTO,
   ): Promise<BatchNumeroResponseDTO> {
-    if (changes.voie === null) {
-      delete changes.voie;
+    // On delete voieId et toponymeId si ils sont null
+    if (changes.voieId === null) {
+      delete changes.voieId;
     }
-
-    if (changes.toponyme === null) {
-      delete changes.toponyme;
+    if (changes.toponymeId === null) {
+      delete changes.toponymeId;
     }
-
+    // On récupère les différentes voies et toponymes des numeros qu'on va modifier
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
       balId: baseLocale.id,
@@ -330,35 +312,32 @@ export class NumeroService {
     };
     const voieIds: string[] = await this.findDistinct(where, 'voieId');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
-
-    // CHECK IF VOIE EXIST (IN BAL)
+    // Si la voie des numéro est changé, on vérifie que cette derniere existe bien
     if (
-      changes.voie &&
-      !(await this.voieService.isVoieExist(changes.voie, baseLocale.id))
+      changes.voieId &&
+      !(await this.voieService.isVoieExist(changes.voieId, baseLocale.id))
     ) {
       throw new HttpException('Voie not found', HttpStatus.NOT_FOUND);
     }
-    // CHECK IF TOPO EXIST (IN BAL)
+    // Si le toponyme des numéro est changé, on vérifie que cet dernier existe bien
     if (
-      changes.toponyme &&
+      changes.toponymeId &&
       !(await this.toponymeService.isToponymeExist(
-        changes.toponyme,
+        changes.toponymeId,
         baseLocale.id,
       ))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
-
-    // CREATE BATCH CHANGES
+    // On créer le batch (en omettant positionType qui n'existe pas dans numero)
     const batchChanges: Partial<Numero> = {
       ...omit(changes, 'positionType'),
     };
-
+    // Si le positionType est changé, on change le type de la première position dans le batch
     if (changes.positionType) {
       batchChanges['positions.0.type'] = changes.positionType;
     }
-
-    // UPDATE NUMEROS
+    // On lance la requète
     const { affected }: UpdateResult = await this.numerosRepository.update(
       {
         id: In(numerosIds),
@@ -367,33 +346,35 @@ export class NumeroService {
       },
       batchChanges,
     );
-
+    // Si il y a plus d'un numéro qui a changé
     if (affected > 0) {
+      // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(baseLocale.id);
-      // UPDATES VOIE DOCUMENTS
-      if (voieIds.length > 0) {
-        // SET _updated VOIES
+      // Si la voie a changé
+      if (changes.voieId) {
+        // On met a jour le updatedAt de la BAL
+        await this.voieService.touch(changes.voieId);
+        // On recalcule tous les centroid des voie
+        await Promise.all(
+          voieIds.map((voieId) => this.voieService.calcCentroid(voieId)),
+        );
+      } else {
+        // Sinon on met a jour les updatedAt des voies des numeros
         await Promise.all(
           voieIds.map((voieId) => this.voieService.touch(voieId)),
         );
       }
-      if (changes.voie) {
-        await this.voieService.touch(changes.voie);
-        // METTRE A JOUR CENTROID DE voieIDs et changes.voie
-        // UPDATE TILES OF VOIES IF VOIE OF NUMERO CHANGE
-        // await this.tilesService.updateVoiesTiles([...voieIds, changes.voie]);
+      // Si on change le toponyme on met a jour son updatedAt
+      if (changes.toponymeId) {
+        await this.toponymeService.touch(changes.toponymeId);
       }
-      // UPDATE DOCUMENTS TOPONYMES
+      // Si les numeros avaient des toponyme, on met a jour leurs updatedAt
       if (toponymeIds.length > 0) {
-        // SET _updated TOPONYMES
         await Promise.all(
           toponymeIds.map((toponymeId) =>
             this.toponymeService.touch(toponymeId),
           ),
         );
-      }
-      if (changes.toponyme) {
-        await this.toponymeService.touch(changes.toponyme);
       }
     }
 
@@ -404,6 +385,7 @@ export class NumeroService {
     baseLocale: BaseLocale,
     { numerosIds }: DeleteBatchNumeroDTO,
   ): Promise<BatchNumeroResponseDTO> {
+    // On récupère les différentes voies et toponymes des numeros qu'on va modifier
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
       balId: baseLocale.id,
@@ -411,25 +393,20 @@ export class NumeroService {
     };
     const voieIds: string[] = await this.findDistinct(where, 'voieId');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
-
-    // REQUEST SOFT DELETE NUMEROS
+    // On archive les numeros dans postgres
     const { affected }: UpdateResult = await this.numerosRepository.softDelete({
       id: In(numerosIds),
       balId: baseLocale.id,
     });
-
-    // UPDATE VOIE AND TOPONYME IF NUMEROS WERE SOFT DELETE
+    // Si des numeros ont été archivés
     if (affected > 0) {
+      // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(baseLocale.id);
-      // SET _updated AND tiles OF VOIES
-      if (voieIds.length > 0) {
-        await Promise.all(
-          voieIds.map((voieId) => this.voieService.touch(voieId)),
-        );
-        // METTRE A JOUR CENTROID DE voieIDs
-        // await this.tilesService.updateVoiesTiles(voieIds);
-      }
-      // SET _updated OF TOPONYMES
+      // On met a jour les centroid des voies des numeros archivé
+      await Promise.all(
+        voieIds.map((voieId) => this.voieService.calcCentroid(voieId)),
+      );
+      // Si les numeros avaient des toponyme, on met a jour leurs updatedAt
       if (toponymeIds.length > 0) {
         await Promise.all(
           toponymeIds.map((toponymeId) =>
@@ -446,6 +423,7 @@ export class NumeroService {
     baseLocale: BaseLocale,
     { numerosIds }: DeleteBatchNumeroDTO,
   ): Promise<any> {
+    // On récupère les différentes voies et toponymes des numeros qu'on va modifier
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
       balId: baseLocale.id,
@@ -453,25 +431,21 @@ export class NumeroService {
     };
     const voieIds: string[] = await this.findDistinct(where, 'voieId');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
-
-    // REQUEST DELETE NUMEROS
+    // On supprime les numero dans postgres
     const { affected }: DeleteResult = await this.numerosRepository.delete({
       id: In(numerosIds),
       balId: baseLocale.id,
     });
 
-    // UPDATE VOIE AND TOPONYME IF NUMEROS WERE SOFT DELETE
+    // Si des numeros ont été supprimé
     if (affected > 0) {
+      // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(baseLocale.id);
-      // SET _updated AND tiles OF VOIES
-      if (voieIds.length > 0) {
-        await Promise.all(
-          voieIds.map((voieId) => this.voieService.touch(voieId)),
-        );
-        // METTRE A JOUR CENTROID DE voieIDs
-        // await this.tilesService.updateVoiesTiles(voieIds);
-      }
-      // SET _updated OF TOPONYMES
+      // On met a jour les updatedAt des voies des numeros archivé
+      await Promise.all(
+        voieIds.map((voieId) => this.voieService.touch(voieId)),
+      );
+      // Si les numeros avaient des toponyme, on met a jour leurs updatedAt
       if (toponymeIds.length > 0) {
         await Promise.all(
           toponymeIds.map((toponymeId) =>

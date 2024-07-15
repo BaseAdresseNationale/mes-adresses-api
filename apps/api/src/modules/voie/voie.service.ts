@@ -5,7 +5,20 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  DeleteResult,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  In,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { groupBy } from 'lodash';
+import * as turf from '@turf/turf';
+import bbox from '@turf/bbox';
+import { Feature as FeatureTurf } from '@turf/helpers';
+import { BBox as BboxTurf } from '@turf/helpers';
 
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
@@ -17,27 +30,14 @@ import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
-import { Position } from '@/shared/schemas/position.schema';
-import * as turf from '@turf/turf';
-import bbox from '@turf/bbox';
-import { Feature as FeatureTurf } from '@turf/helpers';
+import { Position } from '@/shared/entities/position.entity';
 import { Numero } from '@/shared/entities/numero.entity';
-import { BBox as BboxTurf } from '@turf/helpers';
+import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { CreateToponymeDTO } from '../toponyme/dto/create_toponyme.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeleteResult,
-  FindOptionsSelect,
-  FindOptionsWhere,
-  In,
-  Point,
-  Repository,
-  UpdateResult,
-} from 'typeorm';
-import { Voie } from '@/shared/entities/voie.entity';
 
 @Injectable()
 export class VoieService {
@@ -132,13 +132,6 @@ export class VoieService {
       .execute();
   }
 
-  public async updateCentroid(
-    where: FindOptionsWhere<Voie>,
-    centroid: Point,
-  ): Promise<void> {
-    await this.voiesRepository.update(where, { centroid });
-  }
-
   public async update(voie: Voie, updateVoieDto: UpdateVoieDTO): Promise<Voie> {
     // Si le nom a été modifier, on le clean
     if (updateVoieDto.nom) {
@@ -166,9 +159,7 @@ export class VoieService {
         updateVoieDto.trace &&
         voieUpdated.typeNumerotation === TypeNumerotationEnum.METRIQUE
       ) {
-        await this.voiesRepository.update(where, {
-          centroid: turf.centroid(voie.trace)?.geometry,
-        });
+        await this.calcCentroidWithTrace(voieUpdated);
       }
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(
@@ -205,7 +196,7 @@ export class VoieService {
     };
     await this.voiesRepository.softDelete({});
     // On archive également tous le numéros de la voie
-    await this.numeroService.softDelete({ voieId: voie.id });
+    await this.numeroService.softDeleteByVoie(voie.id);
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
     // On retourne la voie tout juste archivée
@@ -229,8 +220,7 @@ export class VoieService {
         id: In(numerosIds),
       });
       // On met a jour le centroid de la voie
-      const centroid = await this.numeroService.findCentroidByVoie(voie.id);
-      await this.voiesRepository.update(where, { centroid });
+      this.calcCentroid(voie.id);
     }
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
@@ -310,6 +300,28 @@ export class VoieService {
 
   public async touch(voieId: string, updatedAt: Date = new Date()) {
     return this.voiesRepository.update({ id: voieId }, { updatedAt });
+  }
+
+  public async calcCentroid(voieId: string): Promise<void> {
+    const voie: Voie = await this.findOneOrFail(voieId);
+    if (voie.typeNumerotation === TypeNumerotationEnum.NUMERIQUE) {
+      await this.calcCentroidWithNumeros(voieId);
+    } else if (
+      voie.trace &&
+      voie.typeNumerotation === TypeNumerotationEnum.METRIQUE
+    ) {
+      await this.calcCentroidWithTrace(voie);
+    }
+  }
+
+  private async calcCentroidWithNumeros(voieId: string): Promise<void> {
+    const centroid = await this.numeroService.findCentroidByVoie(voieId);
+    await this.voiesRepository.update({ id: voieId }, { centroid });
+  }
+
+  private async calcCentroidWithTrace(voie: Voie): Promise<void> {
+    const centroid = turf.centroid(voie.trace)?.geometry;
+    await this.voiesRepository.update({ id: voie.id }, { centroid });
   }
 
   private getBBOX(voie: Voie, numeros: Numero[]): BboxTurf {
