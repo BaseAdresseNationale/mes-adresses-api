@@ -8,7 +8,7 @@ import { Position } from './position.entity';
 @Entity({ name: 'toponymes' })
 export class Toponyme extends GlobalEntity {
   @ApiProperty()
-  @Column('varchar', { name: 'bal_id', nullable: false, length: 24 })
+  @Column('uuid', { name: 'bal_id', nullable: false })
   balId: string;
 
   @ApiProperty()

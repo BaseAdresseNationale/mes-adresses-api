@@ -56,8 +56,8 @@ export class BaseLocale extends GlobalEntity {
   status: StatusBaseLocalEnum;
 
   @ApiProperty()
-  @Column('varchar', { nullable: true, length: 24 })
-  habilitation: string | null;
+  @Column('varchar', { name: 'habilitation_id', nullable: true, length: 24 })
+  habilitationId: string | null;
 
   @ApiProperty({ type: () => BaseLocaleSync })
   @Column('jsonb', { nullable: true })

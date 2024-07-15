@@ -26,19 +26,19 @@ export enum PositionTypeEnum {
 @Entity({ name: 'positions' })
 export class Position {
   @ApiProperty()
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
 
   @ApiProperty()
-  @Column('varchar', { name: 'bal_id', nullable: false, length: 24 })
+  @Column('uuid', { name: 'bal_id', nullable: false })
   balId: string;
 
   @ApiProperty()
-  @Column('varchar', { name: 'toponyme_id', nullable: true, length: 24 })
+  @Column('uuid', { name: 'toponyme_id', nullable: true })
   toponymeId: string;
 
   @ApiProperty()
-  @Column('varchar', { name: 'numero_id', nullable: true, length: 24 })
+  @Column('uuid', { name: 'numero_id', nullable: true })
   numeroId: string;
 
   @ApiProperty({ enum: PositionTypeEnum })
