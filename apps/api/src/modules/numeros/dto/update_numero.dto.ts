@@ -31,12 +31,12 @@ export class UpdateNumeroDTO {
   @IsOptional()
   @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: true })
-  toponyme?: string;
+  toponymeId?: string;
 
   @IsOptional()
   @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: false })
-  voie?: string;
+  voieId?: string;
 
   @IsOptional()
   @Validate(ValidatorBal, ['cad_parcelles'])

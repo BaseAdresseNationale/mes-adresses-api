@@ -16,7 +16,6 @@ import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
 import { NumeroService } from '@/modules/numeros/numero.service';
-import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/schemas/position.schema';
@@ -28,18 +27,13 @@ import { BBox as BboxTurf } from '@turf/helpers';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { CreateToponymeDTO } from '../toponyme/dto/create_toponyme.dto';
-// import {
-//   getTilesByLineString,
-//   getTilesByPosition,
-// } from '../base_locale/sub_modules/tiles/utils/tiles.utils';
-// import { getPriorityPosition } from '@/lib/utils/positions.util';
-// import { ZOOM } from '../base_locale/sub_modules/tiles/const/zoom.const';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeleteResult,
   FindOptionsSelect,
   FindOptionsWhere,
   In,
+  Point,
   Repository,
   UpdateResult,
 } from 'typeorm';
@@ -104,10 +98,10 @@ export class VoieService {
     return voieCreated;
   }
 
-  public async importMany(baseLocale: BaseLocale, rawVoies: any[]) {
+  public async importMany(baseLocale: BaseLocale, rawVoies: Voie[]) {
     const voies = rawVoies
       .map((rawVoie) => {
-        if (!rawVoie.commune || !rawVoie.nom) {
+        if (!rawVoie.nom) {
           return null;
         }
 
@@ -115,17 +109,12 @@ export class VoieService {
           id: rawVoie.id,
           balId: baseLocale.id,
           nom: cleanNom(rawVoie.nom),
-          code: rawVoie.code || null,
-          commune: rawVoie.commune,
           nomAlt: getNomAltDefault(rawVoie.nomAlt),
           typeNumerotation: rawVoie.typeNumerotation,
           trace: rawVoie.trace || null,
+          ...(rawVoie.updatedAt ? { updatedAt: rawVoie.updatedAt } : null),
+          ...(rawVoie.createdAt ? { createdAt: rawVoie.createdAt } : null),
         } as Partial<Voie>;
-
-        if (rawVoie._updated && rawVoie._created) {
-          voie.createdAt = rawVoie.createdAt;
-          voie.updatedAt = rawVoie.updatedAt;
-        }
 
         return voie;
       })
@@ -141,6 +130,13 @@ export class VoieService {
       .into(Voie)
       .values(voies)
       .execute();
+  }
+
+  public async updateCentroid(
+    where: FindOptionsWhere<Voie>,
+    centroid: Point,
+  ): Promise<void> {
+    await this.voiesRepository.update(where, { centroid });
   }
 
   public async update(voie: Voie, updateVoieDto: UpdateVoieDTO): Promise<Voie> {

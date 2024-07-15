@@ -4,6 +4,9 @@ import { chain, compact, keyBy, min, max } from 'lodash';
 import { beautifyUppercased, beautifyNomAlt } from './string.utils';
 import { ObjectId } from 'mongodb';
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
+import { Voie } from '@/shared/entities/voie.entity';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 export function extractCodeCommune({ parsedValues, additionalValues }) {
   return (
@@ -11,7 +14,7 @@ export function extractCodeCommune({ parsedValues, additionalValues }) {
   );
 }
 
-export function extractPosition(row) {
+export function extractPosition(row: any) {
   return {
     source: row.parsedValues.source || null,
     type: row.parsedValues.position || PositionTypeEnum.INCONNUE,
@@ -22,20 +25,23 @@ export function extractPosition(row) {
   };
 }
 
-export function extractPositions(rows) {
+export function extractPositions(rows: any) {
   return rows
     .filter((r) => r.parsedValues.long && r.parsedValues.lat)
     .map((r) => extractPosition(r));
 }
 
-export function extractDate(row) {
+export function extractDate(row: any) {
   if (row.parsedValues.date_der_maj) {
     return new Date(row.parsedValues.date_der_maj);
   }
 }
 
-export function extractData(rows, codeCommune) {
-  const toponymes = chain(rows)
+export function extractData(
+  rows: any[],
+  codeCommune: string,
+): { voies: Voie; numeros: Numero; toponymes: Toponyme } {
+  const toponymes: Toponyme[] = chain(rows)
     .filter((r) => r.parsedValues.numero === 99999)
     .groupBy((r) => normalize(r.parsedValues.voie_nom))
     .map((toponymeRows) => {

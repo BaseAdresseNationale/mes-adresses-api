@@ -39,8 +39,6 @@ export class NumeroService {
   constructor(
     @InjectRepository(Numero)
     private numerosRepository: Repository<Numero>,
-    @Inject(forwardRef(() => TilesService))
-    private tilesService: TilesService,
     @Inject(forwardRef(() => VoieService))
     private voieService: VoieService,
     @Inject(forwardRef(() => ToponymeService))
@@ -50,48 +48,42 @@ export class NumeroService {
   ) {}
 
   async findOneOrFail(numeroId: string): Promise<Numero> {
+    // Créer le filtre where et lance la requète postgres
     const where: FindOptionsWhere<Numero> = {
       id: numeroId,
     };
     const numero = await this.numerosRepository.findOne({ where });
-
+    // Si la voie n'existe pas, on throw une erreur
     if (!numero) {
       throw new HttpException(
         `Numero ${numeroId} not found`,
         HttpStatus.NOT_FOUND,
       );
     }
-
     return numero;
-  }
-
-  public async findManyPopulateVoie(
-    where: FindOptionsWhere<Numero>,
-  ): Promise<Numero[]> {
-    const relations: FindOptionsRelations<Numero> = {
-      voie: true,
-    };
-    return this.numerosRepository.find({ where, relations });
   }
 
   async findMany(
     where: FindOptionsWhere<Numero>,
     select?: FindOptionsSelect<Numero>,
     order?: FindOptionsOrder<Numero>,
+    relations?: FindOptionsRelations<Numero>,
   ): Promise<Numero[]> {
-    return this.numerosRepository.find({ where, select, order });
+    // Get les numeros en fonction du where, select, order et des relations
+    return this.numerosRepository.find({ where, select, order, relations });
   }
 
   async findDistinct(
     where: FindOptionsWhere<Numero>,
     field: string,
   ): Promise<string[]> {
+    // Get la liste distinct du field dans l'enssemble where
     return this.numerosRepository
       .createQueryBuilder()
       .select(field)
       .where(where)
-      .distinct(true)
-      .execute();
+      .distinctOn([field])
+      .getRawMany();
   }
 
   public async updateMany(
@@ -99,14 +91,6 @@ export class NumeroService {
     update: Partial<Numero>,
   ): Promise<any> {
     return this.numerosRepository.update(where, update);
-  }
-
-  public deleteMany(where: FindOptionsWhere<Numero>): Promise<any> {
-    return this.numerosRepository.delete(where);
-  }
-
-  public async count(where: FindOptionsWhere<Numero>): Promise<number> {
-    return this.numerosRepository.count({ where });
   }
 
   async importMany(baseLocale: BaseLocale, rawNumeros: any[]): Promise<void> {
@@ -165,20 +149,18 @@ export class NumeroService {
     voie: Voie,
     createNumeroDto: CreateNumeroDTO,
   ): Promise<Numero> {
-    // CHECK IF VOIE EXIST
+    // On vérifie que la voie ne soit pas archivé
     if (voie.deletedAt) {
       throw new HttpException('Voie is archived', HttpStatus.NOT_FOUND);
     }
-
-    // CHECK IF TOPO EXIST
+    // Si il y a un toponyme, on vérifie qu'il existe
     if (
       createNumeroDto.toponyme &&
       !(await this.toponymeService.isToponymeExist(createNumeroDto.toponyme))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
     }
-
-    // CREATE NUMERO
+    // On créer l'object numéro
     const numero: Partial<Numero> = {
       balId: voie.balId,
       voieId: voie.id,
@@ -192,15 +174,13 @@ export class NumeroService {
       parcelles: createNumeroDto.parcelles || [],
       certifie: createNumeroDto.certifie || false,
     };
-    // SET TILES
-    this.tilesService.calcMetaTilesNumero(numero);
-    // REQUEST CREATE NUMERO
+    // On insert le numero dans postgres
     const numeroCreated: Numero = await this.numerosRepository.create(numero);
-    // // UPDATE TILES VOIE
-    // await this.tilesService.updateVoieTiles(voie);
-    // SET _updated VOIE, TOPONYME AND BAL
+    // On calcule le centroid de la voie
+    const centroid = await this.findCentroidByVoie(voie.id);
+    await this.voieService.updateCentroid({ id: voie.id }, centroid);
+    // On met a jour le updated de la voie et Bal (et toponyme)
     await this.touch(numeroCreated, numeroCreated.updatedAt);
-
     return numeroCreated;
   }
 
@@ -208,42 +188,25 @@ export class NumeroService {
     numero: Numero,
     updateNumeroDto: UpdateNumeroDTO,
   ): Promise<Numero> {
-    // CHECK IF VOIE EXIST
+    // Si il y a un changement de voie, on vérifie que cette derniere existe
     if (
-      updateNumeroDto.voie &&
-      !(await this.voieService.isVoieExist(updateNumeroDto.voie))
+      updateNumeroDto.voieId &&
+      !(await this.voieService.isVoieExist(updateNumeroDto.voieId))
     ) {
       throw new HttpException('Voie not found', HttpStatus.NOT_FOUND);
     }
-
-    // CHECK IF TOPO EXIST
+    // Si il y a un changement de toponyme, on vérifie que ce dernier existe
     if (
-      updateNumeroDto.toponyme &&
-      !(await this.toponymeService.isToponymeExist(updateNumeroDto.toponyme))
+      updateNumeroDto.toponymeId &&
+      !(await this.toponymeService.isToponymeExist(updateNumeroDto.toponymeId))
     ) {
       throw new HttpException('Toponyme not found', HttpStatus.NOT_FOUND);
-    }
-
-    // SET TILES IF POSITIONS CHANGE
-    if (updateNumeroDto.positions) {
-      this.tilesService.calcMetaTilesNumero(updateNumeroDto);
     }
 
     // SET SUFFIXE IF CHANGE
     if (updateNumeroDto.suffixe) {
       updateNumeroDto.suffixe = normalizeSuffixe(updateNumeroDto.suffixe);
     }
-
-    const change: Partial<Numero> = {
-      numero: updateNumeroDto.numero,
-      suffixe: updateNumeroDto.suffixe,
-      comment: updateNumeroDto.comment,
-      toponymeId: updateNumeroDto.toponyme,
-      voieId: updateNumeroDto.voie,
-      parcelles: updateNumeroDto.parcelles,
-      certifie: updateNumeroDto.certifie,
-      positions: updateNumeroDto.positions,
-    };
 
     const where: FindOptionsWhere<Numero> = {
       id: numero.id,
@@ -253,7 +216,7 @@ export class NumeroService {
     // REQUEST UPDATE NUMERO
     const { affected }: UpdateResult = await this.numerosRepository.update(
       where,
-      change,
+      updateNumeroDto,
     );
 
     const numeroUpdated: Numero = await this.numerosRepository.findOne({
@@ -262,16 +225,16 @@ export class NumeroService {
 
     if (affected > 0) {
       await this.touch(numeroUpdated, numeroUpdated.updatedAt);
+      if (updateNumeroDto.voieId) {
+      } else if (updateNumeroDto.positions) {
+      }
     }
     // CALCULER VOIE CENTROID SI VOIE OU POSITION CHANGE
 
     // if (numeroUpdated) {
     //   // UPDATE TILES VOIE IF VOIE OR POSITIONS CHANGE
     //   if (updateNumeroDto.voie) {
-    //     await this.tilesService.updateVoiesTiles([
-    //       numero.voie,
-    //       numeroUpdated.voie,
-    //     ]);
+    // await this.tilesService.updateVoiesTiles([numero.voie, numeroUpdated.voie]);
     //     await this.voieService.touch(numero.voie, numeroUpdated._updated);
     //   } else if (updateNumeroDto.positions) {
     //     await this.tilesService.updateVoiesTiles([numero.voie]);
@@ -295,6 +258,10 @@ export class NumeroService {
       // SET _updated VOIE, TOPONYME AND BAL
       await this.touch(numero);
     }
+  }
+
+  public deleteMany(where: FindOptionsWhere<Numero>): Promise<any> {
+    return this.numerosRepository.delete(where);
   }
 
   public async softDelete(where: FindOptionsWhere<Numero>): Promise<Numero> {

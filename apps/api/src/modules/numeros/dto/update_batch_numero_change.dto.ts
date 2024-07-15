@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Types } from 'mongoose';
 import {
   MaxLength,
   IsMongoId,
@@ -21,13 +20,13 @@ export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
   @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: true })
-  toponyme?: string;
+  toponymeId?: string;
 
   @IsOptional()
   @IsNotEmpty()
   @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: false })
-  voie?: string;
+  voieId?: string;
 
   @IsOptional()
   @IsNotEmpty()

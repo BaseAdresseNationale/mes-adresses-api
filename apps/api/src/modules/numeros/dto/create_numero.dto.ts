@@ -30,7 +30,7 @@ export class CreateNumeroDTO {
   @IsOptional()
   @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: true })
-  toponyme?: string;
+  toponymeId?: string;
 
   @IsOptional()
   @Validate(ValidatorBal, ['cad_parcelles'])
