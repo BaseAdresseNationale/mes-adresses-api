@@ -230,10 +230,7 @@ export class ToponymeService {
     await this.toponymeModel.insertMany(toponymes);
   }
 
-  async isToponymeExist(
-    _id: Types.ObjectId,
-    _bal: Types.ObjectId = null,
-  ): Promise<boolean> {
+  async isToponymeExist(_id: string, _bal: string = null): Promise<boolean> {
     const query = { _id, _deleted: null };
     if (_bal) {
       query['_bal'] = _bal;
@@ -264,7 +261,7 @@ export class ToponymeService {
     }
   }
 
-  touch(toponymeId: Types.ObjectId, _updated: Date = new Date()) {
+  touch(toponymeId: string, _updated: Date = new Date()) {
     return this.toponymeModel.updateOne(
       { _id: toponymeId },
       { $set: { _updated } },

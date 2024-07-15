@@ -297,21 +297,40 @@ export class NumeroService {
     }
   }
 
-  public async softDelete(numero: Numero): Promise<Numero> {
-    const where: FindOptionsWhere<Numero> = {
-      id: numero.id,
-    };
+  public async softDelete(where: FindOptionsWhere<Numero>): Promise<Numero> {
     const { affected }: UpdateResult =
       await this.numerosRepository.softDelete(where);
+
+    const deletedNumero: Numero = await this.numerosRepository.findOne({
+      where,
+    });
 
     if (affected > 0) {
       // // UPDATE TILES VOIE
       // await this.tilesService.updateVoiesTiles([numeroUpdated.voie]);
       // SET _updated VOIE, TOPONYME AND BAL
-      await this.touch(numero);
+      await this.touch(deletedNumero);
     }
 
-    return this.numerosRepository.findOne({ where });
+    return deletedNumero;
+  }
+
+  public async restore(where: FindOptionsWhere<Numero>): Promise<Numero> {
+    const { affected }: UpdateResult =
+      await this.numerosRepository.restore(where);
+
+    const restoredNumero: Numero = await this.numerosRepository.findOne({
+      where,
+    });
+
+    if (affected > 0) {
+      // // UPDATE TILES VOIE
+      // await this.tilesService.updateVoiesTiles([numeroUpdated.voie]);
+      // SET _updated VOIE, TOPONYME AND BAL
+      await this.touch(restoredNumero);
+    }
+
+    return restoredNumero;
   }
 
   public async certifyAllNumeros(baseLocale: BaseLocale): Promise<void> {
@@ -495,6 +514,14 @@ export class NumeroService {
       }
     }
     return { deletedCount: affected };
+  }
+
+  public async findCentroid(numeroIds: string[]) {
+    this.numerosRepository
+      .createQueryBuilder()
+      .select('st_centroid(st_union(geom))')
+      .where('id IN(:...numeroIds)', { numeroIds })
+      .execute();
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {

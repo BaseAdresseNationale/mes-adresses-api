@@ -23,17 +23,17 @@ import { Position } from '@/shared/schemas/position.schema';
 import * as turf from '@turf/turf';
 import bbox from '@turf/bbox';
 import { Feature as FeatureTurf } from '@turf/helpers';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { Numero } from '@/shared/entities/numero.entity';
 import { BBox as BboxTurf } from '@turf/helpers';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { CreateToponymeDTO } from '../toponyme/dto/create_toponyme.dto';
-import {
-  getTilesByLineString,
-  getTilesByPosition,
-} from '../base_locale/sub_modules/tiles/utils/tiles.utils';
-import { getPriorityPosition } from '@/lib/utils/positions.util';
-import { ZOOM } from '../base_locale/sub_modules/tiles/const/zoom.const';
+// import {
+//   getTilesByLineString,
+//   getTilesByPosition,
+// } from '../base_locale/sub_modules/tiles/utils/tiles.utils';
+// import { getPriorityPosition } from '@/lib/utils/positions.util';
+// import { ZOOM } from '../base_locale/sub_modules/tiles/const/zoom.const';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeleteResult,
@@ -125,9 +125,9 @@ export class VoieService {
       // traceTiles: null,
     };
     // CALC CENTROID AND TILES IF METRIQUE
-    if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
-      await this.tilesService.calcMetaTilesVoieWithTrace(voie);
-    }
+    // if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
+    //   await this.tilesService.calcMetaTilesVoieWithTrace(voie);
+    // }
     // REQUEST CREATE VOIE
     const voieCreated: Voie = await this.voiesRepository.create(voie);
     // SET _updated BAL
@@ -288,7 +288,7 @@ export class VoieService {
     // SET _updated OF VOIE
     await this.baseLocaleService.touch(voie.balId);
     // SET _deleted NUMERO FROM VOIE
-    await this.numeroService.softDeleteWhere({ voie: voie.id });
+    await this.numeroService.softDelete({ voieId: voie.id });
     return this.voiesRepository.findOne({ where });
   }
 
@@ -306,8 +306,8 @@ export class VoieService {
       // SET _updated NUMERO FROM VOIE
       // const { modifiedCount } =
 
-      await this.numeroService.restoreWhere({
-        id: numerosIds,
+      await this.numeroService.restore({
+        id: In(numerosIds),
       });
       // if (modifiedCount > 0) {
       //   await this.tilesService.updateVoieTiles(updatedVoie);
