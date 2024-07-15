@@ -517,11 +517,13 @@ export class NumeroService {
   }
 
   public async findCentroid(numeroIds: string[]) {
-    this.numerosRepository
+    const centroid = this.numerosRepository
       .createQueryBuilder()
       .select('st_centroid(st_union(geom))')
       .where('id IN(:...numeroIds)', { numeroIds })
       .execute();
+
+    console.log(centroid);
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {
