@@ -39,6 +39,7 @@ import {
   DeleteResult,
   FindOptionsSelect,
   FindOptionsWhere,
+  In,
   Repository,
 } from 'typeorm';
 import { Voie } from '@/shared/entities/voie.entity';
@@ -84,8 +85,8 @@ export class VoieService {
 
   async extendVoies(voies: Voie[]): Promise<ExtendedVoieDTO[]> {
     const numeros = await this.numeroService.findMany({
-      voie: { $in: voies.map(({ id }) => id) },
-      _deleted: null,
+      voieId: In(voies.map(({ id }) => id)),
+      deletedAt: null,
     });
 
     const numerosByVoies = groupBy(numeros, 'voie');
@@ -98,7 +99,7 @@ export class VoieService {
 
   async extendVoie(voie: Voie): Promise<ExtendedVoieDTO> {
     const numeros = await this.numeroService.findMany({
-      voie: voie.id,
+      voieId: voie.id,
     });
 
     return {
@@ -353,8 +354,8 @@ export class VoieService {
     }
 
     const numerosCount: number = await this.numeroService.count({
-      voie: voie.id,
-      _deleted: null,
+      voieId: voie.id,
+      deletedAt: null,
     });
     if (numerosCount > 0) {
       throw new HttpException(

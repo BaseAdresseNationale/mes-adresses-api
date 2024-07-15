@@ -14,7 +14,7 @@ export class UpdateBatchNumeroDTO {
   @IsOptional()
   @IsMongoId({ each: true })
   @ApiProperty({ type: String, required: true, nullable: false, isArray: true })
-  numerosIds: Types.ObjectId[];
+  numerosIds: string[];
 
   @IsNotEmptyObject()
   @ValidateNested()

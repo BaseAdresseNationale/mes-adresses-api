@@ -1,6 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Position } from '@/shared/schemas/position.schema';
-import { Types } from 'mongoose';
 import { Type } from 'class-transformer';
 import {
   MaxLength,
@@ -12,11 +10,12 @@ import {
 } from 'class-validator';
 
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
+import { Position } from '@/shared/entities/position.entity';
 
 export class CreateNumeroDTO {
   @Validate(ValidatorBal, ['numero'])
   @ApiProperty({ required: true, nullable: false })
-  numero?: number;
+  numero?: string;
 
   @IsOptional()
   @Validate(ValidatorBal, ['suffixe'])
@@ -31,7 +30,7 @@ export class CreateNumeroDTO {
   @IsOptional()
   @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: true })
-  toponyme?: Types.ObjectId;
+  toponyme?: string;
 
   @IsOptional()
   @Validate(ValidatorBal, ['cad_parcelles'])

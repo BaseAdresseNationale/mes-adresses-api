@@ -463,7 +463,7 @@ export class BaseLocaleService {
     return { voies, toponymes, numeros };
   }
 
-  touch(baseLocaleId: Types.ObjectId, _updated: Date = new Date()) {
+  touch(baseLocaleId: string, _updated: Date = new Date()) {
     return this.baseLocaleModel.updateOne(
       { _id: baseLocaleId },
       { $set: { _updated } },

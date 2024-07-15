@@ -130,8 +130,8 @@ export class VoieController {
   async findNumerosByVoie(@Req() req: CustomRequest, @Res() res: Response) {
     const numeros: Numero[] = await this.numeroService.findMany(
       {
-        voie: req.voie.id,
-        _deleted: null,
+        voieId: req.voie.id,
+        deletedAt: null,
       },
       null,
       { numero: 1 },

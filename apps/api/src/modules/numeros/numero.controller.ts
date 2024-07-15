@@ -19,7 +19,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { Numero } from '@/shared/entities/numero.entity';
 import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 
 import { CustomRequest } from '@/lib/types/request.type';
