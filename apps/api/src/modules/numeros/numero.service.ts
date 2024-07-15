@@ -516,14 +516,22 @@ export class NumeroService {
     return { deletedCount: affected };
   }
 
-  public async findCentroid(numeroIds: string[]) {
-    const centroid = this.numerosRepository
+  public async findCentroidByNumeros(numeroIds: string[]) {
+    return this.numerosRepository
       .createQueryBuilder()
-      .select('st_centroid(st_union(geom))')
-      .where('id IN(:...numeroIds)', { numeroIds })
+      .select('st_centroid(st_union(positions.point))')
+      .leftJoin('numeros.positions', 'positions')
+      .where('numeros.id IN(:...numeroIds)', { numeroIds })
       .execute();
+  }
 
-    console.log(centroid);
+  public async findCentroidByVoie(voieId: string) {
+    return this.numerosRepository
+      .createQueryBuilder()
+      .select('st_centroid(st_union(positions.point))')
+      .leftJoin('numeros.positions', 'positions')
+      .where('numeros.voie_id = :voieId', { voieId })
+      .execute();
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {
