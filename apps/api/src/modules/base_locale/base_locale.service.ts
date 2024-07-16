@@ -8,7 +8,6 @@ import {
 import { uniq, difference, groupBy } from 'lodash';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
-import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { MailerService } from '@/shared/modules/mailer/mailer.service';
@@ -273,10 +272,10 @@ export class BaseLocaleService {
   async deleteOne(baseLocale: BaseLocale) {
     if (baseLocale.status === StatusBaseLocalEnum.DEMO) {
       // Si la Bal est en demo on la supprime
-      await this.hardDeleteOne(baseLocale);
+      await this.delete(baseLocale);
     } else {
       // Si la Bal n'est pas en demo on l'archive
-      await this.softDeleteOne(baseLocale);
+      await this.softDelete(baseLocale);
     }
   }
 
@@ -290,13 +289,13 @@ export class BaseLocaleService {
   //   });
   // }
 
-  async hardDeleteOne(baseLocale: BaseLocale) {
+  async delete(baseLocale: BaseLocale) {
     // On supprime la Bal
     // Par CASCADE cela va supprimer les voies, toponymes et numeros dans postgres
     await this.basesLocalesRepository.delete({ id: baseLocale.id });
   }
 
-  async softDeleteOne(baseLocale: BaseLocale) {
+  async softDelete(baseLocale: BaseLocale) {
     // On archive la Bal
     await this.basesLocalesRepository.softDelete({ id: baseLocale.id });
   }
@@ -424,51 +423,39 @@ export class BaseLocaleService {
     }
   }
 
-  async recovery(baseLocale: BaseLocale) {
-    const now = new Date();
-    const recoveredBaseLocale = await this.baseLocaleModel.findByIdAndUpdate(
-      { _id: baseLocale._id },
-      { $set: { _deleted: null, _updated: now } },
-      { new: true },
-    );
-
-    return recoveredBaseLocale;
+  async restore(baseLocale: BaseLocale) {
+    // On restore la Bal
+    await this.basesLocalesRepository.restore({
+      id: baseLocale.id,
+    });
   }
 
   async renewToken(baseLocale: BaseLocale) {
+    // On génère un token
     const token = generateBase62String(20);
-    const updatedBaseLocale = await this.baseLocaleModel.findByIdAndUpdate(
-      { _id: baseLocale._id },
-      { $set: { token } },
-      { new: true },
+    // On update le token de la Bal dans postgres
+    const { affected }: UpdateResult = await this.basesLocalesRepository.update(
+      { id: baseLocale.id },
+      { token },
     );
+    // On récupère la Bal modifié
+    const updatedBaseLocale: BaseLocale =
+      await this.basesLocalesRepository.findOneBy({
+        id: baseLocale.id,
+      });
+    // Si la Bal a été modifié on envoie un mail avec le nouveau token
+    if (affected > 0) {
+      const email = createTokenRenewalNotificationEmail({
+        baseLocale: updatedBaseLocale,
+      });
 
-    const email = createTokenRenewalNotificationEmail({
-      baseLocale: updatedBaseLocale,
-    });
-
-    await this.mailerService.sendMail(email, updatedBaseLocale.emails);
-
+      await this.mailerService.sendMail(email, updatedBaseLocale.emails);
+    }
+    // On retourne la Bal mis a jour
     return updatedBaseLocale;
   }
 
-  async findMetas(balId: string) {
-    const voies: Voie[] = await this.voieService.findMany({
-      _bal: balId,
-    });
-    const toponymes: Toponyme[] = await this.toponymeService.findMany({
-      _bal: balId,
-    });
-    const numeros: Numero[] = await this.numeroService.findMany({
-      _bal: balId,
-    });
-    return { voies, toponymes, numeros };
-  }
-
-  touch(baseLocaleId: string, _updated: Date = new Date()) {
-    return this.baseLocaleModel.updateOne(
-      { _id: baseLocaleId },
-      { $set: { _updated } },
-    );
+  touch(balId: string, updatedAt: Date = new Date()) {
+    return this.basesLocalesRepository.update({ id: balId }, { updatedAt });
   }
 }

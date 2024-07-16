@@ -318,11 +318,9 @@ export class BaseLocaleController {
       return res.sendStatus(403);
     }
 
-    const restoredBaseLocale = await this.baseLocaleService.recovery(
-      req.baseLocale,
-    );
+    await this.baseLocaleService.restore(req.baseLocale);
 
-    const editorUrl = getEditorUrl(restoredBaseLocale);
+    const editorUrl = getEditorUrl(req.baseLocale);
     res.redirect(307, editorUrl);
   }
 
