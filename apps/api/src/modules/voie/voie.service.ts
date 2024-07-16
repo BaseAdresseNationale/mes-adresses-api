@@ -23,22 +23,21 @@ import { BBox as BboxTurf } from '@turf/helpers';
 
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
-
-import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
-import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
-import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
-import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
-import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
-import { NumeroService } from '@/modules/numeros/numero.service';
-import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/entities/position.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
+
+import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
+import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
+import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
+import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
+import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
+import { NumeroService } from '@/modules/numeros/numero.service';
+import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
-import { CreateToponymeDTO } from '../toponyme/dto/create_toponyme.dto';
+import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 
 @Injectable()
 export class VoieService {
@@ -100,14 +99,17 @@ export class VoieService {
     return voieCreated;
   }
 
-  public async importMany(baseLocale: BaseLocale, rawVoies: Voie[]) {
-    const voies = rawVoies
-      .map((rawVoie) => {
+  public async importMany(baseLocale: BaseLocale, rawVoies: Partial<Voie>[]) {
+    // On transforme les raw en voies
+    const voies: Partial<Voie>[] = rawVoies
+      // On garde seulement les voies qui ont un nom
+      .filter(({ nom }) => Boolean(nom))
+      // On map les raw pour obtenir de vrai voies
+      .map((rawVoie: Partial<Voie>) => {
         if (!rawVoie.nom) {
           return null;
         }
-
-        const voie: Partial<Voie> = {
+        return {
           id: rawVoie.id,
           balId: baseLocale.id,
           nom: cleanNom(rawVoie.nom),
@@ -116,16 +118,13 @@ export class VoieService {
           trace: rawVoie.trace || null,
           ...(rawVoie.updatedAt ? { updatedAt: rawVoie.updatedAt } : null),
           ...(rawVoie.createdAt ? { createdAt: rawVoie.createdAt } : null),
-        } as Partial<Voie>;
-
-        return voie;
-      })
-      .filter(Boolean);
-
+        };
+      });
+    // On ne retourne rien si il n'y a pas de voies a insert
     if (voies.length === 0) {
       return;
     }
-
+    // On insert les voies
     await this.voiesRepository
       .createQueryBuilder()
       .insert()

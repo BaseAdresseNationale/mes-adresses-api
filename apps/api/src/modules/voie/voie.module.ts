@@ -1,4 +1,7 @@
 import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { Voie } from '@/shared/entities/voie.entity';
 
 import { VoieMiddleware } from '@/modules/voie/voie.middleware';
 import { VoieController } from '@/modules/voie/voie.controller';
@@ -7,8 +10,6 @@ import { NumeroModule } from '@/modules/numeros/numero.module';
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Voie } from '@/shared/entities/voie.entity';
 
 @Module({
   imports: [

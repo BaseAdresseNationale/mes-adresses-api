@@ -26,6 +26,7 @@ import {
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterSensitiveFields } from '@/shared/utils/numero.utils';
+import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
@@ -35,7 +36,6 @@ import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 
 @ApiTags('voies')
 @Controller('voies')

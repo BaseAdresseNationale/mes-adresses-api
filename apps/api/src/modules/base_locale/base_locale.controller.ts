@@ -26,10 +26,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import { Voie } from '@/shared/entities/voie.entity';
 import { PublicationService } from '@/shared/modules/publication/publication.service';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
@@ -49,7 +50,6 @@ import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
 import { ExtendedVoieDTO } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 import { PageBaseLocaleDTO } from './dto/page_base_locale.dto';
 import { SearchBaseLocalQuery } from './dto/search_base_locale.query';
@@ -87,7 +87,6 @@ export class BaseLocaleController {
   @ApiBody({ type: CreateBaseLocaleDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   async createBaseLocale(
-    @Req() req: Request,
     @Body() createBaseLocaleDTO: CreateBaseLocaleDTO,
     @Res() res: Response,
   ) {
@@ -105,7 +104,6 @@ export class BaseLocaleController {
   @ApiBody({ type: CreateDemoBaseLocaleDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   async createDemoBaseLocale(
-    @Req() req: Request,
     @Body() createDemoBaseLocaleDTO: CreateDemoBaseLocaleDTO,
     @Res() res: Response,
   ) {
@@ -388,7 +386,7 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.exec(req.baseLocale._id, {
+    const baseLocale = await this.publicationService.exec(req.baseLocale.id, {
       force: true,
     });
     res.status(HttpStatus.OK).json(baseLocale);
@@ -404,7 +402,7 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async pauseBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.pause(req.baseLocale._id);
+    const baseLocale = await this.publicationService.pause(req.baseLocale.id);
     res.status(HttpStatus.OK).json(baseLocale);
   }
 
@@ -418,7 +416,7 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async resumeBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.resume(req.baseLocale._id);
+    const baseLocale = await this.publicationService.resume(req.baseLocale.id);
     res.status(HttpStatus.OK).json(baseLocale);
   }
 
@@ -531,8 +529,8 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   async findVoieByBal(@Req() req: CustomRequest, @Res() res: Response) {
     const voies: Voie[] = await this.voieService.findMany({
-      _bal: req.baseLocale._id,
-      _deleted: null,
+      balId: req.baseLocale.id,
+      deletedAt: null,
     });
     const extendedVoie: ExtendedVoieDTO[] =
       await this.voieService.extendVoies(voies);
@@ -572,8 +570,8 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   async findToponymeByBal(@Req() req: CustomRequest, @Res() res: Response) {
     const toponymes: Toponyme[] = await this.toponymeService.findMany({
-      _bal: req.baseLocale._id,
-      _deleted: null,
+      balId: req.baseLocale.id,
+      deletedAt: null,
     });
     const extendedToponyme: ExtentedToponymeDTO[] =
       await this.toponymeService.extendToponymes(toponymes);

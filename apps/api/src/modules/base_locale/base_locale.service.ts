@@ -5,6 +5,17 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  ArrayContains,
+  FindManyOptions,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  In,
+  Not,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { uniq, difference, groupBy } from 'lodash';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
@@ -34,17 +45,6 @@ import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import {
-  ArrayContains,
-  FindManyOptions,
-  FindOptionsSelect,
-  FindOptionsWhere,
-  In,
-  Not,
-  Repository,
-  UpdateResult,
-} from 'typeorm';
 
 @Injectable()
 export class BaseLocaleService {
