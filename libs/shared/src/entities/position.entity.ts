@@ -54,7 +54,11 @@ export class Position {
   source?: string;
 
   @ApiProperty()
-  @Column('geometry', { nullable: false, spatialFeatureType: 'Point' })
+  @Column('geometry', {
+    nullable: false,
+    spatialFeatureType: 'Point',
+    srid: 4326,
+  })
   point: Point;
 
   @ManyToOne(() => Toponyme, (toponyme) => toponyme.positions, {

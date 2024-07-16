@@ -40,11 +40,19 @@ export class Voie extends GlobalEntity {
   typeNumerotation: TypeNumerotationEnum;
 
   @ApiProperty()
-  @Column('geometry', { nullable: true, spatialFeatureType: 'Point' })
+  @Column('geometry', {
+    nullable: true,
+    spatialFeatureType: 'Point',
+    srid: 4326,
+  })
   centroid: Point | null;
 
   @ApiProperty()
-  @Column('geometry', { nullable: true, spatialFeatureType: 'LineString' })
+  @Column('geometry', {
+    nullable: true,
+    spatialFeatureType: 'LineString',
+    srid: 4326,
+  })
   trace: LineString | null;
 
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.voies, {
