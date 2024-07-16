@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsMongoId, IsOptional } from 'class-validator';
+import { IsEmail, IsOptional, IsUUID } from 'class-validator';
 
 export class RecoverBaseLocaleDTO {
-  @IsMongoId()
+  @IsUUID()
   @IsOptional()
   @ApiProperty({ required: false, nullable: true })
   id?: string;

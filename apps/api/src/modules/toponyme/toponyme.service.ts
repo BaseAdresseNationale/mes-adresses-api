@@ -211,6 +211,11 @@ export class ToponymeService {
     }
   }
 
+  public async deleteMany(where: FindOptionsWhere<Toponyme>) {
+    // On supprime les toponyme
+    await this.toponymesRepository.delete(where);
+  }
+
   async importMany(baseLocale: BaseLocale, rawToponymes: any[]) {
     const toponymes = rawToponymes
       .map((rawToponyme) => {

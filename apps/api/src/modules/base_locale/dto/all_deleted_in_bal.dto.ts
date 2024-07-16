@@ -1,15 +1,15 @@
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { PopulateVoie } from '@/shared/schemas/voie/voie.populate';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { Voie } from '@/shared/entities/voie.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class AllDeletedInBalDTO {
-  @Type(() => PopulateVoie)
+  @Type(() => Voie)
   @ApiProperty({
-    type: () => PopulateVoie,
+    type: () => Voie,
     isArray: true,
   })
-  voies: PopulateVoie[];
+  voies: Voie[];
 
   @Type(() => Toponyme)
   @ApiProperty({

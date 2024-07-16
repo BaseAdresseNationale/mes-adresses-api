@@ -15,7 +15,6 @@ import { BaseLocaleModule } from './modules/base_locale/base_locale.module';
 import { VoieModule } from './modules/voie/voie.module';
 import { ToponymeModule } from './modules/toponyme/toponyme.module';
 import { StatsModule } from './modules/stats/stats.module';
-import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -42,7 +41,6 @@ import { AdminModule } from './modules/admin/admin.module';
     VoieModule,
     ToponymeModule,
     StatsModule,
-    AdminModule,
   ],
   controllers: [],
   providers: [],

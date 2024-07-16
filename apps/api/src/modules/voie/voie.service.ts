@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeleteResult,
+  FindOptionsRelations,
   FindOptionsSelect,
   FindOptionsWhere,
   In,
@@ -66,10 +67,11 @@ export class VoieService {
   }
 
   async findMany(
-    where: FindOptionsWhere<Voie>,
+    where: FindOptionsWhere<Voie> | FindOptionsWhere<Voie>[],
     select?: FindOptionsSelect<Voie>,
+    relations?: FindOptionsRelations<Voie>,
   ): Promise<Voie[]> {
-    return this.voiesRepository.find({ where, select });
+    return this.voiesRepository.find({ where, select, relations });
   }
 
   public async create(

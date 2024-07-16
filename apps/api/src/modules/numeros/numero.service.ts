@@ -254,6 +254,11 @@ export class NumeroService {
     }
   }
 
+  public async deleteMany(where: FindOptionsWhere<Numero>) {
+    // On supprime les numero
+    await this.numerosRepository.delete(where);
+  }
+
   public async softDelete(where: FindOptionsWhere<Numero>): Promise<Numero> {
     // On créer le where et on lance la requète
     const { affected }: UpdateResult =
