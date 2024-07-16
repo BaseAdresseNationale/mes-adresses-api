@@ -14,6 +14,7 @@ import { NumeroModule } from './modules/numeros/numero.module';
 import { BaseLocaleModule } from './modules/base_locale/base_locale.module';
 import { VoieModule } from './modules/voie/voie.module';
 import { ToponymeModule } from './modules/toponyme/toponyme.module';
+import { StatsModule } from './modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ToponymeModule } from './modules/toponyme/toponyme.module';
     BaseLocaleModule,
     VoieModule,
     ToponymeModule,
+    StatsModule,
   ],
   controllers: [],
   providers: [],

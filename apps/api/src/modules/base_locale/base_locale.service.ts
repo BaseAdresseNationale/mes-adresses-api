@@ -94,6 +94,14 @@ export class BaseLocaleService {
     });
   }
 
+  public async countGroupByStatus(): Promise<any[]> {
+    return this.basesLocalesRepository
+      .createQueryBuilder()
+      .select('status', 'COUNT(id) as count')
+      .groupBy('status')
+      .getRawMany();
+  }
+
   public async createOne(
     createInput: CreateBaseLocaleDTO,
   ): Promise<BaseLocale> {
