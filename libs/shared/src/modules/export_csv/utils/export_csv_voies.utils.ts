@@ -3,9 +3,9 @@ import * as getStream from 'get-stream';
 import * as intoStream from 'into-stream';
 import * as pumpify from 'pumpify';
 
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Voie } from '@/shared/entities/voie.entity';
 
 type CsvRow = {
   type: string;
@@ -43,14 +43,12 @@ function createKeysNomAlts(
 }
 
 function modelToRow(
-  type: 'voie' | 'toponyme',
+  type: 'voieId' | 'toponymeId',
   model: Voie | Toponyme,
   numeros: Numero[],
   keysNomAlts: Record<string, string>,
 ) {
-  const numerosVoie: Numero[] = numeros.filter(
-    (n) => model._id.toHexString() === n[type]?.toHexString(),
-  );
+  const numerosVoie: Numero[] = numeros.filter((n) => model.id === n[type]);
 
   const row: CsvRow = {
     type,
@@ -83,8 +81,8 @@ export function exportVoiesToCsv(
     ...toponymes,
   ]);
   const rows: CsvRow[] = [
-    ...voies.map((v) => modelToRow('voie', v, numeros, keysNomAlts)),
-    ...toponymes.map((t) => modelToRow('toponyme', t, numeros, keysNomAlts)),
+    ...voies.map((v) => modelToRow('voieId', v, numeros, keysNomAlts)),
+    ...toponymes.map((t) => modelToRow('toponymeId', t, numeros, keysNomAlts)),
   ];
   const header: string[] = createHeader(rows);
 

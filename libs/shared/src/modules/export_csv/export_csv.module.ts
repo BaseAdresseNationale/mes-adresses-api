@@ -1,23 +1,13 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { Numero, NumeroSchema } from '@/shared/schemas/numero/numero.schema';
-import { Voie, VoieSchema } from '@/shared/schemas/voie/voie.schema';
-import {
-  Toponyme,
-  ToponymeSchema,
-} from '@/shared/schemas/toponyme/toponyme.schema';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { Voie } from '@/shared/entities/voie.entity';
+import { Numero } from '@/shared/entities/numero.entity';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Numero.name, schema: NumeroSchema },
-      { name: Voie.name, schema: VoieSchema },
-      { name: Toponyme.name, schema: ToponymeSchema },
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Toponyme, Voie, Numero])],
   providers: [ExportCsvService],
   exports: [ExportCsvService],
 })

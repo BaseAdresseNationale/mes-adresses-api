@@ -5,20 +5,20 @@ import { keyBy } from 'lodash';
 import * as pumpify from 'pumpify';
 import * as proj from '@etalab/project-legal';
 
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Voie } from '@/shared/entities/voie.entity';
 import { getCommune } from '@/shared/utils/cog.utils';
 import { roundCoordinate } from '@/shared/utils/coor.utils';
 
 const DEFAULT_CODE_VOIE = 'xxxx';
-const DEFAULT_NUMERO_TOPONYME = 99999;
+const DEFAULT_NUMERO_TOPONYME = '99999';
 const DEFAULT_SOURCE = 'commune';
 
 type RowType = {
   codeCommune: string;
   codeVoie: string;
-  numero: number;
+  numero: string;
   suffixe?: string;
   certifie?: boolean;
   nomVoie: string;
@@ -27,7 +27,7 @@ type RowType = {
   nomToponymeAlt?: Record<string, string>;
   parcelles: string[];
   position?: any;
-  _updated: Date;
+  updatedAt: Date;
   comment?: string;
 };
 
@@ -55,12 +55,10 @@ type CsvRowType = {
 function formatCleInterop(
   codeCommune: string,
   codeVoie: string,
-  numero: number,
+  numero: string,
   suffixe: string,
 ): string {
-  const str = `${codeCommune}_${codeVoie}_${numero
-    .toString()
-    .padStart(5, '0')}`;
+  const str = `${codeCommune}_${codeVoie}_${numero.padStart(5, '0')}`;
   if (!suffixe) {
     return str.toLowerCase();
   }
@@ -114,7 +112,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
     y: '',
     cad_parcelles: obj.parcelles ? obj.parcelles.join('|') : '',
     source: DEFAULT_SOURCE,
-    date_der_maj: obj._updated ? obj._updated.toISOString().slice(0, 10) : '',
+    date_der_maj: obj.updatedAt ? obj.updatedAt.toISOString().slice(0, 10) : '',
   };
 
   if (withComment) {
@@ -150,6 +148,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
 }
 
 export async function exportBalToCsv(
+  codeCommune: string,
   voies: Voie[],
   toponymes: Toponyme[],
   numeros: Numero[],
@@ -160,13 +159,12 @@ export async function exportBalToCsv(
   );
   const rows: RowType[] = [];
   numeros.forEach((n) => {
-    const voieId: string = n.voie.toHexString();
-    const v: Voie = voiesIndex[voieId];
+    const v: Voie = voiesIndex[n.voieId];
 
     let toponyme: Toponyme = null;
 
     if (n.toponyme) {
-      toponyme = toponymes.find(({ _id }) => _id.equals(n.toponyme));
+      toponyme = toponymes.find(({ id }) => id == n.toponymeId);
 
       if (!toponyme) {
         throw new Error(
@@ -178,12 +176,12 @@ export async function exportBalToCsv(
     if (n.positions && n.positions.length > 0) {
       n.positions.forEach((p) => {
         rows.push({
-          codeCommune: n.commune,
+          codeCommune,
           codeVoie: DEFAULT_CODE_VOIE,
           numero: n.numero,
           suffixe: n.suffixe,
           certifie: n.certifie || false,
-          _updated: n._updated,
+          updatedAt: n.updatedAt,
           nomVoie: v.nom,
           nomVoieAlt: v.nomAlt || null,
           nomToponyme: toponyme?.nom || null,
@@ -200,10 +198,10 @@ export async function exportBalToCsv(
     if (t.positions.length > 0) {
       t.positions.forEach((p) => {
         rows.push({
-          codeCommune: t.commune,
+          codeCommune,
           codeVoie: DEFAULT_CODE_VOIE,
           numero: DEFAULT_NUMERO_TOPONYME,
-          _updated: t._updated,
+          updatedAt: t.updatedAt,
           nomVoie: t.nom,
           nomVoieAlt: t.nomAlt || null,
           parcelles: t.parcelles,
@@ -212,10 +210,10 @@ export async function exportBalToCsv(
       });
     } else {
       rows.push({
-        codeCommune: t.commune,
+        codeCommune,
         codeVoie: DEFAULT_CODE_VOIE,
         numero: DEFAULT_NUMERO_TOPONYME,
-        _updated: t._updated,
+        updatedAt: t.updatedAt,
         nomVoie: t.nom,
         nomVoieAlt: t.nomAlt || null,
         parcelles: t.parcelles,

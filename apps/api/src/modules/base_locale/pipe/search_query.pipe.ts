@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common';
 import { FilterQuery } from 'mongoose';
 
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { getCommune } from '@/shared/utils/cog.utils';
-import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 
 import { checkValidEmail } from '@/modules/base_locale/utils/base_locale.utils';
 import { SearchBaseLocalQuery } from '../dto/search_base_locale.query';

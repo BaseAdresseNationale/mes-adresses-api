@@ -303,13 +303,16 @@ export class VoieService {
   }
 
   public async calcCentroid(voieId: string): Promise<void> {
+    // On récupère la voie
     const voie: Voie = await this.findOneOrFail(voieId);
     if (voie.typeNumerotation === TypeNumerotationEnum.NUMERIQUE) {
+      // On calcule la voie avec les numero si la voie est numerique
       await this.calcCentroidWithNumeros(voieId);
     } else if (
       voie.trace &&
       voie.typeNumerotation === TypeNumerotationEnum.METRIQUE
     ) {
+      // On calcul la voie avec la trace si la voie est metrique
       await this.calcCentroidWithTrace(voie);
     }
   }
@@ -325,20 +328,26 @@ export class VoieService {
   }
 
   private getBBOX(voie: Voie, numeros: Numero[]): BboxTurf {
+    // On récupère toutes les positions des numeros de la voie
     const allPositions: Position[] = numeros
       .filter((n) => n.positions && n.positions.length > 0)
       .reduce((acc, n) => [...acc, ...n.positions], []);
 
     if (allPositions.length > 0) {
+      // Si il y a des positions de numeros
+      // On créer un feature collection avec turf
       const features: FeatureTurf[] = allPositions.map(({ point }) =>
         turf.feature(point),
       );
       const featuresCollection = turf.featureCollection(features);
+      // On créer un bbox a partir de la feature collection
       return bbox(featuresCollection);
     } else if (
       voie.trace &&
-      voie.typeNumerotation === TypeNumerotationEnum.NUMERIQUE
+      voie.typeNumerotation === TypeNumerotationEnum.METRIQUE
     ) {
+      // Si la voie a une trace et est de type metrique
+      // On créer un bbox a partir de la trace
       return bbox(voie.trace);
     }
   }
