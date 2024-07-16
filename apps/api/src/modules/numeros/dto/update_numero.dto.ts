@@ -2,11 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   MaxLength,
-  IsMongoId,
   Validate,
   IsOptional,
   ValidateNested,
   ArrayNotEmpty,
+  IsUUID,
 } from 'class-validator';
 
 import { Position } from '@/shared/entities/position.entity';
@@ -29,12 +29,12 @@ export class UpdateNumeroDTO {
   comment?: string;
 
   @IsOptional()
-  @IsMongoId()
+  @IsUUID(4)
   @ApiProperty({ type: String, required: false, nullable: true })
   toponymeId?: string;
 
   @IsOptional()
-  @IsMongoId()
+  @IsUUID(4)
   @ApiProperty({ type: String, required: false, nullable: false })
   voieId?: string;
 

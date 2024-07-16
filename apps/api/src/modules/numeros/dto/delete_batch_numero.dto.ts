@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId, ArrayNotEmpty } from 'class-validator';
+import { ArrayNotEmpty, IsUUID } from 'class-validator';
 
 export class DeleteBatchNumeroDTO {
   @ArrayNotEmpty()
-  @IsMongoId({ each: true })
+  @IsUUID(4, { each: true })
   @ApiProperty({ type: String, required: true, nullable: false, isArray: true })
   numerosIds?: string[];
 }

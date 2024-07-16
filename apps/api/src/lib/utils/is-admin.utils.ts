@@ -1,5 +1,5 @@
 import { CustomRequest } from '@/lib/types/request.type';
-import { BaseLocale } from '../../../../../libs/shared/src/schemas/base_locale/base_locale.schema';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 export function isSuperAdmin(req: CustomRequest) {
   return req.headers.authorization === `Bearer ${process.env.ADMIN_TOKEN}`;

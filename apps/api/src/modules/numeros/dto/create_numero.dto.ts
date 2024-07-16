@@ -2,11 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   MaxLength,
-  IsMongoId,
   Validate,
   IsOptional,
   ArrayNotEmpty,
   ValidateNested,
+  IsUUID,
 } from 'class-validator';
 
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
@@ -28,7 +28,7 @@ export class CreateNumeroDTO {
   comment?: string;
 
   @IsOptional()
-  @IsMongoId()
+  @IsUUID(4)
   @ApiProperty({ type: String, required: false, nullable: true })
   toponymeId?: string;
 

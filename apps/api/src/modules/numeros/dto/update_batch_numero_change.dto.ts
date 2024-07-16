@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   MaxLength,
-  IsMongoId,
   Validate,
   IsOptional,
   IsEnum,
   IsNotEmpty,
+  IsUUID,
 } from 'class-validator';
 
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
@@ -18,13 +18,13 @@ export class UpdateBatchNumeroChangeDTO {
   comment?: string;
 
   @IsOptional()
-  @IsMongoId()
+  @IsUUID(4)
   @ApiProperty({ type: String, required: false, nullable: true })
   toponymeId?: string;
 
   @IsOptional()
   @IsNotEmpty()
-  @IsMongoId()
+  @IsUUID(4)
   @ApiProperty({ type: String, required: false, nullable: false })
   voieId?: string;
 

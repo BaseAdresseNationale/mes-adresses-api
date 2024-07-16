@@ -1,7 +1,7 @@
 import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Numero, NumeroSchema } from '@/shared/schemas/numero/numero.schema';
+import { Numero } from '@/shared/entities/numero.entity';
 
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { NumeroController } from '@/modules/numeros/numero.controller';
@@ -13,7 +13,7 @@ import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.modul
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Numero.name, schema: NumeroSchema }]),
+    TypeOrmModule.forFeature([Numero]),
     forwardRef(() => VoieModule),
     forwardRef(() => ToponymeModule),
     forwardRef(() => BaseLocaleModule),
