@@ -31,7 +31,6 @@ import { DeleteBatchNumeroDTO } from '@/modules/numeros/dto/delete_batch_numero.
 import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { calcMetaTilesNumero } from '../base_locale/sub_modules/tiles/utils/tiles.utils';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
 
 @Injectable()
@@ -97,45 +96,34 @@ export class NumeroService {
     return this.numerosRepository.update(where, update);
   }
 
-  async importMany(baseLocale: BaseLocale, rawNumeros: any[]): Promise<void> {
+  async importMany(
+    baseLocale: BaseLocale,
+    rawNumeros: Partial<Numero>[],
+  ): Promise<void> {
+    // On transforme les raw en numeros
     const numeros = rawNumeros
-      .map((rawNumero) => {
-        if (!rawNumero.commune || !rawNumero.voie || !rawNumero.numero) {
-          return null;
-        }
-
-        const numero = {
-          _bal: baseLocale.id,
-          numero: rawNumero.numero,
-          comment: rawNumero.comment,
-          toponyme: rawNumero.toponyme,
-          commune: rawNumero.commune,
-          voie: rawNumero.voie,
-          ...(rawNumero.suffixe && {
-            suffixe: normalizeSuffixe(rawNumero.suffixe),
-          }),
-          positions: rawNumero.positions || [],
-          parcelles: rawNumero.parcelles || [],
-          certifie: rawNumero.certifie || false,
-        } as Partial<Numero>;
-
-        calcMetaTilesNumero(numero);
-
-        if (rawNumero._updated && rawNumero._created) {
-          numero.createdAt = rawNumero.createdAt;
-          numero.updatedAt = rawNumero.updatedAt;
-        }
-
-        return numero;
-      })
-      .filter(Boolean);
-
+      // On garde seulement les numeros qui ont une voie et un numero
+      .filter(({ voie, numero }) => Boolean(voie && numero))
+      .map((rawNumero) => ({
+        _bal: baseLocale.id,
+        numero: rawNumero.numero,
+        comment: rawNumero.comment,
+        toponyme: rawNumero.toponyme,
+        voie: rawNumero.voie,
+        ...(rawNumero.suffixe && {
+          suffixe: normalizeSuffixe(rawNumero.suffixe),
+        }),
+        positions: rawNumero.positions || [],
+        parcelles: rawNumero.parcelles || [],
+        certifie: rawNumero.certifie || false,
+        ...(rawNumero.updatedAt && { updatedAt: rawNumero.updatedAt }),
+        ...(rawNumero.createdAt && { createdAt: rawNumero.createdAt }),
+      }));
+    // On ne retourne rien si il n'y a pas de numeros a insert
     if (numeros.length === 0) {
       return;
     }
-
-    // INSERT NUMEROS BY CHUNK OF 500
-    // TO LIMIT MEMORY USAGE
+    // On insert les numeros 500 par 500
     for (const numerosChunk of chunk(numeros, 500)) {
       await this.numerosRepository
         .createQueryBuilder()
@@ -144,9 +132,6 @@ export class NumeroService {
         .values(numerosChunk)
         .execute();
     }
-    // UPDATE TILES OF VOIES
-    // const voieIds: string[] = uniq(numeros.map((n) => n.voie.toString()));
-    // await this.voieService.updateTiles(voieIds);
   }
 
   public async create(

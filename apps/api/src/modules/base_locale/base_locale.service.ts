@@ -348,6 +348,13 @@ export class BaseLocaleService {
     await this.voieService.importMany(baseLocale, voies);
     await this.toponymeService.importMany(baseLocale, toponymes);
     await this.numeroService.importMany(baseLocale, numeros);
+    // On calcule les centroid des voies
+    const voiesCreated: Voie[] = await this.voieService.findMany({
+      balId: baseLocale.id,
+    });
+    await Promise.all(
+      voiesCreated.map(({ id }) => this.voieService.calcCentroid(id)),
+    );
     // On retourne la Bal
     return baseLocale;
   }

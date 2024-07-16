@@ -104,7 +104,6 @@ export class VoieService {
     const voies: Partial<Voie>[] = rawVoies
       // On garde seulement les voies qui ont un nom
       .filter(({ nom }) => Boolean(nom))
-      // On map les raw pour obtenir de vrai voies
       .map((rawVoie: Partial<Voie>) => ({
         id: rawVoie.id,
         balId: baseLocale.id,
