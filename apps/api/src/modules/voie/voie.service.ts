@@ -105,21 +105,16 @@ export class VoieService {
       // On garde seulement les voies qui ont un nom
       .filter(({ nom }) => Boolean(nom))
       // On map les raw pour obtenir de vrai voies
-      .map((rawVoie: Partial<Voie>) => {
-        if (!rawVoie.nom) {
-          return null;
-        }
-        return {
-          id: rawVoie.id,
-          balId: baseLocale.id,
-          nom: cleanNom(rawVoie.nom),
-          nomAlt: getNomAltDefault(rawVoie.nomAlt),
-          typeNumerotation: rawVoie.typeNumerotation,
-          trace: rawVoie.trace || null,
-          ...(rawVoie.updatedAt ? { updatedAt: rawVoie.updatedAt } : null),
-          ...(rawVoie.createdAt ? { createdAt: rawVoie.createdAt } : null),
-        };
-      });
+      .map((rawVoie: Partial<Voie>) => ({
+        id: rawVoie.id,
+        balId: baseLocale.id,
+        nom: cleanNom(rawVoie.nom),
+        nomAlt: getNomAltDefault(rawVoie.nomAlt),
+        typeNumerotation: rawVoie.typeNumerotation,
+        trace: rawVoie.trace || null,
+        ...(rawVoie.updatedAt && { updatedAt: rawVoie.updatedAt }),
+        ...(rawVoie.createdAt && { createdAt: rawVoie.createdAt }),
+      }));
     // On ne retourne rien si il n'y a pas de voies a insert
     if (voies.length === 0) {
       return;

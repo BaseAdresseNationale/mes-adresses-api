@@ -26,8 +26,8 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/schemas/position.schema';
 
-import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
+import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
@@ -216,38 +216,33 @@ export class ToponymeService {
     await this.toponymesRepository.delete(where);
   }
 
-  async importMany(baseLocale: BaseLocale, rawToponymes: any[]) {
-    const toponymes = rawToponymes
-      .map((rawToponyme) => {
-        if (!rawToponyme.commune || !rawToponyme.nom) {
-          return null;
-        }
-
-        const toponyme = {
-          id: rawToponyme.id,
-          balId: baseLocale.id,
-          nom: cleanNom(rawToponyme.nom),
-          positions: rawToponyme.positions || [],
-          parcelles: rawToponyme.parcelles || [],
-          code: rawToponyme.code || null,
-          commune: rawToponyme.commune,
-          nomAlt: getNomAltDefault(rawToponyme.nomAlt),
-        } as Partial<Toponyme>;
-
-        if (rawToponyme._updated && rawToponyme._created) {
-          toponyme.createdAt = rawToponyme._created;
-          toponyme.updatedAt = rawToponyme._updated;
-        }
-
-        return toponyme;
-      })
-      .filter(Boolean);
-
+  async importMany(baseLocale: BaseLocale, rawToponymes: Partial<Toponyme>[]) {
+    // On transforme les raw en toponymes
+    const toponymes: Partial<Toponyme>[] = rawToponymes
+      // On garde seulement les toponymes qui ont un nom
+      .filter(({ nom }) => Boolean(nom))
+      // On map les raw pour obtenir de vrai topnymes
+      .map((rawToponyme) => ({
+        id: rawToponyme.id,
+        balId: baseLocale.id,
+        nom: cleanNom(rawToponyme.nom),
+        positions: rawToponyme.positions || [],
+        parcelles: rawToponyme.parcelles || [],
+        nomAlt: getNomAltDefault(rawToponyme.nomAlt),
+        ...(rawToponyme.updatedAt && { updatedAt: rawToponyme.updatedAt }),
+        ...(rawToponyme.createdAt && { createdAt: rawToponyme.createdAt }),
+      }));
+    // On ne retourne rien si il n'y a pas de topnyme a insert
     if (toponymes.length === 0) {
       return;
     }
-
-    await this.toponymeModel.insertMany(toponymes);
+    // On insert les toponymes
+    await this.toponymesRepository
+      .createQueryBuilder()
+      .insert()
+      .into(Toponyme)
+      .values(toponymes)
+      .execute();
   }
 
   public async isToponymeExist(

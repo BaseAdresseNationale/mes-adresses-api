@@ -5,9 +5,9 @@ import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
+import { isAdmin } from '@/lib/utils/is-admin.utils';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { isAdmin } from '@/lib/utils/is-admin.utils';
 
 @Injectable()
 export class ToponymeMiddleware implements NestMiddleware {
