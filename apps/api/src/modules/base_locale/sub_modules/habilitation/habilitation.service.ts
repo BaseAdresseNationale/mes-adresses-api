@@ -5,7 +5,7 @@ import {
   StatusHabiliation,
 } from '@/shared/modules/api_depot/types/habilitation.type';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { BaseLocaleService } from '../../base_locale.service';
 
@@ -23,12 +23,10 @@ export class HabilitationService {
   async isValid(habilitationId: string): Promise<boolean> {
     const habilitation: Habilitation =
       await this.apiDepotService.findOneHabiliation(habilitationId);
-
     // On verifie que l'habilitation est valide
     if (habilitation.status !== StatusHabiliation.ACCEPTED) {
       return false;
     }
-
     // On verifie que l'habilitation n'est pas expirée
     if (
       !habilitation.expiresAt ||
@@ -40,8 +38,8 @@ export class HabilitationService {
   }
 
   async createOne(baseLocale: BaseLocale): Promise<Habilitation> {
-    if (baseLocale._habilitation) {
-      const habilitation = await this.findOne(baseLocale._habilitation);
+    if (baseLocale.habilitationId) {
+      const habilitation = await this.findOne(baseLocale.habilitationId);
 
       const now = new Date();
       const { status, expiresAt } = habilitation;

@@ -49,7 +49,7 @@ export class HabilitationController {
   ) {
     try {
       const isValid: boolean = await this.habilitationService.isValid(
-        req.baseLocale._habilitation,
+        req.baseLocale.habilitationId,
       );
       res.status(HttpStatus.OK).json(isValid);
     } catch (err) {
@@ -68,7 +68,7 @@ export class HabilitationController {
   @UseGuards(AdminGuard)
   async getHabilitation(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Habilitation = await this.habilitationService.findOne(
-      req.baseLocale._habilitation,
+      req.baseLocale.habilitationId,
     );
     res.status(HttpStatus.OK).json(result);
   }
@@ -103,7 +103,7 @@ export class HabilitationController {
     try {
       const sendPinCodeResponse: SendPinCodeResponseDTO =
         await this.habilitationService.sendPinCode(
-          req.baseLocale._habilitation,
+          req.baseLocale.habilitationId,
         );
 
       return res.status(sendPinCodeResponse.code).send({
@@ -137,7 +137,7 @@ export class HabilitationController {
   ) {
     try {
       const validationResponse = await this.habilitationService.validatePinCode(
-        req.baseLocale._habilitation,
+        req.baseLocale.habilitationId,
         body.code,
       );
       const response: ValidatePinCodeResponseDTO =
