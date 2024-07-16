@@ -1,17 +1,13 @@
 import * as turf from '@turf/turf';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import * as randomColor from 'randomcolor';
-import { Types } from 'mongoose';
 import { FeatureCollection } from 'geojson';
 
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Voie } from '@/shared/entities/voie.entity';
 
 import { getPriorityPosition } from '@/lib/utils/positions.util';
-import {
-  ModelsInTileType,
-  GeoJsonCollectionType,
-} from '@/modules/base_locale/sub_modules/tiles/types/features.type';
+import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
 
 // Paul Tol's vibrant palette for accessibility
 const colorblindFriendlyHues = [
@@ -23,26 +19,23 @@ const colorblindFriendlyHues = [
   '#009988',
 ];
 
-function getColorById(id: Types.ObjectId): string {
+function getColorById(id: string): string {
   return randomColor({
     luminosity: 'dark',
-    seed: id.toHexString(),
+    seed: id,
   });
 }
 
 // Returns a color of the palette based on the bal ID
-function getColorblindFriendlyHue(id: Types.ObjectId): string {
-  const slicedId = id.toHexString().slice(19);
+function getColorblindFriendlyHue(id: string): string {
+  const slicedId = id.slice(19);
 
   return colorblindFriendlyHues[
     Number.parseInt(slicedId, 16) % colorblindFriendlyHues.length
   ];
 }
 
-function getFeatureColor(
-  id: Types.ObjectId,
-  colorblindMode: boolean = false,
-): string {
+function getFeatureColor(id: string, colorblindMode: boolean = false): string {
   return colorblindMode ? getColorblindFriendlyHue(id) : getColorById(id);
 }
 
@@ -50,15 +43,15 @@ function numeroToPointFeature(n: Numero, colorblindMode: boolean): FeatureTurf {
   const position = getPriorityPosition(n.positions);
   return turf.feature(position.point, {
     type: 'adresse',
-    id: n._id.toHexString(),
+    id: n.id,
     numero: n.numero,
     suffixe: n.suffixe,
     typePosition: position.type,
     parcelles: n.parcelles,
     certifie: n.certifie,
-    idVoie: n.voie.toHexString(),
-    idToponyme: n.toponyme ? n.toponyme.toHexString() : null,
-    color: getFeatureColor(n.voie, colorblindMode),
+    idVoie: n.voieId,
+    idToponyme: n.toponymeId,
+    color: getFeatureColor(n.voieId, colorblindMode),
   });
 }
 
@@ -67,20 +60,20 @@ function voieToLineStringFeature(
   colorblindMode: boolean,
 ): FeatureTurf {
   return turf.feature(v.trace, {
-    id: v._id.toHexString(),
+    id: v.id,
     type: 'voie-trace',
     nom: v.nom,
     originalGeometry: v.trace,
-    color: getFeatureColor(v._id, colorblindMode),
+    color: getFeatureColor(v.id, colorblindMode),
   });
 }
 
 function voieToPointFeature(v: Voie, colorblindMode: boolean): FeatureTurf {
-  return turf.feature(v.centroid.geometry, {
-    id: v._id.toHexString(),
+  return turf.feature(v.centroid, {
+    id: v.id,
     type: 'voie',
     nom: v.nom,
-    color: getFeatureColor(v._id, colorblindMode),
+    color: getFeatureColor(v.id, colorblindMode),
   });
 }
 
@@ -112,15 +105,14 @@ export function numerosPointsToGeoJSON(
 }
 
 export function getGeoJson(
-  modelsInTile: ModelsInTileType,
+  voies: Voie[],
+  traces: Voie[],
+  numeros: Numero[],
   colorblindMode: boolean,
 ): GeoJsonCollectionType {
   return {
-    numeroPoints: numerosPointsToGeoJSON(modelsInTile.numeros, colorblindMode),
-    voiePoints: voiesPointsToGeoJSON(modelsInTile.voies, colorblindMode),
-    voieLineStrings: voiesLineStringsToGeoJSON(
-      modelsInTile.traces,
-      colorblindMode,
-    ),
+    numeroPoints: numerosPointsToGeoJSON(numeros, colorblindMode),
+    voiePoints: voiesPointsToGeoJSON(voies, colorblindMode),
+    voieLineStrings: voiesLineStringsToGeoJSON(traces, colorblindMode),
   };
 }

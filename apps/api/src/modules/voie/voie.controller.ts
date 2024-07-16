@@ -26,7 +26,7 @@ import {
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterSensitiveFields } from '@/shared/utils/numero.utils';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';

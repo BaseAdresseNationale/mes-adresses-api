@@ -14,19 +14,18 @@ import { NumeroModule } from './modules/numeros/numero.module';
 import { BaseLocaleModule } from './modules/base_locale/base_locale.module';
 import { VoieModule } from './modules/voie/voie.module';
 import { ToponymeModule } from './modules/toponyme/toponyme.module';
-import { StatsModule } from './modules/stats/stats.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../'),
       renderPath: 'public/',
     }),
-    ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
-        type: 'mysql',
+        type: 'postgres',
         host: config.get('POSTGRES_HOST'),
         port: config.get('POSTGRES_PORT'),
         username: config.get('POSTGRES_USERNAME'),
@@ -40,7 +39,6 @@ import { StatsModule } from './modules/stats/stats.module';
     BaseLocaleModule,
     VoieModule,
     ToponymeModule,
-    StatsModule,
   ],
   controllers: [],
   providers: [],

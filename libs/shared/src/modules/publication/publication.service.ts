@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { In, Repository, UpdateResult } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as hasha from 'hasha';
 
 import {
@@ -8,17 +8,17 @@ import {
   StatusHabiliation,
 } from '@/shared/modules/api_depot/types/habilitation.type';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import {
+  BaseLocale,
   StatusBaseLocalEnum,
   StatusSyncEnum,
-} from '@/shared/schemas/base_locale/status.enum';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
+  BaseLocaleSync,
+} from '@/shared/entities/base_locale.entity';
+import { Numero } from '@/shared/entities/numero.entity';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
 import { MailerService } from '@/shared/modules/mailer/mailer.service';
 import { formatEmail as createPublicationNotificationEmail } from '@/shared/modules/mailer/templates/bal-publication-notification';
-import { Sync } from '@/shared/schemas/base_locale/sync.schema';
 
 @Injectable()
 export class PublicationService {
@@ -26,15 +26,19 @@ export class PublicationService {
     private readonly apiDepotService: ApiDepotService,
     private readonly exportCsvService: ExportCsvService,
     private readonly mailerService: MailerService,
-    @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
-    @InjectModel(Numero.name) private numeroModel: Model<Numero>,
+    @InjectRepository(BaseLocale)
+    private basesLocalesRepository: Repository<BaseLocale>,
+    @InjectRepository(Numero)
+    private numerosRepository: Repository<Numero>,
   ) {}
 
   async exec(
-    balId: Types.ObjectId,
+    balId: string,
     options: { force?: boolean } = {},
   ): Promise<BaseLocale> {
-    const baseLocale = await this.baseLocaleModel.findOne(balId).lean();
+    const baseLocale = await this.basesLocalesRepository.findOneBy({
+      id: balId,
+    });
 
     // On vérifie que la BAL n'est pas en DEMO ou DRAFT
     if (baseLocale.status === StatusBaseLocalEnum.DEMO) {
@@ -47,7 +51,7 @@ export class PublicationService {
     const codeCommune = baseLocale.commune;
 
     // On vérifie que la BAL a une habilitation rattachée
-    if (!baseLocale._habilitation) {
+    if (!baseLocale.habilitationId) {
       throw new HttpException(
         'Aucune habilitation rattachée à cette Base Adresse Locale',
         HttpStatus.PRECONDITION_FAILED,
@@ -56,7 +60,7 @@ export class PublicationService {
 
     // On récupère l'habilitation sur l'api-depot
     const habilitation: Habilitation =
-      await this.apiDepotService.findOneHabiliation(baseLocale._habilitation);
+      await this.apiDepotService.findOneHabiliation(baseLocale.habilitationId);
 
     // On verifie que l'habilitation est valide
     if (habilitation.status !== StatusHabiliation.ACCEPTED) {
@@ -77,10 +81,10 @@ export class PublicationService {
       );
     }
 
-    // On récupère les numeros de la BAL
-    const numeroCount = await this.numeroModel.countDocuments({
-      _bal: balId,
-      _deleted: null,
+    // On récupère le nombre de numeros de la BAL
+    const numeroCount = await this.numerosRepository.countBy({
+      balId,
+      deletedAt: null,
     });
     // On vérifie qu'il y ai au moins un numero dans la BAL
     if (numeroCount === 0) {
@@ -98,9 +102,9 @@ export class PublicationService {
       const publishedRevision: Revision =
         await this.apiDepotService.publishNewRevision(
           codeCommune,
-          baseLocale._id.toString(),
+          baseLocale.id,
           file,
-          baseLocale._habilitation,
+          baseLocale.habilitationId,
         );
       // On envoie un mail de notification
       const email = createPublicationNotificationEmail({ baseLocale });
@@ -133,9 +137,9 @@ export class PublicationService {
         // On créer la publication sur l'api-depot
         const publishedRevision = await this.apiDepotService.publishNewRevision(
           codeCommune,
-          baseLocale._id.toString(),
+          baseLocale.id,
           file,
-          baseLocale._habilitation,
+          baseLocale.habilitationId,
         );
         // On marque le sync de la BAL en published
         return this.markAsSynced(baseLocale, publishedRevision._id);
@@ -148,48 +152,45 @@ export class PublicationService {
       );
     }
 
-    return this.baseLocaleModel.findOne(balId).lean();
+    return this.basesLocalesRepository.findOneBy({ id: balId });
   }
 
-  public async pause(balId: Types.ObjectId) {
+  public async pause(balId: string) {
     return this.setIsPaused(balId, true);
   }
 
-  public async resume(balId: Types.ObjectId) {
+  public async resume(balId: string) {
     return this.setIsPaused(balId, false);
   }
 
   private async setIsPaused(
-    balId: Types.ObjectId,
+    balId: string,
     isPaused: boolean,
   ): Promise<BaseLocale> {
-    const baseLocale: BaseLocale = await this.baseLocaleModel
-      .findOneAndUpdate(
-        {
-          _id: balId,
-          'sync.status': {
-            $in: [StatusSyncEnum.SYNCED, StatusSyncEnum.OUTDATED],
-          },
+    const { affected }: UpdateResult = await this.basesLocalesRepository.update(
+      {
+        id: balId,
+        sync: {
+          status: In([StatusSyncEnum.SYNCED, StatusSyncEnum.OUTDATED]),
         },
-        { $set: { 'sync.isPaused': isPaused } },
-        { new: true },
-      )
-      .lean();
+      },
+      { sync: { isPaused } },
+    );
 
-    if (!baseLocale) {
+    if (affected <= 0) {
       throw new HttpException(
         'Le statut de synchronisation doit être actif pour modifier l’état de pause',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    return baseLocale;
+    return this.basesLocalesRepository.findOneBy({ id: balId });
   }
 
   private async updateSync(
     baseLocale: BaseLocale,
-    syncChanges: Partial<Sync>,
-  ): Promise<Sync> {
+    syncChanges: Partial<BaseLocaleSync>,
+  ): Promise<BaseLocaleSync> {
     const changes: Partial<BaseLocale> = {
       sync: {
         ...baseLocale.sync,
@@ -200,40 +201,38 @@ export class PublicationService {
       }),
     };
 
-    const baseLocaleChanged: BaseLocale = await this.baseLocaleModel
-      .findOneAndUpdate(
-        { _id: baseLocale._id },
-        { $set: changes },
-        { new: true },
-      )
-      .lean();
+    await this.basesLocalesRepository.update(
+      {
+        id: baseLocale.id,
+      },
+      changes,
+    );
 
-    return baseLocaleChanged.sync;
+    return changes.sync;
   }
 
   private async markAsSynced(
     baseLocale: BaseLocale,
     lastUploadedRevisionId: string,
   ) {
-    const sync: Sync = {
+    const sync: BaseLocaleSync = {
       status: StatusSyncEnum.SYNCED,
       isPaused: false,
-      currentUpdated: baseLocale._updated,
-      lastUploadedRevisionId: new Types.ObjectId(lastUploadedRevisionId),
+      currentUpdated: baseLocale.updatedAt,
+      lastUploadedRevisionId: lastUploadedRevisionId,
     };
 
-    const baseLocaleSynced: BaseLocale = await this.baseLocaleModel
-      .findOneAndUpdate(
-        { _id: baseLocale._id },
-        { $set: { status: StatusBaseLocalEnum.PUBLISHED, sync } },
-        { new: true },
-      )
-      .lean();
+    await this.basesLocalesRepository.update(
+      { id: baseLocale.id },
+      { status: StatusBaseLocalEnum.PUBLISHED, sync },
+    );
 
-    return baseLocaleSynced;
+    return this.basesLocalesRepository.findOneBy({ id: baseLocale.id });
   }
 
-  private async updateSyncInfo(baseLocale: BaseLocale): Promise<Sync> {
+  private async updateSyncInfo(
+    baseLocale: BaseLocale,
+  ): Promise<BaseLocaleSync> {
     // Si le status de la BAL est différent de PUBLISHED on retourne sync
     if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
       return baseLocale.sync;
@@ -269,7 +268,7 @@ export class PublicationService {
     // Si la date du changement de BAL est la même que la date du currentUpdated du sync de la BAL
     // On met le status du sync de la BAL a sync et on le retourne
 
-    if (baseLocale._updated === baseLocale.sync.currentUpdated) {
+    if (baseLocale.updatedAt === baseLocale.sync.currentUpdated) {
       if (baseLocale.sync.status === StatusSyncEnum.SYNCED) {
         return baseLocale.sync;
       }

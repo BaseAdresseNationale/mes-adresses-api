@@ -90,6 +90,27 @@ export class NumeroService {
       .getRawMany();
   }
 
+  async findManyWherePositionInBBox(
+    balId: string,
+    bbox: number[],
+  ): Promise<Numero[]> {
+    // Requète postgis qui permet de récupèré les voie dont le centroid est dans la bbox
+    return this.numerosRepository
+      .createQueryBuilder()
+      .leftJoin('numeros.positions', 'positions')
+      .where('id = :balId', { balId })
+      .andWhere(
+        'positions.point @ ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326)',
+        {
+          xmin: bbox[0],
+          ymin: bbox[1],
+          xmax: bbox[2],
+          ymax: bbox[3],
+        },
+      )
+      .getMany();
+  }
+
   public async count(where: FindOptionsWhere<Numero>): Promise<number> {
     return this.numerosRepository.count({ where });
   }

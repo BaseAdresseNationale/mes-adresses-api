@@ -77,6 +77,46 @@ export class VoieService {
     });
   }
 
+  async findManyWhereCentroidInBBox(
+    balId: string,
+    bbox: number[],
+  ): Promise<Voie[]> {
+    // Requète postgis qui permet de récupèré les voie dont le centroid est dans la bbox
+    return this.voiesRepository
+      .createQueryBuilder()
+      .where('id = :balId', { balId })
+      .andWhere(
+        'centroid @ ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326)',
+        {
+          xmin: bbox[0],
+          ymin: bbox[1],
+          xmax: bbox[2],
+          ymax: bbox[3],
+        },
+      )
+      .getMany();
+  }
+
+  async findManyWhereTraceInBBox(
+    balId: string,
+    bbox: number[],
+  ): Promise<Voie[]> {
+    // Requète postgis qui permet de récupèré les voie dont le centroid est dans la bbox
+    return this.voiesRepository
+      .createQueryBuilder()
+      .where('id = :balId', { balId })
+      .andWhere(
+        'ST_Intersects(trace, ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326) )',
+        {
+          xmin: bbox[0],
+          ymin: bbox[1],
+          xmax: bbox[2],
+          ymax: bbox[3],
+        },
+      )
+      .getMany();
+  }
+
   public async create(
     bal: BaseLocale,
     createVoieDto: CreateVoieDTO,
