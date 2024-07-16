@@ -53,7 +53,7 @@ export class NumeroService {
       id: numeroId,
     };
     const numero = await this.numerosRepository.findOne({ where });
-    // Si la voie n'existe pas, on throw une erreur
+    // Si len numero n'existe pas, on throw une erreur
     if (!numero) {
       throw new HttpException(
         `Numero ${numeroId} not found`,
