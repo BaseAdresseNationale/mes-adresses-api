@@ -69,7 +69,12 @@ export class NumeroService {
     relations?: FindOptionsRelations<Numero>,
   ): Promise<Numero[]> {
     // Get les numeros en fonction du where, select, order et des relations
-    return this.numerosRepository.find({ where, select, order, relations });
+    return this.numerosRepository.find({
+      where,
+      ...(select && { select }),
+      ...(order && { order }),
+      ...(relations && { relations }),
+    });
   }
 
   async findDistinct(
@@ -447,16 +452,7 @@ export class NumeroService {
     return { deletedCount: affected };
   }
 
-  public async findCentroidByNumeros(numeroIds: string[]) {
-    return this.numerosRepository
-      .createQueryBuilder()
-      .select('st_centroid(st_union(positions.point))')
-      .leftJoin('numeros.positions', 'positions')
-      .where('numeros.id IN(:...numeroIds)', { numeroIds })
-      .execute();
-  }
-
-  public async findCentroidByVoie(voieId: string) {
+  public async findCentroid(voieId: string) {
     return this.numerosRepository
       .createQueryBuilder()
       .select('st_centroid(st_union(positions.point))')

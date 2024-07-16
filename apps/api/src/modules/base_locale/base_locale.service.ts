@@ -8,7 +8,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   ArrayContains,
-  FindManyOptions,
   FindOptionsSelect,
   FindOptionsWhere,
   In,
@@ -87,19 +86,12 @@ export class BaseLocaleService {
     limit?: number,
     offset?: number,
   ): Promise<BaseLocale[]> {
-    const query: FindManyOptions<BaseLocale> = {
+    return this.basesLocalesRepository.find({
       where,
-    };
-    if (select) {
-      query.select = select;
-    }
-    if (limit) {
-      query.take = limit;
-    }
-    if (offset) {
-      query.skip = offset;
-    }
-    return this.basesLocalesRepository.find(query);
+      ...(select && { select }),
+      ...(limit && { take: limit }),
+      ...(offset && { skip: offset }),
+    });
   }
 
   public async createOne(
@@ -278,16 +270,6 @@ export class BaseLocaleService {
       await this.softDelete(baseLocale);
     }
   }
-
-  // async deleteData(baseLocale: BaseLocale) {
-  //   await this.numeroService.deleteMany({
-  //     _bal: baseLocale._id,
-  //   });
-  //   await this.voieService.deleteMany({ _bal: baseLocale._id });
-  //   await this.toponymeService.deleteMany({
-  //     _bal: baseLocale._id,
-  //   });
-  // }
 
   async delete(baseLocale: BaseLocale) {
     // On supprime la Bal

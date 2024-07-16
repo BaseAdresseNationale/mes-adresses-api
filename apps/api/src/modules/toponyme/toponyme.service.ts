@@ -65,7 +65,7 @@ export class ToponymeService {
     where: FindOptionsWhere<Toponyme>,
     select?: FindOptionsSelect<Toponyme>,
   ): Promise<Toponyme[]> {
-    return this.toponymesRepository.find({ where, select });
+    return this.toponymesRepository.find({ where, ...(select && { select }) });
   }
 
   async findDistinct(
@@ -250,10 +250,11 @@ export class ToponymeService {
     balId: string = null,
   ): Promise<boolean> {
     // On créer le where avec id et balId et lance la requète
-    const where: FindOptionsWhere<Toponyme> = { id, deletedAt: null };
-    if (balId) {
-      where.balId = balId;
-    }
+    const where: FindOptionsWhere<Toponyme> = {
+      id,
+      deletedAt: null,
+      ...(balId && { balId }),
+    };
     return this.toponymesRepository.exists({ where });
   }
 

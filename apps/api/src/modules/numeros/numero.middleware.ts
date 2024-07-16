@@ -5,9 +5,9 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
+import { isAdmin } from '@/lib/utils/is-admin.utils';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { isAdmin } from '@/lib/utils/is-admin.utils';
 
 @Injectable()
 export class NumeroMiddleware implements NestMiddleware {

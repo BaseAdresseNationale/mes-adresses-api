@@ -70,7 +70,11 @@ export class VoieService {
     select?: FindOptionsSelect<Voie>,
     relations?: FindOptionsRelations<Voie>,
   ): Promise<Voie[]> {
-    return this.voiesRepository.find({ where, select, relations });
+    return this.voiesRepository.find({
+      where,
+      ...(select && { select }),
+      ...(relations && { relations }),
+    });
   }
 
   public async create(
@@ -225,10 +229,11 @@ export class VoieService {
 
   public async isVoieExist(id: string, balId: string = null): Promise<boolean> {
     // On créer le where avec id et balId et lance la requète
-    const where: FindOptionsWhere<Voie> = { id, deletedAt: null };
-    if (balId) {
-      where.balId = balId;
-    }
+    const where: FindOptionsWhere<Voie> = {
+      id,
+      deletedAt: null,
+      ...(balId && { balId }),
+    };
     return this.voiesRepository.exists({ where });
   }
 
@@ -310,7 +315,7 @@ export class VoieService {
   }
 
   private async calcCentroidWithNumeros(voieId: string): Promise<void> {
-    const centroid = await this.numeroService.findCentroidByVoie(voieId);
+    const centroid = await this.numeroService.findCentroid(voieId);
     await this.voiesRepository.update({ id: voieId }, { centroid });
   }
 
