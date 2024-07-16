@@ -27,7 +27,7 @@ import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/entities/position.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
 import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
@@ -99,7 +99,7 @@ export class VoieService {
     const voieCreated: Voie = await this.voiesRepository.create(voie);
     // Mettre a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(bal.id, voieCreated.updatedAt);
-
+    // On retourne la voie créé
     return voieCreated;
   }
 
@@ -238,13 +238,14 @@ export class VoieService {
   }
 
   public async convertToToponyme(voie: Voie): Promise<Toponyme> {
+    // On lance une erreur si la voie n'existe pas
     if (!this.isVoieExist(voie.id)) {
       throw new HttpException(
         `Voie ${voie.id} is deleted`,
         HttpStatus.BAD_REQUEST,
       );
     }
-
+    // On lance une erreur si la voie a des numeros
     const numerosCount: number = await this.numeroService.count({
       voieId: voie.id,
       deletedAt: null,
@@ -255,10 +256,9 @@ export class VoieService {
         HttpStatus.BAD_REQUEST,
       );
     }
-
+    // On recupère la Bal
     const baseLocale = await this.baseLocaleService.findOneOrFail(voie.balId);
-
-    // CREATE TOPONYME
+    // On créer un toponyme avec les noms de la voie
     const payload: CreateToponymeDTO = {
       nom: voie.nom,
       nomAlt: voie.nomAlt,
@@ -267,9 +267,9 @@ export class VoieService {
       baseLocale,
       payload,
     );
-    // DELETE VOIE
+    // On supprimer la voie de postgres
     await this.delete(voie);
-    // RETURN NEW TOPONYME
+    // On retourne le toponyme créé
     return toponyme;
   }
 
