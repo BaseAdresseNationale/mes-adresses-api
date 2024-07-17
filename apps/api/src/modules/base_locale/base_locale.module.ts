@@ -12,6 +12,8 @@ import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { MailerModule } from '@/shared/modules/mailer/mailer.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { SearchQueryPipe } from './pipe/search_query.pipe';
+import { BanPlateformModule } from '@/shared/modules/ban_plateform/ban_plateform.module';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
 import { ExportCsvModule } from '@/modules/base_locale/sub_modules/export_csv/export_csv.module';
@@ -21,13 +23,13 @@ import { VoieModule } from '@/modules/voie/voie.module';
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([BaseLocale]),
     MailerModule,
     PublicationModule,
+    forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),
     forwardRef(() => ExportCsvModule),
     forwardRef(() => TilesModule),

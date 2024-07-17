@@ -1,6 +1,7 @@
 import { validate } from '@ban-team/validateur-bal';
 import { normalize } from '@ban-team/adresses-util/lib/voies';
 import { chain, compact, keyBy, min, max } from 'lodash';
+
 import { beautifyUppercased, beautifyNomAlt } from './string.utils';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -20,7 +21,32 @@ export type FromCsvType = {
   toponymes?: Partial<Toponyme>[];
 };
 
-function extractCodeCommune({ parsedValues, additionalValues }: Row) {
+export function extractIdBanAdresse({
+  parsedValues,
+  additionalValues,
+}: Row): string | null {
+  return (
+    parsedValues?.id_ban_adresse ||
+    additionalValues?.uid_adresse?.idBanAdresse ||
+    null
+  );
+}
+
+export function extractIdBanToponyme({
+  parsedValues,
+  additionalValues,
+}: Row): string | null {
+  return (
+    parsedValues?.id_ban_toponyme ||
+    additionalValues?.uid_adresse?.idBanToponyme ||
+    null
+  );
+}
+
+export function extractCodeCommune({
+  parsedValues,
+  additionalValues,
+}: Row): string | null {
   return (
     parsedValues.commune_insee || additionalValues?.cle_interop?.codeCommune
   );
@@ -61,6 +87,7 @@ function extractData(rows: Row[]): {
       const date = extractDate(toponymeRows[0]) || new Date();
       return {
         id: uuidv4(),
+        banId: extractIdBanToponyme(toponymeRows[0]),
         nom: beautifyUppercased(toponymeRows[0].parsedValues.voie_nom),
         nomAlt: toponymeRows[0].localizedValues.voie_nom
           ? beautifyNomAlt(toponymeRows[0].localizedValues.voie_nom)
@@ -82,6 +109,7 @@ function extractData(rows: Row[]): {
 
       return {
         id: uuidv4(),
+        banId: extractIdBanToponyme(voieRows[0]),
         nom: beautifyUppercased(voieRows[0].parsedValues.voie_nom),
         nomAlt: voieRows[0].localizedValues.voie_nom
           ? beautifyNomAlt(voieRows[0].localizedValues.voie_nom)
@@ -97,12 +125,12 @@ function extractData(rows: Row[]): {
   const numeros: Partial<Numero>[] = chain(rows)
     .filter((r) => r.parsedValues.numero !== 99999)
     .groupBy(
-      (r) =>
+      (r: Row) =>
         `${r.parsedValues.numero}@@@${r.parsedValues.suffixe}@@@${normalize(
           r.parsedValues.voie_nom,
         )}`,
     )
-    .map((numeroRows) => {
+    .map((numeroRows: Row[]) => {
       const date = extractDate(numeroRows[0]) || new Date();
 
       const voieString = normalize(numeroRows[0].parsedValues.voie_nom);
@@ -116,6 +144,7 @@ function extractData(rows: Row[]): {
       if (toponymeString && !(toponymeString in toponymesIndex)) {
         const toponyme: Partial<Toponyme> = {
           id: uuidv4(),
+          banId: extractIdBanToponyme(numeroRows[0]),
           nom: beautifyUppercased(
             numeroRows[0].parsedValues.lieudit_complement_nom,
           ),
@@ -132,6 +161,7 @@ function extractData(rows: Row[]): {
 
       return {
         id: uuidv4(),
+        banId: extractIdBanAdresse(numeroRows[0]),
         voieId: voiesIndex[voieString]._id,
         toponymeId: toponymeString ? toponymesIndex[toponymeString]._id : null,
         numero: numeroRows[0].parsedValues.numero,
@@ -153,9 +183,13 @@ export async function extractFromCsv(
   codeCommune: string,
 ): Promise<FromCsvType> {
   try {
-    const { rows, parseOk }: ValidationBal = await validate(file, {
-      profile: '1.3-relax',
-    });
+    const {
+      rows,
+      parseOk,
+    }: {
+      rows: Row[];
+      parseOk: boolean;
+    } = await validate(file, { profile: '1.4-relax' });
 
     if (!parseOk) {
       return { isValid: false };
@@ -177,6 +211,7 @@ export async function extractFromCsv(
       toponymes: communesData.toponymes,
     };
   } catch (error) {
+    console.log(error);
     return { isValid: false, validationError: error.message };
   }
 }

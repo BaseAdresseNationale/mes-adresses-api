@@ -25,7 +25,6 @@ import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.modul
 })
 export class NumeroModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer;
     consumer.apply(NumeroMiddleware).forRoutes(NumeroController);
   }
 }

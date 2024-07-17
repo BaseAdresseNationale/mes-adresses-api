@@ -20,7 +20,7 @@ export class CommuneController {
   async getCommuneExtraData(@Req() req: Request, @Res() res: Response) {
     const { codeCommune } = req.params;
     const communeExtraData =
-      await this.communeService.getCommuneExtraData(codeCommune);
+      this.communeService.getCommuneExtraData(codeCommune);
     res.status(HttpStatus.OK).json(communeExtraData);
   }
 }

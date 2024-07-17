@@ -44,7 +44,7 @@ export class HabilitationService {
       const now = new Date();
       const { status, expiresAt } = habilitation;
 
-      if (status === 'accepted' && new Date(expiresAt) > now) {
+      if (status === StatusHabiliation.ACCEPTED && new Date(expiresAt) > now) {
         throw new HttpException(
           'Cette Base Adresse Locale possède déjà une habilitation',
           HttpStatus.PRECONDITION_FAILED,
@@ -60,39 +60,42 @@ export class HabilitationService {
     return habilitation;
   }
 
-  async sendPinCode(
-    habilitationId: string,
-  ): Promise<{ code: number; message: string }> {
-    const habilitation = await this.findOne(habilitationId);
-
-    if (habilitation.status !== 'pending') {
+  async sendPinCode(habilitationId: string): Promise<void> {
+    const habilitation: Habilitation = await this.findOne(habilitationId);
+    if (habilitation.status !== StatusHabiliation.PENDING) {
       throw new HttpException(
         'Aucune demande d’habilitation en attente',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    const data: { code: number; message: string } =
+    try {
       await this.apiDepotService.sendPinCodeHabiliation(habilitationId);
-
-    return data;
+    } catch (error) {
+      const { statusCode, message } = error.response.data;
+      throw new HttpException(message, statusCode);
+    }
   }
 
   async validatePinCode(habilitationId: string, code: string): Promise<any> {
-    const habilitation = await this.findOne(habilitationId);
+    const habilitation: Habilitation = await this.findOne(habilitationId);
 
-    if (habilitation.status !== 'pending') {
+    if (habilitation.status !== StatusHabiliation.PENDING) {
       throw new HttpException(
         'Aucune demande d’habilitation en attente',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    const data = await this.apiDepotService.validatePinCodeHabiliation(
-      habilitationId,
-      code,
-    );
-
-    return data;
+    try {
+      const data = await this.apiDepotService.validatePinCodeHabiliation(
+        habilitationId,
+        code,
+      );
+      return data;
+    } catch (error) {
+      const { statusCode, message } = error.response.data;
+      throw new HttpException(message, statusCode);
+    }
   }
 }

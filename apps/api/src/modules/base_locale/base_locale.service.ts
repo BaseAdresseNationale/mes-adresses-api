@@ -26,6 +26,7 @@ import { formatEmail as createNewAdminNotificationEmail } from '@/shared/modules
 import { formatEmail as createRecoveryNotificationEmail } from '@/shared/modules/mailer/templates/recovery-notification';
 import { formatEmail as createTokenRenewalNotificationEmail } from '@/shared/modules/mailer/templates/token-renewal-notification';
 import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
+import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
@@ -59,6 +60,8 @@ export class BaseLocaleService {
     private numeroService: NumeroService,
     @Inject(forwardRef(() => PopulateService))
     private populateService: PopulateService,
+    @Inject(forwardRef(() => BanPlateformService))
+    private banPlateformService: BanPlateformService,
   ) {}
 
   public async findOneOrFail(balId: string): Promise<BaseLocale> {
@@ -105,8 +108,11 @@ export class BaseLocaleService {
   public async createOne(
     createInput: CreateBaseLocaleDTO,
   ): Promise<BaseLocale> {
-    // Insere la nouvelle Bal
+    const banId: string = await this.banPlateformService.getIdBanCommune(
+      createInput.commune,
+    );
     const newBaseLocale = await this.basesLocalesRepository.create({
+      banId,
       ...createInput,
       token: generateBase62String(20),
       status: StatusBaseLocalEnum.DRAFT,
@@ -125,7 +131,11 @@ export class BaseLocaleService {
     populate,
   }: CreateDemoBaseLocaleDTO): Promise<BaseLocale> {
     // Insere la nouvelle Bal de demo
+    const banId: string = await this.banPlateformService.getIdBanCommune(
+      commune,
+    );
     const newDemoBaseLocale = await this.basesLocalesRepository.create({
+      banId,
       token: generateBase62String(20),
       commune,
       nom: `Adresses de ${getCommune(commune).nom} [démo]`,

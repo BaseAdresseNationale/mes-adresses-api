@@ -20,6 +20,7 @@ import * as turf from '@turf/turf';
 import bbox from '@turf/bbox';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import { BBox as BboxTurf } from '@turf/helpers';
+import { v4 as uuid } from 'uuid';
 
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
@@ -124,6 +125,7 @@ export class VoieService {
     // Créer l'object Voie a partir du dto
     const voie: Partial<Voie> = {
       balId: bal.id,
+      banId: uuid(),
       nom: createVoieDto.nom,
       typeNumerotation:
         createVoieDto.typeNumerotation || TypeNumerotationEnum.NUMERIQUE,
@@ -151,6 +153,7 @@ export class VoieService {
       .map((rawVoie: Partial<Voie>) => ({
         id: rawVoie.id,
         balId: baseLocale.id,
+        banId: rawVoie.banId || uuid(),
         nom: cleanNom(rawVoie.nom),
         nomAlt: getNomAltDefault(rawVoie.nomAlt),
         typeNumerotation: rawVoie.typeNumerotation,
@@ -299,9 +302,10 @@ export class VoieService {
     // On recupère la Bal
     const baseLocale = await this.baseLocaleService.findOneOrFail(voie.balId);
     // On créer un toponyme avec les noms de la voie
-    const payload: CreateToponymeDTO = {
+    const payload: Partial<Toponyme> = {
       nom: voie.nom,
       nomAlt: voie.nomAlt,
+      banId: voie.banId,
     };
     const toponyme: Toponyme = await this.toponymeService.create(
       baseLocale,

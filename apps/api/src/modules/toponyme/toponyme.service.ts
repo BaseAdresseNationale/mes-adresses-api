@@ -19,6 +19,7 @@ import * as turf from '@turf/turf';
 import bbox from '@turf/bbox';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import { BBox as BboxTurf } from '@turf/helpers';
+import { v4 as uuid } from 'uuid';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
@@ -108,11 +109,12 @@ export class ToponymeService {
 
   public async create(
     bal: BaseLocale,
-    createToponymeDto: CreateToponymeDTO,
+    createToponymeDto: CreateToponymeDTO | Partial<Toponyme>,
   ): Promise<Toponyme> {
     // On créer l'object toponyme
     const toponyme: Partial<Toponyme> = {
       id: bal.id,
+      banId: uuid(),
       nom: createToponymeDto.nom,
       nomAlt: createToponymeDto.nomAlt
         ? cleanNomAlt(createToponymeDto.nomAlt)
@@ -223,6 +225,7 @@ export class ToponymeService {
       .map((rawToponyme) => ({
         id: rawToponyme.id,
         balId: baseLocale.id,
+        banId: rawToponyme.banId || uuid(),
         nom: cleanNom(rawToponyme.nom),
         positions: rawToponyme.positions || [],
         parcelles: rawToponyme.parcelles || [],

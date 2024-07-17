@@ -12,6 +12,10 @@ export class Toponyme extends GlobalEntity {
   balId: string;
 
   @ApiProperty()
+  @Column('uuid', {  name: 'ban_id', nullable: false })
+  banId: string;
+
+  @ApiProperty()
   @Column('text', { nullable: false })
   nom: string;
 

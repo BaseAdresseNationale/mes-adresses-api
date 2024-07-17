@@ -16,7 +16,7 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-
+import { v4 as uuid } from 'uuid';
 import { omit, chunk } from 'lodash';
 
 import { Numero } from '@/shared/entities/numero.entity';
@@ -141,7 +141,8 @@ export class NumeroService {
       // On garde seulement les numeros qui ont une voie et un numero
       .filter(({ voie, numero }) => Boolean(voie && numero))
       .map((rawNumero) => ({
-        _bal: baseLocale.id,
+        balId: baseLocale.id,
+        banId: rawNumero.banId || uuid(),
         numero: rawNumero.numero,
         comment: rawNumero.comment,
         toponyme: rawNumero.toponyme,
@@ -188,6 +189,7 @@ export class NumeroService {
     // On créer l'object numéro
     const numero: Partial<Numero> = {
       balId: voie.balId,
+      banId: uuid(),
       voieId: voie.id,
       numero: createNumeroDto.numero,
       suffixe: createNumeroDto.suffixe
@@ -308,14 +310,18 @@ export class NumeroService {
     await this.numerosRepository.restore(where);
   }
 
-  public async certifyAllNumeros(baseLocale: BaseLocale): Promise<void> {
-    const where: FindOptionsWhere<Numero> = {
-      balId: baseLocale.id,
-      certifie: false,
-      deletedAt: null,
-    };
-
-    await this.numerosRepository.update(where, { certifie: true });
+  public async toggleCertifieNumeros(
+    baseLocale: BaseLocale,
+    certifie: boolean,
+  ): Promise<void> {
+    const numeros = await this.findMany(
+      { balId: baseLocale.id, certifie: !certifie, deletedAt: null },
+    );
+    const numerosIds = numeros.map((n) => n.id);
+    await this.numerosRepository.update(
+      { id: In(numerosIds) },
+      { certifie },
+    );
     await this.baseLocaleService.touch(baseLocale.id);
   }
 

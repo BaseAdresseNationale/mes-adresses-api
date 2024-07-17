@@ -3,8 +3,10 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   Inject,
+  ParseBoolPipe,
   ParseFilePipeBuilder,
   Post,
   Put,
@@ -165,13 +167,24 @@ export class BaseLocaleController {
     summary: 'Find Base_Locale by id',
     operationId: 'findBaseLocale',
   })
+  @ApiQuery({ name: 'isExist', required: false, type: Boolean })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
     type: ExtendedBaseLocaleDTO,
   })
   @ApiBearerAuth('admin-token')
-  async findOneBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+  async findOneBaseLocale(
+    @Req() req: CustomRequest,
+    @Query('isExist', new ParseBoolPipe({ optional: true })) isExist: boolean,
+    @Res() res: Response,
+  ) {
+    if (isExist && req.baseLocale.deletedAt) {
+      throw new HttpException(
+        `BaseLocale ${req.baseLocale.id} est supprimé`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
     const baseLocale = await this.baseLocaleService.extendWithNumeros(
       req.baseLocale,
     );
@@ -398,12 +411,18 @@ export class BaseLocaleController {
     operationId: 'pauseBaseLocale',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiResponse({ status: HttpStatus.OK, type: Boolean })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async pauseBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.pause(req.baseLocale.id);
-    res.status(HttpStatus.OK).json(baseLocale);
+    if (!req.baseLocale.sync.status) {
+      throw new HttpException(
+        'Le statut de synchronisation doit être actif pour modifier l’état de pause',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+    await this.publicationService.pause(req.baseLocale.id);
+    res.status(HttpStatus.OK).json(true);
   }
 
   @Post(':baseLocaleId/sync/resume')
@@ -412,12 +431,18 @@ export class BaseLocaleController {
     operationId: 'resumeBaseLocale',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
+  @ApiResponse({ status: HttpStatus.OK, type: Boolean })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async resumeBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.resume(req.baseLocale.id);
-    res.status(HttpStatus.OK).json(baseLocale);
+    if (!req.baseLocale.sync.status) {
+      throw new HttpException(
+        'Le statut de synchronisation doit être actif pour modifier l’état de pause',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+    await this.publicationService.resume(req.baseLocale.id);
+    res.status(HttpStatus.OK).json(true);
   }
 
   @Get(':baseLocaleId/all/deleted')
@@ -437,18 +462,32 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(allDeleted);
   }
 
+  @Put(':baseLocaleId/numeros/uncertify-all')
+  @ApiOperation({
+    summary: 'Uncertify all numeros in Bal',
+    operationId: 'uncertifyAllNumeros',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async uncertifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
+    await this.numeroService.toggleCertifieNumeros(req.baseLocale, false);
+    res.sendStatus(HttpStatus.OK);
+  }
+
   @Put(':baseLocaleId/numeros/certify-all')
   @ApiOperation({
     summary: 'Certify all numeros in Bal',
     operationId: 'certifyAllNumeros',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
+  @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async certifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.numeroService.certifyAllNumeros(req.baseLocale);
-    res.status(HttpStatus.OK).json(true);
+    await this.numeroService.toggleCertifieNumeros(req.baseLocale, true);
+    res.sendStatus(HttpStatus.OK);
   }
 
   @Put(':baseLocaleId/numeros/batch')

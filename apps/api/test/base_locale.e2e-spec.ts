@@ -5,6 +5,9 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model, Types } from 'mongoose';
 import * as nodemailer from 'nodemailer';
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
+import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/schemas/numero/numero.schema';
 import { Voie } from '@/shared/schemas/voie/voie.schema';
@@ -20,6 +23,9 @@ import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
+
+const BAN_API_URL = 'BAN_API_URL';
+process.env.BAN_API_URL = BAN_API_URL;
 
 const baseLocaleAdminProperties = ['token', 'emails'];
 const baseLocalePublicProperties = [
@@ -53,7 +59,8 @@ describe('BASE LOCAL MODULE', () => {
   const token = 'xxxx';
   const _created = new Date('2000-01-01');
   const _updated = new Date('2000-01-02');
-
+  // AXIOS
+  const axiosMock = new MockAdapter(axios);
   // NODEMAILER
   const sendMailMock = jest.fn();
   createTransport.mockReturnValue({ sendMail: sendMailMock });
@@ -72,8 +79,6 @@ describe('BASE LOCAL MODULE', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
-    // const httpService = moduleFixture.get<HttpService>(HttpService);
-    // axiosMock = new MockAdapter(httpService.axiosRef as AxiosInstance);
     // INIT MODEL
     numeroModel = app.get<Model<Numero>>(getModelToken(Numero.name));
     voieModel = app.get<Model<Voie>>(getModelToken(Voie.name));
@@ -89,6 +94,7 @@ describe('BASE LOCAL MODULE', () => {
   });
 
   afterEach(async () => {
+    axiosMock.reset();
     await toponymeModel.deleteMany({});
     await voieModel.deleteMany({});
     await balModel.deleteMany({});
@@ -532,24 +538,35 @@ describe('BASE LOCAL MODULE', () => {
 
   describe('GET /bases-locales/csv', () => {
     it('Delete 204', async () => {
-      const balId = await createBal();
+      const communeUuid = uuid();
+      const balId = await createBal({
+        banId: communeUuid,
+      });
+      const voieUuid1 = uuid();
       const voieId1 = await createVoie({
         nom: 'rue de la paix',
         commune: '91534',
         _bal: balId,
+        banId: voieUuid1,
       });
+      const voieUuid2 = uuid();
       const voieId2 = await createVoie({
         nom: 'rue de paris',
         commune: '91534',
         _bal: balId,
+        banId: voieUuid2,
       });
+      const toponymeUuid1 = uuid();
       const toponymeId1 = await createToponyme({
         nom: 'allée',
         commune: '91534',
         _bal: balId,
+        banId: toponymeUuid1,
       });
+      const numeroUuid1 = uuid();
       const numeroId1 = await createNumero({
         _bal: balId,
+        banId: numeroUuid1,
         voie: voieId1,
         numero: 1,
         suffixe: 'bis',
@@ -558,8 +575,10 @@ describe('BASE LOCAL MODULE', () => {
         certifie: true,
         commune: '91534',
       });
+      const numeroUuid2 = uuid();
       const numeroId2 = await createNumero({
         _bal: balId,
+        banId: numeroUuid2,
         voie: voieId2,
         numero: 1,
         suffixe: 'ter',
@@ -586,10 +605,10 @@ describe('BASE LOCAL MODULE', () => {
         'text/csv; charset=utf-8',
       );
 
-      const csvFile = `cle_interop;uid_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-91534_xxxx_00001_bis;;rue de la paix;allée;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
-91534_xxxx_00001_ter;;rue de paris;allée;1;ter;0;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
-91534_xxxx_99999;;allée;;99999;;;91534;Saclay;;;;;;;commune;2000-01-02`;
+      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+91534_xxxx_00001_bis;${communeUuid};${voieUuid1};${numeroUuid1};rue de la paix;allée;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
+91534_xxxx_00001_ter;${communeUuid};${voieUuid2};${numeroUuid2};rue de paris;allée;1;ter;0;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
+91534_xxxx_99999;${communeUuid};${toponymeUuid1};;allée;;99999;;;91534;Saclay;;;;;;;commune;2000-01-02`;
       expect(response.text.replace(/\s/g, '')).toEqual(
         csvFile.replace(/\s/g, ''),
       );
@@ -698,6 +717,19 @@ voie;rue de paris;1;1ter`;
         commune: '27115',
         emails: ['me@domain.co'],
       };
+
+      const resBan = {
+        response: [
+          {
+            id: uuid(),
+          },
+        ],
+      };
+
+      axiosMock
+        .onGet(`${BAN_API_URL}/api/district/cog/27115`)
+        .reply(200, resBan);
+
       const response = await request(app.getHttpServer())
         .post(`/bases-locales`)
         .send(createBALDTO)
@@ -766,8 +798,12 @@ voie;rue de paris;1;1ter`;
         .set('authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(Object.keys(response.body).sort()).toEqual(
-        [...baseLocaleAdminProperties, ...baseLocalePublicProperties].sort(),
+      expect(
+        Object.keys(response.body).sort((a, b) => a.localeCompare(b)),
+      ).toEqual(
+        [...baseLocaleAdminProperties, ...baseLocalePublicProperties].sort(
+          (a, b) => a.localeCompare(b),
+        ),
       );
     });
 
@@ -782,9 +818,9 @@ voie;rue de paris;1;1ter`;
         .get(`/bases-locales/${balId}`)
         .expect(200);
 
-      expect(Object.keys(response.body).sort()).toEqual(
-        baseLocalePublicProperties.sort(),
-      );
+      expect(
+        Object.keys(response.body).sort((a, b) => a.localeCompare(b)),
+      ).toEqual(baseLocalePublicProperties.sort((a, b) => a.localeCompare(b)));
     });
 
     it('Get 404 with invalid ID', async () => {

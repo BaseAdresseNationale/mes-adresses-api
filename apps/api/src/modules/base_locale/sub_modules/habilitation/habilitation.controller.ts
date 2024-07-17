@@ -18,18 +18,13 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import {
-  Habilitation,
-  StatusHabiliation,
-} from '@/shared/modules/api_depot/types/habilitation.type';
+import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { HabilitationService } from './habilitation.service';
 import { ValidatePinCodeDTO } from './dto/validate-pin-code.dto';
 import { HabilitationDTO } from './dto/habilitation.dto';
-import { SendPinCodeResponseDTO } from './dto/send-pin-code.response.dto';
-import { ValidatePinCodeResponseDTO } from './dto/validate-pin-code.response.dto';
 
 @ApiTags('habilitation')
 @Controller('')
@@ -96,28 +91,11 @@ export class HabilitationController {
     operationId: 'sendPinCodeHabilitation',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: 200, type: SendPinCodeResponseDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async sendPinCode(@Req() req: CustomRequest, @Res() res: Response) {
-    try {
-      const sendPinCodeResponse: SendPinCodeResponseDTO =
-        await this.habilitationService.sendPinCode(
-          req.baseLocale.habilitationId,
-        );
-
-      return res.status(sendPinCodeResponse.code).send({
-        code: sendPinCodeResponse.code,
-        message: sendPinCodeResponse.message,
-      });
-    } catch (error) {
-      const statusCode = error.code || error.status || 500;
-
-      return res.status(statusCode).send({
-        statusCode,
-        message: error.message,
-      });
-    }
+    await this.habilitationService.sendPinCode(req.baseLocale.habilitationId);
+    res.sendStatus(HttpStatus.OK);
   }
 
   @Post('/bases-locales/:baseLocaleId/habilitation/email/validate-pin-code')
@@ -127,7 +105,7 @@ export class HabilitationController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: ValidatePinCodeDTO, required: true })
-  @ApiResponse({ status: 200, type: ValidatePinCodeResponseDTO })
+  @ApiResponse({ status: 200 })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async validatePinCode(
@@ -135,29 +113,10 @@ export class HabilitationController {
     @Body() body: ValidatePinCodeDTO,
     @Res() res: Response,
   ) {
-    try {
-      const validationResponse = await this.habilitationService.validatePinCode(
-        req.baseLocale.habilitationId,
-        body.code,
-      );
-      const response: ValidatePinCodeResponseDTO =
-        validationResponse.status === StatusHabiliation.ACCEPTED
-          ? {
-              validated: true,
-            }
-          : {
-              validated: false,
-              error: validationResponse.error,
-            };
-
-      return res.status(200).send(response);
-    } catch (error) {
-      const response: ValidatePinCodeResponseDTO = {
-        validated: false,
-        error: error.message,
-      };
-
-      return res.status(200).send(response);
-    }
+    await this.habilitationService.validatePinCode(
+      req.baseLocale.habilitationId,
+      body.code,
+    );
+    res.sendStatus(HttpStatus.OK);
   }
 }

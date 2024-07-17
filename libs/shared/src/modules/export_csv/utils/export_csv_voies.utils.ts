@@ -63,8 +63,7 @@ function modelToRow(
 
   for (const key in keysNomAlts) {
     if (Object.hasOwnProperty.call(keysNomAlts, key)) {
-      row[keysNomAlts[key]] =
-        model.nomAlt && model.nomAlt[key] ? model.nomAlt[key] : null;
+      row[keysNomAlts[key]] = model?.nomAlt?.[key] || null;
     }
   }
 

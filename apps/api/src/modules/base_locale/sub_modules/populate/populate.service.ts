@@ -1,15 +1,14 @@
 import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
-import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 
 @Injectable()
 export class PopulateService {
   constructor(
-    private readonly httpService: HttpService,
-    private configService: ConfigService,
     private apiDepotService: ApiDepotService,
+    @Inject(forwardRef(() => BanPlateformService))
+    private banPlateformService: BanPlateformService,
   ) {}
 
   private async extractFromApiDepot(codeCommune: string): Promise<FromCsvType> {
@@ -29,19 +28,10 @@ export class PopulateService {
 
   private async extractFromBAN(codeCommune: string): Promise<FromCsvType> {
     try {
-      const banApiUrl = this.configService.get<string>('BAN_API_URL');
-      const balFileData = `${banApiUrl}/ban/communes/${codeCommune}/download/csv-bal/adresses`;
+      const file: Buffer =
+        await this.banPlateformService.getBanAssemblage(codeCommune);
 
-      const response = await this.httpService.axiosRef({
-        url: balFileData,
-        method: 'GET',
-        responseType: 'arraybuffer',
-      });
-
-      const result: FromCsvType = await extractFromCsv(
-        response.data,
-        codeCommune,
-      );
+      const result = await extractFromCsv(file, codeCommune);
 
       if (!result.isValid) {
         throw new Error('Invalid CSV file');
