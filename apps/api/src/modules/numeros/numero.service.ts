@@ -85,9 +85,19 @@ export class NumeroService {
     return this.numerosRepository
       .createQueryBuilder()
       .select(field)
-      .where(where)
       .distinctOn([field])
+      .where(where)
       .getRawMany();
+  }
+
+  async findDistinctParcelles(balId: string): Promise<string[]> {
+    console.log(balId);
+    const res: any[] = await this.numerosRepository.query(
+      `SELECT ARRAY_AGG(distinct elem) 
+        FROM (select unnest(parcelles) as elem, bal_id, deleted_at from numeros) s 
+        WHERE bal_id = '${balId}' AND deleted_at IS null`,
+    );
+    return res[0]?.array_agg;
   }
 
   async findManyWherePositionInBBox(

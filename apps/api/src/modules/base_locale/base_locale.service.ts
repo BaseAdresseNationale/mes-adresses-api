@@ -366,20 +366,11 @@ export class BaseLocaleService {
 
   async getParcelles(basesLocale: BaseLocale): Promise<string[]> {
     // On récupère les parcelle des toponyme de la Bal
-    const toponymesWithParcelles = await this.toponymeService.findDistinct(
-      {
-        balId: basesLocale.id,
-        deletedAt: null,
-      },
-      'parcelles',
-    );
+    const toponymesWithParcelles =
+      await this.toponymeService.findDistinctParcelles(basesLocale.id);
     // On récupère les parcelles des numeros de la Bal
-    const numerosWithParcelles = await this.numeroService.findDistinct(
-      {
-        balId: basesLocale.id,
-        deletedAt: null,
-      },
-      'parcelles',
+    const numerosWithParcelles = await this.numeroService.findDistinctParcelles(
+      basesLocale.id,
     );
     // On concat et unifie les parcelles et on les retourne
     const parcelles = uniq([

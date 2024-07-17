@@ -68,16 +68,14 @@ export class ToponymeService {
     return this.toponymesRepository.find({ where, ...(select && { select }) });
   }
 
-  async findDistinct(
-    where: FindOptionsWhere<Toponyme>,
-    field: string,
-  ): Promise<string[]> {
-    return this.toponymesRepository
-      .createQueryBuilder()
-      .select(field)
-      .where(where)
-      .distinctOn([field])
-      .getRawMany();
+  async findDistinctParcelles(balId: string): Promise<string[]> {
+    console.log(balId);
+    const res: any[] = await this.toponymesRepository.query(
+      `SELECT ARRAY_AGG(distinct elem) 
+        FROM (select unnest(parcelles) as elem, bal_id, deleted_at from toponymes) s 
+        WHERE bal_id = '${balId}' AND deleted_at IS null`,
+    );
+    return res[0]?.array_agg;
   }
 
   async extendToponymes(toponymes: Toponyme[]): Promise<ExtentedToponymeDTO[]> {
