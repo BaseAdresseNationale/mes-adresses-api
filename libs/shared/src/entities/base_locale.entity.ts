@@ -40,7 +40,7 @@ export class BaseLocale extends GlobalEntity {
   nom: string;
 
   @ApiProperty()
-  @Column('uuid', {  name: 'ban_id', nullable: false })
+  @Column('uuid', { name: 'ban_id', nullable: false })
   banId: string;
 
   @ApiProperty()
