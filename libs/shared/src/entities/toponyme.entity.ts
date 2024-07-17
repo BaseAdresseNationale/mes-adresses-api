@@ -23,18 +23,21 @@ export class Toponyme extends GlobalEntity {
   @Column('simple-array', { nullable: true, array: true })
   parcelles?: string[] | null;
 
+  @ApiProperty({ type: () => Position, isArray: true })
   @OneToMany(() => Position, (position) => position.toponyme, {
     eager: true,
     cascade: true,
   })
-  positions: Position[];
+  positions?: Position[];
 
+  @ApiProperty({ type: () => BaseLocale })
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.toponymes, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'bal_id' })
-  baseLocale: BaseLocale;
+  baseLocale?: BaseLocale;
 
+  @ApiProperty({ type: () => Numero, isArray: true })
   @OneToMany(() => Numero, (numero) => numero.toponyme)
-  numeros: Numero[];
+  numeros?: Numero[];
 }

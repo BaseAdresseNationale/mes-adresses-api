@@ -60,25 +60,29 @@ export class Numero extends GlobalEntity {
   @Column('boolean', { nullable: false, default: false })
   certifie?: boolean;
 
+  @ApiProperty({ type: () => Position, isArray: true })
   @OneToMany(() => Position, (position) => position.numero, {
     eager: true,
     cascade: true,
   })
-  positions: Position[];
+  positions?: Position[];
 
+  @ApiProperty({ type: () => BaseLocale })
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.numeros)
   @JoinColumn({ name: 'bal_id' })
-  baseLocale: BaseLocale;
+  baseLocale?: BaseLocale;
 
+  @ApiProperty({ type: () => Voie })
   @ManyToOne(() => Voie, (voie) => voie.numeros, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'voie_id' })
-  voie: Voie;
+  voie?: Voie;
 
+  @ApiProperty({ type: () => Toponyme })
   @ManyToOne(() => Toponyme, (toponyme) => toponyme.numeros)
   @JoinColumn({ name: 'toponyme_id' })
-  toponyme: Toponyme;
+  toponyme?: Toponyme;
 
   @AfterLoad()
   getNumeroComplet() {

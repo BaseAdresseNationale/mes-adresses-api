@@ -55,12 +55,14 @@ export class Voie extends GlobalEntity {
   })
   trace: LineString | null;
 
+  @ApiProperty({ type: () => BaseLocale })
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.voies, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'bal_id' })
-  baseLocale: BaseLocale;
+  baseLocale?: BaseLocale;
 
+  @ApiProperty({ type: () => Numero, isArray: true })
   @OneToMany(() => Numero, (numero) => numero.voie)
-  numeros: Numero[];
+  numeros?: Numero[];
 }

@@ -61,19 +61,22 @@ export class Position {
   })
   point: Point;
 
+  @ApiProperty({ type: () => Toponyme })
   @ManyToOne(() => Toponyme, (toponyme) => toponyme.positions, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'toponyme_id' })
-  toponyme: Toponyme;
+  toponyme?: Toponyme;
 
+  @ApiProperty({ type: () => Numero })
   @ManyToOne(() => Numero, (numero) => numero.positions, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'numero_id' })
-  numero: Numero;
+  numero?: Numero;
 
+  @ApiProperty({ type: () => BaseLocale })
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.positions)
   @JoinColumn({ name: 'bal_id' })
-  baseLocale: BaseLocale;
+  baseLocale?: BaseLocale;
 }

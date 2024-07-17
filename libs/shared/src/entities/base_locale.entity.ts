@@ -63,15 +63,19 @@ export class BaseLocale extends GlobalEntity {
   @Column('jsonb', { nullable: true })
   sync: BaseLocaleSync | null;
 
+  @ApiProperty({ type: () => Voie, isArray: true })
   @OneToMany(() => Voie, (voie) => voie.baseLocale)
-  voies: Voie[];
+  voies?: Voie[];
 
+  @ApiProperty({ type: () => Toponyme, isArray: true })
   @OneToMany(() => Toponyme, (toponyme) => toponyme.baseLocale)
-  toponymes: Toponyme[];
+  toponymes?: Toponyme[];
 
+  @ApiProperty({ type: () => Numero, isArray: true })
   @OneToMany(() => Numero, (numero) => numero.baseLocale)
-  numeros: Numero[];
+  numeros?: Numero[];
 
+  @ApiProperty({ type: () => Position, isArray: true })
   @OneToMany(() => Position, (position) => position.baseLocale)
-  positions: Position[];
+  positions?: Position[];
 }
