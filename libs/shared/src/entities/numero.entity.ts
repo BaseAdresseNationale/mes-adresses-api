@@ -39,7 +39,7 @@ export class Numero extends GlobalEntity {
 
   @ApiProperty()
   @Column('text', { nullable: false })
-  numero: string;
+  numero: number;
 
   @ApiProperty()
   @Column('text', { nullable: true })

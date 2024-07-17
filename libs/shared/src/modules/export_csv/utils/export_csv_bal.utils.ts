@@ -12,13 +12,13 @@ import { getCommune } from '@/shared/utils/cog.utils';
 import { roundCoordinate } from '@/shared/utils/coor.utils';
 
 const DEFAULT_CODE_VOIE = 'xxxx';
-const DEFAULT_NUMERO_TOPONYME = '99999';
+const DEFAULT_NUMERO_TOPONYME = 99999;
 const DEFAULT_SOURCE = 'commune';
 
 type RowType = {
   codeCommune: string;
   codeVoie: string;
-  numero: string;
+  numero: number;
   suffixe?: string;
   certifie?: boolean;
   nomVoie: string;
@@ -55,10 +55,12 @@ type CsvRowType = {
 function formatCleInterop(
   codeCommune: string,
   codeVoie: string,
-  numero: string,
+  numero: number,
   suffixe: string,
 ): string {
-  const str = `${codeCommune}_${codeVoie}_${numero.padStart(5, '0')}`;
+  const str = `${codeCommune}_${codeVoie}_${numero
+    .toString()
+    .padStart(5, '0')}`;
   if (!suffixe) {
     return str.toLowerCase();
   }

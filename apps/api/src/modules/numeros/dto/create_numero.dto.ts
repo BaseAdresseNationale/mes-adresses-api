@@ -15,7 +15,7 @@ import { Position } from '@/shared/entities/position.entity';
 export class CreateNumeroDTO {
   @Validate(ValidatorBal, ['numero'])
   @ApiProperty({ required: true, nullable: false })
-  numero?: string;
+  numero?: number;
 
   @IsOptional()
   @Validate(ValidatorBal, ['suffixe'])

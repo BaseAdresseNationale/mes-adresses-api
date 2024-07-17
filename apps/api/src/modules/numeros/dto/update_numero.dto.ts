@@ -16,7 +16,7 @@ export class UpdateNumeroDTO {
   @IsOptional()
   @Validate(ValidatorBal, ['numero'])
   @ApiProperty({ required: false, nullable: false })
-  numero?: string;
+  numero?: number;
 
   @IsOptional()
   @Validate(ValidatorBal, ['suffixe'])
