@@ -176,11 +176,8 @@ export class PublicationService {
     return this.setIsPaused(balId, false);
   }
 
-  private async setIsPaused(
-    balId: string,
-    isPaused: boolean,
-  ): Promise<void> {
-    const { affected }: UpdateResult = await this.basesLocalesRepository.update(
+  private async setIsPaused(balId: string, isPaused: boolean): Promise<void> {
+    await this.basesLocalesRepository.update(
       {
         id: balId,
       },
