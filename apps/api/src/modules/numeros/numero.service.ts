@@ -91,7 +91,6 @@ export class NumeroService {
   }
 
   async findDistinctParcelles(balId: string): Promise<string[]> {
-    console.log(balId);
     const res: any[] = await this.numerosRepository.query(
       `SELECT ARRAY_AGG(distinct elem) 
         FROM (select unnest(parcelles) as elem, bal_id, deleted_at from numeros) s 

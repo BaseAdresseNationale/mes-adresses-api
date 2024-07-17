@@ -70,7 +70,6 @@ export class ToponymeService {
   }
 
   async findDistinctParcelles(balId: string): Promise<string[]> {
-    console.log(balId);
     const res: any[] = await this.toponymesRepository.query(
       `SELECT ARRAY_AGG(distinct elem) 
         FROM (select unnest(parcelles) as elem, bal_id, deleted_at from toponymes) s 
@@ -86,7 +85,7 @@ export class ToponymeService {
       toponymeId: In(toponymesIds),
       deletedAt: null,
     });
-    const numerosByToponymes = groupBy(numeros, 'toponyme');
+    const numerosByToponymes = groupBy(numeros, 'toponymeId');
     // On renvoie les toponyme avec la bbox et les metas numeros
     return toponymes.map((t) => ({
       ...extendWithNumeros(t, numerosByToponymes[t.id] || []),

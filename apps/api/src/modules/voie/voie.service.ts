@@ -317,12 +317,14 @@ export class VoieService {
   }
 
   public async extendVoies(voies: Voie[]): Promise<ExtendedVoieDTO[]> {
-    const numeros = await this.numeroService.findMany({
-      voieId: In(voies.map(({ id }) => id)),
-      deletedAt: null,
-    });
-
-    const numerosByVoies = groupBy(numeros, 'voie');
+    const numeros = await this.numeroService.findMany(
+      {
+        voieId: In(voies.map(({ id }) => id)),
+        deletedAt: null,
+      },
+      { certifie: true, comment: true, voieId: true },
+    );
+    const numerosByVoies = groupBy(numeros, 'voieId');
 
     return voies.map((voie) => ({
       ...extendWithNumeros(voie, numerosByVoies[voie.id] || []),

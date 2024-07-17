@@ -30,7 +30,7 @@ export class Numero extends GlobalEntity {
   balId: string;
 
   @ApiProperty()
-  @Column('uuid', {  name: 'ban_id', nullable: false })
+  @Column('uuid', { name: 'ban_id', nullable: false })
   banId: string;
 
   @ApiProperty()
@@ -90,6 +90,6 @@ export class Numero extends GlobalEntity {
 
   @AfterLoad()
   getNumeroComplet() {
-    this.numero + displaySuffix(this);
+    this.numeroComplet = this.numero + displaySuffix(this);
   }
 }
