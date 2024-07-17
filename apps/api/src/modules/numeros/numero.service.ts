@@ -105,10 +105,10 @@ export class NumeroService {
     bbox: number[],
   ): Promise<Numero[]> {
     // Requète postgis qui permet de récupèré les voie dont le centroid est dans la bbox
-    return this.numerosRepository
-      .createQueryBuilder()
-      .leftJoin('numeros.positions', 'positions')
-      .where('id = :balId', { balId })
+    const query = this.numerosRepository
+      .createQueryBuilder('numeros')
+      .leftJoinAndSelect('numeros.positions', 'positions')
+      .where('numeros.balId = :balId', { balId })
       .andWhere(
         'positions.point @ ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326)',
         {
@@ -117,8 +117,8 @@ export class NumeroService {
           xmax: bbox[2],
           ymax: bbox[3],
         },
-      )
-      .getMany();
+      );
+    return query.getMany();
   }
 
   public async count(where: FindOptionsWhere<Numero>): Promise<number> {
@@ -314,14 +314,13 @@ export class NumeroService {
     baseLocale: BaseLocale,
     certifie: boolean,
   ): Promise<void> {
-    const numeros = await this.findMany(
-      { balId: baseLocale.id, certifie: !certifie, deletedAt: null },
-    );
+    const numeros = await this.findMany({
+      balId: baseLocale.id,
+      certifie: !certifie,
+      deletedAt: null,
+    });
     const numerosIds = numeros.map((n) => n.id);
-    await this.numerosRepository.update(
-      { id: In(numerosIds) },
-      { certifie },
-    );
+    await this.numerosRepository.update({ id: In(numerosIds) }, { certifie });
     await this.baseLocaleService.touch(baseLocale.id);
   }
 

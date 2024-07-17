@@ -28,8 +28,7 @@ function getColorById(id: string): string {
 
 // Returns a color of the palette based on the bal ID
 function getColorblindFriendlyHue(id: string): string {
-  const slicedId = id.slice(19);
-
+  const slicedId = id.slice(16).replace(/-/g, '');
   return colorblindFriendlyHues[
     Number.parseInt(slicedId, 16) % colorblindFriendlyHues.length
   ];

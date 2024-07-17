@@ -21,7 +21,7 @@ export class TilesService {
     tile: number[],
     colorblindMode: boolean,
   ): Promise<GeoJsonCollectionType> {
-    const z: number = tile[0];
+    const z: number = tile[2];
     const bbox: number[] = tileToBBOX(tile);
 
     const voies =

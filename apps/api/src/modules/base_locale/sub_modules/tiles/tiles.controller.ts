@@ -43,7 +43,7 @@ export class TilesController {
     @Query('colorblindMode') colorblindMode: boolean,
     @Res() res: Response,
   ) {
-    const tile: number[] = [parseInt(z), parseInt(x), parseInt(y)];
+    const tile: number[] = [parseInt(x), parseInt(y), parseInt(z)];
     const { numeroPoints, voiePoints, voieLineStrings }: GeoJsonCollectionType =
       await this.tilesService.getGeoJsonByTile(
         req.baseLocale.id,
@@ -51,21 +51,20 @@ export class TilesController {
         colorblindMode,
       );
     const options = { maxZoom: 20 };
-
     const numerosTiles = geojsonvt(numeroPoints, options).getTile(
+      tile[2],
       tile[0],
       tile[1],
-      tile[3],
     );
     const voieTiles = geojsonvt(voiePoints, options).getTile(
+      tile[2],
       tile[0],
       tile[1],
-      tile[3],
     );
     const voieTraceTiles = geojsonvt(voieLineStrings, options).getTile(
+      tile[2],
       tile[0],
       tile[1],
-      tile[3],
     );
 
     if (!numerosTiles && !voieTiles && !voieTraceTiles) {

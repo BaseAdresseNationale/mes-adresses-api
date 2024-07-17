@@ -38,7 +38,6 @@ import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
-import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 
 @Injectable()
 export class VoieService {
@@ -84,8 +83,8 @@ export class VoieService {
   ): Promise<Voie[]> {
     // Requète postgis qui permet de récupèré les voie dont le centroid est dans la bbox
     return this.voiesRepository
-      .createQueryBuilder()
-      .where('id = :balId', { balId })
+      .createQueryBuilder('voies')
+      .where('bal_id = :balId', { balId })
       .andWhere(
         'centroid @ ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326)',
         {
@@ -105,7 +104,7 @@ export class VoieService {
     // Requète postgis qui permet de récupèré les voie dont le centroid est dans la bbox
     return this.voiesRepository
       .createQueryBuilder()
-      .where('id = :balId', { balId })
+      .where('bal_id = :balId', { balId })
       .andWhere(
         'ST_Intersects(trace, ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326) )',
         {
