@@ -54,7 +54,10 @@ export class NumeroService {
     const where: FindOptionsWhere<Numero> = {
       id: numeroId,
     };
-    const numero = await this.numerosRepository.findOne({ where });
+    const numero = await this.numerosRepository.findOne({
+      where,
+      withDeleted: true,
+    });
     // Si len numero n'existe pas, on throw une erreur
     if (!numero) {
       throw new HttpException(
@@ -498,8 +501,8 @@ export class NumeroService {
       id: In(numerosIds),
       balId: baseLocale.id,
     };
-    const voieIds: string[] = await this.findDistinct(where, 'voieId');
-    const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
+    const voieIds: string[] = await this.findDistinct(where, 'voie_id');
+    const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
     // On supprime les numero dans postgres
     const { affected }: DeleteResult = await this.numerosRepository.delete({
       id: In(numerosIds),

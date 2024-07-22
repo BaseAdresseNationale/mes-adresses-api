@@ -58,7 +58,10 @@ export class VoieService {
     const where: FindOptionsWhere<Voie> = {
       id: voieId,
     };
-    const voie = await this.voiesRepository.findOne({ where });
+    const voie = await this.voiesRepository.findOne({
+      where,
+      withDeleted: true,
+    });
     // Si la voie n'existe pas, on throw une erreur
     if (!voie) {
       throw new HttpException(`Voie ${voieId} not found`, HttpStatus.NOT_FOUND);
@@ -232,6 +235,8 @@ export class VoieService {
     });
 
     if (affected >= 1) {
+      // On supprime egalement les numeros de la voie
+      await this.numeroService.deleteMany({ voieId: voie.id });
       // Si une voie a bien été supprimé on met a jour le updatedAt de la Bal
       await this.baseLocaleService.touch(voie.balId);
     }

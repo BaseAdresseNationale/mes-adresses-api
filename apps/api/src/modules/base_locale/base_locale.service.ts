@@ -69,7 +69,10 @@ export class BaseLocaleService {
   public async findOneOrFail(balId: string): Promise<BaseLocale> {
     // Créer le filtre where et lance la requète postgres
     const where: FindOptionsWhere<BaseLocale> = { id: balId };
-    const baseLocale = await this.basesLocalesRepository.findOne({ where });
+    const baseLocale = await this.basesLocalesRepository.findOne({
+      where,
+      withDeleted: true,
+    });
     // Si la bal n'existe pas, on throw une erreur
     if (!baseLocale) {
       throw new HttpException(

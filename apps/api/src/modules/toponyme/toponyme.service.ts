@@ -51,7 +51,10 @@ export class ToponymeService {
     const where: FindOptionsWhere<Toponyme> = {
       id: toponymeId,
     };
-    const toponyme = await this.toponymesRepository.findOne({ where });
+    const toponyme = await this.toponymesRepository.findOne({
+      where,
+      withDeleted: true,
+    });
     // Si le toponyme n'existe pas, on throw une erreur
     if (!toponyme) {
       throw new HttpException(
