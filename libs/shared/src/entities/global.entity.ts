@@ -1,15 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ObjectId } from 'mongodb';
 import {
+  BeforeInsert,
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 export class GlobalEntity {
   @ApiProperty()
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('varchar', { length: 32 })
   id?: string;
+
+  @ApiProperty()
+  @Column('uuid', { name: 'ban_id', nullable: false })
+  banId: string;
 
   @ApiProperty()
   @CreateDateColumn({ name: 'created_at' })
@@ -22,4 +29,9 @@ export class GlobalEntity {
   @ApiProperty()
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date | null;
+
+  @BeforeInsert()
+  generatedObjectId? = function () {
+    this.id = new ObjectId().toHexString();
+  };
 }

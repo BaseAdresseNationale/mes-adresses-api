@@ -6,7 +6,7 @@ import {
   IsOptional,
   ValidateNested,
   ArrayNotEmpty,
-  IsUUID,
+  IsMongoId,
 } from 'class-validator';
 
 import { Position } from '@/shared/entities/position.entity';
@@ -29,12 +29,12 @@ export class UpdateNumeroDTO {
   comment?: string;
 
   @IsOptional()
-  @IsUUID(4)
+  @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: true })
   toponymeId?: string;
 
   @IsOptional()
-  @IsUUID(4)
+  @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: false })
   voieId?: string;
 

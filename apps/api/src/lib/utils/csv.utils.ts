@@ -3,13 +3,13 @@ import { normalize } from '@ban-team/adresses-util/lib/voies';
 import { chain, compact, keyBy, min, max } from 'lodash';
 
 import { beautifyUppercased, beautifyNomAlt } from './string.utils';
-import { v4 as uuidv4 } from 'uuid';
 
 import { PositionTypeEnum } from '@/shared/entities/position.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
-import { Row, ValidationBal } from '../types/validator.types';
+import { Row } from '../types/validator.types';
+import { ObjectId } from 'mongodb';
 
 export type FromCsvType = {
   isValid?: boolean;
@@ -86,7 +86,7 @@ function extractData(rows: Row[]): {
     .map((toponymeRows) => {
       const date = extractDate(toponymeRows[0]) || new Date();
       return {
-        id: uuidv4(),
+        id: new ObjectId().toHexString(),
         banId: extractIdBanToponyme(toponymeRows[0]),
         nom: beautifyUppercased(toponymeRows[0].parsedValues.voie_nom),
         nomAlt: toponymeRows[0].localizedValues.voie_nom
@@ -108,7 +108,7 @@ function extractData(rows: Row[]): {
       const dates = compact(voieRows.map((r) => r.parsedValues.date_der_maj));
 
       return {
-        id: uuidv4(),
+        id: new ObjectId().toHexString(),
         banId: extractIdBanToponyme(voieRows[0]),
         nom: beautifyUppercased(voieRows[0].parsedValues.voie_nom),
         nomAlt: voieRows[0].localizedValues.voie_nom
@@ -143,7 +143,7 @@ function extractData(rows: Row[]): {
 
       if (toponymeString && !(toponymeString in toponymesIndex)) {
         const toponyme: Partial<Toponyme> = {
-          id: uuidv4(),
+          id: new ObjectId().toHexString(),
           banId: extractIdBanToponyme(numeroRows[0]),
           nom: beautifyUppercased(
             numeroRows[0].parsedValues.lieudit_complement_nom,
@@ -160,7 +160,7 @@ function extractData(rows: Row[]): {
       }
 
       return {
-        id: uuidv4(),
+        id: new ObjectId().toHexString(),
         banId: extractIdBanAdresse(numeroRows[0]),
         voieId: voiesIndex[voieString]._id,
         toponymeId: toponymeString ? toponymesIndex[toponymeString]._id : null,

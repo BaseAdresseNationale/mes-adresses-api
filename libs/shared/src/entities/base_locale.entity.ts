@@ -40,10 +40,6 @@ export class BaseLocale extends GlobalEntity {
   nom: string;
 
   @ApiProperty()
-  @Column('uuid', { name: 'ban_id', nullable: false })
-  banId: string;
-
-  @ApiProperty()
   @Column('varchar', { nullable: false, length: 5 })
   commune: string;
 

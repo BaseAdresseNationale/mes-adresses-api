@@ -6,7 +6,7 @@ import {
   IsOptional,
   ArrayNotEmpty,
   ValidateNested,
-  IsUUID,
+  IsMongoId,
 } from 'class-validator';
 
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
@@ -28,7 +28,7 @@ export class CreateNumeroDTO {
   comment?: string;
 
   @IsOptional()
-  @IsUUID(4)
+  @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: true })
   toponymeId?: string;
 

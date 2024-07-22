@@ -1,15 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  BeforeInsert,
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   Point,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
 } from 'typeorm';
 import { BaseLocale } from './base_locale.entity';
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
+import { ObjectId } from 'mongodb';
 
 export enum PositionTypeEnum {
   ENTREE = 'entrée',
@@ -26,19 +29,24 @@ export enum PositionTypeEnum {
 @Entity({ name: 'positions' })
 export class Position {
   @ApiProperty()
-  @PrimaryGeneratedColumn('uuid')
-  id: number;
+  @PrimaryColumn('varchar', { length: 32 })
+  id?: string;
+
+  @BeforeInsert()
+  generatedObjectId? = function () {
+    this.id = new ObjectId().toHexString();
+  };
 
   @ApiProperty()
-  @Column('uuid', { name: 'bal_id', nullable: false })
+  @Column('varchar', { length: 32, name: 'bal_id', nullable: false })
   balId: string;
 
   @ApiProperty()
-  @Column('uuid', { name: 'toponyme_id', nullable: true })
+  @Column('varchar', { length: 32, name: 'toponyme_id', nullable: true })
   toponymeId: string;
 
   @ApiProperty()
-  @Column('uuid', { name: 'numero_id', nullable: true })
+  @Column('varchar', { length: 32, name: 'numero_id', nullable: true })
   numeroId: string;
 
   @ApiProperty({ enum: PositionTypeEnum })
@@ -52,6 +60,10 @@ export class Position {
   @ApiProperty()
   @Column('text', { nullable: true })
   source?: string;
+
+  @ApiProperty()
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
   @ApiProperty()
   @Column('geometry', {

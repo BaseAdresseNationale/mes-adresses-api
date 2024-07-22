@@ -26,19 +26,15 @@ export function displaySuffix(numero: Numero): string {
 @Entity({ name: 'numeros' })
 export class Numero extends GlobalEntity {
   @ApiProperty()
-  @Column('uuid', { name: 'bal_id', nullable: false })
+  @Column('varchar', { length: 32, name: 'bal_id', nullable: false })
   balId: string;
 
   @ApiProperty()
-  @Column('uuid', { name: 'ban_id', nullable: false })
-  banId: string;
-
-  @ApiProperty()
-  @Column('uuid', { name: 'voie_id', nullable: false })
+  @Column('varchar', { length: 32, name: 'voie_id', nullable: false })
   voieId: string;
 
   @ApiProperty()
-  @Column('uuid', { name: 'toponyme_id', nullable: true })
+  @Column('varchar', { length: 32, name: 'toponyme_id', nullable: true })
   toponymeId: string;
 
   @ApiProperty()

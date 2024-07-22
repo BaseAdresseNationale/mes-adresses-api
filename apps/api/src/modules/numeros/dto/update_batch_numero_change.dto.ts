@@ -4,7 +4,7 @@ import {
   IsOptional,
   IsEnum,
   IsNotEmpty,
-  IsUUID,
+  IsMongoId,
 } from 'class-validator';
 
 import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
@@ -16,13 +16,13 @@ export class UpdateBatchNumeroChangeDTO {
   comment?: string;
 
   @IsOptional()
-  @IsUUID(4)
+  @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: true })
   toponymeId?: string;
 
   @IsOptional()
   @IsNotEmpty()
-  @IsUUID(4)
+  @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: false })
   voieId?: string;
 

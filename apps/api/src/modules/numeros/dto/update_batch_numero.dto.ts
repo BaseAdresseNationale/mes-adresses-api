@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  IsUUID,
+  IsMongoId,
   ValidateNested,
   IsNotEmptyObject,
   IsOptional,
@@ -11,7 +11,7 @@ import { UpdateBatchNumeroChangeDTO } from '@/modules/numeros/dto/update_batch_n
 
 export class UpdateBatchNumeroDTO {
   @IsOptional()
-  @IsUUID(4, { each: true })
+  @IsMongoId({ each: true })
   @ApiProperty({ type: String, required: true, nullable: false, isArray: true })
   numerosIds: string[];
 
