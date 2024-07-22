@@ -70,6 +70,16 @@ export class ToponymeService {
     return this.toponymesRepository.find({ where, ...(select && { select }) });
   }
 
+  async findManyWithDeleted(
+    where: FindOptionsWhere<Toponyme>,
+  ): Promise<Toponyme[]> {
+    // Get les numeros en fonction du where archivé ou non
+    return this.toponymesRepository.find({
+      where,
+      withDeleted: true,
+    });
+  }
+
   async findDistinctParcelles(balId: string): Promise<string[]> {
     const res: any[] = await this.toponymesRepository.query(
       `SELECT ARRAY_AGG(distinct elem) 

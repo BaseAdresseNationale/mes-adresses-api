@@ -314,19 +314,19 @@ export class BaseLocaleService {
     baseLocale: BaseLocale,
   ): Promise<AllDeletedInBalDTO> {
     // On récupère les numeros archivés
-    const numerosDeleted = await this.numeroService.findMany({
+    const numerosDeleted = await this.numeroService.findManyWithDeleted({
       balId: baseLocale.id,
-      deletedAt: Not(null),
+      deletedAt: Not(IsNull()),
     });
-    const numerosByVoieId = groupBy(numerosDeleted, 'voie');
+    const numerosByVoieId = groupBy(numerosDeleted, 'voieId');
     // On récupère les voies archivés ou celle qui ont des numéros archivés
-    const voies: any[] = await this.voieService.findMany([
+    const voies: any[] = await this.voieService.findManyWithDeleted([
       {
         id: In(Object.keys(numerosByVoieId)),
       },
       {
         balId: baseLocale.id,
-        deletedAt: Not(null),
+        deletedAt: Not(IsNull()),
       },
     ]);
     // On populate les voie avec les numeros
@@ -335,10 +335,11 @@ export class BaseLocaleService {
       numeros: numerosByVoieId[voie.id] || [],
     }));
     // On récupère les toponyme archivé de la bal
-    const toponymes: Toponyme[] = await this.toponymeService.findMany({
-      balId: baseLocale.id,
-      deletedAt: Not(null),
-    });
+    const toponymes: Toponyme[] =
+      await this.toponymeService.findManyWithDeleted({
+        balId: baseLocale.id,
+        deletedAt: Not(IsNull()),
+      });
     // On retourne le voies et toponyme archivé
     return {
       voies: voiesPopulate,

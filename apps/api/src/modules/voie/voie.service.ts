@@ -67,7 +67,7 @@ export class VoieService {
   }
 
   async findMany(
-    where: FindOptionsWhere<Voie> | FindOptionsWhere<Voie>[],
+    where: FindOptionsWhere<Voie>,
     select?: FindOptionsSelect<Voie>,
     relations?: FindOptionsRelations<Voie>,
   ): Promise<Voie[]> {
@@ -75,6 +75,16 @@ export class VoieService {
       where,
       ...(select && { select }),
       ...(relations && { relations }),
+    });
+  }
+
+  async findManyWithDeleted(
+    where: FindOptionsWhere<Voie> | FindOptionsWhere<Voie>[],
+  ): Promise<Voie[]> {
+    // Get les voies en fonction du where archiver ou non
+    return this.voiesRepository.find({
+      where,
+      withDeleted: true,
     });
   }
 

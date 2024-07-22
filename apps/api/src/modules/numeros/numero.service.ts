@@ -82,6 +82,16 @@ export class NumeroService {
     });
   }
 
+  async findManyWithDeleted(
+    where: FindOptionsWhere<Numero>,
+  ): Promise<Numero[]> {
+    // Get les numeros en fonction du where archivé ou non
+    return this.numerosRepository.find({
+      where,
+      withDeleted: true,
+    });
+  }
+
   async findDistinct(
     where: FindOptionsWhere<Numero>,
     field: string,
