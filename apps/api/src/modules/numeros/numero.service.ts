@@ -200,6 +200,7 @@ export class NumeroService {
     voie: Voie,
     createNumeroDto: CreateNumeroDTO,
   ): Promise<Numero> {
+    console.log(createNumeroDto);
     // On vérifie que la voie ne soit pas archivé
     if (voie.deletedAt) {
       throw new HttpException('Voie is archived', HttpStatus.NOT_FOUND);
@@ -226,8 +227,11 @@ export class NumeroService {
       parcelles: createNumeroDto.parcelles || [],
       certifie: createNumeroDto.certifie || false,
     };
-    // On insert le numero dans postgres
-    const numeroCreated: Numero = await this.numerosRepository.create(numero);
+    // Créer l'entité typeorm
+    const entityToSave: Numero = await this.numerosRepository.create(numero);
+    // On insert l'object dans postgres
+    const numeroCreated: Numero =
+      await this.numerosRepository.save(entityToSave);
     // On calcule le centroid de la voie
     await this.voieService.calcCentroid(voie.id);
     // On met a jour le updatedAt de la Bal
