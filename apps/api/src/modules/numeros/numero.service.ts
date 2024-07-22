@@ -374,8 +374,8 @@ export class NumeroService {
       balId: baseLocale.id,
       deletedAt: IsNull(),
     };
-    const voieIds: string[] = await this.findDistinct(where, 'voieId');
-    const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
+    const voieIds: string[] = await this.findDistinct(where, 'voie_id');
+    const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
     // Si la voie des numéro est changé, on vérifie que cette derniere existe bien
     if (
       changes.voieId &&
