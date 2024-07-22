@@ -85,7 +85,6 @@ export class ToponymeService {
     const toponymesIds: string[] = toponymes.map(({ id }) => id);
     const numeros = await this.numeroService.findMany({
       toponymeId: In(toponymesIds),
-      deletedAt: IsNull(),
     });
     const numerosByToponymes = groupBy(numeros, 'toponymeId');
     // On renvoie les toponyme avec la bbox et les metas numeros
@@ -99,7 +98,6 @@ export class ToponymeService {
     // On recupère les numeros du toponymes
     const numeros = await this.numeroService.findMany({
       toponymeId: toponyme.id,
-      deletedAt: IsNull(),
     });
     // On renvoie le toponyme avec la bbox et les metas numeros
     return {
@@ -270,7 +268,6 @@ export class ToponymeService {
     // On créer le where avec id et balId et lance la requète
     const where: FindOptionsWhere<Toponyme> = {
       id,
-      deletedAt: IsNull(),
       ...(balId && { balId }),
     };
     return this.toponymesRepository.exists({ where });

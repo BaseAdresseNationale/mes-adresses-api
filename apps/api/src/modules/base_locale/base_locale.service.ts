@@ -376,7 +376,6 @@ export class BaseLocaleService {
     const numeros = await this.numeroService.findMany(
       {
         balId: baseLocale.id,
-        deletedAt: IsNull(),
       },
       { certifie: true, numero: true, comment: true },
     );

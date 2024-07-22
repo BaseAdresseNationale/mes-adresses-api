@@ -26,7 +26,6 @@ export class StatsService {
   ): Promise<Omit<BaseLocale, 'token' | 'emails'>[]> {
     const where: FindOptionsWhere<BaseLocale> = {
       status: Not(StatusBaseLocalEnum.DEMO),
-      deletedAt: IsNull(),
       ...(codeCommunes &&
         codeCommunes.length > 0 && { commune: In(codeCommunes) }),
     };

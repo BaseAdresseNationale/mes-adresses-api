@@ -570,7 +570,6 @@ export class BaseLocaleController {
   async findVoieByBal(@Req() req: CustomRequest, @Res() res: Response) {
     const voies: Voie[] = await this.voieService.findMany({
       balId: req.baseLocale.id,
-      deletedAt: IsNull(),
     });
     const extendedVoie: ExtendedVoieDTO[] =
       await this.voieService.extendVoies(voies);
@@ -611,7 +610,6 @@ export class BaseLocaleController {
   async findToponymeByBal(@Req() req: CustomRequest, @Res() res: Response) {
     const toponymes: Toponyme[] = await this.toponymeService.findMany({
       balId: req.baseLocale.id,
-      deletedAt: IsNull(),
     });
     const extendedToponyme: ExtentedToponymeDTO[] =
       await this.toponymeService.extendToponymes(toponymes);

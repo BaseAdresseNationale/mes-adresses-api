@@ -71,6 +71,7 @@ export class NumeroService {
     select?: FindOptionsSelect<Numero>,
     order?: FindOptionsOrder<Numero>,
     relations?: FindOptionsRelations<Numero>,
+    withDeleted?: boolean,
   ): Promise<Numero[]> {
     // Get les numeros en fonction du where, select, order et des relations
     return this.numerosRepository.find({
@@ -78,6 +79,7 @@ export class NumeroService {
       ...(select && { select }),
       ...(order && { order }),
       ...(relations && { relations }),
+      ...(withDeleted && { withDeleted }),
     });
   }
 
@@ -276,7 +278,6 @@ export class NumeroService {
     // On créer la condition where
     const where: FindOptionsWhere<Numero> = {
       id: numero.id,
-      deletedAt: IsNull(),
     };
     // On update le numéro dans postgres
     Object.assign(numero, updateNumeroDto);
@@ -325,6 +326,7 @@ export class NumeroService {
       await this.numerosRepository.softDelete(where);
     const deletedNumero: Numero = await this.numerosRepository.findOne({
       where,
+      withDeleted: true,
     });
     // Si le numero a été suprimé
     if (affected > 0) {
@@ -354,7 +356,6 @@ export class NumeroService {
     const numeros = await this.findMany({
       balId: baseLocale.id,
       certifie: !certifie,
-      deletedAt: IsNull(),
     });
     const numerosIds = numeros.map((n) => n.id);
     await this.numerosRepository.update({ id: In(numerosIds) }, { certifie });
@@ -376,7 +377,6 @@ export class NumeroService {
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
       balId: baseLocale.id,
-      deletedAt: IsNull(),
     };
     const voieIds: string[] = await this.findDistinct(where, 'voie_id');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
@@ -410,7 +410,6 @@ export class NumeroService {
       {
         id: In(numerosIds),
         balId: baseLocale.id,
-        deletedAt: IsNull(),
       },
       batchChanges,
     );
@@ -457,7 +456,6 @@ export class NumeroService {
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
       balId: baseLocale.id,
-      deletedAt: IsNull(),
     };
     const voieIds: string[] = await this.findDistinct(where, 'voieId');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
@@ -495,7 +493,6 @@ export class NumeroService {
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
       balId: baseLocale.id,
-      deletedAt: IsNull(),
     };
     const voieIds: string[] = await this.findDistinct(where, 'voieId');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');

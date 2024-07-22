@@ -132,7 +132,6 @@ export class VoieController {
     const numeros: Numero[] = await this.numeroService.findMany(
       {
         voieId: req.voie.id,
-        deletedAt: IsNull(),
       },
       null,
       { numero: 1 },

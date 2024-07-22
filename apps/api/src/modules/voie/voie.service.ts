@@ -189,7 +189,6 @@ export class VoieService {
     // Créer le where et lancer la requète
     const where: FindOptionsWhere<Voie> = {
       id: voie.id,
-      deletedAt: IsNull(),
     };
     const res: UpdateResult = await this.voiesRepository.update(
       where,
@@ -277,7 +276,6 @@ export class VoieService {
     // On créer le where avec id et balId et lance la requète
     const where: FindOptionsWhere<Voie> = {
       id,
-      deletedAt: IsNull(),
       ...(balId && { balId }),
     };
     return this.voiesRepository.exists({ where });
@@ -294,7 +292,6 @@ export class VoieService {
     // On lance une erreur si la voie a des numeros
     const numerosCount: number = await this.numeroService.count({
       voieId: voie.id,
-      deletedAt: IsNull(),
     });
     if (numerosCount > 0) {
       throw new HttpException(
@@ -324,7 +321,6 @@ export class VoieService {
     const numeros = await this.numeroService.findMany(
       {
         voieId: In(voies.map(({ id }) => id)),
-        deletedAt: IsNull(),
       },
       { certifie: true, comment: true, voieId: true },
     );
