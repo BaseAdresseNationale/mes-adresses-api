@@ -33,6 +33,8 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
+import { Position } from '@/shared/entities/position.entity';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class NumeroService {
@@ -146,7 +148,7 @@ export class NumeroService {
         banId: rawNumero.banId || uuid(),
         numero: rawNumero.numero,
         comment: rawNumero.comment,
-        toponyme: rawNumero.toponyme,
+        toponymeId: rawNumero.toponymeId,
         voieId: rawNumero.voieId,
         ...(rawNumero.suffixe && {
           suffixe: normalizeSuffixe(rawNumero.suffixe),
@@ -160,7 +162,6 @@ export class NumeroService {
     if (numeros.length === 0) {
       return;
     }
-    console.log(numeros[0]);
     // On insert les numeros 500 par 500
     for (const numerosChunk of chunk(numeros, 500)) {
       await this.numerosRepository
@@ -168,6 +169,28 @@ export class NumeroService {
         .insert()
         .into(Numero)
         .values(numerosChunk)
+        .execute();
+    }
+    // On créer les positions
+    const positions: Partial<Position>[] = [];
+    for (const rawNumero of rawNumeros) {
+      positions.push(
+        ...rawNumero.positions.map(({ source, type, point }) => ({
+          id: new ObjectId().toHexString(),
+          numeroId: rawNumero.id,
+          source,
+          type,
+          point,
+        })),
+      );
+    }
+    // On insert les positions 500 par 500
+    for (const positionsChunk of chunk(positions, 500)) {
+      await this.numerosRepository
+        .createQueryBuilder()
+        .insert()
+        .into(Position)
+        .values(positionsChunk)
         .execute();
     }
   }

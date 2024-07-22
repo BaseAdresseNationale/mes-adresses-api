@@ -33,6 +33,7 @@ import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class ToponymeService {
@@ -241,6 +242,29 @@ export class ToponymeService {
       .insert()
       .into(Toponyme)
       .values(toponymes)
+      .execute();
+    // On créer les positions
+    const positions: Partial<Position>[] = [];
+    for (const rawToponyme of rawToponymes) {
+      positions.push(
+        ...rawToponyme.positions.map(({ source, type, point }) => ({
+          id: new ObjectId().toHexString(),
+          toponymeId: rawToponyme.id,
+          source,
+          type,
+          point,
+        })),
+      );
+    }
+    if (positions.length === 0) {
+      return;
+    }
+    // On insert les positions
+    await this.toponymesRepository
+      .createQueryBuilder()
+      .insert()
+      .into(Position)
+      .values(positions)
       .execute();
   }
 
