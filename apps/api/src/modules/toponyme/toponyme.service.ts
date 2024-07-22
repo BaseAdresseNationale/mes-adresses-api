@@ -114,7 +114,7 @@ export class ToponymeService {
   ): Promise<Toponyme> {
     // On créer l'object toponyme
     const toponyme: Partial<Toponyme> = {
-      id: bal.id,
+      balId: bal.id,
       banId: uuid(),
       nom: createToponymeDto.nom,
       nomAlt: createToponymeDto.nomAlt
@@ -123,9 +123,12 @@ export class ToponymeService {
       positions: createToponymeDto.positions || [],
       parcelles: createToponymeDto.parcelles || [],
     };
-    // On insert le toponyme dans postgres
-    const toponymeCreated: Toponyme =
+    // Créer l'entité typeorm
+    const entityToSave: Toponyme =
       await this.toponymesRepository.create(toponyme);
+    // On insert l'object dans postgres
+    const toponymeCreated: Toponyme =
+      await this.toponymesRepository.save(entityToSave);
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(bal.id, toponymeCreated.updatedAt);
     // On retourne le toponyme créé
@@ -143,23 +146,14 @@ export class ToponymeService {
     if (updateToponymeDto.nomAlt) {
       updateToponymeDto.nomAlt = cleanNomAlt(updateToponymeDto.nomAlt);
     }
-    // On update le toponyme dans postgres
-    const { affected }: UpdateResult = await this.toponymesRepository.update(
-      {
-        id: toponyme.id,
-        deletedAt: IsNull(),
-      },
-      updateToponymeDto,
-    );
-    // On met a jour le updatedAt de la BAL si le toponyme a été mis a jour
-    if (affected > 0) {
-      await this.baseLocaleService.touch(toponyme.balId);
-    }
+    // On update le numéro dans postgres
+    Object.assign(toponyme, updateToponymeDto);
+    const toponymeUpdated: Toponyme =
+      await this.toponymesRepository.save(toponyme);
+
+    await this.baseLocaleService.touch(toponyme.balId);
     // On retourne le toponyme mis a jour
-    return this.toponymesRepository.findOneBy({
-      id: toponyme.id,
-      deletedAt: IsNull(),
-    });
+    return toponymeUpdated;
   }
 
   public async softDelete(toponyme: Toponyme): Promise<Toponyme> {

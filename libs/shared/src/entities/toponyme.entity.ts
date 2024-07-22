@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  AfterLoad,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { GlobalEntity } from './global.entity';
 import { BaseLocale } from './base_locale.entity';
 import { Numero } from './numero.entity';
@@ -29,6 +36,15 @@ export class Toponyme extends GlobalEntity {
     cascade: true,
   })
   positions?: Position[];
+
+  @AfterLoad()
+  sortPositions() {
+    if (this?.positions?.length) {
+      this.positions.sort(
+        (a, b) => a.createdAt?.getTime() - b.createdAt?.getTime(),
+      );
+    }
+  }
 
   @ApiProperty({ type: () => BaseLocale })
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.toponymes, {

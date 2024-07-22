@@ -138,8 +138,7 @@ export class VoieService {
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
       voie.centroid = turf.centroid(voie.trace)?.geometry;
     }
-    // Insérer la voir dans postgres
-
+    // Créer l'entité typeorm
     const entityToSave: Voie = await this.voiesRepository.create(voie);
     // On insert l'object dans postgres
     const voieCreated: Voie = await this.voiesRepository.save(entityToSave);
