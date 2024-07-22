@@ -13,7 +13,6 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
-  IsNull,
   Point,
   Repository,
   UpdateResult,
@@ -320,23 +319,18 @@ export class NumeroService {
     await this.numerosRepository.delete(where);
   }
 
-  public async softDelete(where: FindOptionsWhere<Numero>): Promise<Numero> {
+  public async softDelete(numero: Numero): Promise<void> {
     // On créer le where et on lance la requète
-    const { affected }: UpdateResult =
-      await this.numerosRepository.softDelete(where);
-    const deletedNumero: Numero = await this.numerosRepository.findOne({
-      where,
-      withDeleted: true,
+    const { affected }: UpdateResult = await this.numerosRepository.softDelete({
+      id: numero.id,
     });
     // Si le numero a été suprimé
     if (affected > 0) {
       // On recalcule le centroid de la voie du numéro
-      await this.voieService.calcCentroid(deletedNumero.voieId);
+      await this.voieService.calcCentroid(numero.voieId);
       // On met a jour le updatedAt de la bal, la voie et le toponyme
-      await this.touch(deletedNumero);
+      await this.touch(numero);
     }
-
-    return deletedNumero;
   }
 
   public async softDeleteByVoie(voieId: string): Promise<void> {

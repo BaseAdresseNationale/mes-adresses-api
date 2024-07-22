@@ -84,10 +84,8 @@ export class ToponymeController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
-    const result: Toponyme = await this.toponymeService.softDelete(
-      req.toponyme,
-    );
-    res.status(HttpStatus.OK).json(result);
+    await this.toponymeService.softDelete(req.toponyme);
+    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @Put(':toponymeId/restore')

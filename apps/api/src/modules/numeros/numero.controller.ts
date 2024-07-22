@@ -79,8 +79,8 @@ export class NumeroController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
-    const result = await this.numeroService.softDelete({ id: req.numero.id });
-    res.status(HttpStatus.OK).json(result);
+    await this.numeroService.softDelete(req.numero);
+    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @Delete(':numeroId')

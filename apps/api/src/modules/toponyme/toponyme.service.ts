@@ -11,7 +11,6 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
-  IsNull,
   Repository,
   UpdateResult,
 } from 'typeorm';
@@ -154,7 +153,7 @@ export class ToponymeService {
     return toponymeUpdated;
   }
 
-  public async softDelete(toponyme: Toponyme): Promise<Toponyme> {
+  public async softDelete(toponyme: Toponyme): Promise<void> {
     // On archive le toponyme
     const { affected }: UpdateResult =
       await this.toponymesRepository.softDelete({
@@ -172,10 +171,6 @@ export class ToponymeService {
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(toponyme.balId);
     }
-    // On retourne le toponyme archivé
-    return this.toponymesRepository.findOneBy({
-      id: toponyme.id,
-    });
   }
 
   public async restore(toponyme: Toponyme): Promise<Toponyme> {
