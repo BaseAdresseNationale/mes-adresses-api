@@ -528,12 +528,11 @@ export class BaseLocaleController {
     @Body() deleteBatchNumeroDto: DeleteBatchNumeroDTO,
     @Res() res: Response,
   ) {
-    const result: BatchNumeroResponseDTO =
-      await this.numeroService.softDeleteBatch(
-        req.baseLocale,
-        deleteBatchNumeroDto,
-      );
-    res.status(HttpStatus.OK).json(result);
+    await this.numeroService.softDeleteBatch(
+      req.baseLocale,
+      deleteBatchNumeroDto,
+    );
+    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @Delete(':baseLocaleId/numeros/batch')

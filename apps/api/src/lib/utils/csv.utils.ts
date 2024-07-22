@@ -211,7 +211,7 @@ export async function extractFromCsv(
       toponymes: communesData.toponymes,
     };
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return { isValid: false, validationError: error.message };
   }
 }

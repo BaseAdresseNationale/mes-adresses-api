@@ -100,12 +100,14 @@ export class NumeroService {
     field: string,
   ): Promise<string[]> {
     // Get la liste distinct du field dans l'enssemble where
-    return this.numerosRepository
+    const res = await this.numerosRepository
       .createQueryBuilder()
       .select(field)
       .distinctOn([field])
       .where(where)
+      .withDeleted()
       .getRawMany();
+    return res.map((raw) => raw[field]);
   }
 
   async findDistinctParcelles(balId: string): Promise<string[]> {
@@ -214,7 +216,6 @@ export class NumeroService {
     voie: Voie,
     createNumeroDto: CreateNumeroDTO,
   ): Promise<Numero> {
-    console.log(createNumeroDto);
     // On vérifie que la voie ne soit pas archivé
     if (voie.deletedAt) {
       throw new HttpException('Voie is archived', HttpStatus.NOT_FOUND);
@@ -464,8 +465,8 @@ export class NumeroService {
       id: In(numerosIds),
       balId: baseLocale.id,
     };
-    const voieIds: string[] = await this.findDistinct(where, 'voieId');
-    const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
+    const voieIds: string[] = await this.findDistinct(where, 'voie_id');
+    const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
     // On archive les numeros dans postgres
     const { affected }: UpdateResult = await this.numerosRepository.softDelete({
       id: In(numerosIds),
@@ -477,7 +478,7 @@ export class NumeroService {
       await this.baseLocaleService.touch(baseLocale.id);
       // On met a jour les centroid des voies des numeros archivé
       await Promise.all(
-        voieIds.map((voieId) => this.voieService.calcCentroid(voieId)),
+        voieIds.map((voidId) => this.voieService.calcCentroid(voidId)),
       );
       // Si les numeros avaient des toponyme, on met a jour leurs updatedAt
       if (toponymeIds.length > 0) {
@@ -495,7 +496,7 @@ export class NumeroService {
   public async deleteBatch(
     baseLocale: BaseLocale,
     { numerosIds }: DeleteBatchNumeroDTO,
-  ): Promise<any> {
+  ): Promise<void> {
     // On récupère les différentes voies et toponymes des numeros qu'on va modifier
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
@@ -508,7 +509,6 @@ export class NumeroService {
       id: In(numerosIds),
       balId: baseLocale.id,
     });
-
     // Si des numeros ont été supprimé
     if (affected > 0) {
       // On met a jour le updatedAt de la BAL
@@ -526,7 +526,6 @@ export class NumeroService {
         );
       }
     }
-    return { deletedCount: affected };
   }
 
   public async findCentroid(voieId: string): Promise<Point> {
