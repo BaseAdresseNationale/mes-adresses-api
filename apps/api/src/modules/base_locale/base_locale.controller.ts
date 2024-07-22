@@ -66,6 +66,7 @@ import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
 import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
+import { IsNull } from 'typeorm';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -569,7 +570,7 @@ export class BaseLocaleController {
   async findVoieByBal(@Req() req: CustomRequest, @Res() res: Response) {
     const voies: Voie[] = await this.voieService.findMany({
       balId: req.baseLocale.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     });
     const extendedVoie: ExtendedVoieDTO[] =
       await this.voieService.extendVoies(voies);
@@ -610,7 +611,7 @@ export class BaseLocaleController {
   async findToponymeByBal(@Req() req: CustomRequest, @Res() res: Response) {
     const toponymes: Toponyme[] = await this.toponymeService.findMany({
       balId: req.baseLocale.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     });
     const extendedToponyme: ExtentedToponymeDTO[] =
       await this.toponymeService.extendToponymes(toponymes);

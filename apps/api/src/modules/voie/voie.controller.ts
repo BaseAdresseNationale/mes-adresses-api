@@ -36,6 +36,7 @@ import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
+import { IsNull } from 'typeorm';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -131,7 +132,7 @@ export class VoieController {
     const numeros: Numero[] = await this.numeroService.findMany(
       {
         voieId: req.voie.id,
-        deletedAt: null,
+        deletedAt: IsNull(),
       },
       null,
       { numero: 1 },

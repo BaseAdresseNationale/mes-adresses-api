@@ -12,6 +12,7 @@ import {
   FindOptionsWhere,
   In,
   InsertResult,
+  IsNull,
   Not,
   Repository,
   UpdateResult,
@@ -375,7 +376,7 @@ export class BaseLocaleService {
     const numeros = await this.numeroService.findMany(
       {
         balId: baseLocale.id,
-        deletedAt: null,
+        deletedAt: IsNull(),
       },
       { certifie: true, numero: true, comment: true },
     );

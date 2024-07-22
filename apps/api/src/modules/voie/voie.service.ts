@@ -12,6 +12,7 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
+  IsNull,
   Point,
   Repository,
   UpdateResult,
@@ -138,7 +139,10 @@ export class VoieService {
       voie.centroid = turf.centroid(voie.trace)?.geometry;
     }
     // Insérer la voir dans postgres
-    const voieCreated: Voie = await this.voiesRepository.create(voie);
+
+    const entityToSave: Voie = await this.voiesRepository.create(voie);
+    // On insert l'object dans postgres
+    const voieCreated: Voie = await this.voiesRepository.save(entityToSave);
     // Mettre a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(bal.id, voieCreated.updatedAt);
     // On retourne la voie créé
@@ -186,16 +190,16 @@ export class VoieService {
     // Créer le where et lancer la requète
     const where: FindOptionsWhere<Voie> = {
       id: voie.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     };
-    const { affected }: UpdateResult = await this.voiesRepository.update(
+    const res: UpdateResult = await this.voiesRepository.update(
       where,
       updateVoieDto,
     );
     // On récupère la voie modifiée
-    const voieUpdated: Voie = await this.voiesRepository.findOne({ where });
+    const voieUpdated: Voie = await this.voiesRepository.findOneBy(where);
     // Si la voie a été modifiée
-    if (affected > 0) {
+    if (res.affected > 0) {
       // On met a jour le centroid de la voie si la trace a été mis a jour
       if (
         updateVoieDto.trace &&
@@ -274,7 +278,7 @@ export class VoieService {
     // On créer le where avec id et balId et lance la requète
     const where: FindOptionsWhere<Voie> = {
       id,
-      deletedAt: null,
+      deletedAt: IsNull(),
       ...(balId && { balId }),
     };
     return this.voiesRepository.exists({ where });
@@ -291,7 +295,7 @@ export class VoieService {
     // On lance une erreur si la voie a des numeros
     const numerosCount: number = await this.numeroService.count({
       voieId: voie.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     });
     if (numerosCount > 0) {
       throw new HttpException(
@@ -321,7 +325,7 @@ export class VoieService {
     const numeros = await this.numeroService.findMany(
       {
         voieId: In(voies.map(({ id }) => id)),
-        deletedAt: null,
+        deletedAt: IsNull(),
       },
       { certifie: true, comment: true, voieId: true },
     );

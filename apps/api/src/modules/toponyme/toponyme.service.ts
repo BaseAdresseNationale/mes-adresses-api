@@ -11,6 +11,7 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
+  IsNull,
   Repository,
   UpdateResult,
 } from 'typeorm';
@@ -84,7 +85,7 @@ export class ToponymeService {
     const toponymesIds: string[] = toponymes.map(({ id }) => id);
     const numeros = await this.numeroService.findMany({
       toponymeId: In(toponymesIds),
-      deletedAt: null,
+      deletedAt: IsNull(),
     });
     const numerosByToponymes = groupBy(numeros, 'toponymeId');
     // On renvoie les toponyme avec la bbox et les metas numeros
@@ -98,7 +99,7 @@ export class ToponymeService {
     // On recupère les numeros du toponymes
     const numeros = await this.numeroService.findMany({
       toponymeId: toponyme.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     });
     // On renvoie le toponyme avec la bbox et les metas numeros
     return {
@@ -146,7 +147,7 @@ export class ToponymeService {
     const { affected }: UpdateResult = await this.toponymesRepository.update(
       {
         id: toponyme.id,
-        deletedAt: null,
+        deletedAt: IsNull(),
       },
       updateToponymeDto,
     );
@@ -157,7 +158,7 @@ export class ToponymeService {
     // On retourne le toponyme mis a jour
     return this.toponymesRepository.findOneBy({
       id: toponyme.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     });
   }
 
@@ -275,7 +276,7 @@ export class ToponymeService {
     // On créer le where avec id et balId et lance la requète
     const where: FindOptionsWhere<Toponyme> = {
       id,
-      deletedAt: null,
+      deletedAt: IsNull(),
       ...(balId && { balId }),
     };
     return this.toponymesRepository.exists({ where });

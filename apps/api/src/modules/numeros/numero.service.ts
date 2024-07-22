@@ -13,6 +13,7 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
+  IsNull,
   Point,
   Repository,
   UpdateResult,
@@ -271,27 +272,26 @@ export class NumeroService {
     // On créer la condition where
     const where: FindOptionsWhere<Numero> = {
       id: numero.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     };
     // On update le numéro dans postgres
-    const { affected } = await this.updateOne(where, updateNumeroDto);
+    Object.assign(numero, updateNumeroDto);
+    await this.numerosRepository.save(numero);
     // On récupère le nouveau numéro modifié
     const numeroUpdated: Numero = await this.numerosRepository.findOne({
       where,
     });
     // Si le numero a été modifié
-    if (affected > 0) {
-      if (updateNumeroDto.voieId) {
-        // On recalcule le centroid de l'ancienne et la nouvelle voie si le numero a changé de voie
-        await this.voieService.calcCentroid(numero.voieId);
-        await this.voieService.calcCentroid(numeroUpdated.voieId);
-      } else if (updateNumeroDto.positions) {
-        // On recalcule le centroid de la voie si les positions du numeros on changé
-        await this.voieService.calcCentroid(numero.voieId);
-      }
-      // On met a jour le updatedAt de la BAL
-      this.baseLocaleService.touch(numero.balId);
+    if (updateNumeroDto.voieId) {
+      // On recalcule le centroid de l'ancienne et la nouvelle voie si le numero a changé de voie
+      await this.voieService.calcCentroid(numero.voieId);
+      await this.voieService.calcCentroid(numeroUpdated.voieId);
+    } else if (updateNumeroDto.positions) {
+      // On recalcule le centroid de la voie si les positions du numeros on changé
+      await this.voieService.calcCentroid(numero.voieId);
     }
+    // On met a jour le updatedAt de la BAL
+    this.baseLocaleService.touch(numero.balId);
 
     return numeroUpdated;
   }
@@ -350,7 +350,7 @@ export class NumeroService {
     const numeros = await this.findMany({
       balId: baseLocale.id,
       certifie: !certifie,
-      deletedAt: null,
+      deletedAt: IsNull(),
     });
     const numerosIds = numeros.map((n) => n.id);
     await this.numerosRepository.update({ id: In(numerosIds) }, { certifie });
@@ -372,7 +372,7 @@ export class NumeroService {
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
       balId: baseLocale.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     };
     const voieIds: string[] = await this.findDistinct(where, 'voieId');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
@@ -406,7 +406,7 @@ export class NumeroService {
       {
         id: In(numerosIds),
         balId: baseLocale.id,
-        deletedAt: null,
+        deletedAt: IsNull(),
       },
       batchChanges,
     );
@@ -453,7 +453,7 @@ export class NumeroService {
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
       balId: baseLocale.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     };
     const voieIds: string[] = await this.findDistinct(where, 'voieId');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
@@ -491,7 +491,7 @@ export class NumeroService {
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
       balId: baseLocale.id,
-      deletedAt: null,
+      deletedAt: IsNull(),
     };
     const voieIds: string[] = await this.findDistinct(where, 'voieId');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponymeId');
