@@ -31,7 +31,7 @@ export class GlobalEntity {
   deletedAt: Date | null;
 
   @BeforeInsert()
-  generatedObjectId? = function () {
+  generatedObjectId?() {
     this.id = new ObjectId().toHexString();
-  };
+  }
 }

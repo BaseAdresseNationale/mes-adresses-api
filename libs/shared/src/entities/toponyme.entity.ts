@@ -38,7 +38,7 @@ export class Toponyme extends GlobalEntity {
   positions?: Position[];
 
   @AfterLoad()
-  sortPositions() {
+  sortPositions?() {
     if (this?.positions?.length) {
       this.positions.sort(
         (a, b) => a.createdAt?.getTime() - b.createdAt?.getTime(),
