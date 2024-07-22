@@ -11,6 +11,7 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
+  InsertResult,
   Not,
   Repository,
   UpdateResult,
@@ -108,15 +109,20 @@ export class BaseLocaleService {
   public async createOne(
     createInput: CreateBaseLocaleDTO,
   ): Promise<BaseLocale> {
+    // On récupère l'id ban de la BAL
     const banId: string = await this.banPlateformService.getIdBanCommune(
       createInput.commune,
     );
-    const newBaseLocale = await this.basesLocalesRepository.create({
+    // On créer l'object bal
+    const entityToSave: BaseLocale = await this.basesLocalesRepository.create({
       banId,
       ...createInput,
       token: generateBase62String(20),
       status: StatusBaseLocalEnum.DRAFT,
     });
+    // On insert l'object dans postgres
+    const newBaseLocale: BaseLocale =
+      await this.basesLocalesRepository.save(entityToSave);
     // On envoie un mail de création de Bal
     const email = createBalCreationNotificationEmail({
       baseLocale: newBaseLocale,
@@ -131,16 +137,19 @@ export class BaseLocaleService {
     populate,
   }: CreateDemoBaseLocaleDTO): Promise<BaseLocale> {
     // Insere la nouvelle Bal de demo
-    const banId: string = await this.banPlateformService.getIdBanCommune(
-      commune,
-    );
-    const newDemoBaseLocale = await this.basesLocalesRepository.create({
+    const banId: string =
+      await this.banPlateformService.getIdBanCommune(commune);
+    // On créer l'object bal
+    const entityToSave = await this.basesLocalesRepository.create({
       banId,
       token: generateBase62String(20),
       commune,
       nom: `Adresses de ${getCommune(commune).nom} [démo]`,
       status: StatusBaseLocalEnum.DEMO,
     });
+    // On insert l'object dans postgres
+    const newDemoBaseLocale: BaseLocale =
+      await this.basesLocalesRepository.save(entityToSave);
     // Si besoin on populate la Bal
     if (populate) {
       await this.extractAndPopulate(newDemoBaseLocale);

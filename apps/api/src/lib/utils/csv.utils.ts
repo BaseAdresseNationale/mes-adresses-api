@@ -162,8 +162,8 @@ function extractData(rows: Row[]): {
       return {
         id: new ObjectId().toHexString(),
         banId: extractIdBanAdresse(numeroRows[0]),
-        voieId: voiesIndex[voieString]._id,
-        toponymeId: toponymeString ? toponymesIndex[toponymeString]._id : null,
+        voieId: voiesIndex[voieString].id,
+        toponymeId: toponymeString ? toponymesIndex[toponymeString].id : null,
         numero: numeroRows[0].parsedValues.numero,
         suffixe: numeroRows[0].parsedValues.suffixe || null,
         certifie: numeroRows[0].parsedValues.certification_commune,

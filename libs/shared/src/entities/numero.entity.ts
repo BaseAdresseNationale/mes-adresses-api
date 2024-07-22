@@ -53,7 +53,7 @@ export class Numero extends GlobalEntity {
   comment?: string | null;
 
   @ApiProperty()
-  @Column('simple-array', { nullable: true, array: true })
+  @Column('text', { nullable: true, array: true })
   parcelles?: string[] | null;
 
   @ApiProperty()

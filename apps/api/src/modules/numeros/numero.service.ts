@@ -97,7 +97,7 @@ export class NumeroService {
         FROM (select unnest(parcelles) as elem, bal_id, deleted_at from numeros) s 
         WHERE bal_id = '${balId}' AND deleted_at IS null`,
     );
-    return res[0]?.array_agg;
+    return res[0]?.array_agg || [];
   }
 
   async findManyWherePositionInBBox(
@@ -139,18 +139,18 @@ export class NumeroService {
     // On transforme les raw en numeros
     const numeros = rawNumeros
       // On garde seulement les numeros qui ont une voie et un numero
-      .filter(({ voie, numero }) => Boolean(voie && numero))
+      .filter(({ voieId, numero }) => Boolean(voieId && numero))
       .map((rawNumero) => ({
+        id: rawNumero.id,
         balId: baseLocale.id,
         banId: rawNumero.banId || uuid(),
         numero: rawNumero.numero,
         comment: rawNumero.comment,
         toponyme: rawNumero.toponyme,
-        voie: rawNumero.voie,
+        voieId: rawNumero.voieId,
         ...(rawNumero.suffixe && {
           suffixe: normalizeSuffixe(rawNumero.suffixe),
         }),
-        positions: rawNumero.positions || [],
         parcelles: rawNumero.parcelles || [],
         certifie: rawNumero.certifie || false,
         ...(rawNumero.updatedAt && { updatedAt: rawNumero.updatedAt }),
@@ -160,6 +160,7 @@ export class NumeroService {
     if (numeros.length === 0) {
       return;
     }
+    console.log(numeros[0]);
     // On insert les numeros 500 par 500
     for (const numerosChunk of chunk(numeros, 500)) {
       await this.numerosRepository

@@ -20,7 +20,7 @@ export class Toponyme extends GlobalEntity {
   nomAlt: Record<string, string> | null;
 
   @ApiProperty()
-  @Column('simple-array', { nullable: true, array: true })
+  @Column('text', { nullable: true, array: true })
   parcelles?: string[] | null;
 
   @ApiProperty({ type: () => Position, isArray: true })

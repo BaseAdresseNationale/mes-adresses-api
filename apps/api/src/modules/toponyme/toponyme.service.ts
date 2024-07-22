@@ -75,7 +75,7 @@ export class ToponymeService {
         FROM (select unnest(parcelles) as elem, bal_id, deleted_at from toponymes) s 
         WHERE bal_id = '${balId}' AND deleted_at IS null`,
     );
-    return res[0]?.array_agg;
+    return res[0]?.array_agg || [];
   }
 
   async extendToponymes(toponymes: Toponyme[]): Promise<ExtentedToponymeDTO[]> {
@@ -226,7 +226,6 @@ export class ToponymeService {
         balId: baseLocale.id,
         banId: rawToponyme.banId || uuid(),
         nom: cleanNom(rawToponyme.nom),
-        positions: rawToponyme.positions || [],
         parcelles: rawToponyme.parcelles || [],
         nomAlt: getNomAltDefault(rawToponyme.nomAlt),
         ...(rawToponyme.updatedAt && { updatedAt: rawToponyme.updatedAt }),
