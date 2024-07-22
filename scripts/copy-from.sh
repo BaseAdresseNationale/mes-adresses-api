@@ -7,5 +7,5 @@ psql -d api-bal -U api-bal-user -c "\\COPY voies (id,ban_id,bal_id,nom,nom_alt,t
 echo 'IMPORT NUMEROS'
 psql -d api-bal -U api-bal-user -c "\\COPY numeros (id,ban_id,bal_id,voie_id,toponyme_id,numero,suffixe,comment,parcelles,certifie,created_at,updated_at,deleted_at) FROM '../export-csv/csv/mes-adresses-api/numeros.csv' DELIMITER ',' CSV HEADER"
 echo 'IMPORT POSITIONS'
-psql -d api-bal -U api-bal-user -c "\\COPY positions (id, bal_id,numero_id,toponyme_id,type,source,point,created_at) FROM '../export-csv/csv/mes-adresses-api/positions.csv' DELIMITER ',' CSV HEADER"
+psql -d api-bal -U api-bal-user -c "\\COPY positions (id,numero_id,toponyme_id,type,source,point,created_at) FROM '../export-csv/csv/mes-adresses-api/positions.csv' DELIMITER ',' CSV HEADER"
 

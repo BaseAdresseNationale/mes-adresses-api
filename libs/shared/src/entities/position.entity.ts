@@ -38,10 +38,6 @@ export class Position {
   };
 
   @ApiProperty()
-  @Column('varchar', { length: 32, name: 'bal_id', nullable: false })
-  balId: string;
-
-  @ApiProperty()
   @Column('varchar', { length: 32, name: 'toponyme_id', nullable: true })
   toponymeId: string;
 

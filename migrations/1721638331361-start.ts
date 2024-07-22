@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Start1721636180864 implements MigrationInterface {
-    name = 'Start1721636180864'
+export class Start1721638331361 implements MigrationInterface {
+    name = 'Start1721638331361'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TYPE "public"."positions_type_enum" AS ENUM('entrée', 'bâtiment', 'cage d’escalier', 'logement', 'service technique', 'délivrance postale', 'parcelle', 'segment', 'inconnue')`);
-        await queryRunner.query(`CREATE TABLE "positions" ("id" character varying(32) NOT NULL, "bal_id" character varying(32) NOT NULL, "toponyme_id" character varying(32), "numero_id" character varying(32), "type" "public"."positions_type_enum" NOT NULL DEFAULT 'entrée', "source" text, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "point" geometry(Point,4326) NOT NULL, CONSTRAINT "PK_17e4e62ccd5749b289ae3fae6f3" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "positions" ("id" character varying(32) NOT NULL, "toponyme_id" character varying(32), "numero_id" character varying(32), "type" "public"."positions_type_enum" NOT NULL DEFAULT 'entrée', "source" text, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "point" geometry(Point,4326) NOT NULL, "bal_id" character varying(32), CONSTRAINT "PK_17e4e62ccd5749b289ae3fae6f3" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "toponymes" ("id" character varying(32) NOT NULL, "ban_id" uuid NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "bal_id" character varying(32) NOT NULL, "nom" text NOT NULL, "nom_alt" json, "parcelles" text array, CONSTRAINT "PK_f8e0f31344c7c2543562a61c1f1" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "numeros" ("id" character varying(32) NOT NULL, "ban_id" uuid NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "bal_id" character varying(32) NOT NULL, "voie_id" character varying(32) NOT NULL, "toponyme_id" character varying(32), "numero" text NOT NULL, "suffixe" text, "comment" text, "parcelles" text array, "certifie" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_afc7d4916c4ae1472683de49489" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."voies_type_numerotation_enum" AS ENUM('numerique', 'metrique')`);

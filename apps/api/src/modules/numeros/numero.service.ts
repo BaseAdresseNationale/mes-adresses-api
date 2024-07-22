@@ -13,6 +13,7 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
+  Point,
   Repository,
   UpdateResult,
 } from 'typeorm';
@@ -209,6 +210,18 @@ export class NumeroService {
     return numeroCreated;
   }
 
+  private async updateOne(
+    where: FindOptionsWhere<Numero>,
+    change: Partial<Numero>,
+  ): Promise<{ affected: number }> {
+    const numero = await this.numerosRepository.findOneBy(where);
+    Object.assign(numero, change);
+    await this.numerosRepository.save(numero);
+    return {
+      affected: Boolean(numero) ? 1 : 0,
+    };
+  }
+
   public async update(
     numero: Numero,
     updateNumeroDto: UpdateNumeroDTO,
@@ -237,10 +250,7 @@ export class NumeroService {
       deletedAt: null,
     };
     // On update le numéro dans postgres
-    const { affected }: UpdateResult = await this.numerosRepository.update(
-      where,
-      updateNumeroDto,
-    );
+    const { affected } = await this.updateOne(where, updateNumeroDto);
     // On récupère le nouveau numéro modifié
     const numeroUpdated: Numero = await this.numerosRepository.findOne({
       where,
@@ -487,13 +497,14 @@ export class NumeroService {
     return { deletedCount: affected };
   }
 
-  public async findCentroid(voieId: string) {
-    return this.numerosRepository
-      .createQueryBuilder()
-      .select('st_centroid(st_union(positions.point))')
+  public async findCentroid(voieId: string): Promise<Point> {
+    const res: { st_asgeojson: string }[] = await this.numerosRepository
+      .createQueryBuilder('numeros')
+      .select('ST_AsGeoJSON(st_centroid(st_union(positions.point)))')
       .leftJoin('numeros.positions', 'positions')
       .where('numeros.voie_id = :voieId', { voieId })
       .execute();
+    return JSON.parse(res[0].st_asgeojson);
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {

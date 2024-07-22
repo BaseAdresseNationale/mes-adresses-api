@@ -67,6 +67,15 @@ export class Numero extends GlobalEntity {
   })
   positions?: Position[];
 
+  @AfterLoad()
+  sortPositions() {
+    if (this?.positions?.length) {
+      this.positions.sort(
+        (a, b) => a.createdAt?.getTime() - b.createdAt?.getTime(),
+      );
+    }
+  }
+
   @ApiProperty({ type: () => BaseLocale })
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.numeros)
   @JoinColumn({ name: 'bal_id' })

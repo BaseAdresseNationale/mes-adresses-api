@@ -12,6 +12,7 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
+  Point,
   Repository,
   UpdateResult,
 } from 'typeorm';
@@ -363,7 +364,7 @@ export class VoieService {
   }
 
   private async calcCentroidWithNumeros(voieId: string): Promise<void> {
-    const centroid = await this.numeroService.findCentroid(voieId);
+    const centroid: Point = await this.numeroService.findCentroid(voieId);
     await this.voiesRepository.update({ id: voieId }, { centroid });
   }
 
