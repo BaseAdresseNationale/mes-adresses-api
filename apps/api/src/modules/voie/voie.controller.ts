@@ -36,7 +36,6 @@ import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
-import { IsNull } from 'typeorm';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -85,8 +84,8 @@ export class VoieController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
-    const result: Voie = await this.voieService.softDelete(req.voie);
-    res.status(HttpStatus.OK).json(result);
+    await this.voieService.softDelete(req.voie);
+    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @Put(':voieId/restore')

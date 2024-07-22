@@ -12,7 +12,6 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
-  IsNull,
   Point,
   Repository,
   UpdateResult,
@@ -232,19 +231,14 @@ export class VoieService {
     return this.voiesRepository.delete(where);
   }
 
-  public async softDelete(voie: Voie): Promise<Voie> {
+  public async softDelete(voie: Voie): Promise<void> {
     // On créer le where et lance le softDelete typeorm
     // Le softDelete va mettre a jour le deletedAt
-    const where: FindOptionsWhere<Voie> = {
-      id: voie.id,
-    };
-    await this.voiesRepository.softDelete({});
+    await this.voiesRepository.softDelete({ id: voie.id });
     // On archive également tous le numéros de la voie
     await this.numeroService.softDeleteByVoie(voie.id);
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
-    // On retourne la voie tout juste archivée
-    return this.voiesRepository.findOne({ where });
   }
 
   public async restore(
