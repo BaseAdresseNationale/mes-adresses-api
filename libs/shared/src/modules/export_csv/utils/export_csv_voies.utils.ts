@@ -51,7 +51,7 @@ function modelToRow(
   const numerosVoie: Numero[] = numeros.filter((n) => model.id === n[type]);
 
   const row: CsvRow = {
-    type,
+    type: type === 'voieId' ? 'voie' : 'toponyme',
     nom: model.nom || '',
   };
 

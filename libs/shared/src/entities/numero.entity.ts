@@ -38,7 +38,7 @@ export class Numero extends GlobalEntity {
   toponymeId: string;
 
   @ApiProperty()
-  @Column('text', { nullable: false })
+  @Column('int', { nullable: false })
   numero: number;
 
   @ApiProperty()

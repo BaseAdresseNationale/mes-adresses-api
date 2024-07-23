@@ -114,7 +114,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
     id_ban_adresse: obj.banIds.adresse || '',
     voie_nom: obj.nomVoie,
     lieudit_complement_nom: obj.nomToponyme || '',
-    numero: Number.isInteger(obj.numero) ? obj.numero.toString() : '',
+    numero: obj.numero.toString() || '',
     suffixe: obj.suffixe || '',
     certification_commune: toCsvBoolean(obj.certifie),
     commune_insee: obj.codeCommune,
@@ -168,16 +168,14 @@ export async function exportBalToCsv(
   numeros: Numero[],
   withComment: boolean,
 ): Promise<string> {
-  const voiesIndex: Record<string, Voie> = keyBy(voies, (v) =>
-    v._id.toHexString(),
-  );
+  const voiesIndex: Record<string, Voie> = keyBy(voies, 'id');
   const rows: RowType[] = [];
   numeros.forEach((n) => {
     const v: Voie = voiesIndex[n.voieId];
 
     let toponyme: Toponyme = null;
 
-    if (n.toponyme) {
+    if (n.toponymeId) {
       toponyme = toponymes.find(({ id }) => id == n.toponymeId);
 
       if (!toponyme) {

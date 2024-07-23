@@ -444,7 +444,10 @@ export class BaseLocaleService {
       ...(id && { id }),
     };
     // On lance la requète
-    const basesLocales = await this.findMany(where);
+    const basesLocales = await this.basesLocalesRepository.find({
+      where,
+      withDeleted: true,
+    });
     if (basesLocales.length > 0) {
       // Si il a des Bal qui correspondent, on envoie un mail pour retouver l'accès a ses Bal
       const STATUS = {

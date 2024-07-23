@@ -313,7 +313,7 @@ export class BaseLocaleController {
   ) {
     await this.baseLocaleService.recoverAccess(recoverBaseLocaleDTO);
 
-    res.status(HttpStatus.NO_CONTENT).json(true);
+    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @Get(':baseLocaleId/:token/recovery')
