@@ -401,7 +401,7 @@ export class NumeroService {
     // On créer le batch (en omettant positionType qui n'existe pas dans numero)
     const batchChanges: Partial<Numero> = {
       ...(changes.voieId && { voieId: changes.voieId }),
-      ...(changes.toponymeId && { voieId: changes.toponymeId }),
+      ...(changes.toponymeId && { toponymeId: changes.toponymeId }),
       ...pick(changes, ['comment', 'certifie']),
     };
     // // Si le positionType est changé, on change le type de la première position dans le batch
@@ -424,10 +424,11 @@ export class NumeroService {
       if (changes.voieId) {
         // On met a jour le updatedAt de la BAL
         await this.voieService.touch(changes.voieId);
-        // On recalcule tous les centroid des voie
+        // On recalcule tous les centroid des voies
         await Promise.all(
           voieIds.map((voieId) => this.voieService.calcCentroid(voieId)),
         );
+        await this.voieService.calcCentroid(changes.voieId);
       } else {
         // Sinon on met a jour les updatedAt des voies des numeros
         await Promise.all(
