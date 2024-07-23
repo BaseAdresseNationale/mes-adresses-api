@@ -66,7 +66,6 @@ describe('BASE LOCAL MODULE', () => {
   const axiosMock = new MockAdapter(axios);
 
   beforeAll(async () => {
-    jest.setTimeout(60000);
     // INIT DB
     postgresContainer = await new PostgreSqlContainer(
       'postgis/postgis:12-3.0',
