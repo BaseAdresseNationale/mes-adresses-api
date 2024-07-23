@@ -39,11 +39,11 @@ export class Position {
 
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'toponyme_id', nullable: true })
-  toponymeId: string;
+  toponymeId?: string;
 
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'numero_id', nullable: true })
-  numeroId: string;
+  numeroId?: string;
 
   @ApiProperty({ enum: PositionTypeEnum })
   @Column('enum', {
@@ -59,7 +59,7 @@ export class Position {
 
   @ApiProperty()
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt?: Date;
 
   @ApiProperty()
   @Column('geometry', {

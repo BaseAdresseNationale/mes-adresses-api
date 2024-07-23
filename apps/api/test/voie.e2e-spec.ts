@@ -1,114 +1,176 @@
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
+import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Connection, connect, Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
+import { v4 as uuid } from 'uuid';
 
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Voie } from '@/shared/entities/voie.entity';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
+import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
 
 import { VoieModule } from '@/modules/voie/voie.module';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { MailerModule } from '@/shared/test/mailer.module.test';
+import { Point, Repository } from 'typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 
 describe('VOIE MODULE', () => {
   let app: INestApplication;
-  let mongod: MongoMemoryServer;
-  let mongoConnection: Connection;
-  let numeroModel: Model<Numero>;
-  let voieModel: Model<Voie>;
-  let balModel: Model<BaseLocale>;
-  let toponymeModel: Model<Toponyme>;
+  // DB
+  let postgresContainer: StartedPostgreSqlContainer;
+  let postgresClient: Client;
+  let numeroRepository: Repository<Numero>;
+  let voieRepository: Repository<Voie>;
+  let balRepository: Repository<BaseLocale>;
+  let toponymeRepository: Repository<Toponyme>;
   // VAR
   const token = 'xxxx';
-  const _created = new Date('2000-01-01');
-  const _updated = new Date('2000-01-02');
+  const createdAt = new Date('2000-01-01');
+  const updatedAt = new Date('2000-01-02');
 
   beforeAll(async () => {
     // INIT DB
-    mongod = await MongoMemoryServer.create();
-    const uri = mongod.getUri();
-    mongoConnection = (await connect(uri)).connection;
-
+    postgresContainer = await new PostgreSqlContainer(
+      'postgis/postgis:12-3.0',
+    ).start();
+    postgresClient = new Client({
+      host: postgresContainer.getHost(),
+      port: postgresContainer.getPort(),
+      database: postgresContainer.getDatabase(),
+      user: postgresContainer.getUsername(),
+      password: postgresContainer.getPassword(),
+    });
+    await postgresClient.connect();
+    // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), VoieModule, MailerModule],
+      imports: [
+        TypeOrmModule.forRoot({
+          type: 'postgres',
+          host: postgresContainer.getHost(),
+          port: postgresContainer.getPort(),
+          username: postgresContainer.getUsername(),
+          password: postgresContainer.getPassword(),
+          database: postgresContainer.getDatabase(),
+          synchronize: true,
+          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
+        }),
+        VoieModule,
+        MailerModule,
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
-
-    // INIT MODEL
-    numeroModel = app.get<Model<Numero>>(getModelToken(Numero.name));
-    voieModel = app.get<Model<Voie>>(getModelToken(Voie.name));
-    balModel = app.get<Model<BaseLocale>>(getModelToken(BaseLocale.name));
-    toponymeModel = app.get<Model<Toponyme>>(getModelToken(Toponyme.name));
+    // INIT REPOSITORY
+    numeroRepository = app.get(getRepositoryToken(Numero));
+    voieRepository = app.get(getRepositoryToken(Voie));
+    balRepository = app.get(getRepositoryToken(BaseLocale));
+    toponymeRepository = app.get(getRepositoryToken(Toponyme));
   });
 
   afterAll(async () => {
-    await mongoConnection.dropDatabase();
-    await mongoConnection.close();
-    await mongod.stop();
+    await postgresClient.end();
+    await postgresContainer.stop();
     await app.close();
   });
 
   afterEach(async () => {
-    const collections = mongoConnection.collections;
-    for (const key in collections) {
-      const collection = collections[key];
-      await collection.deleteMany({});
-    }
+    await numeroRepository.delete({});
+    await voieRepository.delete({});
+    await balRepository.delete({});
+    await toponymeRepository.delete({});
   });
 
-  async function createBal() {
-    const balId = new Types.ObjectId();
-    const bal: Partial<BaseLocale> = {
-      _id: balId,
-      _created,
-      _updated,
+  async function createBal(props: Partial<BaseLocale> = {}) {
+    const payload: Partial<BaseLocale> = {
+      banId: uuid(),
+      createdAt,
+      updatedAt,
+      status: props.status ?? StatusBaseLocalEnum.DRAFT,
       token,
-    };
-    await balModel.create(bal);
-    return balId;
-  }
-
-  async function createVoie(props: Partial<Voie> = {}) {
-    const voieId = new Types.ObjectId();
-    const voie: Partial<Voie> = {
-      _id: voieId,
-      _created,
-      _updated,
       ...props,
     };
-    await voieModel.create(voie);
-    return voieId;
+    const entityToInsert = await balRepository.create(payload);
+    const result = await balRepository.save(entityToInsert);
+    return result.id;
   }
 
-  async function createNumero(props: Partial<Numero> = {}) {
-    const numeroId = new Types.ObjectId();
-    const numero: Partial<Numero> = {
-      _id: numeroId,
-      _created,
-      _updated,
+  async function createVoie(balId: string, props: Partial<Voie> = {}) {
+    const payload: Partial<Voie> = {
+      balId,
+      banId: uuid(),
+      createdAt,
+      updatedAt,
       ...props,
     };
-    await numeroModel.create(numero);
-    return numeroId;
+    const entityToInsert = await voieRepository.create(payload);
+    const result = await voieRepository.save(entityToInsert);
+    return result.id;
+  }
+
+  async function createToponyme(balId: string, props: Partial<Toponyme> = {}) {
+    const payload: Partial<Toponyme> = {
+      balId,
+      banId: uuid(),
+      createdAt,
+      updatedAt,
+      ...props,
+    };
+    const entityToInsert = await toponymeRepository.create(payload);
+    const result = await toponymeRepository.save(entityToInsert);
+    return result.id;
+  }
+
+  async function createNumero(
+    balId: string,
+    voieId: string,
+    props: Partial<Numero> = {},
+  ) {
+    const payload: Partial<Numero> = {
+      balId,
+      banId: uuid(),
+      voieId,
+      createdAt,
+      updatedAt,
+      ...props,
+    };
+    const entityToInsert = await numeroRepository.create(payload);
+    const result = await numeroRepository.save(entityToInsert);
+    return result.id;
+  }
+
+  function createPositions(coordinates: number[] = [8, 42]): Position {
+    const id = new Types.ObjectId().toHexString();
+    const point: Point = {
+      type: 'Point',
+      coordinates,
+    };
+    return {
+      id,
+      type: PositionTypeEnum.INCONNUE,
+      source: 'ban',
+      point,
+    } as Position;
   }
 
   describe('GET /voies/numeros', () => {
     it('Return 200 numero without comment', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
-      const numeroId1 = await createNumero({
-        _bal: balId,
-        voie: voieId,
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const numeroId1 = await createNumero(balId, voieId, {
         numero: 1,
         comment: 'coucou',
       });
@@ -117,26 +179,24 @@ describe('VOIE MODULE', () => {
         .get(`/voies/${voieId}/numeros`)
         .expect(200);
       expect(response.body.length).toEqual(1);
-      expect(response.body[0]._id).toEqual(numeroId1.toString());
+      expect(response.body[0].id).toEqual(numeroId1.toString());
       expect(response.body[0].comment).toEqual(null);
     });
 
     it('Return 200 numeronot deleted', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
-      await createNumero({
-        _bal: balId,
-        voie: voieId,
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
+        nom: 'rue de la paix',
+      });
+      await createNumero(balId, voieId, {
         numero: 1,
         comment: 'coucou',
       });
 
-      await createNumero({
-        _bal: balId,
-        voie: voieId,
+      await createNumero(balId, voieId, {
         numero: 2,
         comment: 'coucou',
-        _deleted: new Date(),
+        deletedAt: new Date(),
       });
 
       const response = await request(app.getHttpServer())
@@ -146,11 +206,11 @@ describe('VOIE MODULE', () => {
     });
 
     it('Return 200 numero with comment', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
-      const numeroId1 = await createNumero({
-        _bal: balId,
-        voie: voieId,
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
+        nom: 'rue de la paix',
+      });
+      const numeroId1 = await createNumero(balId, voieId, {
         numero: 1,
         comment: 'coucou',
       });
@@ -160,15 +220,15 @@ describe('VOIE MODULE', () => {
         .set('authorization', `Bearer ${token}`)
         .expect(200);
       expect(response.body.length).toEqual(1);
-      expect(response.body[0]._id).toEqual(numeroId1.toString());
+      expect(response.body[0].id).toEqual(numeroId1.toString());
       expect(response.body[0].comment).toEqual('coucou');
     });
   });
 
   describe('POST /voies/numeros', () => {
     it('Create 201 numero', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
       const createdNumero: CreateNumeroDTO = {
         numero: 1,
         positions: [
@@ -189,28 +249,32 @@ describe('VOIE MODULE', () => {
         .set('authorization', `Bearer ${token}`)
         .expect(201);
       expect(response.body.numero).toEqual(1);
-      expect(response.body._bal).toEqual(balId.toString());
-      expect(response.body.voie).toEqual(voieId.toString());
+      expect(response.body.balId).toEqual(balId);
+      expect(response.body.voieId).toEqual(voieId.toString());
       expect(response.body.parcelles).toEqual([]);
       expect(response.body.positions).not.toBeNull();
       expect(response.body.tiles).not.toBeNull();
       expect(response.body.suffixe).toEqual(null);
-      expect(response.body.toponyme).toEqual(null);
+      expect(response.body.toponymeId).toEqual(null);
       expect(response.body.comment).toEqual(null);
       expect(response.body.certifie).toEqual(false);
-      expect(response.body._updated).not.toEqual(_updated.toISOString());
-      expect(response.body._created).not.toEqual(_created.toISOString());
-      expect(response.body._deleted).toEqual(null);
+      expect(response.body.updatedAt).not.toEqual(updatedAt.toISOString());
+      expect(response.body.createdAt).not.toEqual(createdAt.toISOString());
+      expect(response.body.deletedAt).toEqual(null);
 
-      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
-      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).not.toEqual(_updated.toISOString());
-      expect(balAfter._updated).not.toEqual(_updated.toISOString());
+      const voieAfter: Voie = await voieRepository.findOneBy({ id: voieId });
+      const balAfter: BaseLocale = await balRepository.findOneBy({ id: balId });
+      expect(voieAfter.updatedAt.toISOString()).not.toEqual(
+        updatedAt.toISOString(),
+      );
+      expect(balAfter.updatedAt.toISOString()).not.toEqual(
+        updatedAt.toISOString(),
+      );
     });
 
     it('Create 201 numero with meta', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
       const createdNumero: CreateNumeroDTO = {
         numero: 1,
         suffixe: 'bis',
@@ -236,31 +300,34 @@ describe('VOIE MODULE', () => {
         .expect(201);
 
       expect(response.body.numero).toEqual(1);
-      expect(response.body._bal).toEqual(balId.toString());
-      expect(response.body.voie).toEqual(voieId.toString());
+      expect(response.body.balId).toEqual(balId.toString());
+      expect(response.body.voieId).toEqual(voieId.toString());
       expect(response.body.parcelles).toEqual(['97613000AS0120']);
       expect(response.body.positions).not.toBeNull();
       expect(response.body.tiles).not.toBeNull();
       expect(response.body.suffixe).toEqual('bis');
-      expect(response.body.toponyme).toEqual(null);
+      expect(response.body.toponymeId).toEqual(null);
       expect(response.body.comment).toEqual('coucou');
       expect(response.body.certifie).toEqual(true);
-      expect(response.body._updated).not.toEqual(_updated.toISOString());
-      expect(response.body._created).not.toEqual(_created.toISOString());
-      expect(response.body._deleted).toEqual(null);
+      expect(response.body.updatedAt).not.toEqual(updatedAt.toISOString());
+      expect(response.body.createdAt).not.toEqual(createdAt.toISOString());
+      expect(response.body.deletedAt).toEqual(null);
 
-      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
-      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated).not.toEqual(_updated.toISOString());
-      expect(balAfter._updated).not.toEqual(_updated.toISOString());
+      const voieAfter: Voie = await voieRepository.findOneBy({ id: voieId });
+      const balAfter: BaseLocale = await balRepository.findOneBy({ id: balId });
+      expect(voieAfter.updatedAt.toISOString()).not.toEqual(
+        updatedAt.toISOString(),
+      );
+      expect(balAfter.updatedAt.toISOString()).not.toEqual(
+        updatedAt.toISOString(),
+      );
     });
 
     it('Create 404 voie is deleted', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
-        _deleted: new Date(),
+        deletedAt: new Date(),
       });
       const createdNumero: CreateNumeroDTO = {
         numero: 1,
@@ -289,21 +356,25 @@ describe('VOIE MODULE', () => {
         }),
       );
 
-      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
-      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated.toISOString()).toEqual(_updated.toISOString());
-      expect(balAfter._updated.toISOString()).toEqual(_updated.toISOString());
+      const voieAfter: Voie = await voieRepository.findOne({
+        where: { id: voieId },
+        withDeleted: true,
+      });
+      const balAfter: BaseLocale = await balRepository.findOneBy({ id: balId });
+      expect(voieAfter.updatedAt.toISOString()).toEqual(
+        updatedAt.toISOString(),
+      );
+      expect(balAfter.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
 
     it('Create 404 toponyme not exist', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
       });
       const createdNumero: CreateNumeroDTO = {
         numero: 1,
-        toponyme: new Types.ObjectId(),
+        toponymeId: new Types.ObjectId().toHexString(),
         positions: [
           {
             type: PositionTypeEnum.ENTREE,
@@ -329,17 +400,18 @@ describe('VOIE MODULE', () => {
         }),
       );
 
-      const voieAfter: Voie = await voieModel.findOne({ _id: voieId });
-      const balAfter: BaseLocale = await balModel.findOne({ _id: balId });
-      expect(voieAfter._updated.toISOString()).toEqual(_updated.toISOString());
-      expect(balAfter._updated.toISOString()).toEqual(_updated.toISOString());
+      const voieAfter: Voie = await voieRepository.findOneBy({ id: voieId });
+      const balAfter: BaseLocale = await balRepository.findOneBy({ id: balId });
+      expect(voieAfter.updatedAt.toISOString()).toEqual(
+        updatedAt.toISOString(),
+      );
+      expect(balAfter.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
 
     it('Create 404 bad payload', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
       });
       const createdNumero: CreateNumeroDTO = {
         numero: 1,
@@ -361,10 +433,9 @@ describe('VOIE MODULE', () => {
     });
 
     it('Create 404 bad payload', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
       });
       const createdNumero: CreateNumeroDTO = {
         positions: [
@@ -397,25 +468,24 @@ describe('VOIE MODULE', () => {
 
   describe('PUT /voies/:voieId/convert-to-toponyme', () => {
     it('Return 200 numero without comment', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
       await request(app.getHttpServer())
         .put(`/voies/${voieId}/convert-to-toponyme`)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
 
-      const toponyme: Toponyme = await toponymeModel.findOne({
+      const toponyme: Toponyme = await toponymeRepository.findOneBy({
         nom: 'rue de la paix',
       });
       expect(toponyme).toBeDefined();
     });
 
     it('Return 200 numero without comment', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de paris', _bal: balId });
-      await createNumero({
-        _bal: balId,
-        voie: voieId,
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de paris' });
+      await createNumero(balId, voieId, {
+        numero: 1,
       });
 
       const response = await request(app.getHttpServer())
@@ -430,7 +500,7 @@ describe('VOIE MODULE', () => {
         }),
       );
 
-      const toponyme: Toponyme = await toponymeModel.findOne({
+      const toponyme: Toponyme = await toponymeRepository.findOneBy({
         nom: 'rue de paris',
       });
       expect(toponyme).toBeNull();
@@ -439,13 +509,15 @@ describe('VOIE MODULE', () => {
 
   describe('GET /voies', () => {
     it('Return 200', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
+        nom: 'rue de la paix',
+      });
       const response = await request(app.getHttpServer())
         .get(`/voies/${voieId}`)
         .expect(200);
-      expect(response.body._id).toEqual(voieId.toString());
-      expect(response.body._bal).toEqual(balId.toString());
+      expect(response.body.id).toEqual(voieId);
+      expect(response.body.balId).toEqual(balId);
       expect(response.body.nom).toEqual('rue de la paix');
     });
 
@@ -458,8 +530,10 @@ describe('VOIE MODULE', () => {
 
   describe('PUT /voies', () => {
     it('Return 200', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
+        nom: 'rue de la paix',
+      });
       const changes: UpdateVoieDTO = {
         nom: 'coucou',
         nomAlt: null,
@@ -478,21 +552,23 @@ describe('VOIE MODULE', () => {
         .send(changes)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
-      expect(response.body._id).toEqual(voieId.toString());
-      expect(response.body._bal).toEqual(balId.toString());
+      expect(response.body.id).toEqual(voieId);
+      expect(response.body.balId).toEqual(balId);
       expect(response.body.nom).toEqual('coucou');
       expect(response.body.typeNumerotation).toEqual(
         TypeNumerotationEnum.NUMERIQUE,
       );
       expect(response.body.trace).toEqual(changes.trace);
 
-      const bal = await balModel.findOne(balId);
-      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+      const bal = await balRepository.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
     it('Return 200 trace empty', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({ nom: 'rue de la paix', _bal: balId });
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
+        nom: 'rue de la paix',
+      });
       const changes: UpdateVoieDTO = {
         nom: 'coucou',
         nomAlt: null,
@@ -505,23 +581,22 @@ describe('VOIE MODULE', () => {
         .send(changes)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
-      expect(response.body._id).toEqual(voieId.toString());
-      expect(response.body._bal).toEqual(balId.toString());
+      expect(response.body.id).toEqual(voieId.toString());
+      expect(response.body.balId).toEqual(balId.toString());
       expect(response.body.nom).toEqual('coucou');
       expect(response.body.typeNumerotation).toEqual(
         TypeNumerotationEnum.NUMERIQUE,
       );
       expect(response.body.trace).toEqual(null);
 
-      const bal = await balModel.findOne(balId);
-      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+      const bal = await balRepository.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
     it('Return 403', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
         trace: null,
       });
       const changes: UpdateVoieDTO = {
@@ -542,65 +617,59 @@ describe('VOIE MODULE', () => {
         .send(changes)
         .expect(403);
 
-      const voie = await voieModel.findOne(voieId);
+      const voie = await voieRepository.findOneBy({ id: voieId });
       expect(voie.nom).toEqual('rue de la paix');
       expect(voie.trace).toBeNull();
 
-      const bal = await balModel.findOne(balId);
-      expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
+      const bal = await balRepository.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
   });
 
   describe('PUT /soft-delete', () => {
     it('Return 200', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
-        _deleted: null,
+        deletedAt: null,
       });
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .put(`/voies/${voieId}/soft-delete`)
         .set('authorization', `Bearer ${token}`)
-        .expect(200);
+        .expect(204);
 
-      expect(response.body._deleted).not.toBeNull();
-
-      const bal = await balModel.findOne(balId);
-      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+      const bal = await balRepository.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
     it('Return 403', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
-        _deleted: null,
+        deletedAt: null,
       });
       await request(app.getHttpServer())
         .put(`/voies/${voieId}/soft-delete`)
         .expect(403);
 
-      const voie = await voieModel.findOne(voieId);
-      expect(voie._deleted).toBeNull();
+      const voie = await voieRepository.findOneBy({ id: voieId });
+      expect(voie.deletedAt).toBeNull();
 
-      const bal = await balModel.findOne(balId);
-      expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
+      const bal = await balRepository.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
   });
 
   describe('PUT /restore', () => {
     it('Return 200', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
-        _deleted: _updated,
+        deletedAt: updatedAt,
       });
-      const numeroId = await createNumero({
-        _bal: balId,
-        voie: voieId,
-        _deleted: _updated,
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        deletedAt: updatedAt,
       });
       const response = await request(app.getHttpServer())
         .put(`/voies/${voieId}/restore`)
@@ -608,84 +677,84 @@ describe('VOIE MODULE', () => {
         .set('authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(response.body._deleted).toBeNull();
+      expect(response.body.deletedAt).toBeNull();
 
-      const numero = await numeroModel.findOne(numeroId);
+      const numero = await numeroRepository.findOneBy({ id: numeroId });
 
-      expect(numero._deleted).toEqual(null);
+      expect(numero.deletedAt).toEqual(null);
 
-      const bal = await balModel.findOne(balId);
-      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+      const bal = await balRepository.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
     it('Return 403', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
-        _deleted: _updated,
+        deletedAt: updatedAt,
       });
-      const numeroId = await createNumero({
-        _bal: balId,
-        voie: voieId,
-        _deleted: _updated,
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        deletedAt: updatedAt,
       });
       await request(app.getHttpServer())
         .put(`/voies/${voieId}/restore`)
         .send({ numeroIds: [numeroId] })
         .expect(403);
 
-      const voie = await voieModel.findOne(voieId);
-      expect(voie._deleted).not.toBeNull();
+      const voie = await voieRepository.findOne({
+        where: { id: voieId },
+        withDeleted: true,
+      });
+      expect(voie.deletedAt).not.toBeNull();
 
-      const numero = await numeroModel.findOne(numeroId);
+      const numero = await numeroRepository.findOne({
+        where: { id: numeroId },
+        withDeleted: true,
+      });
 
-      expect(numero._deleted).not.toBeNull();
+      expect(numero.deletedAt).not.toBeNull();
 
-      const bal = await balModel.findOne(balId);
-      expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
+      const bal = await balRepository.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
   });
 
   describe('DELETE /voies', () => {
     it('Return 200', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
-        _deleted: _updated,
+        deletedAt: updatedAt,
       });
-      const numeroId = await createNumero({
-        _bal: balId,
-        voie: voieId,
-        _deleted: _updated,
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        deletedAt: updatedAt,
       });
       await request(app.getHttpServer())
         .delete(`/voies/${voieId}`)
         .set('authorization', `Bearer ${token}`)
         .expect(204);
 
-      const voie = await voieModel.findOne(voieId);
+      const voie = await voieRepository.findOneBy({ id: voieId });
       expect(voie).toBeNull();
 
-      const numero = await numeroModel.findOne(numeroId);
+      const numero = await numeroRepository.findOneBy({ id: numeroId });
       expect(numero).toBeNull();
 
-      const bal = await balModel.findOne(balId);
-      expect(bal._updated.toISOString()).not.toEqual(_updated.toISOString());
+      const bal = await balRepository.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
     it('Return 403', async () => {
-      const balId = await createBal();
-      const voieId = await createVoie({
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        _bal: balId,
-        _deleted: _updated,
+        deletedAt: updatedAt,
       });
-      const numeroId = await createNumero({
-        _bal: balId,
-        voie: voieId,
-        _deleted: _updated,
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        deletedAt: updatedAt,
       });
 
       await request(app.getHttpServer())
@@ -693,14 +762,20 @@ describe('VOIE MODULE', () => {
         .send({ numeroIds: [numeroId] })
         .expect(403);
 
-      const voie = await voieModel.findOne(voieId);
+      const voie = await voieRepository.findOne({
+        where: { id: voieId },
+        withDeleted: true,
+      });
       expect(voie).not.toBeNull();
 
-      const numero = await numeroModel.findOne(numeroId);
+      const numero = await numeroRepository.findOne({
+        where: { id: numeroId },
+        withDeleted: true,
+      });
       expect(numero).not.toBeNull();
 
-      const bal = await balModel.findOne(balId);
-      expect(bal._updated.toISOString()).toEqual(_updated.toISOString());
+      const bal = await balRepository.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
   });
 });
