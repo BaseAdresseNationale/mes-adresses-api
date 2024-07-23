@@ -94,7 +94,7 @@ export class Numero extends GlobalEntity {
   toponyme?: Toponyme;
 
   @AfterLoad()
-  getNumeroComplet() {
+  getNumeroComplet?() {
     this.numeroComplet = this.numero + displaySuffix(this);
   }
 }

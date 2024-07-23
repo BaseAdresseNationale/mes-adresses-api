@@ -23,7 +23,7 @@ import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
 import { MailerModule } from '@/shared/test/mailer.module.test';
-import { Point, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 
 describe('VOIE MODULE', () => {
@@ -121,19 +121,6 @@ describe('VOIE MODULE', () => {
     return result.id;
   }
 
-  async function createToponyme(balId: string, props: Partial<Toponyme> = {}) {
-    const payload: Partial<Toponyme> = {
-      balId,
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      ...props,
-    };
-    const entityToInsert = await toponymeRepository.create(payload);
-    const result = await toponymeRepository.save(entityToInsert);
-    return result.id;
-  }
-
   async function createNumero(
     balId: string,
     voieId: string,
@@ -150,20 +137,6 @@ describe('VOIE MODULE', () => {
     const entityToInsert = await numeroRepository.create(payload);
     const result = await numeroRepository.save(entityToInsert);
     return result.id;
-  }
-
-  function createPositions(coordinates: number[] = [8, 42]): Position {
-    const id = new Types.ObjectId().toHexString();
-    const point: Point = {
-      type: 'Point',
-      coordinates,
-    };
-    return {
-      id,
-      type: PositionTypeEnum.INCONNUE,
-      source: 'ban',
-      point,
-    } as Position;
   }
 
   describe('GET /voies/numeros', () => {

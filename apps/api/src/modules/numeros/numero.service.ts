@@ -288,17 +288,10 @@ export class NumeroService {
     if (updateNumeroDto.suffixe) {
       updateNumeroDto.suffixe = normalizeSuffixe(updateNumeroDto.suffixe);
     }
-    // On créer la condition where
-    const where: FindOptionsWhere<Numero> = {
-      id: numero.id,
-    };
     // On update le numéro dans postgres
-    Object.assign(numero, updateNumeroDto);
-    await this.numerosRepository.save(numero);
-    // On récupère le nouveau numéro modifié
-    const numeroUpdated: Numero = await this.numerosRepository.findOne({
-      where,
-    });
+    const numeroToSave: Numero = { ...numero, ...updateNumeroDto };
+    const numeroUpdated: Numero =
+      await this.numerosRepository.save(numeroToSave);
     // Si le numero a été modifié
     if (updateNumeroDto.voieId) {
       // On recalcule le centroid de l'ancienne et la nouvelle voie si le numero a changé de voie
@@ -308,6 +301,8 @@ export class NumeroService {
       // On recalcule le centroid de la voie si les positions du numeros on changé
       await this.voieService.calcCentroid(numero.voieId);
     }
+    // On met a jour le updatedAt de la voie
+    this.voieService.touch(numero.voieId);
     // On met a jour le updatedAt de la BAL
     this.baseLocaleService.touch(numero.balId);
 
