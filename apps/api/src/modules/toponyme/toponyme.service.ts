@@ -25,7 +25,7 @@ import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
-import { Position } from '@/shared/schemas/position.schema';
+import { Position } from '@/shared/entities/position.entity';
 
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
 import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';

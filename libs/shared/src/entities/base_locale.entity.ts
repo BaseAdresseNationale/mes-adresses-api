@@ -44,7 +44,7 @@ export class BaseLocale extends GlobalEntity {
   commune: string;
 
   @ApiProperty()
-  @Column('text', { nullable: false, array: true })
+  @Column('text', { nullable: true, array: true })
   emails: string[];
 
   @ApiProperty()
