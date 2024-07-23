@@ -74,11 +74,9 @@ describe('HABILITATION MODULE', () => {
         MailerModule,
       ],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
-
     // INIT REPOSITORY
     numeroRepository = app.get(getRepositoryToken(Numero));
     voieRepository = app.get(getRepositoryToken(Voie));
