@@ -15,6 +15,8 @@ import { BaseLocaleModule } from './modules/base_locale/base_locale.module';
 import { VoieModule } from './modules/voie/voie.module';
 import { ToponymeModule } from './modules/toponyme/toponyme.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { MailerParams } from '@/shared/params/mailer.params';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { StatsModule } from './modules/stats/stats.module';
       }),
       inject: [ConfigService],
     }),
+    MailerModule.forRootAsync(MailerParams),
     NumeroModule,
     BaseLocaleModule,
     VoieModule,

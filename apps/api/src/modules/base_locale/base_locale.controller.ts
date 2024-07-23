@@ -34,6 +34,7 @@ import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { PublicationService } from '@/shared/modules/publication/publication.service';
+import { getEditorUrl } from '@/shared/utils/mailer.utils';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
@@ -62,7 +63,6 @@ import {
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
-import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
 import { isSuperAdmin } from '@/lib/utils/is-admin.utils';

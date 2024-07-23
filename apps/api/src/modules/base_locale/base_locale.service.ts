@@ -17,17 +17,21 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { uniq, difference, groupBy } from 'lodash';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
-import { MailerService } from '@/shared/modules/mailer/mailer.service';
-import { formatEmail as createBalCreationNotificationEmail } from '@/shared/modules/mailer/templates/bal-creation-notification';
-import { formatEmail as createNewAdminNotificationEmail } from '@/shared/modules/mailer/templates/new-admin-notification';
-import { formatEmail as createRecoveryNotificationEmail } from '@/shared/modules/mailer/templates/recovery-notification';
-import { formatEmail as createTokenRenewalNotificationEmail } from '@/shared/modules/mailer/templates/token-renewal-notification';
 import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
 import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
+import {
+  getApiRecoveryUrl,
+  getApiUrl,
+  getEditorUrl,
+} from '@/shared/utils/mailer.utils';
 
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
@@ -63,6 +67,7 @@ export class BaseLocaleService {
     private populateService: PopulateService,
     @Inject(forwardRef(() => BanPlateformService))
     private banPlateformService: BanPlateformService,
+    private configService: ConfigService,
   ) {}
 
   public async findOneOrFail(balId: string): Promise<BaseLocale> {
@@ -127,10 +132,19 @@ export class BaseLocaleService {
     const newBaseLocale: BaseLocale =
       await this.basesLocalesRepository.save(entityToSave);
     // On envoie un mail de création de Bal
-    const email = createBalCreationNotificationEmail({
-      baseLocale: newBaseLocale,
+    const editorUrl = getEditorUrl(newBaseLocale);
+    const apiUrl = getApiUrl();
+    await this.mailerService.sendMail({
+      to: newBaseLocale.emails,
+      subject: 'Création d’une nouvelle Base Adresse Locale',
+      template: 'bal-creation-notification',
+      bcc: this.configService.get('SMTP_BCC'),
+      context: {
+        baseLocale: newBaseLocale,
+        editorUrl,
+        apiUrl,
+      },
     });
-    await this.mailerService.sendMail(email, newBaseLocale.emails);
     // On retourne la Bal créé
     return newBaseLocale;
   }
@@ -241,14 +255,19 @@ export class BaseLocaleService {
     if (affected > 0 && update.emails) {
       // On envoie un mail au nouveau mails
       const newCollaborators = difference(update.emails, baseLocale.emails);
-      const notification = createNewAdminNotificationEmail({
-        baseLocale: updatedBaseLocale,
+      const editorUrl = getEditorUrl(baseLocale);
+      const apiUrl = getApiUrl();
+      await this.mailerService.sendMail({
+        to: newCollaborators,
+        subject: 'Invitation à l’administration d’une Base Adresse Locale',
+        template: 'new-admin-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          baseLocale,
+          editorUrl,
+          apiUrl,
+        },
       });
-      await Promise.all(
-        newCollaborators.map((collaborator) =>
-          this.mailerService.sendMail(notification, [collaborator]),
-        ),
-      );
     }
     // On retourne la Bal mis a jour
     return updatedBaseLocale;
@@ -279,13 +298,19 @@ export class BaseLocaleService {
       await this.basesLocalesRepository.findOneBy({ id: baseLocale.id });
     // On envoie un mail si la Bal a été modifié
     if (affected > 0) {
-      const templateEmail = createBalCreationNotificationEmail({
-        baseLocale: updatedBaseLocale,
+      const editorUrl = getEditorUrl(updatedBaseLocale);
+      const apiUrl = getApiUrl();
+      await this.mailerService.sendMail({
+        to: updatedBaseLocale.emails,
+        subject: 'Création d’une nouvelle Base Adresse Locale',
+        template: 'bal-creation-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          baseLocale: updatedBaseLocale,
+          editorUrl,
+          apiUrl,
+        },
       });
-      await this.mailerService.sendMail(
-        templateEmail,
-        updatedBaseLocale.emails,
-      );
     }
     // On retourne la Bal modifié
     return updatedBaseLocale;
@@ -422,8 +447,44 @@ export class BaseLocaleService {
     const basesLocales = await this.findMany(where);
     if (basesLocales.length > 0) {
       // Si il a des Bal qui correspondent, on envoie un mail pour retouver l'accès a ses Bal
-      const template = createRecoveryNotificationEmail({ basesLocales });
-      await this.mailerService.sendMail(template, [email]);
+      const STATUS = {
+        [StatusBaseLocalEnum.DRAFT]: 'Brouillon',
+        [StatusBaseLocalEnum.PUBLISHED]: 'Publiée',
+        [StatusBaseLocalEnum.REPLACED]: 'Remplacée',
+      };
+
+      const apiUrl = getApiUrl();
+      const recoveryBals = basesLocales
+        .filter(({ deletedAt }) => !deletedAt)
+        .map((baseLocale) => ({
+          ...baseLocale,
+          recoveryUrl: getEditorUrl(baseLocale),
+          statusFr: STATUS[baseLocale.status],
+          createdAt: format(baseLocale.createdAt, 'P', { locale: fr }),
+        }));
+
+      const deletedBals = basesLocales
+        .filter(({ deletedAt }) => deletedAt)
+        .map((baseLocale) => ({
+          ...baseLocale,
+          statusFr: 'Supprimée',
+          deletedRecoveryUrl: getApiRecoveryUrl(baseLocale),
+          deletedAt: baseLocale.deletedAt
+            ? format(baseLocale.deletedAt, 'P', { locale: fr })
+            : null,
+        }));
+
+      await this.mailerService.sendMail({
+        to: email,
+        subject: 'Demande de récupération de vos Bases Adresses Locales',
+        template: 'recovery-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          recoveryBals,
+          deletedBals,
+          apiUrl,
+        },
+      });
     } else {
       // Si aucune Bal ne correspond, on lance un erreur
       throw new HttpException(
@@ -455,11 +516,19 @@ export class BaseLocaleService {
       });
     // Si la Bal a été modifié on envoie un mail avec le nouveau token
     if (affected > 0) {
-      const email = createTokenRenewalNotificationEmail({
-        baseLocale: updatedBaseLocale,
+      const editorUrl = getEditorUrl(updatedBaseLocale);
+      const apiUrl = getApiUrl();
+      await this.mailerService.sendMail({
+        to: updatedBaseLocale.emails,
+        subject: 'Renouvellement de jeton de Base Adresse Locale',
+        template: 'bal-renewal-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          baseLocale: updatedBaseLocale,
+          editorUrl,
+          apiUrl,
+        },
       });
-
-      await this.mailerService.sendMail(email, updatedBaseLocale.emails);
     }
     // On retourne la Bal mis a jour
     return updatedBaseLocale;

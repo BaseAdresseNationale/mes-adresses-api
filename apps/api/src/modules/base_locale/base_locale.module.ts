@@ -9,7 +9,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BaseLocaleController } from '@/modules/base_locale/base_locale.controller';
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { MailerModule } from '@/shared/modules/mailer/mailer.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { SearchQueryPipe } from './pipe/search_query.pipe';
 import { BanPlateformModule } from '@/shared/modules/ban_plateform/ban_plateform.module';
@@ -23,11 +22,12 @@ import { VoieModule } from '@/modules/voie/voie.module';
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forFeature([BaseLocale]),
-    MailerModule,
     PublicationModule,
     forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),

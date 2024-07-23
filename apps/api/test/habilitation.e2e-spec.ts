@@ -16,6 +16,7 @@ import {
   StatusHabiliation,
 } from '@/shared/modules/api_depot/types/habilitation.type';
 import { add } from 'date-fns';
+import { MailerModule } from '@/shared/test/mailer.module.test';
 
 describe('HABILITATION MODULE', () => {
   let app: INestApplication;
@@ -36,7 +37,7 @@ describe('HABILITATION MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), HabilitationModule],
+      imports: [MongooseModule.forRoot(uri), HabilitationModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
