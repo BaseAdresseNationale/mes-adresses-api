@@ -18,7 +18,7 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { v4 as uuid } from 'uuid';
-import { omit, chunk } from 'lodash';
+import { pick, chunk } from 'lodash';
 
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
@@ -374,13 +374,6 @@ export class NumeroService {
     baseLocale: BaseLocale,
     { numerosIds, changes }: UpdateBatchNumeroDTO,
   ): Promise<BatchNumeroResponseDTO> {
-    // On delete voieId et toponymeId si ils sont null
-    if (changes.voieId === null) {
-      delete changes.voieId;
-    }
-    if (changes.toponymeId === null) {
-      delete changes.toponymeId;
-    }
     // On récupère les différentes voies et toponymes des numeros qu'on va modifier
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
@@ -407,12 +400,14 @@ export class NumeroService {
     }
     // On créer le batch (en omettant positionType qui n'existe pas dans numero)
     const batchChanges: Partial<Numero> = {
-      ...omit(changes, 'positionType'),
+      ...(changes.voieId && { voieId: changes.voieId }),
+      ...(changes.toponymeId && { voieId: changes.toponymeId }),
+      ...pick(changes, ['comment', 'certifie']),
     };
-    // Si le positionType est changé, on change le type de la première position dans le batch
-    if (changes.positionType) {
-      batchChanges['positions.0.type'] = changes.positionType;
-    }
+    // // Si le positionType est changé, on change le type de la première position dans le batch
+    // if (changes.positionType) {
+    //   batchChanges['positions.0.type'] = changes.positionType;
+    // }
     // On lance la requète
     const { affected }: UpdateResult = await this.numerosRepository.update(
       {

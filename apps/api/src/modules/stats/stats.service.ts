@@ -11,7 +11,7 @@ import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
 import { BasesLocalesStatusDTO } from '@/modules/stats/dto/bases_locales_status.dto';
 import { BasesLocalesCreationDTO } from '@/modules/stats/dto/bases_locales_creations.dto';
-import { Between, FindOptionsWhere, In, IsNull, Not } from 'typeorm';
+import { Between, FindOptionsWhere, In, Not } from 'typeorm';
 
 @Injectable()
 export class StatsService {

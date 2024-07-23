@@ -66,7 +66,6 @@ import { getEditorUrl } from '@/shared/modules/mailer/mailer.utils';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
 import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
-import { IsNull } from 'typeorm';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
