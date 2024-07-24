@@ -302,9 +302,9 @@ export class NumeroService {
       await this.voieService.calcCentroid(numero.voieId);
     }
     // On met a jour le updatedAt de la voie
-    this.voieService.touch(numero.voieId);
+    await this.voieService.touch(numero.voieId);
     // On met a jour le updatedAt de la BAL
-    this.baseLocaleService.touch(numero.balId);
+    await this.baseLocaleService.touch(numero.balId);
 
     return numeroUpdated;
   }
