@@ -498,22 +498,26 @@ export class BaseLocaleService {
 
   async recovery(baseLocale: BaseLocale) {
     const now = new Date();
-    const recoveredBaseLocale = await this.baseLocaleModel.findByIdAndUpdate(
-      { _id: baseLocale._id },
-      { $set: { _deleted: null, _updated: now } },
-      { new: true },
-    );
+    const recoveredBaseLocale = await this.baseLocaleModel
+      .findByIdAndUpdate(
+        { _id: baseLocale._id },
+        { $set: { _deleted: null, _updated: now } },
+        { new: true },
+      )
+      .lean();
 
     return recoveredBaseLocale;
   }
 
   async renewToken(baseLocale: BaseLocale) {
     const token = generateBase62String(20);
-    const updatedBaseLocale = await this.baseLocaleModel.findByIdAndUpdate(
-      { _id: baseLocale._id },
-      { $set: { token } },
-      { new: true },
-    );
+    const updatedBaseLocale = await this.baseLocaleModel
+      .findByIdAndUpdate(
+        { _id: baseLocale._id },
+        { $set: { token } },
+        { new: true },
+      )
+      .lean();
 
     const editorUrl = getEditorUrl(updatedBaseLocale);
     const apiUrl = getApiUrl();
