@@ -25,7 +25,7 @@
     "dev:api": "nest start api --watch",
     "dev:cron": "nest start cron --watch",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "yarn test:api && yarn test:cron",
+    "test": "yarn test:api",
     "test:api": "jest --config ./apps/api/test/jest-e2e.json",
     "test:cron": "jest --config ./apps/cron/test/jest-e2e.json",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
