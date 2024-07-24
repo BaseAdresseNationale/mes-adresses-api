@@ -6,8 +6,8 @@
   ],
   "rootDir": ".",
   "testEnvironment": "node",
-  "testRegex": "publication.e2e-spec.ts$",
-  "testTimeout": 60000,
+  "testRegex": ".e2e-spec.ts$",
+  "testTimeout": 1200000,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },

@@ -1,79 +1,118 @@
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
+import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Connection, connect, Model, Types } from 'mongoose';
+import { v4 as uuid } from 'uuid';
 
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Voie } from '@/shared/entities/voie.entity';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
+import { Position } from '@/shared/entities/position.entity';
 
 import { StatsModule } from '@/modules/stats/stats.module';
 import { CodeCommuneDTO } from '@/modules/stats/dto/code_commune.dto';
 import { MailerModule } from '@/shared/test/mailer.module.test';
+import { Repository } from 'typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 
 describe('STATS MODULE', () => {
   let app: INestApplication;
-  let mongod: MongoMemoryServer;
-  let mongoConnection: Connection;
-  let balModel: Model<BaseLocale>;
+  // DB
+  let postgresContainer: StartedPostgreSqlContainer;
+  let postgresClient: Client;
+  let balRepository: Repository<BaseLocale>;
+  // VAR
   const token = 'xxxx';
+  const createdAt = new Date('2000-01-01');
+  const updatedAt = new Date('2000-01-02');
 
   beforeAll(async () => {
     // INIT DB
-    mongod = await MongoMemoryServer.create();
-    const uri = mongod.getUri();
-    mongoConnection = (await connect(uri)).connection;
-
+    postgresContainer = await new PostgreSqlContainer(
+      'postgis/postgis:12-3.0',
+    ).start();
+    postgresClient = new Client({
+      host: postgresContainer.getHost(),
+      port: postgresContainer.getPort(),
+      database: postgresContainer.getDatabase(),
+      user: postgresContainer.getUsername(),
+      password: postgresContainer.getPassword(),
+    });
+    await postgresClient.connect();
+    // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), StatsModule, MailerModule],
+      imports: [
+        TypeOrmModule.forRoot({
+          type: 'postgres',
+          host: postgresContainer.getHost(),
+          port: postgresContainer.getPort(),
+          username: postgresContainer.getUsername(),
+          password: postgresContainer.getPassword(),
+          database: postgresContainer.getDatabase(),
+          synchronize: true,
+          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
+        }),
+        StatsModule,
+        MailerModule,
+      ],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
-
-    // INIT MODEL
-    balModel = app.get<Model<BaseLocale>>(getModelToken(BaseLocale.name));
+    // INIT REPOSITORY
+    balRepository = app.get(getRepositoryToken(BaseLocale));
   });
 
   afterAll(async () => {
-    await mongoConnection.dropDatabase();
-    await mongoConnection.close();
-    await mongod.stop();
+    await postgresClient.end();
+    await postgresContainer.stop();
     await app.close();
   });
 
   afterEach(async () => {
-    await balModel.deleteMany({});
+    await balRepository.delete({});
   });
 
   async function createBal(props: Partial<BaseLocale> = {}) {
-    const balId = new Types.ObjectId();
-    const bal: Partial<BaseLocale> = {
-      _id: balId,
+    const payload: Partial<BaseLocale> = {
+      banId: uuid(),
+      createdAt,
+      updatedAt,
+      status: props.status ?? StatusBaseLocalEnum.DRAFT,
       token,
       ...props,
     };
-    await balModel.create(bal);
-    return balId;
+    const entityToInsert = await balRepository.create(payload);
+    const result = await balRepository.save(entityToInsert);
+    return result.id;
   }
 
   describe('GET /stats/bals', () => {
     it('Return 200', async () => {
       await createBal({
+        nom: 'bal',
         commune: '54084',
-        _created: new Date('2019-01-01'),
+        createdAt: new Date('2019-01-01'),
         status: StatusBaseLocalEnum.DRAFT,
       });
       const balId1 = await createBal({
+        nom: 'bal',
         commune: '37003',
-        _created: new Date('2019-01-02'),
+        createdAt: new Date('2019-01-02'),
         status: StatusBaseLocalEnum.DRAFT,
       });
       const balId2 = await createBal({
+        nom: 'bal',
         commune: '37003',
-        _created: new Date('2019-01-03'),
+        createdAt: new Date('2019-01-03'),
         status: StatusBaseLocalEnum.PUBLISHED,
       });
 
@@ -88,12 +127,12 @@ describe('STATS MODULE', () => {
 
       const expectedRes = [
         {
-          _id: balId1.toString(),
+          id: balId1,
           commune: '37003',
           status: StatusBaseLocalEnum.DRAFT,
         },
         {
-          _id: balId2.toString(),
+          id: balId2,
           commune: '37003',
           status: StatusBaseLocalEnum.PUBLISHED,
         },
@@ -106,18 +145,21 @@ describe('STATS MODULE', () => {
   describe('GET /stats/bals/status', () => {
     it('Return 200', async () => {
       await createBal({
+        nom: 'bal',
         commune: '54084',
-        _created: new Date('2019-01-01'),
+        createdAt: new Date('2019-01-01'),
         status: StatusBaseLocalEnum.DRAFT,
       });
       await createBal({
+        nom: 'bal',
         commune: '37003',
-        _created: new Date('2019-01-02'),
+        createdAt: new Date('2019-01-02'),
         status: StatusBaseLocalEnum.DRAFT,
       });
       await createBal({
+        nom: 'bal',
         commune: '37003',
-        _created: new Date('2019-01-03'),
+        createdAt: new Date('2019-01-03'),
         status: StatusBaseLocalEnum.PUBLISHED,
       });
 
@@ -135,7 +177,6 @@ describe('STATS MODULE', () => {
           count: 1,
         },
       ];
-
       expect(response.body).toContainEqual(expectedRes[0]);
       expect(response.body).toContainEqual(expectedRes[1]);
     });
@@ -144,18 +185,21 @@ describe('STATS MODULE', () => {
   describe('GET /stats/bals/creations', () => {
     it('Return 200', async () => {
       await createBal({
+        nom: 'bal',
         commune: '54084',
-        _created: new Date('2019-01-01'),
+        createdAt: new Date('2019-01-01'),
         status: StatusBaseLocalEnum.DRAFT,
       });
       await createBal({
+        nom: 'bal',
         commune: '37003',
-        _created: new Date('2019-01-02'),
+        createdAt: new Date('2019-01-02'),
         status: StatusBaseLocalEnum.DRAFT,
       });
       await createBal({
+        nom: 'bal',
         commune: '37003',
-        _created: new Date('2019-01-02'),
+        createdAt: new Date('2019-01-02'),
         status: StatusBaseLocalEnum.PUBLISHED,
       });
 

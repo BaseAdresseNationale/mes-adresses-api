@@ -11,7 +11,7 @@ import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
 import { BasesLocalesStatusDTO } from '@/modules/stats/dto/bases_locales_status.dto';
 import { BasesLocalesCreationDTO } from '@/modules/stats/dto/bases_locales_creations.dto';
-import { Between, FindOptionsWhere, In, Not } from 'typeorm';
+import { Between, FindOptionsSelect, FindOptionsWhere, In, Not } from 'typeorm';
 
 @Injectable()
 export class StatsService {
@@ -29,7 +29,7 @@ export class StatsService {
       ...(codeCommunes &&
         codeCommunes.length > 0 && { commune: In(codeCommunes) }),
     };
-    const select: Record<string, number> = {};
+    const select: FindOptionsSelect<BaseLocale> = { id: true };
     if (fields.length > 0) {
       fields.forEach((f) => {
         select[f] = 1;
@@ -45,7 +45,11 @@ export class StatsService {
   }
 
   public async findBalsStatusRepartition(): Promise<BasesLocalesStatusDTO[]> {
-    return await this.baseLocaleService.countGroupByStatus();
+    const result: any[] = await this.baseLocaleService.countGroupByStatus();
+    return result.map(({ status, count }) => ({
+      status,
+      count: Number(count),
+    }));
   }
 
   public async findBalsCreationByDays({
@@ -58,9 +62,10 @@ export class StatsService {
     const where: FindOptionsWhere<BaseLocale> = {
       createdAt: Between(from, to),
     };
-    const bals = await this.baseLocaleService.findMany(where);
-    const balsGroupByDays: Record<string, BaseLocale> = groupBy(bals, (bal) =>
-      format(bal._created, 'yyyy-MM-dd'),
+    const bals: BaseLocale[] = await this.baseLocaleService.findMany(where);
+    const balsGroupByDays: Record<string, BaseLocale> = groupBy(
+      bals,
+      (bal: BaseLocale) => format(bal.createdAt, 'yyyy-MM-dd'),
     );
     return Object.entries(balsGroupByDays).map(([date, bals]) => {
       const balsGroupedByCommune = groupBy(bals, (bal) => bal.commune);

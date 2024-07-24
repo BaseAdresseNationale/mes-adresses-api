@@ -109,7 +109,8 @@ export class BaseLocaleService {
   public async countGroupByStatus(): Promise<any[]> {
     return this.basesLocalesRepository
       .createQueryBuilder()
-      .select('status', 'COUNT(id) as count')
+      .select('status')
+      .addSelect('COUNT(id)', 'count')
       .groupBy('status')
       .getRawMany();
   }
