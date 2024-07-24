@@ -185,7 +185,7 @@ describe('TASK MODULE', () => {
   function createPositions(coordinates: number[] = [8, 42]): Position[] {
     return [
       {
-        type: PositionTypeEnum.INCONNUE,
+        type: PositionTypeEnum.ENTREE,
         source: 'ban',
         point: {
           type: 'Point',
@@ -342,7 +342,7 @@ describe('TASK MODULE', () => {
     axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
     const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-  91534_xxxx_00001_bis;;;;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+  91534_xxxx_00001_bis;;;;rue de la paix;;1;bis;1;91534;Saclay;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
     axiosMock.onPut(`/revisions/${revisionId}/files/bal`).reply(({ data }) => {
       expect(data.replace(/\s/g, '')).toEqual(csvFile.replace(/\s/g, ''));
       return [200, null];
@@ -401,7 +401,7 @@ describe('TASK MODULE', () => {
       files: [
         {
           type: 'bal',
-          hash: '8d0cda05e7b8b58a92a18cd40d0549c1d3f8ac1ac9586243aa0e3f885bb870c4',
+          hash: '8e68ed7f8ca30946796fcbc6ebab92e1140e2daec87e1cc8314d497b1903605a',
         },
       ],
     };
