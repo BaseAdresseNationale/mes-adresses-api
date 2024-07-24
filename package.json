@@ -15,7 +15,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "nest build api && nest build cron",
+    "build": "nest build api",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "node dist/apps/api/main.js",
     "start:api": "node dist/apps/api/main",
