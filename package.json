@@ -24,6 +24,7 @@
     "dev": "nest start --watch",
     "dev:api": "nest start api --watch",
     "dev:cron": "nest start cron --watch",
+    "detect_outdated": "nest start cron -- detect_outdated",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "yarn test:api",
     "test:api": "jest --config ./apps/api/test/jest-e2e.json",
