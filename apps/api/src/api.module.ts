@@ -4,6 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
+import { Start1721638331361 } from '../../../migrations/1721638331361-start';
+import { Emails1721720531648 } from '../../../migrations/1721720531648-emails';
+import { Emails1721737016715 } from '../../../migrations/1721737016715-emails';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
@@ -29,11 +32,15 @@ import { MailerParams } from '@/shared/params/mailer.params';
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
         type: 'postgres',
-        host: config.get('POSTGRES_HOST'),
-        port: config.get('POSTGRES_PORT'),
-        username: config.get('POSTGRES_USERNAME'),
-        password: config.get('POSTGRES_PASSWORD'),
-        database: config.get('POSTGRES_DATABASE'),
+        url: config.get('POSTGRES_URL'),
+        keepConnectionAlive: true,
+        schema: 'public',
+        migrationsRun: true,
+        migrations: [
+          Start1721638331361,
+          Emails1721720531648,
+          Emails1721737016715,
+        ],
         entities: [BaseLocale, Voie, Numero, Toponyme, Position],
       }),
       inject: [ConfigService],
