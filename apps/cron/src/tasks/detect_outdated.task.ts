@@ -18,15 +18,14 @@ export class DetectOutdatedTask implements Task {
   ) {}
 
   public async run() {
-    const query = this.basesLocalesRepository
+    await this.basesLocalesRepository
       .createQueryBuilder('bases_locales')
       .update(BaseLocale)
       // On set sync.status a 'outdated' et sync.currentUpdated a null
       .set({
         sync: () =>
-          `sync || jsonb_build_object(
-            'status', '${StatusSyncEnum.OUTDATED}',
-            'currentUpdated', null
+          `sync - 'currentUpdated' || jsonb_build_object(
+            'status', '${StatusSyncEnum.OUTDATED}'
           )`,
       })
       // Si sync.status egale SYNCED
@@ -36,8 +35,7 @@ export class DetectOutdatedTask implements Task {
       // Et si sync.currentUpdated est inférieur a updatedAt
       .andWhere(
         `(bases_locales.sync->>'currentUpdated')::timestamp < bases_locales.updated_at`,
-      );
-    console.log(query.getSql());
-    await query.execute();
+      )
+      .execute();
   }
 }
