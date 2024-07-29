@@ -28,7 +28,7 @@ export class CronService {
   }
 
   // Every 30 seconds
-  @Interval(5000)
+  @Interval(30000)
   async detectConflict() {
     // Met le status a published (synced) si la derniere revision a le même id que le lastUploadedRevisionId du sync
     // sinon met le status a replaced (conflict)

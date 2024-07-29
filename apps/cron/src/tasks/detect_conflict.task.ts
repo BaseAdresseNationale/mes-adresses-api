@@ -29,8 +29,10 @@ export class DetectConflictTask implements Task {
 
   public async run() {
     const futurePublishedSince = new Date();
-    const detectConflictPublishedSince = await this.cacheManager.get<Date>(
-      KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
+    const detectConflictPublishedSince = new Date(
+      (await this.cacheManager.get<Date>(
+        KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
+      )) || '1970-01-01',
     );
     const currentRevisions: Revision[] =
       await this.apiDepotService.getCurrentRevisions(
