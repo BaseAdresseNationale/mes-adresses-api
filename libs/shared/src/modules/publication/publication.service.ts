@@ -108,7 +108,6 @@ export class PublicationService {
         HttpStatus.PRECONDITION_FAILED,
       );
     }
-
     // On traite ensuite le cas de la première publication
     if (baseLocale.status === StatusBaseLocalEnum.DRAFT) {
       // On créer le fichier BAL CSV
@@ -174,10 +173,7 @@ export class PublicationService {
       }
 
       // On marque le sync de la BAL en published
-      return this.markAsSynced(
-        baseLocale,
-        sync.lastUploadedRevisionId.toString(),
-      );
+      return this.markAsSynced(baseLocale, sync.lastUploadedRevisionId);
     }
 
     return this.basesLocalesRepository.findOneBy({ id: balId });
@@ -232,9 +228,8 @@ export class PublicationService {
       status: StatusSyncEnum.SYNCED,
       isPaused: false,
       currentUpdated: baseLocale.updatedAt,
-      lastUploadedRevisionId: lastUploadedRevisionId,
+      lastUploadedRevisionId,
     };
-
     await this.basesLocalesRepository.update(
       { id: baseLocale.id },
       { status: StatusBaseLocalEnum.PUBLISHED, sync },

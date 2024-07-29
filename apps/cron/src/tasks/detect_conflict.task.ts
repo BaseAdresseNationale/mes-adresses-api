@@ -73,10 +73,7 @@ export class DetectConflictTask implements Task {
     }
 
     for (const baseLocale of basesLocales) {
-      if (
-        currentRevision._id ===
-        baseLocale.sync.lastUploadedRevisionId.toString()
-      ) {
+      if (currentRevision._id === baseLocale.sync.lastUploadedRevisionId) {
         await this.basesLocalesRepository.update(
           {
             id: baseLocale.id,

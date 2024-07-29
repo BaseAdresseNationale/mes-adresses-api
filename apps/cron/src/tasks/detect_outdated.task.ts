@@ -24,8 +24,9 @@ export class DetectOutdatedTask implements Task {
       // On set sync.status a 'outdated' et sync.currentUpdated a null
       .set({
         sync: () =>
-          `sync - 'currentUpdated' || jsonb_build_object(
-            'status', '${StatusSyncEnum.OUTDATED}'
+          `sync || jsonb_build_object(
+            'status', '${StatusSyncEnum.OUTDATED}',
+            'currentUpdated', null
           )`,
       })
       // Si sync.status egale SYNCED

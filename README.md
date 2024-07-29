@@ -11,9 +11,10 @@ https://adresse-data-gouv-fr.gitbook.io/bal/mes-adresses
 
 ## Pré-requis
 
-- [Node.js](https://nodejs.org) 16+
+- [Node.js](https://nodejs.org) 18+
 - [yarn](https://www.yarnpkg.com)
-- [MongoDB](https://www.mongodb.com) 4+
+- [PostgresSQL](https://www.postgresql.org/)
+- [Redis](https://redis.io/fr/)
 
 ## Utilisation
 
@@ -46,7 +47,6 @@ Lancer le cron de développement :
 ```
 $ yarn dev:cron
 ```
-
 
 ### Production
 
@@ -98,9 +98,9 @@ Cette application utilise des variables d'environnement pour sa configuration.
 Elles peuvent être définies classiquement ou en créant un fichier `.env` sur la base du modèle `.env.sample`.
 
 | Nom de la variable        | Description                                                                 |
-| --------------------------| --------------------------------------------------------------------------- |
-| `MONGODB_URL`             | Paramètre de connexion à MongoDB                                            |
-| `MONGODB_DBNAME`          | Nom de la base de données à utiliser                                        |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `POSTGRES_URL`            | Url de connection a la db postgres                                          |
+| `REDIS_URL`               | Url de connection a la db redis                                             |
 | `PORT`                    | Port à utiliser pour l'API                                                  |
 | `SHOW_EMAILS`             | Indique si les courriels doivent être affichés dans les logs (`YES`)        |
 | `API_URL`                 | URL de base de l’API                                                        |
@@ -108,7 +108,7 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `API_DEPOT_CLIENT_ID`     | Id du client de l'api-depot                                                 |
 | `API_DEPOT_CLIENT_SECRET` | Token du client de l'api-depot                                              |
 | `EDITOR_URL_PATTERN`      | Pattern permettant de construire l'URL vers l'édition d'une BAL             |
-|---|---|
+| ---                       | ---                                                                         |
 | `SMTP_HOST`               | Nom d'hôte du serveur SMTP                                                  |
 | `SMTP_PORT`               | Port du serveur SMTP                                                        |
 | `SMTP_USER`               | Nom d'utilisateur pour se connecter au serveur SMTP                         |

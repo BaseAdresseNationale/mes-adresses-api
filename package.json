@@ -30,7 +30,7 @@
     "cron:remove_demo_bal": "nest start cron -- remove_demo_bal",
     "cron:remove_soft_delete_bal": "nest start cron -- remove_soft_delete_bal",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "yarn test:api",
+    "test": "yarn test:api && yarn test:cron",
     "test:api": "jest --config ./apps/api/test/jest-e2e.json",
     "test:cron": "jest --config ./apps/cron/test/jest-e2e.json",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
@@ -150,6 +150,6 @@
     ]
   },
   "engines": {
-    "node": ">= 16"
+    "node": ">= 18"
   }
 }

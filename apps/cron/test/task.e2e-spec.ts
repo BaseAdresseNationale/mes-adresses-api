@@ -10,8 +10,7 @@ import {
   Module,
   ValidationPipe,
 } from '@nestjs/common';
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Connection, connect, Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuid } from 'uuid';
@@ -79,6 +78,11 @@ describe('TASK MODULE', () => {
   const token = 'xxxx';
   const createdAt = new Date('2000-01-01');
   const updatedAt = new Date('2000-01-02');
+  // CACHE
+  const cache = {};
+  const setCache = (key: string, value: any) => (cache[key] = value);
+  const getCache = (key: string) => cache[key];
+
   // AXIOS
   const axiosMock = new MockAdapter(axios);
 
@@ -120,8 +124,8 @@ describe('TASK MODULE', () => {
         {
           provide: CACHE_MANAGER,
           useValue: {
-            get: () => 'any value',
-            set: () => jest.fn(),
+            get: getCache,
+            set: setCache,
           },
         },
       ],
@@ -231,474 +235,474 @@ describe('TASK MODULE', () => {
 
     const resultBal = await balRepository.findOneBy({ id: balId });
 
-    console.log(resultBal);
     expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
-    expect(resultBal.sync.currentUpdated).not.toBeDefined();
+    expect(resultBal.sync.currentUpdated).toBe(null);
   });
 
-  // it('detectConflict', async () => {
-  //   const commune = '97354';
-  //   const date = new Date('2000-01-01');
-  //   await cacheService.set(KEY_DETECT_CONFLICT_PUBLISHED_SINCE, date);
+  it('detectConflict', async () => {
+    const commune = '97354';
+    const date = new Date('2000-01-01');
+    await setCache(KEY_DETECT_CONFLICT_PUBLISHED_SINCE, date);
 
-  //   const revisionId = new Types.ObjectId();
-  //   const revision: Revision = {
-  //     _id: revisionId.toHexString(),
-  //     codeCommune: commune,
-  //     ready: true,
-  //     current: true,
-  //     updatedAt: new Date('2000-01-01'),
-  //     createdAt: new Date('2000-01-01'),
-  //   };
+    const revisionId = new Types.ObjectId().toHexString();
+    const revision: Revision = {
+      _id: revisionId,
+      codeCommune: commune,
+      ready: true,
+      current: true,
+      updatedAt: new Date('2000-01-01'),
+      createdAt: new Date('2000-01-01'),
+    };
 
-  //   axiosMock
-  //     .onGet(`current-revisions?publishedSince=${date.toISOString()}`)
-  //     .reply(200, [revision]);
+    axiosMock
+      .onGet(`current-revisions?publishedSince=${date.toISOString()}`)
+      .reply(200, [revision]);
 
-  //   axiosMock
-  //     .onGet(`/communes/${commune}/current-revision`)
-  //     .reply(200, revision);
+    axiosMock
+      .onGet(`/communes/${commune}/current-revision`)
+      .reply(200, revision);
 
-  //   const balId1 = await createBal({
-  //     sync: {
-  //       status: StatusSyncEnum.SYNCED,
-  //       lastUploadedRevisionId: revisionId,
-  //     },
-  //     commune: commune,
-  //     status: StatusBaseLocalEnum.PUBLISHED,
-  //   });
+    const balId1 = await createBal({
+      nom: 'bal',
+      sync: {
+        status: StatusSyncEnum.SYNCED,
+        lastUploadedRevisionId: revisionId,
+      },
+      commune,
+      status: StatusBaseLocalEnum.PUBLISHED,
+    });
 
-  //   const balId2 = await createBal({
-  //     sync: {
-  //       status: StatusSyncEnum.SYNCED,
-  //       lastUploadedRevisionId: new Types.ObjectId(),
-  //     },
-  //     commune: commune,
-  //     status: StatusBaseLocalEnum.PUBLISHED,
-  //   });
+    const balId2 = await createBal({
+      nom: 'bal',
+      commune,
+      sync: {
+        status: StatusSyncEnum.SYNCED,
+        lastUploadedRevisionId: new Types.ObjectId().toHexString(),
+      },
+      status: StatusBaseLocalEnum.PUBLISHED,
+    });
 
-  //   await detectConflict.run();
+    await detectConflict.run();
 
-  //   const resultDate = await cacheService.get(
-  //     KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
-  //   );
+    const resultDate = await getCache(KEY_DETECT_CONFLICT_PUBLISHED_SINCE);
 
-  //   expect(date.toISOString()).not.toEqual(resultDate.toISOString());
+    expect(date.toISOString()).not.toEqual(resultDate.toISOString());
 
-  //   const bal1After = await balModel.findOne(balId1);
-  //   const bal2After = await balModel.findOne(balId2);
+    const bal1After = await balRepository.findOneBy({ id: balId1 });
+    const bal2After = await balRepository.findOneBy({ id: balId2 });
 
-  //   expect(bal1After.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-  //   expect(bal1After.sync.status).toEqual(StatusSyncEnum.SYNCED);
+    expect(bal1After.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
+    expect(bal1After.sync.status).toEqual(StatusSyncEnum.SYNCED);
 
-  //   expect(bal2After.status).toEqual(StatusBaseLocalEnum.REPLACED);
-  //   expect(bal2After.sync.status).toEqual(StatusSyncEnum.CONFLICT);
-  // });
+    expect(bal2After.status).toEqual(StatusBaseLocalEnum.REPLACED);
+    expect(bal2After.sync.status).toEqual(StatusSyncEnum.CONFLICT);
+  });
 
-  // it('syncOutdated', async () => {
-  //   const commune = '91534';
-  //   const habilitationId = new Types.ObjectId();
-  //   // REVSION
-  //   const revisionId = new Types.ObjectId();
-  //   const revision: Revision = {
-  //     _id: revisionId.toString(),
-  //     codeCommune: commune,
-  //     status: StatusRevision.PENDING,
-  //     ready: false,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //     current: false,
-  //     validation: {
-  //       valid: true,
-  //     },
-  //     files: [
-  //       {
-  //         type: 'bal',
-  //         hash: '',
-  //       },
-  //     ],
-  //   };
+  it('syncOutdated', async () => {
+    const commune = '91534';
+    const habilitationId = new Types.ObjectId().toHexString();
+    // REVSION
+    const revisionId = new Types.ObjectId().toHexString();
+    const revision: Revision = {
+      _id: revisionId,
+      codeCommune: commune,
+      status: StatusRevision.PENDING,
+      ready: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      current: false,
+      validation: {
+        valid: true,
+      },
+      files: [
+        {
+          type: 'bal',
+          hash: '',
+        },
+      ],
+    };
+    const date = sub(new Date(), { hours: 3 });
+    // BAL
+    const balId = await createBal({
+      banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+      nom: 'bal',
+      commune,
+      habilitationId,
+      status: StatusBaseLocalEnum.PUBLISHED,
+      emails: ['test@test.fr'],
+      sync: {
+        status: StatusSyncEnum.OUTDATED,
+        lastUploadedRevisionId: revisionId,
+        isPaused: false,
+        currentUpdated: null,
+      },
+      updatedAt: date,
+    });
+    const voieId = await createVoie(balId, {
+      nom: 'rue de la paix',
+      banId: '26734c2d-2a14-4eeb-ac5b-1be055c0a5ae',
+    });
+    await createNumero(balId, voieId, {
+      numero: 1,
+      banId: '2da3bb47-1a10-495a-8c29-6b8d0e79f9af',
+      suffixe: 'bis',
+      positions: [createPositions()],
+      certifie: true,
+      updatedAt: new Date('2000-01-01'),
+    });
 
-  //   // BAL
-  //   const balId = await createBal({
-  //     commune,
-  //     _habilitation: habilitationId.toString(),
-  //     status: StatusBaseLocalEnum.PUBLISHED,
-  //     emails: ['test@test.fr'],
-  //     sync: {
-  //       status: StatusSyncEnum.OUTDATED,
-  //       lastUploadedRevisionId: revisionId,
-  //     },
-  //   });
-  //   const voieId = await createVoie({
-  //     nom: 'rue de la paix',
-  //     commune,
-  //     _bal: balId,
-  //   });
-  //   await createNumero({
-  //     _bal: balId,
-  //     voie: voieId,
-  //     numero: 1,
-  //     suffixe: 'bis',
-  //     positions: createPositions(),
-  //     certifie: true,
-  //     commune,
-  //     _updated: new Date('2000-01-01'),
-  //   });
+    // MOCK AXIOS
+    axiosMock
+      .onGet(`/communes/${commune}/current-revision`)
+      .reply(200, revision);
 
-  //   // MOCK AXIOS
-  //   axiosMock
-  //     .onGet(`/communes/${commune}/current-revision`)
-  //     .reply(200, revision);
+    const habilitation: Habilitation = {
+      _id: habilitationId.toString(),
+      status: StatusHabiliation.ACCEPTED,
+      expiresAt: add(new Date(), { months: 1 }),
+      codeCommune: commune,
+      emailCommune: 'test@test.fr',
+    };
+    axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
 
-  //   const habilitation: Habilitation = {
-  //     _id: habilitationId.toString(),
-  //     status: StatusHabiliation.ACCEPTED,
-  //     expiresAt: add(new Date(), { months: 1 }),
-  //     codeCommune: commune,
-  //     emailCommune: 'test@test.fr',
-  //   };
-  //   axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
+    axiosMock.onPost(`/communes/${commune}/revisions`).reply(200, revision);
 
-  //   axiosMock.onPost(`/communes/${commune}/revisions`).reply(200, revision);
+    axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
-  //   axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
+    const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+  91534_xxxx_00001_bis;52c4de09-6b82-45eb-8ed7-b212607282f7;26734c2d-2a14-4eeb-ac5b-1be055c0a5ae;2da3bb47-1a10-495a-8c29-6b8d0e79f9af;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+    axiosMock.onPut(`/revisions/${revisionId}/files/bal`).reply(({ data }) => {
+      expect(data.replace(/\s/g, '')).toEqual(csvFile.replace(/\s/g, ''));
+      return [200, null];
+    });
 
-  //   const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-  // 91534_xxxx_00001_bis;;;;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
-  //   axiosMock.onPut(`/revisions/${revisionId}/files/bal`).reply(({ data }) => {
-  //     expect(data.replace(/\s/g, '')).toEqual(csvFile.replace(/\s/g, ''));
-  //     return [200, null];
-  //   });
+    const publishedRevision: Revision = {
+      _id: revisionId,
+      codeCommune: commune,
+      status: StatusRevision.PUBLISHED,
+      ready: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      current: true,
+      validation: {
+        valid: true,
+      },
+    };
+    axiosMock.onPost(`/revisions/${revisionId}/publish`).reply(({ data }) => {
+      expect(JSON.parse(data).habilitationId).toEqual(
+        habilitationId.toString(),
+      );
+      return [200, publishedRevision];
+    });
 
-  //   const publishedRevision: Revision = {
-  //     _id: revisionId.toString(),
-  //     codeCommune: commune,
-  //     status: StatusRevision.PUBLISHED,
-  //     ready: true,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //     current: true,
-  //     validation: {
-  //       valid: true,
-  //     },
-  //   };
-  //   axiosMock.onPost(`/revisions/${revisionId}/publish`).reply(({ data }) => {
-  //     expect(JSON.parse(data).habilitationId).toEqual(
-  //       habilitationId.toString(),
-  //     );
-  //     return [200, publishedRevision];
-  //   });
+    await syncOutdatedTask.run();
 
-  //   await syncOutdatedTask.run();
+    const balResult = await balRepository.findOneBy({ id: balId });
 
-  //   const balResult = await balModel.findOne(balId);
+    expect(balResult.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
+    expect(balResult.sync.currentUpdated).toEqual(date.toISOString());
+    expect(balResult.sync.status).toEqual(StatusSyncEnum.SYNCED);
+    expect(balResult.sync.isPaused).toEqual(false);
+    expect(balResult.sync.lastUploadedRevisionId).toEqual(revisionId);
+  });
 
-  //   expect(balResult.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-  //   expect(balResult.sync.currentUpdated.toISOString()).toEqual(
-  //     _updated.toISOString(),
-  //   );
-  //   expect(balResult.sync.status).toEqual(StatusSyncEnum.SYNCED);
-  //   expect(balResult.sync.isPaused).toEqual(false);
-  //   expect(balResult.sync.lastUploadedRevisionId.toString()).toEqual(
-  //     revisionId.toString(),
-  //   );
-  // });
+  it('syncOutdated same hash', async () => {
+    const commune = '91534';
+    const habilitationId = new Types.ObjectId().toHexString();
+    // REVSION
+    const revisionId = new Types.ObjectId().toHexString();
+    const revision: Revision = {
+      _id: revisionId.toString(),
+      codeCommune: commune,
+      status: StatusRevision.PENDING,
+      ready: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      current: false,
+      validation: {
+        valid: true,
+      },
+      files: [
+        {
+          type: 'bal',
+          hash: 'a62492c9dbd6c74e7cfb2b67b3a9e49be89da7b8fa4dff3c061b0f82805b65c9',
+        },
+      ],
+    };
 
-  // it('syncOutdated same hash', async () => {
-  //   const commune = '91534';
-  //   const habilitationId = new Types.ObjectId();
-  //   // REVSION
-  //   const revisionId = new Types.ObjectId();
-  //   const revision: Revision = {
-  //     _id: revisionId.toString(),
-  //     codeCommune: commune,
-  //     status: StatusRevision.PENDING,
-  //     ready: false,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //     current: false,
-  //     validation: {
-  //       valid: true,
-  //     },
-  //     files: [
-  //       {
-  //         type: 'bal',
-  //         hash: '8d0cda05e7b8b58a92a18cd40d0549c1d3f8ac1ac9586243aa0e3f885bb870c4',
-  //       },
-  //     ],
-  //   };
+    // BAL
+    const balId = await createBal({
+      nom: 'bal',
+      banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+      commune,
+      habilitationId,
+      status: StatusBaseLocalEnum.PUBLISHED,
+      emails: ['test@test.fr'],
+      sync: {
+        status: StatusSyncEnum.OUTDATED,
+        lastUploadedRevisionId: revisionId,
+        isPaused: false,
+        currentUpdated: null,
+      },
+    });
+    const voieId = await createVoie(balId, {
+      nom: 'rue de la paix',
+      banId: '26734c2d-2a14-4eeb-ac5b-1be055c0a5ae',
+    });
+    await createNumero(balId, voieId, {
+      numero: 1,
+      banId: '2da3bb47-1a10-495a-8c29-6b8d0e79f9af',
+      suffixe: 'bis',
+      positions: [createPositions()],
+      certifie: true,
+    });
 
-  //   // BAL
-  //   const balId = await createBal({
-  //     commune,
-  //     _habilitation: habilitationId.toString(),
-  //     status: StatusBaseLocalEnum.PUBLISHED,
-  //     emails: ['test@test.fr'],
-  //     sync: {
-  //       status: StatusSyncEnum.OUTDATED,
-  //       lastUploadedRevisionId: revisionId,
-  //     },
-  //   });
-  //   const voieId = await createVoie({
-  //     nom: 'rue de la paix',
-  //     commune,
-  //     _bal: balId,
-  //   });
-  //   await createNumero({
-  //     _bal: balId,
-  //     voie: voieId,
-  //     numero: 1,
-  //     suffixe: 'bis',
-  //     positions: createPositions(),
-  //     certifie: true,
-  //     commune,
-  //     _updated: new Date('2000-01-01'),
-  //   });
+    // MOCK AXIOS
+    axiosMock
+      .onGet(`/communes/${commune}/current-revision`)
+      .reply(200, revision);
 
-  //   // MOCK AXIOS
-  //   axiosMock
-  //     .onGet(`/communes/${commune}/current-revision`)
-  //     .reply(200, revision);
+    const habilitation: Habilitation = {
+      _id: habilitationId.toString(),
+      status: StatusHabiliation.ACCEPTED,
+      expiresAt: add(new Date(), { months: 1 }),
+      codeCommune: commune,
+      emailCommune: 'test@test.fr',
+    };
+    axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
 
-  //   const habilitation: Habilitation = {
-  //     _id: habilitationId.toString(),
-  //     status: StatusHabiliation.ACCEPTED,
-  //     expiresAt: add(new Date(), { months: 1 }),
-  //     codeCommune: commune,
-  //     emailCommune: 'test@test.fr',
-  //   };
-  //   axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
+    await syncOutdatedTask.run();
 
-  //   await syncOutdatedTask.run();
+    const balResult = await balRepository.findOneBy({ id: balId });
+    expect(balResult.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
+    expect(balResult.sync.currentUpdated).toEqual(updatedAt.toISOString());
+    expect(balResult.sync.status).toEqual(StatusSyncEnum.SYNCED);
+    expect(balResult.sync.isPaused).toEqual(false);
+    expect(balResult.sync.lastUploadedRevisionId).toEqual(revisionId);
+  });
 
-  //   const balResult = await balModel.findOne(balId);
+  it('syncOutdated 412 no habilitation', async () => {
+    const commune = '91534';
+    // REVSION
+    const revisionId = new Types.ObjectId().toHexString();
+    const revision: Revision = {
+      _id: revisionId.toString(),
+      codeCommune: commune,
+      status: StatusRevision.PENDING,
+      ready: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      current: false,
+      validation: {
+        valid: true,
+      },
+      files: [
+        {
+          type: 'bal',
+          hash: '',
+        },
+      ],
+    };
 
-  //   expect(balResult.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-  //   expect(balResult.sync.currentUpdated.toISOString()).toEqual(
-  //     _updated.toISOString(),
-  //   );
-  //   expect(balResult.sync.status).toEqual(StatusSyncEnum.SYNCED);
-  //   expect(balResult.sync.isPaused).toEqual(false);
-  //   expect(balResult.sync.lastUploadedRevisionId.toString()).toEqual(
-  //     revisionId.toString(),
-  //   );
-  // });
+    // BAL
+    const balId = await createBal({
+      nom: 'bal',
+      banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+      commune,
+      status: StatusBaseLocalEnum.PUBLISHED,
+      emails: ['test@test.fr'],
+      sync: {
+        status: StatusSyncEnum.OUTDATED,
+        lastUploadedRevisionId: revisionId,
+      },
+    });
 
-  // it('syncOutdated 412 no habilitation', async () => {
-  //   const commune = '91534';
-  //   // REVSION
-  //   const revisionId = new Types.ObjectId();
-  //   const revision: Revision = {
-  //     _id: revisionId.toString(),
-  //     codeCommune: commune,
-  //     status: StatusRevision.PENDING,
-  //     ready: false,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //     current: false,
-  //     validation: {
-  //       valid: true,
-  //     },
-  //     files: [
-  //       {
-  //         type: 'bal',
-  //         hash: '',
-  //       },
-  //     ],
-  //   };
+    // MOCK AXIOS
+    axiosMock
+      .onGet(`/communes/${commune}/current-revision`)
+      .reply(200, revision);
 
-  //   // BAL
-  //   const balId = await createBal({
-  //     commune,
-  //     status: StatusBaseLocalEnum.PUBLISHED,
-  //     emails: ['test@test.fr'],
-  //     sync: {
-  //       status: StatusSyncEnum.OUTDATED,
-  //       lastUploadedRevisionId: revisionId,
-  //     },
-  //   });
+    await syncOutdatedTask.run();
 
-  //   // MOCK AXIOS
-  //   axiosMock
-  //     .onGet(`/communes/${commune}/current-revision`)
-  //     .reply(200, revision);
+    const resultBal = await balRepository.findOneBy({ id: balId });
+    expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
+    expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
+  });
 
-  //   await syncOutdatedTask.run();
+  it('syncOutdated 412 habilitation PENDING', async () => {
+    const commune = '91534';
+    // REVSION
+    const revisionId = new Types.ObjectId().toHexString();
+    const revision: Revision = {
+      _id: revisionId.toString(),
+      codeCommune: commune,
+      status: StatusRevision.PENDING,
+      ready: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      current: false,
+      validation: {
+        valid: true,
+      },
+      files: [
+        {
+          type: 'bal',
+          hash: '',
+        },
+      ],
+    };
 
-  //   const resultBal = await balModel.findOne(balId);
-  //   expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
-  //   expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
-  // });
+    const habilitationId = new Types.ObjectId().toHexString();
+    // BAL
+    const balId = await createBal({
+      nom: 'bal',
+      banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+      commune,
+      habilitationId,
+      status: StatusBaseLocalEnum.PUBLISHED,
+      emails: ['test@test.fr'],
+      sync: {
+        status: StatusSyncEnum.OUTDATED,
+        lastUploadedRevisionId: revisionId,
+      },
+    });
 
-  // it('syncOutdated 412 habilitation PENDING', async () => {
-  //   const commune = '91534';
-  //   // REVSION
-  //   const revisionId = new Types.ObjectId();
-  //   const revision: Revision = {
-  //     _id: revisionId.toString(),
-  //     codeCommune: commune,
-  //     status: StatusRevision.PENDING,
-  //     ready: false,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //     current: false,
-  //     validation: {
-  //       valid: true,
-  //     },
-  //     files: [
-  //       {
-  //         type: 'bal',
-  //         hash: '',
-  //       },
-  //     ],
-  //   };
+    // MOCK AXIOS
+    axiosMock
+      .onGet(`/communes/${commune}/current-revision`)
+      .reply(200, revision);
 
-  //   const habilitationId = new Types.ObjectId();
-  //   // BAL
-  //   const balId = await createBal({
-  //     commune,
-  //     _habilitation: habilitationId.toString(),
-  //     status: StatusBaseLocalEnum.PUBLISHED,
-  //     emails: ['test@test.fr'],
-  //     sync: {
-  //       status: StatusSyncEnum.OUTDATED,
-  //       lastUploadedRevisionId: revisionId,
-  //     },
-  //   });
+    const habilitation: Habilitation = {
+      _id: habilitationId.toString(),
+      status: StatusHabiliation.PENDING,
+      expiresAt: add(new Date(), { months: 1 }),
+      codeCommune: commune,
+      emailCommune: 'test@test.fr',
+    };
+    axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
 
-  //   // MOCK AXIOS
-  //   axiosMock
-  //     .onGet(`/communes/${commune}/current-revision`)
-  //     .reply(200, revision);
+    await syncOutdatedTask.run();
 
-  //   const habilitation: Habilitation = {
-  //     _id: habilitationId.toString(),
-  //     status: StatusHabiliation.PENDING,
-  //     expiresAt: add(new Date(), { months: 1 }),
-  //     codeCommune: commune,
-  //     emailCommune: 'test@test.fr',
-  //   };
-  //   axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
+    const resultBal = await balRepository.findOneBy({ id: balId });
+    expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
+    expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
+  });
 
-  //   await syncOutdatedTask.run();
+  it('syncOutdated 412 habilitation expired', async () => {
+    const commune = '91534';
+    // REVSION
+    const revisionId = new Types.ObjectId().toHexString();
+    const revision: Revision = {
+      _id: revisionId.toString(),
+      codeCommune: commune,
+      status: StatusRevision.PENDING,
+      ready: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      current: false,
+      validation: {
+        valid: true,
+      },
+      files: [
+        {
+          type: 'bal',
+          hash: '',
+        },
+      ],
+    };
 
-  //   const resultBal = await balModel.findOne(balId);
-  //   expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
-  //   expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
-  // });
+    const habilitationId = new Types.ObjectId().toHexString();
+    // BAL
+    const balId = await createBal({
+      nom: 'bal',
+      banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+      commune,
+      habilitationId,
+      status: StatusBaseLocalEnum.PUBLISHED,
+      emails: ['test@test.fr'],
+      sync: {
+        status: StatusSyncEnum.OUTDATED,
+        lastUploadedRevisionId: revisionId,
+      },
+    });
 
-  // it('syncOutdated 412 habilitation expired', async () => {
-  //   const commune = '91534';
-  //   // REVSION
-  //   const revisionId = new Types.ObjectId();
-  //   const revision: Revision = {
-  //     _id: revisionId.toString(),
-  //     codeCommune: commune,
-  //     status: StatusRevision.PENDING,
-  //     ready: false,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //     current: false,
-  //     validation: {
-  //       valid: true,
-  //     },
-  //     files: [
-  //       {
-  //         type: 'bal',
-  //         hash: '',
-  //       },
-  //     ],
-  //   };
+    // MOCK AXIOS
+    axiosMock
+      .onGet(`/communes/${commune}/current-revision`)
+      .reply(200, revision);
 
-  //   const habilitationId = new Types.ObjectId();
-  //   // BAL
-  //   const balId = await createBal({
-  //     commune,
-  //     _habilitation: habilitationId.toString(),
-  //     status: StatusBaseLocalEnum.PUBLISHED,
-  //     emails: ['test@test.fr'],
-  //     sync: {
-  //       status: StatusSyncEnum.OUTDATED,
-  //       lastUploadedRevisionId: revisionId,
-  //     },
-  //   });
+    const habilitation: Habilitation = {
+      _id: habilitationId.toString(),
+      status: StatusHabiliation.ACCEPTED,
+      expiresAt: sub(new Date(), { months: 1 }),
+      codeCommune: commune,
+      emailCommune: 'test@test.fr',
+    };
+    axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
 
-  //   // MOCK AXIOS
-  //   axiosMock
-  //     .onGet(`/communes/${commune}/current-revision`)
-  //     .reply(200, revision);
+    await syncOutdatedTask.run();
 
-  //   const habilitation: Habilitation = {
-  //     _id: habilitationId.toString(),
-  //     status: StatusHabiliation.ACCEPTED,
-  //     expiresAt: sub(new Date(), { months: 1 }),
-  //     codeCommune: commune,
-  //     emailCommune: 'test@test.fr',
-  //   };
-  //   axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
+    const resultBal = await balRepository.findOneBy({ id: balId });
+    expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
+    expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
+  });
 
-  //   await syncOutdatedTask.run();
+  it('syncOutdated 412 no numero', async () => {
+    const commune = '91534';
+    // REVSION
+    const revisionId = new Types.ObjectId().toHexString();
+    const revision: Revision = {
+      _id: revisionId.toString(),
+      codeCommune: commune,
+      status: StatusRevision.PENDING,
+      ready: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      current: false,
+      validation: {
+        valid: true,
+      },
+      files: [
+        {
+          type: 'bal',
+          hash: '',
+        },
+      ],
+    };
 
-  //   const resultBal = await balModel.findOne(balId);
-  //   expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
-  //   expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
-  // });
+    const habilitationId = new Types.ObjectId().toHexString();
+    // BAL
+    const balId = await createBal({
+      nom: 'bal',
+      banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+      commune,
+      habilitationId,
+      status: StatusBaseLocalEnum.PUBLISHED,
+      emails: ['test@test.fr'],
+      sync: {
+        status: StatusSyncEnum.OUTDATED,
+        lastUploadedRevisionId: revisionId,
+      },
+    });
 
-  // it('syncOutdated 412 no numero', async () => {
-  //   const commune = '91534';
-  //   // REVSION
-  //   const revisionId = new Types.ObjectId();
-  //   const revision: Revision = {
-  //     _id: revisionId.toString(),
-  //     codeCommune: commune,
-  //     status: StatusRevision.PENDING,
-  //     ready: false,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //     current: false,
-  //     validation: {
-  //       valid: true,
-  //     },
-  //     files: [
-  //       {
-  //         type: 'bal',
-  //         hash: '',
-  //       },
-  //     ],
-  //   };
+    // MOCK AXIOS
+    axiosMock
+      .onGet(`/communes/${commune}/current-revision`)
+      .reply(200, revision);
 
-  //   const habilitationId = new Types.ObjectId();
-  //   // BAL
-  //   const balId = await createBal({
-  //     commune,
-  //     _habilitation: habilitationId.toString(),
-  //     status: StatusBaseLocalEnum.PUBLISHED,
-  //     emails: ['test@test.fr'],
-  //     sync: {
-  //       status: StatusSyncEnum.OUTDATED,
-  //       lastUploadedRevisionId: revisionId,
-  //     },
-  //   });
+    const habilitation: Habilitation = {
+      _id: habilitationId.toString(),
+      status: StatusHabiliation.ACCEPTED,
+      expiresAt: add(new Date(), { months: 1 }),
+      codeCommune: commune,
+      emailCommune: 'test@test.fr',
+    };
+    axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
 
-  //   // MOCK AXIOS
-  //   axiosMock
-  //     .onGet(`/communes/${commune}/current-revision`)
-  //     .reply(200, revision);
+    await syncOutdatedTask.run();
 
-  //   const habilitation: Habilitation = {
-  //     _id: habilitationId.toString(),
-  //     status: StatusHabiliation.ACCEPTED,
-  //     expiresAt: add(new Date(), { months: 1 }),
-  //     codeCommune: commune,
-  //     emailCommune: 'test@test.fr',
-  //   };
-  //   axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
-
-  //   await syncOutdatedTask.run();
-
-  //   const resultBal = await balModel.findOne(balId);
-  //   expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
-  //   expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
-  // });
+    const resultBal = await balRepository.findOneBy({ id: balId });
+    expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
+    expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
+  });
 });

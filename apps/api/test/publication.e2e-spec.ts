@@ -466,10 +466,10 @@ describe('PUBLICATION MODULE', () => {
         currentUpdated: updatedAt.toISOString(),
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
-        lastUploadedRevisionId: revisionId.toString(),
+        lastUploadedRevisionId: revisionId,
       };
 
-      expect(response.body.id).toEqual(balId.toString());
+      expect(response.body.id).toEqual(balId);
       expect(response.body.commune).toEqual(commune);
       expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
       expect(response.body.sync).toEqual(syncExpected);

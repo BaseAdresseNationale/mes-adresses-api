@@ -1,11 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  FindOptionsWhere,
-  JsonContains,
-  LessThan,
-  Not,
-  Repository,
-} from 'typeorm';
+import { FindOptionsWhere, JsonContains, LessThan, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { sub } from 'date-fns';
 
@@ -29,12 +23,11 @@ export class SyncOutdatedTask implements Task {
 
   public async run() {
     const timeLimit: Date = sub(new Date(), { hours: 2 });
-
     const where: FindOptionsWhere<BaseLocale> = {
       updatedAt: LessThan(timeLimit),
       sync: JsonContains({
         status: StatusSyncEnum.OUTDATED,
-        isPaused: Not(true),
+        isPaused: false,
       }),
     };
 
