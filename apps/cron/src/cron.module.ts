@@ -3,11 +3,12 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheModule, CacheStore } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-store';
 
 import { Start1721638331361 } from '../../../migrations/1721638331361-start';
 import { Emails1721720531648 } from '../../../migrations/1721720531648-emails';
 import { Emails1721737016715 } from '../../../migrations/1721737016715-emails';
-import { CacheModule } from '@/shared/modules/cache/cache.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
@@ -43,11 +44,19 @@ import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
       }),
       inject: [ConfigService],
     }),
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        store: (await redisStore({
+          url: configService.get('REDIS_URL'),
+        })) as unknown as CacheStore,
+      }),
+      inject: [ConfigService],
+    }),
     TypeOrmModule.forFeature([BaseLocale]),
     MailerModule.forRootAsync(MailerParams),
     ScheduleModule.forRoot(),
     ApiDepotModule,
-    // CacheModule,
     PublicationModule,
   ],
   providers: [
@@ -55,6 +64,7 @@ import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
     SyncOutdatedTask,
     RemoveSoftDeleteBalTask,
     RemoveDemoBalTask,
+    DetectConflictTask,
   ],
 })
 export class CronModule {}
