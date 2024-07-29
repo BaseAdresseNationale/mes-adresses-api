@@ -46,11 +46,14 @@ import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
     }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        store: (await redisStore({
-          url: configService.get('REDIS_URL'),
-        })) as unknown as CacheStore,
-      }),
+      useFactory: async (configService: ConfigService) =>
+        configService.get('REDIS_URL')
+          ? {
+              store: (await redisStore({
+                url: configService.get('REDIS_URL'),
+              })) as unknown as CacheStore,
+            }
+          : {},
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([BaseLocale]),
@@ -62,9 +65,9 @@ import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
   providers: [
     DetectOutdatedTask,
     SyncOutdatedTask,
+    DetectConflictTask,
     RemoveSoftDeleteBalTask,
     RemoveDemoBalTask,
-    DetectConflictTask,
   ],
 })
 export class CronModule {}
