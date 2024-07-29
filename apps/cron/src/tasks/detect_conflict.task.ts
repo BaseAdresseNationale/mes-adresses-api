@@ -11,7 +11,7 @@ import {
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
 
-import { Task } from '../task.type';
+import { Task } from '../task_queue.class';
 
 export const KEY_DETECT_CONFLICT_PUBLISHED_SINCE =
   'detectConflictPublishedSince';

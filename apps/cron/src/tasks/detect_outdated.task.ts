@@ -4,7 +4,7 @@ import {
   StatusSyncEnum,
 } from '@/shared/entities/base_locale.entity';
 
-import { Task } from '../task.type';
+import { Task } from '../task_queue.class';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 

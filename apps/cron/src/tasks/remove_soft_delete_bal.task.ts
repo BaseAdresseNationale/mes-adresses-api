@@ -3,7 +3,7 @@ import { subMonths } from 'date-fns';
 
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
-import { Task } from '../task.type';
+import { Task } from '../task_queue.class';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, LessThan, Repository } from 'typeorm';
 

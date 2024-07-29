@@ -23,6 +23,7 @@ import { SyncOutdatedTask } from './tasks/sync_outdated.task';
 import { MailerParams } from '@/shared/params/mailer.params';
 import { RemoveSoftDeleteBalTask } from './tasks/remove_soft_delete_bal.task';
 import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
+import { CronService } from './cron.service';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
     PublicationModule,
   ],
   providers: [
+    CronService,
     DetectOutdatedTask,
     SyncOutdatedTask,
     DetectConflictTask,

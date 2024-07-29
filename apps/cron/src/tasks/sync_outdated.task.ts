@@ -9,7 +9,7 @@ import {
 } from '@/shared/entities/base_locale.entity';
 import { PublicationService } from '@/shared/modules/publication/publication.service';
 
-import { Task } from '../task.type';
+import { Task } from '../task_queue.class';
 
 @Injectable()
 export class SyncOutdatedTask implements Task {

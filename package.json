@@ -15,7 +15,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "nest build api",
+    "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "node dist/apps/api/main.js",
     "start:api": "node dist/apps/api/main",
@@ -24,11 +24,6 @@
     "dev": "nest start --watch",
     "dev:api": "nest start api --watch",
     "dev:cron": "nest start cron --watch",
-    "cron:detect_outdated": "nest start cron -- detect_outdated",
-    "cron:sync_outdated": "nest start cron -- sync_outdated",
-    "cron:detect_conflict": "nest start cron -- detect_conflict",
-    "cron:remove_demo_bal": "nest start cron -- remove_demo_bal",
-    "cron:remove_soft_delete_bal": "nest start cron -- remove_soft_delete_bal",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "yarn test:api && yarn test:cron",
     "test:api": "jest --config ./apps/api/test/jest-e2e.json",
