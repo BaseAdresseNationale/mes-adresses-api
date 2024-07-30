@@ -258,17 +258,19 @@ export class BaseLocaleService {
       const newCollaborators = difference(update.emails, baseLocale.emails);
       const editorUrl = getEditorUrl(baseLocale);
       const apiUrl = getApiUrl();
-      await this.mailerService.sendMail({
-        to: newCollaborators,
-        subject: 'Invitation à l’administration d’une Base Adresse Locale',
-        template: 'new-admin-notification',
-        bcc: this.configService.get('SMTP_BCC'),
-        context: {
-          baseLocale,
-          editorUrl,
-          apiUrl,
-        },
-      });
+      if (newCollaborators?.length > 0) {
+        await this.mailerService.sendMail({
+          to: newCollaborators,
+          subject: 'Invitation à l’administration d’une Base Adresse Locale',
+          template: 'new-admin-notification',
+          bcc: this.configService.get('SMTP_BCC'),
+          context: {
+            baseLocale,
+            editorUrl,
+            apiUrl,
+          },
+        });
+      }
     }
     // On retourne la Bal mis a jour
     return updatedBaseLocale;

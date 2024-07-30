@@ -19,11 +19,13 @@ import {
 } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { pick, chunk } from 'lodash';
+import { ObjectId } from 'mongodb';
 
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { normalizeSuffixe } from '@/shared/utils/numero.utils';
+import { Position } from '@/shared/entities/position.entity';
 
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
@@ -33,14 +35,14 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
-import { Position } from '@/shared/entities/position.entity';
-import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class NumeroService {
   constructor(
     @InjectRepository(Numero)
     private numerosRepository: Repository<Numero>,
+    @InjectRepository(Position)
+    private positionsRepository: Repository<Position>,
     @Inject(forwardRef(() => VoieService))
     private voieService: VoieService,
     @Inject(forwardRef(() => ToponymeService))
@@ -257,18 +259,6 @@ export class NumeroService {
     return numeroCreated;
   }
 
-  private async updateOne(
-    where: FindOptionsWhere<Numero>,
-    change: Partial<Numero>,
-  ): Promise<{ affected: number }> {
-    const numero = await this.numerosRepository.findOneBy(where);
-    Object.assign(numero, change);
-    await this.numerosRepository.save(numero);
-    return {
-      affected: Boolean(numero) ? 1 : 0,
-    };
-  }
-
   public async update(
     numero: Numero,
     updateNumeroDto: UpdateNumeroDTO,
@@ -296,7 +286,6 @@ export class NumeroService {
       ...numero,
       ...updateNumeroDto,
     });
-    console.log('numeroToSave', numeroToSave);
     const numeroUpdated: Numero =
       await this.numerosRepository.save(numeroToSave);
     // Si le numero a été modifié
@@ -406,10 +395,15 @@ export class NumeroService {
       ...(changes.toponymeId && { toponymeId: changes.toponymeId }),
       ...pick(changes, ['comment', 'certifie']),
     };
-    // // Si le positionType est changé, on change le type de la première position dans le batch
-    // if (changes.positionType) {
-    //   batchChanges['positions.0.type'] = changes.positionType;
-    // }
+    // Si le positionType est changé, on change le type de la première position dans le batch
+    let positionTypeAffected: number = 0;
+    if (changes.positionType) {
+      const { affected }: UpdateResult = await this.positionsRepository.update(
+        { numeroId: In(numerosIds), rank: 0 },
+        { type: changes.positionType },
+      );
+      positionTypeAffected = affected;
+    }
     // On lance la requète
     const { affected }: UpdateResult = await this.numerosRepository.update(
       {
@@ -418,8 +412,9 @@ export class NumeroService {
       },
       batchChanges,
     );
+
     // Si il y a plus d'un numéro qui a changé
-    if (affected > 0) {
+    if (affected > 0 || positionTypeAffected > 0) {
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(baseLocale.id);
       // Si la voie a changé
