@@ -9,6 +9,8 @@ import { redisStore } from 'cache-manager-redis-store';
 import { Start1721638331361 } from '../../../migrations/1721638331361-start';
 import { Emails1721720531648 } from '../../../migrations/1721720531648-emails';
 import { Emails1721737016715 } from '../../../migrations/1721737016715-emails';
+import { Index1722325570094 } from '../../../migrations/1722325570094-index';
+import { Rank1722330899185 } from '../../../migrations/1722330899185-rank';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
@@ -40,6 +42,8 @@ import { CronService } from './cron.service';
           Start1721638331361,
           Emails1721720531648,
           Emails1721737016715,
+          Index1722325570094,
+          Rank1722330899185,
         ],
         entities: [BaseLocale, Voie, Numero, Toponyme, Position],
       }),
