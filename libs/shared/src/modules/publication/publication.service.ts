@@ -125,8 +125,7 @@ export class PublicationService {
       const editorUrl = getEditorUrl(baseLocale);
       const apiUrl = getApiUrl();
       await this.mailerService.sendMail({
-        // to: baseLocale.emails,
-        to: 'fabien.tafforeau@gmail.com',
+        to: baseLocale.emails,
         subject: 'Publication de votre Base Adresse Locale',
         template: 'bal-publication-notification',
         bcc: this.configService.get('SMTP_BCC'),
