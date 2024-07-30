@@ -247,15 +247,18 @@ export class ToponymeService {
     // On créer les positions
     const positions: Partial<Position>[] = [];
     for (const rawToponyme of rawToponymes) {
-      positions.push(
-        ...rawToponyme.positions.map(({ source, type, point }) => ({
+      let rank = 0;
+      for (const { source, type, point } of rawToponyme.positions) {
+        positions.push({
           id: new ObjectId().toHexString(),
           toponymeId: rawToponyme.id,
           source,
           type,
           point,
-        })),
-      );
+          rank,
+        });
+        rank++;
+      }
     }
     if (positions.length === 0) {
       return;

@@ -191,15 +191,18 @@ export class NumeroService {
     // On créer les positions
     const positions: Partial<Position>[] = [];
     for (const rawNumero of rawNumeros) {
-      positions.push(
-        ...rawNumero.positions.map(({ source, type, point }) => ({
+      let rank = 0;
+      for (const { source, type, point } of rawNumero.positions) {
+        positions.push({
           id: new ObjectId().toHexString(),
           numeroId: rawNumero.id,
           source,
           type,
           point,
-        })),
-      );
+          rank,
+        });
+        rank++;
+      }
     }
     // On insert les positions 500 par 500
     for (const positionsChunk of chunk(positions, 500)) {

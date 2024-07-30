@@ -137,6 +137,7 @@ export class BaseLocaleService {
     const apiUrl = getApiUrl();
     await this.mailerService.sendMail({
       // to: newBaseLocale.emails,
+      to: 'fabien.tafforeau@gmail.com',
       subject: 'Création d’une nouvelle Base Adresse Locale',
       template: 'bal-creation-notification',
       bcc: this.configService.get('SMTP_BCC'),
@@ -260,6 +261,7 @@ export class BaseLocaleService {
       const apiUrl = getApiUrl();
       await this.mailerService.sendMail({
         // to: newCollaborators,
+        to: 'fabien.tafforeau@gmail.com',
         subject: 'Invitation à l’administration d’une Base Adresse Locale',
         template: 'new-admin-notification',
         bcc: this.configService.get('SMTP_BCC'),
@@ -303,6 +305,7 @@ export class BaseLocaleService {
       const apiUrl = getApiUrl();
       await this.mailerService.sendMail({
         // to: updatedBaseLocale.emails,
+        to: 'fabien.tafforeau@gmail.com',
         subject: 'Création d’une nouvelle Base Adresse Locale',
         template: 'bal-creation-notification',
         bcc: this.configService.get('SMTP_BCC'),
@@ -480,6 +483,7 @@ export class BaseLocaleService {
 
       await this.mailerService.sendMail({
         // to: email,
+        to: 'fabien.tafforeau@gmail.com',
         subject: 'Demande de récupération de vos Bases Adresses Locales',
         template: 'recovery-notification',
         bcc: this.configService.get('SMTP_BCC'),
@@ -524,6 +528,7 @@ export class BaseLocaleService {
       const apiUrl = getApiUrl();
       await this.mailerService.sendMail({
         // to: updatedBaseLocale.emails,
+        to: 'fabien.tafforeau@gmail.com',
         subject: 'Renouvellement de jeton de Base Adresse Locale',
         template: 'bal-renewal-notification',
         bcc: this.configService.get('SMTP_BCC'),
