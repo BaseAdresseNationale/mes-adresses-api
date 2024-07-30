@@ -289,7 +289,11 @@ export class NumeroService {
       updateNumeroDto.suffixe = normalizeSuffixe(updateNumeroDto.suffixe);
     }
     // On update le numéro dans postgres
-    const numeroToSave: Numero = { ...numero, ...updateNumeroDto };
+    const numeroToSave: Numero = this.numerosRepository.create({
+      ...numero,
+      ...updateNumeroDto,
+    });
+    console.log('numeroToSave', numeroToSave);
     const numeroUpdated: Numero =
       await this.numerosRepository.save(numeroToSave);
     // Si le numero a été modifié

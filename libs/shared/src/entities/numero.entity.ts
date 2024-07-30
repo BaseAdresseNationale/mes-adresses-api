@@ -1,8 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   AfterLoad,
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -25,14 +28,17 @@ export function displaySuffix(numero: Numero): string {
 
 @Entity({ name: 'numeros' })
 export class Numero extends GlobalEntity {
+  @Index()
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'bal_id', nullable: false })
   balId: string;
 
+  @Index()
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'voie_id', nullable: false })
   voieId: string;
 
+  @Index()
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'toponyme_id', nullable: true })
   toponymeId: string;
@@ -67,12 +73,18 @@ export class Numero extends GlobalEntity {
   })
   positions?: Position[];
 
+  @BeforeInsert()
+  @BeforeUpdate()
+  setRankPosition?() {
+    for (let i = 0; i < this?.positions?.length; i++) {
+      this.positions[i].rank = i;
+    }
+  }
+
   @AfterLoad()
   sortPositions?() {
     if (this?.positions?.length) {
-      this.positions.sort(
-        (a, b) => a.createdAt?.getTime() - b.createdAt?.getTime(),
-      );
+      this.positions.sort((a, b) => a.rank - b.rank);
     }
   }
 

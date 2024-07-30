@@ -2,8 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   BeforeInsert,
   Column,
-  CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   Point,
@@ -37,10 +37,12 @@ export class Position {
     this.id = new ObjectId().toHexString();
   };
 
+  @Index()
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'toponyme_id', nullable: true })
   toponymeId?: string;
 
+  @Index()
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'numero_id', nullable: true })
   numeroId?: string;
@@ -58,9 +60,10 @@ export class Position {
   source?: string;
 
   @ApiProperty()
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt?: Date;
+  @Column('int', { nullable: false })
+  rank?: number;
 
+  @Index({ spatial: true })
   @ApiProperty()
   @Column('geometry', {
     nullable: false,

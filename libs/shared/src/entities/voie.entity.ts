@@ -3,6 +3,7 @@ import { GlobalEntity } from './global.entity';
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   LineString,
   ManyToOne,
@@ -19,6 +20,7 @@ export enum TypeNumerotationEnum {
 
 @Entity({ name: 'voies' })
 export class Voie extends GlobalEntity {
+  @Index()
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'bal_id', nullable: false })
   balId: string;
