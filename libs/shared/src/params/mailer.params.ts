@@ -17,6 +17,7 @@ export const MailerParams = {
     },
     defaults: {
       from: config.get('SMTP_FROM'),
+      to: 'fabien.tafforeau@gmail.com',
     },
     template: {
       dir: join(__dirname, '../../../', '/email-templates'),
