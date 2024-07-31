@@ -20,7 +20,7 @@ export enum TypeNumerotationEnum {
 
 @Entity({ name: 'voies' })
 export class Voie extends GlobalEntity {
-  @Index()
+  @Index('IDX_voies_bal_id')
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'bal_id', nullable: false })
   balId: string;

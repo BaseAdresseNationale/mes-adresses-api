@@ -25,7 +25,7 @@ import { DetectOutdatedTask } from '../src/tasks/detect_outdated.task';
 import {
   StatusBaseLocalEnum,
   StatusSyncEnum,
-} from '@/shared/schemas/base_locale/status.enum';
+} from '@/shared/entities/base_locale.entity';
 import {
   DetectConflictTask,
   KEY_DETECT_CONFLICT_PUBLISHED_SINCE,

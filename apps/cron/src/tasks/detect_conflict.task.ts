@@ -7,7 +7,7 @@ import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import {
   StatusSyncEnum,
   StatusBaseLocalEnum,
-} from '@/shared/schemas/base_locale/status.enum';
+} from '@/shared/entities/base_locale.entity';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
 

@@ -23,7 +23,7 @@ import { Feature as FeatureTurf } from '@turf/helpers';
 import { BBox as BboxTurf } from '@turf/helpers';
 import { v4 as uuid } from 'uuid';
 
-import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
+import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/entities/position.entity';

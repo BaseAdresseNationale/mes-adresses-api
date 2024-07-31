@@ -11,7 +11,6 @@ import {
 } from 'typeorm';
 
 export class GlobalEntity {
-  @Index()
   @ApiProperty()
   @PrimaryColumn('varchar', { length: 32 })
   id?: string;

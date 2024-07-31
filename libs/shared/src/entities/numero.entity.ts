@@ -28,17 +28,17 @@ export function displaySuffix(numero: Numero): string {
 
 @Entity({ name: 'numeros' })
 export class Numero extends GlobalEntity {
-  @Index()
+  @Index('IDX_numeros_bal_id')
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'bal_id', nullable: false })
   balId: string;
 
-  @Index()
+  @Index('IDX_numeros_voie_id')
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'voie_id', nullable: false })
   voieId: string;
 
-  @Index()
+  @Index('IDX_numeros_toponyme_id')
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'toponyme_id', nullable: true })
   toponymeId: string;

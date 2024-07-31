@@ -21,7 +21,7 @@ import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
 import { VoieModule } from '@/modules/voie/voie.module';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
-import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
+import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { Repository } from 'typeorm';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';

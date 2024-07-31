@@ -39,7 +39,7 @@ import { NumeroService } from '@/modules/numeros/numero.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { generateBase62String } from '@/lib/utils/token.utils';
 import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
-import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
+import { StatusBaseLocalEnum } from '@/shared/entities/base_locale.entity';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';

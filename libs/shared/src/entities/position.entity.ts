@@ -37,12 +37,12 @@ export class Position {
     this.id = new ObjectId().toHexString();
   };
 
-  @Index()
+  @Index('IDX_positions_toponyme_id')
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'toponyme_id', nullable: true })
   toponymeId?: string;
 
-  @Index()
+  @Index('IDX_positions_numeros_id')
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'numero_id', nullable: true })
   numeroId?: string;
@@ -63,7 +63,7 @@ export class Position {
   @Column('int', { nullable: false })
   rank?: number;
 
-  @Index({ spatial: true })
+  @Index('IDX_positions_point', { spatial: true })
   @ApiProperty()
   @Column('geometry', {
     nullable: false,

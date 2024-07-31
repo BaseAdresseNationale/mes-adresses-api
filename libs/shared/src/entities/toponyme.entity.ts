@@ -17,7 +17,7 @@ import { Position } from './position.entity';
 
 @Entity({ name: 'toponymes' })
 export class Toponyme extends GlobalEntity {
-  @Index()
+  @Index('IDX_toponymes_bal_id')
   @ApiProperty()
   @Column('varchar', { length: 32, name: 'bal_id', nullable: false })
   balId: string;

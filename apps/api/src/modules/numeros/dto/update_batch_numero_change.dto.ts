@@ -7,7 +7,7 @@ import {
   IsMongoId,
 } from 'class-validator';
 
-import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
+import { PositionTypeEnum } from '@/shared/entities/position.entity';
 
 export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
