@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { printMemoryUsage } from './lib/utils/memory-usage.utils';
 
 import { ApiModule } from './api.module';
 
@@ -30,10 +29,6 @@ async function bootstrap() {
   app.setGlobalPrefix('v2');
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
-  if (process.env.PRINT_MEMORY_USAGE === 'true') {
-    setInterval(printMemoryUsage, 1000);
-  }
 
   await app.listen(process.env.PORT || 5000);
 }

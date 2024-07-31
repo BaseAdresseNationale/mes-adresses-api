@@ -5,12 +5,12 @@ import { keyBy } from 'lodash';
 import * as pumpify from 'pumpify';
 import * as proj from '@etalab/project-legal';
 
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Voie } from '@/shared/entities/voie.entity';
 import { getCommune } from '@/shared/utils/cog.utils';
 import { roundCoordinate } from '@/shared/utils/coor.utils';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 const DEFAULT_CODE_VOIE = 'xxxx';
 const DEFAULT_NUMERO_TOPONYME = 99999;
@@ -35,7 +35,7 @@ type RowType = {
   nomToponymeAlt?: Record<string, string>;
   parcelles: string[];
   position?: any;
-  _updated: Date;
+  updatedAt: Date;
   comment?: string;
 };
 
@@ -114,7 +114,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
     id_ban_adresse: obj.banIds.adresse || '',
     voie_nom: obj.nomVoie,
     lieudit_complement_nom: obj.nomToponyme || '',
-    numero: Number.isInteger(obj.numero) ? obj.numero.toString() : '',
+    numero: obj.numero.toString() || '',
     suffixe: obj.suffixe || '',
     certification_commune: toCsvBoolean(obj.certifie),
     commune_insee: obj.codeCommune,
@@ -126,7 +126,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
     y: '',
     cad_parcelles: obj.parcelles ? obj.parcelles.join('|') : '',
     source: DEFAULT_SOURCE,
-    date_der_maj: obj._updated ? obj._updated.toISOString().slice(0, 10) : '',
+    date_der_maj: obj.updatedAt ? obj.updatedAt.toISOString().slice(0, 10) : '',
   };
 
   if (withComment) {
@@ -168,18 +168,15 @@ export async function exportBalToCsv(
   numeros: Numero[],
   withComment: boolean,
 ): Promise<string> {
-  const voiesIndex: Record<string, Voie> = keyBy(voies, (v) =>
-    v._id.toHexString(),
-  );
+  const voiesIndex: Record<string, Voie> = keyBy(voies, 'id');
   const rows: RowType[] = [];
   numeros.forEach((n) => {
-    const voieId: string = n.voie.toHexString();
-    const v: Voie = voiesIndex[voieId];
+    const v: Voie = voiesIndex[n.voieId];
 
     let toponyme: Toponyme = null;
 
-    if (n.toponyme) {
-      toponyme = toponymes.find(({ _id }) => _id.equals(n.toponyme));
+    if (n.toponymeId) {
+      toponyme = toponymes.find(({ id }) => id == n.toponymeId);
 
       if (!toponyme) {
         throw new Error(
@@ -191,17 +188,17 @@ export async function exportBalToCsv(
     if (n.positions && n.positions.length > 0) {
       n.positions.forEach((p) => {
         rows.push({
+          codeCommune: baseLocale.commune,
           banIds: {
             commune: baseLocale.banId,
             toponyme: v.banId,
             adresse: n.banId,
           },
-          codeCommune: n.commune,
           codeVoie: DEFAULT_CODE_VOIE,
           numero: n.numero,
           suffixe: n.suffixe,
           certifie: n.certifie || false,
-          _updated: n._updated,
+          updatedAt: n.updatedAt,
           nomVoie: v.nom,
           nomVoieAlt: v.nomAlt || null,
           nomToponyme: toponyme?.nom || null,
@@ -218,14 +215,14 @@ export async function exportBalToCsv(
     if (t.positions.length > 0) {
       t.positions.forEach((p) => {
         rows.push({
+          codeCommune: baseLocale.commune,
           banIds: {
             commune: baseLocale.banId,
             toponyme: t.banId,
           },
-          codeCommune: t.commune,
           codeVoie: DEFAULT_CODE_VOIE,
           numero: DEFAULT_NUMERO_TOPONYME,
-          _updated: t._updated,
+          updatedAt: t.updatedAt,
           nomVoie: t.nom,
           nomVoieAlt: t.nomAlt || null,
           parcelles: t.parcelles,
@@ -238,10 +235,10 @@ export async function exportBalToCsv(
           commune: baseLocale.banId,
           toponyme: t.banId,
         },
-        codeCommune: t.commune,
+        codeCommune: baseLocale.commune,
         codeVoie: DEFAULT_CODE_VOIE,
         numero: DEFAULT_NUMERO_TOPONYME,
-        _updated: t._updated,
+        updatedAt: t.updatedAt,
         nomVoie: t.nom,
         nomVoieAlt: t.nomAlt || null,
         parcelles: t.parcelles,

@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
-import { Position } from '@/shared/schemas/position.schema';
+import { Position } from '@/shared/entities/position.entity';
 
 export class UpdateToponymeDTO {
   @IsOptional()

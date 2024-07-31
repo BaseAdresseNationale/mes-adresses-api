@@ -21,8 +21,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { NumeroPopulate } from '@/shared/schemas/numero/numero.populate';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 
 import { CustomRequest } from '@/lib/types/request.type';
@@ -31,6 +30,7 @@ import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
+import { Numero } from '@/shared/entities/numero.entity';
 
 @ApiTags('toponymes')
 @Controller('toponymes')
@@ -84,10 +84,8 @@ export class ToponymeController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
-    const result: Toponyme = await this.toponymeService.softDelete(
-      req.toponyme,
-    );
-    res.status(HttpStatus.OK).json(result);
+    await this.toponymeService.softDelete(req.toponyme);
+    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @Put(':toponymeId/restore')
@@ -124,13 +122,17 @@ export class ToponymeController {
     operationId: 'findToponymeNumeros',
   })
   @ApiParam({ name: 'toponymeId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: NumeroPopulate, isArray: true })
+  @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiBearerAuth('admin-token')
   async findByToponyme(@Req() req: CustomRequest, @Res() res: Response) {
-    const numeros: NumeroPopulate[] =
-      await this.numeroService.findManyPopulateVoie({
-        toponyme: req.toponyme._id,
-      });
+    const numeros: Numero[] = await this.numeroService.findMany(
+      {
+        toponymeId: req.toponyme.id,
+      },
+      null,
+      null,
+      { voie: true },
+    );
     const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
   }

@@ -4,11 +4,13 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { FilterQuery } from 'mongoose';
+import { ArrayContains, FindOptionsWhere, Not } from 'typeorm';
 
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { getCommune } from '@/shared/utils/cog.utils';
-import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 
 import { checkValidEmail } from '@/modules/base_locale/utils/base_locale.utils';
 import { SearchBaseLocalQuery } from '../dto/search_base_locale.query';
@@ -16,7 +18,7 @@ import { SearchBaseLocalQuery } from '../dto/search_base_locale.query';
 export type SearchQueryTransformed = {
   offset: number;
   limit: number;
-  filters: FilterQuery<BaseLocale>;
+  filters: FindOptionsWhere<BaseLocale>;
 };
 
 @Injectable()
@@ -24,7 +26,7 @@ export class SearchQueryPipe implements PipeTransform {
   transform(query: SearchBaseLocalQuery): SearchQueryTransformed {
     const limit = query.limit ? Number.parseInt(query.limit, 10) : 20;
     const offset = query.offset ? Number.parseInt(query.offset, 10) : 0;
-    const filters: FilterQuery<BaseLocale> = {};
+    const filters: FindOptionsWhere<BaseLocale> = {};
 
     if (!Number.isInteger(limit) || limit > 100 || limit <= 0) {
       throw new HttpException(
@@ -41,9 +43,9 @@ export class SearchQueryPipe implements PipeTransform {
     }
 
     if (query.deleted === 'false') {
-      filters._deleted = { $eq: null };
+      filters.deletedAt = null;
     } else if (query.deleted === 'true') {
-      filters._deleted = { $ne: null };
+      filters.deletedAt = Not(null);
     } else if (query.deleted) {
       throw new HttpException(
         'La valeur du champ "deleted" est invalide',
@@ -53,7 +55,7 @@ export class SearchQueryPipe implements PipeTransform {
 
     if (query.commune) {
       if (typeof query.commune === 'string' && getCommune(query.commune)) {
-        filters.commune = { $eq: query.commune };
+        filters.commune = query.commune;
       } else {
         throw new HttpException(
           'La valeur du champ "commune" est invalide',
@@ -64,7 +66,7 @@ export class SearchQueryPipe implements PipeTransform {
 
     if (query.email) {
       if (typeof query.email === 'string' && checkValidEmail(query.email)) {
-        filters.emails = { $regex: new RegExp(`^${query.email}$`, 'i') };
+        filters.emails = ArrayContains([query.email]);
       } else {
         throw new HttpException(
           'La valeur du champ "email" est invalide',
@@ -83,7 +85,7 @@ export class SearchQueryPipe implements PipeTransform {
           StatusBaseLocalEnum.REPLACED,
         ].includes(query.status as StatusBaseLocalEnum)
       ) {
-        filters.status = { $eq: query.status };
+        filters.status = query.status as StatusBaseLocalEnum;
       } else {
         throw new HttpException(
           'La valeur du champ "status" est invalide',

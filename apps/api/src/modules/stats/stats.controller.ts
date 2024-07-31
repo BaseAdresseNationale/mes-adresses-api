@@ -16,7 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { Response } from 'express';
 
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { StatsService } from '@/modules/stats/stats.service';
 import { CodeCommuneDTO } from '@/modules/stats/dto/code_commune.dto';

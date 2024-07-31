@@ -44,7 +44,7 @@ export class HabilitationController {
   ) {
     try {
       const isValid: boolean = await this.habilitationService.isValid(
-        req.baseLocale._habilitation,
+        req.baseLocale.habilitationId,
       );
       res.status(HttpStatus.OK).json(isValid);
     } catch (err) {
@@ -63,7 +63,7 @@ export class HabilitationController {
   @UseGuards(AdminGuard)
   async getHabilitation(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Habilitation = await this.habilitationService.findOne(
-      req.baseLocale._habilitation,
+      req.baseLocale.habilitationId,
     );
     res.status(HttpStatus.OK).json(result);
   }
@@ -94,7 +94,7 @@ export class HabilitationController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async sendPinCode(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.habilitationService.sendPinCode(req.baseLocale._habilitation);
+    await this.habilitationService.sendPinCode(req.baseLocale.habilitationId);
     res.sendStatus(HttpStatus.OK);
   }
 
@@ -114,7 +114,7 @@ export class HabilitationController {
     @Res() res: Response,
   ) {
     await this.habilitationService.validatePinCode(
-      req.baseLocale._habilitation,
+      req.baseLocale.habilitationId,
       body.code,
     );
     res.sendStatus(HttpStatus.OK);

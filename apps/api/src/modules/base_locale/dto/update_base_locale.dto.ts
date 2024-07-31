@@ -1,4 +1,4 @@
-import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
+import { StatusBaseLocalEnum } from '@/shared/entities/base_locale.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayMaxSize,

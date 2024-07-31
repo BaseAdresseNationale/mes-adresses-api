@@ -1,10 +1,7 @@
 import { MiddlewareConsumer, Module, forwardRef } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-import {
-  Toponyme,
-  ToponymeSchema,
-} from '@/shared/schemas/toponyme/toponyme.schema';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 import { ToponymeController } from '@/modules/toponyme/toponyme.controller';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
@@ -14,9 +11,7 @@ import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Toponyme.name, schema: ToponymeSchema },
-    ]),
+    TypeOrmModule.forFeature([Toponyme]),
     forwardRef(() => BaseLocaleModule),
     forwardRef(() => NumeroModule),
   ],

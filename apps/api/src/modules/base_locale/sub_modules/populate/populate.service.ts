@@ -1,4 +1,4 @@
-import { extractFromCsv } from '@/lib/utils/csv.utils';
+import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
@@ -11,12 +11,12 @@ export class PopulateService {
     private banPlateformService: BanPlateformService,
   ) {}
 
-  private async extractFromApiDepot(codeCommune: string) {
+  private async extractFromApiDepot(codeCommune: string): Promise<FromCsvType> {
     try {
       const fileData =
         await this.apiDepotService.downloadCurrentRevisionFile(codeCommune);
 
-      const result = await extractFromCsv(fileData, codeCommune);
+      const result: FromCsvType = await extractFromCsv(fileData, codeCommune);
 
       if (!result.isValid) {
         throw new Error('Invalid CSV file');
@@ -26,7 +26,7 @@ export class PopulateService {
     } catch {}
   }
 
-  private async extractFromBAN(codeCommune: string) {
+  private async extractFromBAN(codeCommune: string): Promise<FromCsvType> {
     try {
       const file: Buffer =
         await this.banPlateformService.getBanAssemblage(codeCommune);
@@ -41,7 +41,7 @@ export class PopulateService {
     } catch {}
   }
 
-  public async extract(codeCommune: string) {
+  public async extract(codeCommune: string): Promise<FromCsvType> {
     const data =
       (await this.extractFromApiDepot(codeCommune)) ||
       (await this.extractFromBAN(codeCommune));

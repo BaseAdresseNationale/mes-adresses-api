@@ -1,30 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { StatusSyncEnum } from '@/shared/schemas/base_locale/status.enum';
+import {
+  BaseLocale,
+  StatusSyncEnum,
+} from '@/shared/entities/base_locale.entity';
 
 import { Task } from '../task_queue.class';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class DetectOutdatedTask implements Task {
   title: string = 'Detect outdated';
 
   constructor(
-    @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
+    @InjectRepository(BaseLocale)
+    private basesLocalesRepository: Repository<BaseLocale>,
   ) {}
 
   public async run() {
-    await this.baseLocaleModel.updateMany(
-      {
-        'sync.status': StatusSyncEnum.SYNCED,
-        $expr: { $gt: ['$_updated', '$sync.currentUpdated'] },
-      },
-      {
-        $set: { 'sync.status': StatusSyncEnum.OUTDATED },
-        $unset: { 'sync.currentUpdated': 1 },
-      },
-    );
+    await this.basesLocalesRepository
+      .createQueryBuilder('bases_locales')
+      .update(BaseLocale)
+      // On set sync.status a 'outdated' et sync.currentUpdated a null
+      .set({
+        sync: () =>
+          `sync || jsonb_build_object(
+            'status', '${StatusSyncEnum.OUTDATED}',
+            'currentUpdated', null
+          )`,
+      })
+      // Si sync.status egale SYNCED
+      .where(`bases_locales.sync->>'status' = :status`, {
+        status: StatusSyncEnum.SYNCED,
+      })
+      // Et si sync.currentUpdated est inférieur a updatedAt
+      .andWhere(
+        `(bases_locales.sync->>'currentUpdated')::timestamp < bases_locales.updated_at`,
+      )
+      .execute();
   }
 }

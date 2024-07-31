@@ -1,14 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Types } from 'mongoose';
 import {
   MaxLength,
-  IsMongoId,
   IsOptional,
   IsEnum,
   IsNotEmpty,
+  IsMongoId,
 } from 'class-validator';
 
-import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
+import { PositionTypeEnum } from '@/shared/entities/position.entity';
 
 export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
@@ -19,13 +18,13 @@ export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
   @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: true })
-  toponyme?: Types.ObjectId;
+  toponymeId?: string;
 
   @IsOptional()
   @IsNotEmpty()
   @IsMongoId()
   @ApiProperty({ type: String, required: false, nullable: false })
-  voie?: Types.ObjectId;
+  voieId?: string;
 
   @IsOptional()
   @IsNotEmpty()

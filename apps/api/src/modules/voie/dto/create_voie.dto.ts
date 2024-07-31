@@ -9,8 +9,9 @@ import {
   IsEnum,
 } from 'class-validator';
 
-import { LineString } from '@/shared/schemas/geometry/line_string.schema';
-import { TypeNumerotationEnum } from '@/shared/schemas/voie/type_numerotation.enum';
+// import { LineString } from '@/shared/schemas/geometry/line_string.schema';
+import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
+import { LineString } from './line_string';
 
 export class CreateVoieDTO {
   @Validate(ValidatorBal, ['nom'])

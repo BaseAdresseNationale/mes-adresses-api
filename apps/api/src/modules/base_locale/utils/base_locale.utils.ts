@@ -1,5 +1,5 @@
 import { omit } from 'lodash';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { ExtendedBaseLocaleDTO } from '../dto/extended_base_locale.dto';
 
 export function filterSensitiveFields(
