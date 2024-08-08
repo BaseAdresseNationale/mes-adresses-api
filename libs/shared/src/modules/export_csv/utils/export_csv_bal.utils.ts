@@ -172,51 +172,84 @@ export async function exportBalToCsv(
     v._id.toHexString(),
   );
   const rows: RowType[] = [];
-  numeros.forEach((n) => {
-    const voieId: string = n.voie.toHexString();
-    const v: Voie = voiesIndex[voieId];
+  numeros
+    .sort((num1, num2) => {
+      const voie1 = voiesIndex[num1.voie.toHexString()];
+      const voie2 = voiesIndex[num2.voie.toHexString()];
 
-    let toponyme: Toponyme = null;
-
-    if (n.toponyme) {
-      toponyme = toponymes.find(({ _id }) => _id.equals(n.toponyme));
-
-      if (!toponyme) {
-        throw new Error(
-          `Toponyme ${n.toponyme} introuvable dans la base de données`,
-        );
+      if (voie1.nom !== voie2.nom) {
+        return voie1.nom.localeCompare(voie2.nom);
       }
-    }
 
-    if (n.positions && n.positions.length > 0) {
-      n.positions.forEach((p) => {
-        rows.push({
-          banIds: {
-            commune: baseLocale.banId,
-            toponyme: v.banId,
-            adresse: n.banId,
-          },
-          codeCommune: n.commune,
-          codeVoie: DEFAULT_CODE_VOIE,
-          numero: n.numero,
-          suffixe: n.suffixe,
-          certifie: n.certifie || false,
-          _updated: n._updated,
-          nomVoie: v.nom,
-          nomVoieAlt: v.nomAlt || null,
-          nomToponyme: toponyme?.nom || null,
-          nomToponymeAlt: toponyme?.nomAlt || null,
-          parcelles: n.parcelles,
-          position: p,
-          comment: n.comment,
+      if (num1.numero !== num2.numero) {
+        return num1.numero - num2.numero;
+      }
+
+      return (num1.suffixe || '').localeCompare(num2.suffixe || '');
+    })
+    .forEach((n) => {
+      const voieId: string = n.voie.toHexString();
+      const v: Voie = voiesIndex[voieId];
+
+      let toponyme: Toponyme = null;
+
+      if (n.toponyme) {
+        toponyme = toponymes.find(({ _id }) => _id.equals(n.toponyme));
+
+        if (!toponyme) {
+          throw new Error(
+            `Toponyme ${n.toponyme} introuvable dans la base de données`,
+          );
+        }
+      }
+
+      if (n.positions && n.positions.length > 0) {
+        n.positions.forEach((p) => {
+          rows.push({
+            banIds: {
+              commune: baseLocale.banId,
+              toponyme: v.banId,
+              adresse: n.banId,
+            },
+            codeCommune: n.commune,
+            codeVoie: DEFAULT_CODE_VOIE,
+            numero: n.numero,
+            suffixe: n.suffixe,
+            certifie: n.certifie || false,
+            _updated: n._updated,
+            nomVoie: v.nom,
+            nomVoieAlt: v.nomAlt || null,
+            nomToponyme: toponyme?.nom || null,
+            nomToponymeAlt: toponyme?.nomAlt || null,
+            parcelles: n.parcelles,
+            position: p,
+            comment: n.comment,
+          });
         });
-      });
-    }
-  });
+      }
+    });
 
-  toponymes.forEach((t) => {
-    if (t.positions.length > 0) {
-      t.positions.forEach((p) => {
+  toponymes
+    .sort((a, b) => a.nom.localeCompare(b.nom))
+    .forEach((t) => {
+      if (t.positions.length > 0) {
+        t.positions.forEach((p) => {
+          rows.push({
+            banIds: {
+              commune: baseLocale.banId,
+              toponyme: t.banId,
+            },
+            codeCommune: t.commune,
+            codeVoie: DEFAULT_CODE_VOIE,
+            numero: DEFAULT_NUMERO_TOPONYME,
+            _updated: t._updated,
+            nomVoie: t.nom,
+            nomVoieAlt: t.nomAlt || null,
+            parcelles: t.parcelles,
+            position: p,
+          });
+        });
+      } else {
         rows.push({
           banIds: {
             commune: baseLocale.banId,
@@ -229,25 +262,9 @@ export async function exportBalToCsv(
           nomVoie: t.nom,
           nomVoieAlt: t.nomAlt || null,
           parcelles: t.parcelles,
-          position: p,
         });
-      });
-    } else {
-      rows.push({
-        banIds: {
-          commune: baseLocale.banId,
-          toponyme: t.banId,
-        },
-        codeCommune: t.commune,
-        codeVoie: DEFAULT_CODE_VOIE,
-        numero: DEFAULT_NUMERO_TOPONYME,
-        _updated: t._updated,
-        nomVoie: t.nom,
-        nomVoieAlt: t.nomAlt || null,
-        parcelles: t.parcelles,
-      });
-    }
-  });
+      }
+    });
 
   const csvRows: CsvRowType[] = rows.map((row) => createRow(row, withComment));
   const headers: string[] = extractHeaders(csvRows);
