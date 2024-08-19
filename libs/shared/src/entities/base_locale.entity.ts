@@ -4,7 +4,6 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { Voie } from './voie.entity';
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
-import { Position } from './position.entity';
 
 export enum StatusBaseLocalEnum {
   DRAFT = 'draft',
@@ -74,8 +73,4 @@ export class BaseLocale extends GlobalEntity {
   @ApiProperty({ type: () => Numero, isArray: true })
   @OneToMany(() => Numero, (numero) => numero.baseLocale)
   numeros?: Numero[];
-
-  @ApiProperty({ type: () => Position, isArray: true })
-  @OneToMany(() => Position, (position) => position.baseLocale)
-  positions?: Position[];
 }

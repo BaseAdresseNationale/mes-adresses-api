@@ -9,7 +9,6 @@ import {
   Point,
   PrimaryColumn,
 } from 'typeorm';
-import { BaseLocale } from './base_locale.entity';
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
 import { ObjectId } from 'mongodb';
@@ -85,9 +84,4 @@ export class Position {
   })
   @JoinColumn({ name: 'numero_id' })
   numero?: Numero;
-
-  @ApiProperty({ type: () => BaseLocale })
-  @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.positions)
-  @JoinColumn({ name: 'bal_id' })
-  baseLocale?: BaseLocale;
 }
