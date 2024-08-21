@@ -18,7 +18,7 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { v4 as uuid } from 'uuid';
-import { pick, chunk } from 'lodash';
+import { pick, chunk, omit } from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import { Numero } from '@/shared/entities/numero.entity';
@@ -282,9 +282,10 @@ export class NumeroService {
       updateNumeroDto.suffixe = normalizeSuffixe(updateNumeroDto.suffixe);
     }
     // On update le numéro dans postgres
-    const numeroToSave: Numero = this.numerosRepository.create({
-      ...numero,
+    const numeroToSave: Numero = await this.numerosRepository.create({
+      id: numero.id,
       ...updateNumeroDto,
+      updatedAt: new Date(),
     });
     const numeroUpdated: Numero =
       await this.numerosRepository.save(numeroToSave);
