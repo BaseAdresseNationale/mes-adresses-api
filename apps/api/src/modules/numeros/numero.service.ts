@@ -18,7 +18,7 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { v4 as uuid } from 'uuid';
-import { pick, chunk, omit } from 'lodash';
+import { pick, chunk } from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import { Numero } from '@/shared/entities/numero.entity';
