@@ -21,17 +21,36 @@ export class ExportCsvService {
   ) {}
 
   async getAllFromBal(balId: string) {
-    const voies: Voie[] = await this.voiesRepository.findBy({
-      balId,
-      deletedAt: null,
+    const voies: Voie[] = await this.voiesRepository.find({
+      where: {
+        balId,
+        deletedAt: null,
+      },
+      order: {
+        nom: 'ASC',
+      },
     });
-    const toponymes: Toponyme[] = await this.toponymesRepository.findBy({
-      balId,
-      deletedAt: null,
+    const toponymes: Toponyme[] = await this.toponymesRepository.find({
+      where: {
+        balId,
+        deletedAt: null,
+      },
+      order: {
+        nom: 'ASC',
+      },
     });
-    const numeros: Numero[] = await this.numerosRepository.findBy({
-      balId,
-      deletedAt: null,
+    const numeros: Numero[] = await this.numerosRepository.find({
+      where: {
+        balId,
+        deletedAt: null,
+      },
+      order: {
+        numero: 'ASC',
+        suffixe: {
+          direction: 'ASC',
+          nulls: 'FIRST',
+        },
+      },
     });
     return { voies, toponymes, numeros };
   }
