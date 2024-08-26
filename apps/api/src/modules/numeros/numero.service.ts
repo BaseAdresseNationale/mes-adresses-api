@@ -393,7 +393,9 @@ export class NumeroService {
     // On créer le batch (en omettant positionType qui n'existe pas dans numero)
     const batchChanges: Partial<Numero> = {
       ...(changes.voieId && { voieId: changes.voieId }),
-      ...(changes.toponymeId && { toponymeId: changes.toponymeId }),
+      ...(changes.toponymeId !== undefined && {
+        toponymeId: changes.toponymeId,
+      }),
       ...pick(changes, ['comment', 'certifie']),
     };
     // Si le positionType est changé, on change le type de la première position dans le batch

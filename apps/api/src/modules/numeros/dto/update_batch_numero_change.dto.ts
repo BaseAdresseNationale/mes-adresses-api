@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsMongoId,
+  ValidateIf,
 } from 'class-validator';
 
 import { PositionTypeEnum } from '@/shared/entities/position.entity';
@@ -20,9 +21,10 @@ export class UpdateBatchNumeroChangeDTO {
   @ApiProperty({ type: String, required: false, nullable: true })
   toponymeId?: string;
 
-  @IsOptional()
-  @IsNotEmpty()
   @IsMongoId()
+  @ValidateIf((object, value) => {
+    return value !== undefined;
+  })
   @ApiProperty({ type: String, required: false, nullable: false })
   voieId?: string;
 
