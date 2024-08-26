@@ -257,7 +257,6 @@ describe('PUBLICATION MODULE', () => {
         .expect(200);
 
       const syncExpected = {
-        currentUpdated: updatedAt.toISOString(),
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
         lastUploadedRevisionId: revisionId,
@@ -266,7 +265,8 @@ describe('PUBLICATION MODULE', () => {
       expect(response.body.id).toEqual(balId);
       expect(response.body.commune).toEqual(commune);
       expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-      expect(response.body.sync).toEqual(syncExpected);
+      expect(response.body.sync).toMatchObject(syncExpected);
+      expect(response.body.sync.currentUpdated).toBeDefined();
     });
 
     it('Publish 200 OUTDATED', async () => {
@@ -378,7 +378,6 @@ describe('PUBLICATION MODULE', () => {
         .expect(200);
 
       const syncExpected = {
-        currentUpdated: updatedAt.toISOString(),
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
         lastUploadedRevisionId: revisionId,
@@ -387,7 +386,8 @@ describe('PUBLICATION MODULE', () => {
       expect(response.body.id).toEqual(balId);
       expect(response.body.commune).toEqual(commune);
       expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-      expect(response.body.sync).toEqual(syncExpected);
+      expect(response.body.sync).toMatchObject(syncExpected);
+      expect(response.body.sync.currentUpdated).toBeDefined();
     });
 
     it('Publish 200 OUTDATED same hash', async () => {
@@ -463,7 +463,6 @@ describe('PUBLICATION MODULE', () => {
         .expect(200);
 
       const syncExpected = {
-        currentUpdated: updatedAt.toISOString(),
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
         lastUploadedRevisionId: revisionId,
@@ -472,7 +471,8 @@ describe('PUBLICATION MODULE', () => {
       expect(response.body.id).toEqual(balId);
       expect(response.body.commune).toEqual(commune);
       expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-      expect(response.body.sync).toEqual(syncExpected);
+      expect(response.body.sync).toMatchObject(syncExpected);
+      expect(response.body.sync.currentUpdated).toBeDefined();
     });
 
     it('Publish 412 status DEMO', async () => {

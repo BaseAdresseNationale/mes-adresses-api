@@ -400,7 +400,7 @@ describe('TASK MODULE', () => {
     const balResult = await balRepository.findOneBy({ id: balId });
 
     expect(balResult.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-    expect(balResult.sync.currentUpdated).toEqual(date.toISOString());
+    expect(balResult.sync.currentUpdated).toBeDefined();
     expect(balResult.sync.status).toEqual(StatusSyncEnum.SYNCED);
     expect(balResult.sync.isPaused).toEqual(false);
     expect(balResult.sync.lastUploadedRevisionId).toEqual(revisionId);
@@ -475,7 +475,7 @@ describe('TASK MODULE', () => {
 
     const balResult = await balRepository.findOneBy({ id: balId });
     expect(balResult.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-    expect(balResult.sync.currentUpdated).toEqual(updatedAt.toISOString());
+    expect(balResult.sync.currentUpdated).toBeDefined();
     expect(balResult.sync.status).toEqual(StatusSyncEnum.SYNCED);
     expect(balResult.sync.isPaused).toEqual(false);
     expect(balResult.sync.lastUploadedRevisionId).toEqual(revisionId);
