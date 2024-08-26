@@ -224,15 +224,21 @@ export class PublicationService {
     baseLocale: BaseLocale,
     lastUploadedRevisionId: string,
   ) {
+    const now = new Date();
     const sync: BaseLocaleSync = {
       status: StatusSyncEnum.SYNCED,
       isPaused: false,
-      currentUpdated: baseLocale.updatedAt,
+      currentUpdated: now,
       lastUploadedRevisionId,
     };
+
     await this.basesLocalesRepository.update(
       { id: baseLocale.id },
-      { status: StatusBaseLocalEnum.PUBLISHED, sync },
+      {
+        status: StatusBaseLocalEnum.PUBLISHED,
+        sync,
+        updatedAt: () => `'${now.toISOString()}'`,
+      },
     );
 
     return this.basesLocalesRepository.findOneBy({ id: baseLocale.id });
