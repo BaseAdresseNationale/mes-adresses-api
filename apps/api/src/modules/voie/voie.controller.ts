@@ -133,7 +133,13 @@ export class VoieController {
         voieId: req.voie.id,
       },
       null,
-      { numero: 1 },
+      {
+        numero: 1,
+        suffixe: {
+          direction: 'ASC',
+          nulls: 'FIRST',
+        },
+      },
     );
     const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
