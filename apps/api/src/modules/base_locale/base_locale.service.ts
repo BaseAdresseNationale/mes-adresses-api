@@ -231,24 +231,18 @@ export class BaseLocaleService {
         HttpStatus.PRECONDITION_FAILED,
       );
     }
-    // On verifie qu'on ne modifie pas le status sur la Bal a deja été publié
-    if (
-      [StatusBaseLocalEnum.PUBLISHED, StatusBaseLocalEnum.REPLACED].includes(
-        baseLocale.status,
-      ) &&
-      update.status &&
-      update.status !== baseLocale.status
-    ) {
-      throw new HttpException(
-        'La base locale a été publiée, son statut ne peut plus être changé',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-    // On met a jour la Bal
-    const { affected }: UpdateResult = await this.basesLocalesRepository.update(
-      { id: baseLocale.id },
-      update,
-    );
+    const { affected }: UpdateResult = await this.basesLocalesRepository
+      .createQueryBuilder('bases_locales')
+      .update(BaseLocale)
+      .set({
+        ...update,
+        updatedAt: () => `updatedAt`,
+      })
+      .where(`bases_locales.id = :id`, {
+        id: baseLocale.id,
+      })
+      .execute();
+
     // On récupère la Bal mis a jour
     const updatedBaseLocale: BaseLocale =
       await this.basesLocalesRepository.findOneBy({ id: baseLocale.id });
