@@ -4,12 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
-import { Start1721638331361 } from '../../../migrations/1721638331361-start';
-import { Emails1721720531648 } from '../../../migrations/1721720531648-emails';
-import { Emails1721737016715 } from '../../../migrations/1721737016715-emails';
-import { Index1722325570094 } from '../../../migrations/1722325570094-index';
-import { Rank1722330899185 } from '../../../migrations/1722330899185-rank';
-import { Index21722416272415 } from '../../../migrations/1722416272415-index2';
+import { Initialization1724762471013 } from '../../../migrations/1724762471013-initialization';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
@@ -39,14 +34,7 @@ import { MailerParams } from '@/shared/params/mailer.params';
         keepConnectionAlive: true,
         schema: 'public',
         migrationsRun: true,
-        migrations: [
-          Start1721638331361,
-          Emails1721720531648,
-          Emails1721737016715,
-          Index1722325570094,
-          Rank1722330899185,
-          Index21722416272415,
-        ],
+        migrations: [Initialization1724762471013],
         entities: [BaseLocale, Voie, Numero, Toponyme, Position],
       }),
       inject: [ConfigService],
