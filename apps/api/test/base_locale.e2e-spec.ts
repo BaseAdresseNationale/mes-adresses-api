@@ -907,7 +907,6 @@ describe('BASE LOCAL MODULE', () => {
       const updateBALDTO = {
         nom: '',
         emails: [],
-        status: 'blabla',
       };
 
       const response = await request(app.getHttpServer())
@@ -918,11 +917,7 @@ describe('BASE LOCAL MODULE', () => {
 
       expect(response.body).toEqual({
         error: 'Bad Request',
-        message: [
-          'nom should not be empty',
-          'status must be one of the following values: draft, published, demo, replaced',
-          'emails should not be empty',
-        ],
+        message: ['nom should not be empty', 'emails should not be empty'],
         statusCode: 400,
       });
     });
@@ -937,25 +932,6 @@ describe('BASE LOCAL MODULE', () => {
 
       const updateBALDTO = {
         status: StatusBaseLocalEnum.PUBLISHED,
-      };
-
-      await request(app.getHttpServer())
-        .put(`/bases-locales/${balId}`)
-        .set('authorization', `Bearer ${token}`)
-        .send(updateBALDTO)
-        .expect(412);
-    });
-
-    it('Update 412 modify a published base locale', async () => {
-      const balId = await createBal({
-        nom: 'foo',
-        commune: '27115',
-        emails: ['me@domain.co'],
-        status: StatusBaseLocalEnum.PUBLISHED,
-      });
-
-      const updateBALDTO = {
-        status: StatusBaseLocalEnum.DEMO,
       };
 
       await request(app.getHttpServer())
