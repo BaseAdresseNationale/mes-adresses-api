@@ -16,6 +16,14 @@ https://adresse-data-gouv-fr.gitbook.io/bal/mes-adresses
 - [PostgresSQL](https://www.postgresql.org/)
 - [Redis](https://redis.io/fr/)
 
+### Postgres
+
+Le base de donnée postgres doit avoir l'extension postgis d'installé
+
+```
+CREATE EXTENSION postgis
+```
+
 ## Utilisation
 
 ### Installation
@@ -102,12 +110,12 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `POSTGRES_URL`            | Url de connection a la db postgres                                          |
 | `REDIS_URL`               | Url de connection a la db redis                                             |
 | `PORT`                    | Port à utiliser pour l'API                                                  |
-| `SHOW_EMAILS`             | Indique si les courriels doivent être affichés dans les logs (`YES`)        |
 | `API_URL`                 | URL de base de l’API                                                        |
 | `API_DEPOT_URL`           | URL de l'api-depot                                                          |
 | `API_DEPOT_CLIENT_ID`     | Id du client de l'api-depot                                                 |
 | `API_DEPOT_CLIENT_SECRET` | Token du client de l'api-depot                                              |
 | `EDITOR_URL_PATTERN`      | Pattern permettant de construire l'URL vers l'édition d'une BAL             |
+| `BAN_API_URL`             | URL de ban-plateform                                                        |
 | ---                       | ---                                                                         |
 | `SMTP_HOST`               | Nom d'hôte du serveur SMTP                                                  |
 | `SMTP_PORT`               | Port du serveur SMTP                                                        |
