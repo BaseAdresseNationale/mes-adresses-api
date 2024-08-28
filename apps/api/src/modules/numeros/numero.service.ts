@@ -248,7 +248,7 @@ export class NumeroService {
       certifie: createNumeroDto.certifie || false,
     };
     // Créer l'entité typeorm
-    const entityToSave: Numero = await this.numerosRepository.create(numero);
+    const entityToSave: Numero = this.numerosRepository.create(numero);
     // On insert l'object dans postgres
     const numeroCreated: Numero =
       await this.numerosRepository.save(entityToSave);
@@ -282,13 +282,16 @@ export class NumeroService {
       updateNumeroDto.suffixe = normalizeSuffixe(updateNumeroDto.suffixe);
     }
     // On update le numéro dans postgres
-    const numeroToSave: Numero = await this.numerosRepository.create({
+    const numeroToSave: Numero = this.numerosRepository.create({
       id: numero.id,
       ...updateNumeroDto,
       updatedAt: new Date(),
     });
-    const numeroUpdated: Numero =
-      await this.numerosRepository.save(numeroToSave);
+
+    await this.numerosRepository.save(numeroToSave);
+    const numeroUpdated: Numero = await this.numerosRepository.findOneBy({
+      id: numero.id,
+    });
     // Si le numero a été modifié
     if (updateNumeroDto.voieId) {
       // On recalcule le centroid de l'ancienne et la nouvelle voie si le numero a changé de voie

@@ -134,8 +134,7 @@ export class ToponymeService {
       parcelles: createToponymeDto.parcelles || [],
     };
     // Créer l'entité typeorm
-    const entityToSave: Toponyme =
-      await this.toponymesRepository.create(toponyme);
+    const entityToSave: Toponyme = this.toponymesRepository.create(toponyme);
     // On insert l'object dans postgres
     const toponymeCreated: Toponyme =
       await this.toponymesRepository.save(entityToSave);

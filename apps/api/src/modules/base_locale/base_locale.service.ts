@@ -24,7 +24,10 @@ import { ConfigService } from '@nestjs/config';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Voie } from '@/shared/entities/voie.entity';
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
 import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 import {
@@ -32,21 +35,20 @@ import {
   getApiUrl,
   getEditorUrl,
 } from '@/shared/utils/mailer.utils';
+import { extendWithNumeros } from '@/shared/utils/numero.utils';
 
+import { generateBase62String } from '@/lib/utils/token.utils';
+import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
-import { generateBase62String } from '@/lib/utils/token.utils';
 import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
-import { StatusBaseLocalEnum } from '@/shared/entities/base_locale.entity';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
-import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 import { getCommune } from '@/shared/utils/cog.utils';
 import { PopulateService } from './sub_modules/populate/populate.service';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
-import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
@@ -123,7 +125,7 @@ export class BaseLocaleService {
       createInput.commune,
     );
     // On créer l'object bal
-    const entityToSave: BaseLocale = await this.basesLocalesRepository.create({
+    const entityToSave: BaseLocale = this.basesLocalesRepository.create({
       banId,
       ...createInput,
       token: generateBase62String(20),
@@ -158,7 +160,7 @@ export class BaseLocaleService {
     const banId: string =
       await this.banPlateformService.getIdBanCommune(commune);
     // On créer l'object bal
-    const entityToSave = await this.basesLocalesRepository.create({
+    const entityToSave = this.basesLocalesRepository.create({
       banId,
       token: generateBase62String(20),
       commune,

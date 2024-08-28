@@ -107,7 +107,7 @@ describe('HABILITATION MODULE', () => {
       token,
       ...props,
     };
-    const entityToInsert = await balRepository.create(payload);
+    const entityToInsert = balRepository.create(payload);
     const result = await balRepository.save(entityToInsert);
     return result.id;
   }

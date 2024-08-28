@@ -169,7 +169,7 @@ describe('TASK MODULE', () => {
       token,
       ...props,
     };
-    const entityToInsert = await balRepository.create(payload);
+    const entityToInsert = balRepository.create(payload);
     const result = await balRepository.save(entityToInsert);
     return result.id;
   }
@@ -182,7 +182,7 @@ describe('TASK MODULE', () => {
       updatedAt,
       ...props,
     };
-    const entityToInsert = await voieRepository.create(payload);
+    const entityToInsert = voieRepository.create(payload);
     const result = await voieRepository.save(entityToInsert);
     return result.id;
   }
@@ -200,7 +200,7 @@ describe('TASK MODULE', () => {
       updatedAt,
       ...props,
     };
-    const entityToInsert = await numeroRepository.create(payload);
+    const entityToInsert = numeroRepository.create(payload);
     const result = await numeroRepository.save(entityToInsert);
     return result.id;
   }

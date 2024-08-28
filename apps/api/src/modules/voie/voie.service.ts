@@ -151,7 +151,7 @@ export class VoieService {
       voie.centroid = turf.centroid(voie.trace)?.geometry;
     }
     // Créer l'entité typeorm
-    const entityToSave: Voie = await this.voiesRepository.create(voie);
+    const entityToSave: Voie = this.voiesRepository.create(voie);
     // On insert l'object dans postgres
     const voieCreated: Voie = await this.voiesRepository.save(entityToSave);
     // Mettre a jour le updatedAt de la BAL
