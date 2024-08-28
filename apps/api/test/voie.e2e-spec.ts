@@ -10,7 +10,7 @@ import { Types } from 'mongoose';
 import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/entities/numero.entity';
-import { Voie } from '@/shared/entities/voie.entity';
+import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import {
   BaseLocale,
@@ -21,7 +21,6 @@ import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
 import { VoieModule } from '@/modules/voie/voie.module';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
-import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { Repository } from 'typeorm';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';

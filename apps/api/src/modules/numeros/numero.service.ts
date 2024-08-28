@@ -255,7 +255,7 @@ export class NumeroService {
     // On calcule le centroid de la voie
     await this.voieService.calcCentroid(voie.id);
     // On met a jour le updatedAt de la Bal
-    this.baseLocaleService.touch(numero.balId);
+    await this.baseLocaleService.touch(numero.balId);
     return numeroCreated;
   }
 

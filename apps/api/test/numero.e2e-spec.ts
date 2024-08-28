@@ -135,7 +135,6 @@ describe('NUMERO', () => {
     };
     const entityToInsert = numeroRepository.create(payload);
     const result = await numeroRepository.save(entityToInsert);
-    console.log('NUMERO', result);
     return result.id;
   }
 

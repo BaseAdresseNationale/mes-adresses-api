@@ -17,8 +17,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import * as turf from '@turf/turf';
 import bbox from '@turf/bbox';
-import { Feature as FeatureTurf } from '@turf/helpers';
-import { BBox as BboxTurf } from '@turf/helpers';
+import { Feature as FeatureTurf, BBox as BboxTurf } from '@turf/helpers';
 import { v4 as uuid } from 'uuid';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';

@@ -12,10 +12,12 @@ import { v4 as uuid } from 'uuid';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { Position } from '@/shared/entities/position.entity';
 
-import { StatusBaseLocalEnum } from '@/shared/entities/base_locale.entity';
 import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';

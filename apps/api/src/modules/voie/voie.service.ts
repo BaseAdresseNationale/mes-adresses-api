@@ -19,16 +19,14 @@ import {
 import { groupBy } from 'lodash';
 import * as turf from '@turf/turf';
 import bbox from '@turf/bbox';
-import { Feature as FeatureTurf } from '@turf/helpers';
-import { BBox as BboxTurf } from '@turf/helpers';
+import { Feature as FeatureTurf, BBox as BboxTurf } from '@turf/helpers';
 import { v4 as uuid } from 'uuid';
 
-import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/entities/position.entity';
 import { Numero } from '@/shared/entities/numero.entity';
-import { Voie } from '@/shared/entities/voie.entity';
+import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
@@ -292,7 +290,7 @@ export class VoieService {
 
   public async convertToToponyme(voie: Voie): Promise<Toponyme> {
     // On lance une erreur si la voie n'existe pas
-    if (!this.isVoieExist(voie.id)) {
+    if (!(await this.isVoieExist(voie.id))) {
       throw new HttpException(
         `Voie ${voie.id} is deleted`,
         HttpStatus.BAD_REQUEST,

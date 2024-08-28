@@ -11,17 +11,18 @@ import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/entities/numero.entity';
-import { Voie } from '@/shared/entities/voie.entity';
+import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { UpdateBatchNumeroDTO } from '@/modules/numeros/dto/update_batch_numero.dto';
 import { DeleteBatchNumeroDTO } from '@/modules/numeros/dto/delete_batch_numero.dto';
-import { StatusBaseLocalEnum } from '@/shared/entities/base_locale.entity';
 import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
-import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
@@ -219,7 +220,7 @@ describe('BASE LOCAL MODULE', () => {
         changes: {
           voieId: voieId3,
           toponymeId: toponymeId2,
-          // positionType: PositionTypeEnum.DELIVRANCE_POSTALE,
+          positionType: PositionTypeEnum.DELIVRANCE_POSTALE,
           certifie: true,
           comment: 'coucou',
         },
@@ -234,7 +235,7 @@ describe('BASE LOCAL MODULE', () => {
       expect(response.body.changes).toEqual({
         voieId: voieId3.toString(),
         toponymeId: toponymeId2.toString(),
-        // positionType: PositionTypeEnum.DELIVRANCE_POSTALE,
+        positionType: PositionTypeEnum.DELIVRANCE_POSTALE,
         certifie: true,
         comment: 'coucou',
       });
@@ -244,9 +245,9 @@ describe('BASE LOCAL MODULE', () => {
       });
       expect(numero1After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(numero1After.voieId).toEqual(voieId3);
-      // expect(numero1After.positions[0].type).toEqual(
-      //   PositionTypeEnum.DELIVRANCE_POSTALE,
-      // );
+      expect(numero1After.positions[0].type).toEqual(
+        PositionTypeEnum.DELIVRANCE_POSTALE,
+      );
       expect(numero1After.certifie).toBeTruthy();
       expect(numero1After.comment).toEqual('coucou');
 
@@ -255,9 +256,9 @@ describe('BASE LOCAL MODULE', () => {
       });
       expect(numero2After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(numero2After.voieId).toEqual(voieId3);
-      // expect(numero2After.positions[0].type).toEqual(
-      //   PositionTypeEnum.DELIVRANCE_POSTALE,
-      // );
+      expect(numero2After.positions[0].type).toEqual(
+        PositionTypeEnum.DELIVRANCE_POSTALE,
+      );
       expect(numero2After.certifie).toBeTruthy();
       expect(numero2After.comment).toEqual('coucou');
 

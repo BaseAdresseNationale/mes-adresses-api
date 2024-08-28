@@ -18,14 +18,14 @@ import { v4 as uuid } from 'uuid';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
-import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
-
-import { DetectOutdatedTask } from '../src/tasks/detect_outdated.task';
 import {
+  BaseLocale,
   StatusBaseLocalEnum,
   StatusSyncEnum,
 } from '@/shared/entities/base_locale.entity';
+import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
+
+import { DetectOutdatedTask } from '../src/tasks/detect_outdated.task';
 import {
   DetectConflictTask,
   KEY_DETECT_CONFLICT_PUBLISHED_SINCE,

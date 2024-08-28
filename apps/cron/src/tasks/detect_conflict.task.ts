@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { In, Repository } from 'typeorm';
 
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import {
+  BaseLocale,
   StatusSyncEnum,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
