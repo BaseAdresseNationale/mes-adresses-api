@@ -10,7 +10,7 @@ import {
   Module,
   ValidationPipe,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuid } from 'uuid';
@@ -206,7 +206,7 @@ describe('TASK MODULE', () => {
   }
 
   function createPositions(coordinates: number[] = [8, 42]): Position {
-    const id = new Types.ObjectId().toHexString();
+    const id = new ObjectId().toHexString();
     const point: Point = {
       type: 'Point',
       coordinates,
@@ -225,7 +225,7 @@ describe('TASK MODULE', () => {
       commune: '91534',
       sync: {
         status: StatusSyncEnum.SYNCED,
-        lastUploadedRevisionId: new Types.ObjectId().toHexString(),
+        lastUploadedRevisionId: new ObjectId().toHexString(),
         currentUpdated: new Date('2000-01-01'),
       },
       status: StatusBaseLocalEnum.PUBLISHED,
@@ -244,7 +244,7 @@ describe('TASK MODULE', () => {
     const date = new Date('2000-01-01');
     await setCache(KEY_DETECT_CONFLICT_PUBLISHED_SINCE, date);
 
-    const revisionId = new Types.ObjectId().toHexString();
+    const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
       _id: revisionId,
       codeCommune: commune,
@@ -277,7 +277,7 @@ describe('TASK MODULE', () => {
       commune,
       sync: {
         status: StatusSyncEnum.SYNCED,
-        lastUploadedRevisionId: new Types.ObjectId().toHexString(),
+        lastUploadedRevisionId: new ObjectId().toHexString(),
       },
       status: StatusBaseLocalEnum.PUBLISHED,
     });
@@ -300,9 +300,9 @@ describe('TASK MODULE', () => {
 
   it('syncOutdated', async () => {
     const commune = '91534';
-    const habilitationId = new Types.ObjectId().toHexString();
+    const habilitationId = new ObjectId().toHexString();
     // REVSION
-    const revisionId = new Types.ObjectId().toHexString();
+    const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
       _id: revisionId,
       codeCommune: commune,
@@ -408,9 +408,9 @@ describe('TASK MODULE', () => {
 
   it('syncOutdated same hash', async () => {
     const commune = '91534';
-    const habilitationId = new Types.ObjectId().toHexString();
+    const habilitationId = new ObjectId().toHexString();
     // REVSION
-    const revisionId = new Types.ObjectId().toHexString();
+    const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
       _id: revisionId.toString(),
       codeCommune: commune,
@@ -484,7 +484,7 @@ describe('TASK MODULE', () => {
   it('syncOutdated 412 no habilitation', async () => {
     const commune = '91534';
     // REVSION
-    const revisionId = new Types.ObjectId().toHexString();
+    const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
       _id: revisionId.toString(),
       codeCommune: commune,
@@ -532,7 +532,7 @@ describe('TASK MODULE', () => {
   it('syncOutdated 412 habilitation PENDING', async () => {
     const commune = '91534';
     // REVSION
-    const revisionId = new Types.ObjectId().toHexString();
+    const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
       _id: revisionId.toString(),
       codeCommune: commune,
@@ -552,7 +552,7 @@ describe('TASK MODULE', () => {
       ],
     };
 
-    const habilitationId = new Types.ObjectId().toHexString();
+    const habilitationId = new ObjectId().toHexString();
     // BAL
     const balId = await createBal({
       nom: 'bal',
@@ -591,7 +591,7 @@ describe('TASK MODULE', () => {
   it('syncOutdated 412 habilitation expired', async () => {
     const commune = '91534';
     // REVSION
-    const revisionId = new Types.ObjectId().toHexString();
+    const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
       _id: revisionId.toString(),
       codeCommune: commune,
@@ -611,7 +611,7 @@ describe('TASK MODULE', () => {
       ],
     };
 
-    const habilitationId = new Types.ObjectId().toHexString();
+    const habilitationId = new ObjectId().toHexString();
     // BAL
     const balId = await createBal({
       nom: 'bal',
@@ -650,7 +650,7 @@ describe('TASK MODULE', () => {
   it('syncOutdated 412 no numero', async () => {
     const commune = '91534';
     // REVSION
-    const revisionId = new Types.ObjectId().toHexString();
+    const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
       _id: revisionId.toString(),
       codeCommune: commune,
@@ -670,7 +670,7 @@ describe('TASK MODULE', () => {
       ],
     };
 
-    const habilitationId = new Types.ObjectId().toHexString();
+    const habilitationId = new ObjectId().toHexString();
     // BAL
     const balId = await createBal({
       nom: 'bal',

@@ -7,7 +7,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { Point, Repository } from 'typeorm';
-import { Types } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/entities/numero.entity';
@@ -151,7 +151,7 @@ describe('TOPONYME MODULE', () => {
   }
 
   function createPositions(coordinates: number[] = [8, 42]): Position {
-    const id = new Types.ObjectId().toHexString();
+    const id = new ObjectId().toHexString();
     const point: Point = {
       type: 'Point',
       coordinates,

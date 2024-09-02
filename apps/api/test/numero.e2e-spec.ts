@@ -6,7 +6,7 @@ import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { Types } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/entities/numero.entity';
@@ -187,7 +187,7 @@ describe('NUMERO', () => {
     });
 
     it('Return 404', async () => {
-      const numeroId = new Types.ObjectId();
+      const numeroId = new ObjectId();
       await request(app.getHttpServer())
         .get(`/numeros/${numeroId}`)
         .expect(404);
@@ -234,7 +234,7 @@ describe('NUMERO', () => {
         numero: 100,
       };
 
-      const numeroId = new Types.ObjectId();
+      const numeroId = new ObjectId();
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}`)
         .send(updatedNumero)
@@ -250,7 +250,7 @@ describe('NUMERO', () => {
       });
 
       const updatedNumero: UpdateNumeroDTO = {
-        voieId: new Types.ObjectId().toHexString(),
+        voieId: new ObjectId().toHexString(),
       };
 
       await request(app.getHttpServer())
@@ -268,7 +268,7 @@ describe('NUMERO', () => {
       });
 
       const updatedNumero: UpdateNumeroDTO = {
-        toponymeId: new Types.ObjectId().toHexString(),
+        toponymeId: new ObjectId().toHexString(),
       };
 
       await request(app.getHttpServer())
@@ -372,7 +372,7 @@ describe('NUMERO', () => {
       const updatedNumero: UpdateNumeroDTO = {
         positions: [
           {
-            id: new Types.ObjectId().toHexString(),
+            id: new ObjectId().toHexString(),
             type: PositionTypeEnum.BATIMENT,
             source: 'ban',
             point: {
@@ -401,7 +401,7 @@ describe('NUMERO', () => {
         numero: 99,
         positions: [
           {
-            id: new Types.ObjectId().toHexString(),
+            id: new ObjectId().toHexString(),
             type: PositionTypeEnum.INCONNUE,
             source: 'ban',
             point: {
@@ -461,7 +461,7 @@ describe('NUMERO', () => {
     });
 
     it('Delete 404 NOT FOUND', async () => {
-      const numeroId = new Types.ObjectId();
+      const numeroId = new ObjectId();
       await request(app.getHttpServer())
         .delete(`/numeros/${numeroId}`)
         .set('authorization', `Bearer ${token}`)
@@ -518,7 +518,7 @@ describe('NUMERO', () => {
     });
 
     it('Soft Delete 404 NOT FOUND', async () => {
-      const numeroId = new Types.ObjectId();
+      const numeroId = new ObjectId();
       await request(app.getHttpServer())
         .put(`/numeros/${numeroId}/soft-delete`)
         .set('authorization', `Bearer ${token}`)

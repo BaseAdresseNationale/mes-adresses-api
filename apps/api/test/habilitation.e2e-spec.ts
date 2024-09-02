@@ -6,7 +6,7 @@ import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { Types } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/entities/numero.entity';
@@ -116,7 +116,7 @@ describe('HABILITATION MODULE', () => {
 
   describe('GET /bases-locales/:id/habilitation', () => {
     it('expect 200 with admin token', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -149,7 +149,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 403 without admin token', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -177,7 +177,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 404 with admin token', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -211,7 +211,7 @@ describe('HABILITATION MODULE', () => {
 
   describe('POST /bases-locales/:id/habilitation', () => {
     it('expect 201 Create habilitation', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -246,7 +246,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 412 BAL already has habilitation', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -283,7 +283,7 @@ describe('HABILITATION MODULE', () => {
 
   describe('POST /bases-locales/:id/habilitation/email/send-pin-code', () => {
     it('expect 200', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -322,7 +322,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 412 no pending habilitation', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -359,7 +359,7 @@ describe('HABILITATION MODULE', () => {
 
   describe('POST /bases-locales/:id/habilitation/email/validate-pin-code', () => {
     it('expect 200', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -396,7 +396,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 200 incorrect PIN code', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -443,7 +443,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 412 no pending habilitation', async () => {
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',

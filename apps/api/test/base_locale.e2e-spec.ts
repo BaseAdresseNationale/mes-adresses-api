@@ -9,6 +9,7 @@ import * as request from 'supertest';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuid } from 'uuid';
+import { ObjectId } from 'mongodb';
 
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
@@ -27,7 +28,6 @@ import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
-import { Types } from 'mongoose';
 
 const BAN_API_URL = 'BAN_API_URL';
 process.env.BAN_API_URL = BAN_API_URL;
@@ -180,7 +180,7 @@ describe('BASE LOCAL MODULE', () => {
   }
 
   function createPositions(coordinates: number[] = [8, 42]): Position {
-    const id = new Types.ObjectId().toHexString();
+    const id = new ObjectId().toHexString();
     const point: Point = {
       type: 'Point',
       coordinates,
@@ -337,7 +337,7 @@ describe('BASE LOCAL MODULE', () => {
       const updateBtach: UpdateBatchNumeroDTO = {
         numerosIds: [numeroId],
         changes: {
-          voieId: new Types.ObjectId().toHexString(),
+          voieId: new ObjectId().toHexString(),
         },
       };
 
@@ -358,7 +358,7 @@ describe('BASE LOCAL MODULE', () => {
       const updateBtach: UpdateBatchNumeroDTO = {
         numerosIds: [numeroId],
         changes: {
-          toponymeId: new Types.ObjectId().toHexString(),
+          toponymeId: new ObjectId().toHexString(),
         },
       };
 

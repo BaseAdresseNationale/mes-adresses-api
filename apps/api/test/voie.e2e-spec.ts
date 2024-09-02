@@ -6,7 +6,7 @@ import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { Types } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/entities/numero.entity';
@@ -346,7 +346,7 @@ describe('VOIE MODULE', () => {
       });
       const createdNumero: CreateNumeroDTO = {
         numero: 1,
-        toponymeId: new Types.ObjectId().toHexString(),
+        toponymeId: new ObjectId().toHexString(),
         positions: [
           {
             type: PositionTypeEnum.ENTREE,
@@ -495,7 +495,7 @@ describe('VOIE MODULE', () => {
 
     it('Return 404', async () => {
       await request(app.getHttpServer())
-        .get(`/voies/${new Types.ObjectId()}`)
+        .get(`/voies/${new ObjectId()}`)
         .expect(404);
     });
   });

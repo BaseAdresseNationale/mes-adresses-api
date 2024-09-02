@@ -6,7 +6,7 @@ import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { Types } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import axios from 'axios';
 import { add, sub } from 'date-fns';
 import MockAdapter from 'axios-mock-adapter';
@@ -152,7 +152,7 @@ describe('PUBLICATION MODULE', () => {
   }
 
   function createPositions(coordinates: number[] = [8, 42]): Position {
-    const id = new Types.ObjectId().toHexString();
+    const id = new ObjectId().toHexString();
     const point: Point = {
       type: 'Point',
       coordinates,
@@ -168,7 +168,7 @@ describe('PUBLICATION MODULE', () => {
   describe('POST /bases-locales/sync/exec', () => {
     it('Publish 200 DRAFT', async () => {
       const commune = '91534';
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const balId = await createBal({
         nom: 'bal',
         commune,
@@ -207,7 +207,7 @@ describe('PUBLICATION MODULE', () => {
         .onGet(`habilitations/${habilitationId}`)
         .reply(200, habilitation);
 
-      const revisionId = new Types.ObjectId().toHexString();
+      const revisionId = new ObjectId().toHexString();
       const revision: Revision = {
         _id: revisionId,
         codeCommune: commune,
@@ -271,9 +271,9 @@ describe('PUBLICATION MODULE', () => {
 
     it('Publish 200 OUTDATED', async () => {
       const commune = '91534';
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       // REVSION
-      const revisionId = new Types.ObjectId().toHexString();
+      const revisionId = new ObjectId().toHexString();
       const revision: Revision = {
         _id: revisionId,
         codeCommune: commune,
@@ -392,9 +392,9 @@ describe('PUBLICATION MODULE', () => {
 
     it('Publish 200 OUTDATED same hash', async () => {
       const commune = '91534';
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       // REVSION
-      const revisionId = new Types.ObjectId().toHexString();
+      const revisionId = new ObjectId().toHexString();
       const revision: Revision = {
         _id: revisionId,
         codeCommune: commune,
@@ -477,7 +477,7 @@ describe('PUBLICATION MODULE', () => {
 
     it('Publish 412 status DEMO', async () => {
       const commune = '91534';
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const balId = await createBal({
         nom: 'bal',
         commune,
@@ -526,7 +526,7 @@ describe('PUBLICATION MODULE', () => {
 
     it('Publish 412 habilitation PENDING', async () => {
       const commune = '91534';
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const balId = await createBal({
         nom: 'bal',
         commune,
@@ -563,7 +563,7 @@ describe('PUBLICATION MODULE', () => {
 
     it('Publish 412 habilitation expired', async () => {
       const commune = '91534';
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const balId = await createBal({
         nom: 'bal',
         commune,
@@ -600,7 +600,7 @@ describe('PUBLICATION MODULE', () => {
 
     it('Publish 412 no numero', async () => {
       const commune = '91534';
-      const habilitationId = new Types.ObjectId().toHexString();
+      const habilitationId = new ObjectId().toHexString();
       const balId = await createBal({
         nom: 'bal',
         commune,
