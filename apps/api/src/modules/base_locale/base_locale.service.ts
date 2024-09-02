@@ -97,15 +97,27 @@ export class BaseLocaleService {
   public async findMany(
     where: FindOptionsWhere<BaseLocale>,
     select?: FindOptionsSelect<BaseLocale>,
-    limit?: number,
-    offset?: number,
   ): Promise<BaseLocale[]> {
     return this.basesLocalesRepository.find({
       where,
       ...(select && { select }),
-      ...(limit && { take: limit }),
-      ...(offset && { skip: offset }),
     });
+  }
+
+  public async searchMany(
+    where: FindOptionsWhere<BaseLocale>,
+    email?: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<BaseLocale[]> {
+    return this.basesLocalesRepository
+      .createQueryBuilder()
+      .select()
+      .where(where)
+      .andWhere('lower(emails::text)::text[] @> ARRAY[:email]', { email })
+      .limit(limit)
+      .offset(offset)
+      .getMany();
   }
 
   public async countGroupByStatus(): Promise<any[]> {

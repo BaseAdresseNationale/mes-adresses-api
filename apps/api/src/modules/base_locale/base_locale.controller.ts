@@ -129,12 +129,13 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   async searchBaseLocale(
     @Req() req: CustomRequest,
-    @Query(SearchQueryPipe) { filters, limit, offset }: SearchQueryTransformed,
+    @Query(SearchQueryPipe)
+    { filters, email, limit, offset }: SearchQueryTransformed,
     @Res() res: Response,
   ) {
-    const basesLocales: BaseLocale[] = await this.baseLocaleService.findMany(
+    const basesLocales: BaseLocale[] = await this.baseLocaleService.searchMany(
       filters,
-      null,
+      email,
       limit,
       offset,
     );

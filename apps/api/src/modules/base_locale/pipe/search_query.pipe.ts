@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { ArrayContains, FindOptionsWhere, Not } from 'typeorm';
+import { FindOptionsWhere, Not } from 'typeorm';
 
 import {
   BaseLocale,
@@ -19,23 +19,26 @@ export type SearchQueryTransformed = {
   offset: number;
   limit: number;
   filters: FindOptionsWhere<BaseLocale>;
+  email?: string;
 };
 
 @Injectable()
 export class SearchQueryPipe implements PipeTransform {
   transform(query: SearchBaseLocalQuery): SearchQueryTransformed {
-    const limit = query.limit ? Number.parseInt(query.limit, 10) : 20;
-    const offset = query.offset ? Number.parseInt(query.offset, 10) : 0;
-    const filters: FindOptionsWhere<BaseLocale> = {};
+    const res: SearchQueryTransformed = {
+      limit: query.limit ? Number.parseInt(query.limit, 10) : 20,
+      offset: query.offset ? Number.parseInt(query.offset, 10) : 0,
+      filters: {},
+    };
 
-    if (!Number.isInteger(limit) || limit > 100 || limit <= 0) {
+    if (!Number.isInteger(res.limit) || res.limit > 100 || res.limit <= 0) {
       throw new HttpException(
         'La valeur du champ "limit" doit un entier compris en 1 et 100 (défaut : 20)',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    if (!Number.isInteger(offset) || offset < 0) {
+    if (!Number.isInteger(res.offset) || res.offset < 0) {
       throw new HttpException(
         'La valeur du champ "offset" doit être un entier positif (défaut : 0)',
         HttpStatus.BAD_REQUEST,
@@ -43,9 +46,9 @@ export class SearchQueryPipe implements PipeTransform {
     }
 
     if (query.deleted === 'false') {
-      filters.deletedAt = null;
+      res.filters.deletedAt = null;
     } else if (query.deleted === 'true') {
-      filters.deletedAt = Not(null);
+      res.filters.deletedAt = Not(null);
     } else if (query.deleted) {
       throw new HttpException(
         'La valeur du champ "deleted" est invalide',
@@ -55,7 +58,7 @@ export class SearchQueryPipe implements PipeTransform {
 
     if (query.commune) {
       if (typeof query.commune === 'string' && getCommune(query.commune)) {
-        filters.commune = query.commune;
+        res.filters.commune = query.commune;
       } else {
         throw new HttpException(
           'La valeur du champ "commune" est invalide',
@@ -66,7 +69,7 @@ export class SearchQueryPipe implements PipeTransform {
 
     if (query.email) {
       if (typeof query.email === 'string' && checkValidEmail(query.email)) {
-        filters.emails = ArrayContains([query.email]);
+        res.email = query.email.toLowerCase();
       } else {
         throw new HttpException(
           'La valeur du champ "email" est invalide',
@@ -85,7 +88,7 @@ export class SearchQueryPipe implements PipeTransform {
           StatusBaseLocalEnum.REPLACED,
         ].includes(query.status as StatusBaseLocalEnum)
       ) {
-        filters.status = query.status as StatusBaseLocalEnum;
+        res.filters.status = query.status as StatusBaseLocalEnum;
       } else {
         throw new HttpException(
           'La valeur du champ "status" est invalide',
@@ -94,6 +97,6 @@ export class SearchQueryPipe implements PipeTransform {
       }
     }
 
-    return { offset, limit, filters };
+    return res;
   }
 }
