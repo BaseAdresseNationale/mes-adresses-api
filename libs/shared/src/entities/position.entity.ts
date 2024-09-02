@@ -28,7 +28,7 @@ export enum PositionTypeEnum {
 @Entity({ name: 'positions' })
 export class Position {
   @ApiProperty()
-  @PrimaryColumn('varchar', { length: 32 })
+  @PrimaryColumn('varchar', { length: 24 })
   id?: string;
 
   @BeforeInsert()
@@ -38,12 +38,12 @@ export class Position {
 
   @Index('IDX_positions_toponyme_id')
   @ApiProperty()
-  @Column('varchar', { length: 32, name: 'toponyme_id', nullable: true })
+  @Column('varchar', { length: 24, name: 'toponyme_id', nullable: true })
   toponymeId?: string;
 
   @Index('IDX_positions_numeros_id')
   @ApiProperty()
-  @Column('varchar', { length: 32, name: 'numero_id', nullable: true })
+  @Column('varchar', { length: 24, name: 'numero_id', nullable: true })
   numeroId?: string;
 
   @ApiProperty({ enum: PositionTypeEnum })

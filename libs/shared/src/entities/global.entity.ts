@@ -12,8 +12,8 @@ import {
 
 export class GlobalEntity {
   @ApiProperty()
-  @PrimaryColumn('varchar', { length: 32 })
-  id?: string;
+  @PrimaryColumn('varchar', { length: 24 })
+  id: string;
 
   @ApiProperty()
   @Column('uuid', { name: 'ban_id', nullable: false })

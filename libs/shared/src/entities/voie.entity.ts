@@ -22,7 +22,7 @@ export enum TypeNumerotationEnum {
 export class Voie extends GlobalEntity {
   @Index('IDX_voies_bal_id')
   @ApiProperty()
-  @Column('varchar', { length: 32, name: 'bal_id', nullable: false })
+  @Column('varchar', { length: 24, name: 'bal_id', nullable: false })
   balId: string;
 
   @ApiProperty()
