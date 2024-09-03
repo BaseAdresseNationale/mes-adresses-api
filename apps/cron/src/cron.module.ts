@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
 
-import { Initialization1725265123018 } from 'migrations/1725265123018-initialization';
+import { Initialization1725371358514 } from 'migrations/1725371358514-initialization';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
@@ -34,7 +34,7 @@ import { CronService } from './cron.service';
         keepConnectionAlive: true,
         schema: 'public',
         migrationsRun: true,
-        migrations: [Initialization1725265123018],
+        migrations: [Initialization1725371358514],
         entities: [BaseLocale, Voie, Numero, Toponyme, Position],
       }),
       inject: [ConfigService],

@@ -27,7 +27,7 @@ export class GlobalEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @Index()
+  @Index({ where: 'deleted_at IS NULL' })
   @ApiProperty()
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date | null;

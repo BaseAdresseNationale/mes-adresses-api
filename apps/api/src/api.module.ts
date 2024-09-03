@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
-import { Initialization1725265123018 } from 'migrations/1725265123018-initialization';
+import { Initialization1725371358514 } from 'migrations/1725371358514-initialization';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
@@ -34,7 +34,7 @@ import { MailerParams } from '@/shared/params/mailer.params';
         keepConnectionAlive: true,
         schema: 'public',
         migrationsRun: true,
-        migrations: [Initialization1725265123018],
+        migrations: [Initialization1725371358514],
         entities: [BaseLocale, Voie, Numero, Toponyme, Position],
       }),
       inject: [ConfigService],
