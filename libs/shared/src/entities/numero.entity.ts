@@ -107,6 +107,6 @@ export class Numero extends GlobalEntity {
 
   @AfterLoad()
   getNumeroComplet?() {
-    this.numeroComplet = this.numero + displaySuffix(this);
+    this.numeroComplet = this.numero + ' ' + displaySuffix(this);
   }
 }
