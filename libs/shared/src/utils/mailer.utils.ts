@@ -1,3 +1,5 @@
+import { BaseLocale } from '../entities/base_locale.entity';
+
 function getEditorUrlPattern() {
   if (process.env.EDITOR_URL_PATTERN) {
     return process.env.EDITOR_URL_PATTERN;
@@ -22,14 +24,14 @@ export function getApiUrl() {
   return 'http://api.domain.tld';
 }
 
-export function getEditorUrl(baseLocale) {
+export function getEditorUrl(baseLocale: BaseLocale) {
   return getEditorUrlPattern()
-    .replace('<id>', baseLocale._id)
+    .replace('<id>', baseLocale.id)
     .replace('<token>', baseLocale.token);
 }
 
 export function getApiRecoveryUrl(baseLocale) {
-  return `${getApiUrl()}/v2/bases-locales/${baseLocale._id}/${
+  return `${getApiUrl()}/v2/bases-locales/${baseLocale.id}/${
     baseLocale.token
   }/recovery`;
 }
