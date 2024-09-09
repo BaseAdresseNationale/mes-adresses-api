@@ -142,6 +142,24 @@ export class NumeroService {
     return query.getMany();
   }
 
+  async findManyWherePositionInPolygon(
+    balId: string,
+    polygon: number[][],
+  ): Promise<Numero[]> {
+    const linestring: string = polygon
+      .map((arr) => `${arr[0]} ${arr[1]}`)
+      .join(',');
+    // Requète postgis qui permet de récupèré les numeros dans un polygon simple
+    const query = this.numerosRepository
+      .createQueryBuilder('numeros')
+      .leftJoinAndSelect('numeros.positions', 'positions')
+      .where('numeros.balId = :balId', { balId })
+      .andWhere(
+        `ST_Contains(ST_Polygon('LINESTRING(${linestring})'::geometry, 4326), positions.point)`,
+      );
+    return query.getMany();
+  }
+
   public async count(where: FindOptionsWhere<Numero>): Promise<number> {
     return this.numerosRepository.count({ where });
   }
