@@ -1,34 +1,56 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
 
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Voie } from '@/shared/entities/voie.entity';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { exportBalToCsv } from '@/shared/modules/export_csv/utils/export_csv_bal.utils';
 import { exportVoiesToCsv } from '@/shared/modules/export_csv/utils/export_csv_voies.utils';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ExportCsvService {
   constructor(
-    @InjectModel(Numero.name) private numeroModel: Model<Numero>,
-    @InjectModel(Voie.name) private voieModel: Model<Voie>,
-    @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
+    @InjectRepository(Numero)
+    private numerosRepository: Repository<Numero>,
+    @InjectRepository(Voie)
+    private voiesRepository: Repository<Voie>,
+    @InjectRepository(Toponyme)
+    private toponymesRepository: Repository<Toponyme>,
   ) {}
 
-  async getAllFromBal(balId: Types.ObjectId) {
-    const voies: Voie[] = await this.voieModel.find({
-      _bal: balId,
-      _deleted: null,
+  async getAllFromBal(balId: string) {
+    const voies: Voie[] = await this.voiesRepository.find({
+      where: {
+        balId,
+        deletedAt: null,
+      },
+      order: {
+        nom: 'ASC',
+      },
     });
-    const toponymes: Toponyme[] = await this.toponymeModel.find({
-      _bal: balId,
-      _deleted: null,
+    const toponymes: Toponyme[] = await this.toponymesRepository.find({
+      where: {
+        balId,
+        deletedAt: null,
+      },
+      order: {
+        nom: 'ASC',
+      },
     });
-    const numeros: Numero[] = await this.numeroModel.find({
-      _bal: balId,
-      _deleted: null,
+    const numeros: Numero[] = await this.numerosRepository.find({
+      where: {
+        balId,
+        deletedAt: null,
+      },
+      order: {
+        numero: 'ASC',
+        suffixe: {
+          direction: 'ASC',
+          nulls: 'FIRST',
+        },
+      },
     });
     return { voies, toponymes, numeros };
   }
@@ -38,7 +60,7 @@ export class ExportCsvService {
     withComment: boolean = false,
   ): Promise<string> {
     const { voies, toponymes, numeros } = await this.getAllFromBal(
-      baseLocale._id,
+      baseLocale.id,
     );
 
     return exportBalToCsv(baseLocale, voies, toponymes, numeros, withComment);
@@ -46,7 +68,7 @@ export class ExportCsvService {
 
   async exportVoiesToCsv(baseLocale: BaseLocale): Promise<string> {
     const { voies, toponymes, numeros } = await this.getAllFromBal(
-      baseLocale._id,
+      baseLocale.id,
     );
 
     return exportVoiesToCsv(voies, toponymes, numeros);

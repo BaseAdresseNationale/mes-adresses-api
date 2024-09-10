@@ -1,13 +1,13 @@
 import { Injectable, NestMiddleware, Inject, forwardRef } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 
-import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { Voie } from '@/shared/entities/voie.entity';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
+import { isAdmin } from '@/lib/utils/is-admin.utils';
 import { VoieService } from '@/modules/voie/voie.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { isAdmin } from '@/lib/utils/is-admin.utils';
 
 @Injectable()
 export class VoieMiddleware implements NestMiddleware {
@@ -22,7 +22,7 @@ export class VoieMiddleware implements NestMiddleware {
     if (voieId) {
       const voie: Voie = await this.voieService.findOneOrFail(voieId);
       const basesLocale: BaseLocale =
-        await this.baseLocaleService.findOneOrFail(voie._bal.toString());
+        await this.baseLocaleService.findOneOrFail(voie.balId);
 
       req.baseLocale = basesLocale;
       req.voie = voie;

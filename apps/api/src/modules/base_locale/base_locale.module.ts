@@ -4,17 +4,15 @@ import {
   forwardRef,
   RequestMethod,
 } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-
-import {
-  BaseLocale,
-  BaseLocaleSchema,
-} from '@/shared/schemas/base_locale/base_locale.schema';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { BaseLocaleController } from '@/modules/base_locale/base_locale.controller';
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
+import { SearchQueryPipe } from './pipe/search_query.pipe';
+import { BanPlateformModule } from '@/shared/modules/ban_plateform/ban_plateform.module';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
 import { ExportCsvModule } from '@/modules/base_locale/sub_modules/export_csv/export_csv.module';
@@ -24,16 +22,12 @@ import { VoieModule } from '@/modules/voie/voie.module';
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
-import { SearchQueryPipe } from './pipe/search_query.pipe';
-import { BanPlateformModule } from '@/shared/modules/ban_plateform/ban_plateform.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     ConfigModule,
-    MongooseModule.forFeature([
-      { name: BaseLocale.name, schema: BaseLocaleSchema },
-    ]),
+    TypeOrmModule.forFeature([BaseLocale]),
     PublicationModule,
     forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),

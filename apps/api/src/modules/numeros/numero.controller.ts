@@ -19,7 +19,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { Numero } from '@/shared/entities/numero.entity';
 import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 
 import { CustomRequest } from '@/lib/types/request.type';
@@ -41,9 +41,7 @@ export class NumeroController {
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
   @ApiBearerAuth('admin-token')
   find(@Req() req: CustomRequest, @Res() res: Response) {
-    const numero: Numero = <Numero>(
-      filterSensitiveFields(req.numero, !req.isAdmin)
-    );
+    const numero: Numero = filterSensitiveFields(req.numero, !req.isAdmin);
     res.status(HttpStatus.OK).json(numero);
   }
 
@@ -79,8 +77,8 @@ export class NumeroController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
-    const result = await this.numeroService.softDelete(req.numero);
-    res.status(HttpStatus.OK).json(result);
+    await this.numeroService.softDelete(req.numero);
+    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @Delete(':numeroId')

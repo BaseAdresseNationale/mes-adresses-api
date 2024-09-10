@@ -1,6 +1,7 @@
 import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Voie, VoieSchema } from '@/shared/schemas/voie/voie.schema';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { Voie } from '@/shared/entities/voie.entity';
 
 import { VoieMiddleware } from '@/modules/voie/voie.middleware';
 import { VoieController } from '@/modules/voie/voie.controller';
@@ -12,7 +13,7 @@ import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.modul
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Voie.name, schema: VoieSchema }]),
+    TypeOrmModule.forFeature([Voie]),
     forwardRef(() => NumeroModule),
     forwardRef(() => BaseLocaleModule),
     forwardRef(() => TilesModule),

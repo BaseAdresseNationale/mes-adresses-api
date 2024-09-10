@@ -5,31 +5,40 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { FilterQuery, Model, ProjectionType, Types } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
 import { groupBy } from 'lodash';
+import {
+  DeleteResult,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  In,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as turf from '@turf/turf';
+import bbox from '@turf/bbox';
+import { Feature as FeatureTurf, BBox as BboxTurf } from '@turf/helpers';
 import { v4 as uuid } from 'uuid';
 
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import { Numero } from '@/shared/entities/numero.entity';
+import { extendWithNumeros } from '@/shared/utils/numero.utils';
+import { Position } from '@/shared/entities/position.entity';
 
-import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
+import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
-import { extendWithNumeros } from '@/shared/utils/numero.utils';
-import { Position } from '@/shared/schemas/position.schema';
-import * as turf from '@turf/turf';
-import bbox from '@turf/bbox';
-import { Feature as FeatureTurf, BBox as BboxTurf } from '@turf/helpers';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class ToponymeService {
   constructor(
-    @InjectModel(Toponyme.name) private toponymeModel: Model<Toponyme>,
+    @InjectRepository(Toponyme)
+    private toponymesRepository: Repository<Toponyme>,
     @Inject(forwardRef(() => BaseLocaleService))
     private baseLocaleService: BaseLocaleService,
     @Inject(forwardRef(() => NumeroService))
@@ -37,11 +46,15 @@ export class ToponymeService {
   ) {}
 
   async findOneOrFail(toponymeId: string): Promise<Toponyme> {
-    const filter = {
-      _id: toponymeId,
+    // Créer le filtre where et lance la requète postgres
+    const where: FindOptionsWhere<Toponyme> = {
+      id: toponymeId,
     };
-    const toponyme = await this.toponymeModel.findOne(filter).lean().exec();
-
+    const toponyme = await this.toponymesRepository.findOne({
+      where,
+      withDeleted: true,
+    });
+    // Si le toponyme n'existe pas, on throw une erreur
     if (!toponyme) {
       throw new HttpException(
         `Toponyme ${toponymeId} not found`,
@@ -53,48 +66,51 @@ export class ToponymeService {
   }
 
   async findMany(
-    filter: FilterQuery<Toponyme>,
-    projection: ProjectionType<Toponyme> = null,
+    where: FindOptionsWhere<Toponyme>,
+    select?: FindOptionsSelect<Toponyme>,
   ): Promise<Toponyme[]> {
-    const query = this.toponymeModel.find(filter);
-    if (projection) {
-      query.projection(projection);
-    }
-
-    return query.lean().exec();
+    return this.toponymesRepository.find({ where, ...(select && { select }) });
   }
 
-  async findDistinct(
-    filter: FilterQuery<Toponyme>,
-    field: string,
-  ): Promise<string[]> {
-    return this.toponymeModel.distinct(field, filter).exec();
+  async findManyWithDeleted(
+    where: FindOptionsWhere<Toponyme>,
+  ): Promise<Toponyme[]> {
+    // Get les numeros en fonction du where archivé ou non
+    return this.toponymesRepository.find({
+      where,
+      withDeleted: true,
+    });
   }
 
-  public deleteMany(filters: FilterQuery<Toponyme>): Promise<any> {
-    return this.toponymeModel.deleteMany(filters);
+  async findDistinctParcelles(balId: string): Promise<string[]> {
+    const res: any[] = await this.toponymesRepository.query(
+      `SELECT ARRAY_AGG(distinct elem) 
+        FROM (select unnest(parcelles) as elem, bal_id, deleted_at from toponymes) s 
+        WHERE bal_id = '${balId}' AND deleted_at IS null`,
+    );
+    return res[0]?.array_agg || [];
   }
 
   async extendToponymes(toponymes: Toponyme[]): Promise<ExtentedToponymeDTO[]> {
+    // On recupère les numeros des toponymes
+    const toponymesIds: string[] = toponymes.map(({ id }) => id);
     const numeros = await this.numeroService.findMany({
-      toponyme: { $in: toponymes.map(({ _id }) => _id) },
-      _deleted: null,
+      toponymeId: In(toponymesIds),
     });
-
-    const numerosByToponymes = groupBy(numeros, 'toponyme');
-
-    return toponymes.map((voie) => ({
-      ...extendWithNumeros(voie, numerosByToponymes[voie._id] || []),
-      bbox: this.getBBOX(voie, numerosByToponymes[voie._id] || []),
+    const numerosByToponymes = groupBy(numeros, 'toponymeId');
+    // On renvoie les toponyme avec la bbox et les metas numeros
+    return toponymes.map((t) => ({
+      ...extendWithNumeros(t, numerosByToponymes[t.id] || []),
+      bbox: this.getBBOX(t, numerosByToponymes[t.id] || []),
     }));
   }
 
   async extendToponyme(toponyme: Toponyme): Promise<ExtentedToponymeDTO> {
+    // On recupère les numeros du toponymes
     const numeros = await this.numeroService.findMany({
-      toponyme: toponyme._id,
-      _deleted: null,
+      toponymeId: toponyme.id,
     });
-
+    // On renvoie le toponyme avec la bbox et les metas numeros
     return {
       ...extendWithNumeros(toponyme, numeros),
       bbox: this.getBBOX(toponyme, numeros),
@@ -105,24 +121,25 @@ export class ToponymeService {
     bal: BaseLocale,
     createToponymeDto: CreateToponymeDTO | Partial<Toponyme>,
   ): Promise<Toponyme> {
-    // CREATE OBJECT TOPONYME
+    // On créer l'object toponyme
     const toponyme: Partial<Toponyme> = {
-      _bal: bal._id,
+      balId: bal.id,
       banId: uuid(),
-      commune: bal.commune,
       nom: createToponymeDto.nom,
-      positions: createToponymeDto.positions || [],
-      parcelles: createToponymeDto.parcelles || [],
       nomAlt: createToponymeDto.nomAlt
         ? cleanNomAlt(createToponymeDto.nomAlt)
         : null,
+      positions: createToponymeDto.positions || [],
+      parcelles: createToponymeDto.parcelles || [],
     };
-
-    // REQUEST CREATE TOPONYME
-    const toponymeCreated: Toponyme = await this.toponymeModel.create(toponyme);
-    // SET _updated BAL
-    await this.baseLocaleService.touch(bal._id, toponymeCreated._updated);
-
+    // Créer l'entité typeorm
+    const entityToSave: Toponyme = this.toponymesRepository.create(toponyme);
+    // On insert l'object dans postgres
+    const toponymeCreated: Toponyme =
+      await this.toponymesRepository.save(entityToSave);
+    // On met a jour le updatedAt de la BAL
+    await this.baseLocaleService.touch(bal.id, toponymeCreated.updatedAt);
+    // On retourne le toponyme créé
     return toponymeCreated;
   }
 
@@ -130,146 +147,167 @@ export class ToponymeService {
     toponyme: Toponyme,
     updateToponymeDto: UpdateToponymeDTO,
   ): Promise<Toponyme> {
+    // On clean le nom et le nomAlt si ils sont présent dans le dto
     if (updateToponymeDto.nom) {
       updateToponymeDto.nom = cleanNom(updateToponymeDto.nom);
     }
-
     if (updateToponymeDto.nomAlt) {
       updateToponymeDto.nomAlt = cleanNomAlt(updateToponymeDto.nomAlt);
     }
+    // On update le numéro dans postgres
+    Object.assign(toponyme, updateToponymeDto);
+    const toponymeUpdated: Toponyme =
+      await this.toponymesRepository.save(toponyme);
 
-    const toponymeUpdated = await this.toponymeModel.findOneAndUpdate(
-      { _id: toponyme._id, _deleted: null },
-      { $set: { ...updateToponymeDto, _updated: new Date() } },
-      { new: true },
-    );
-
-    // SET _updated BAL
-    await this.baseLocaleService.touch(
-      toponymeUpdated._bal,
-      toponymeUpdated._updated,
-    );
+    await this.baseLocaleService.touch(toponyme.balId);
+    // On retourne le toponyme mis a jour
     return toponymeUpdated;
   }
 
-  public async softDelete(toponyme: Toponyme): Promise<Toponyme> {
-    // SET _deleted OF TOPONYME
-    const toponymeUpdated: Toponyme = await this.toponymeModel.findOneAndUpdate(
-      { _id: toponyme._id },
-      { $set: { _deleted: new Date(), _updated: new Date() } },
-      { new: true },
-    );
-
-    await this.numeroService.updateMany(
-      { toponyme: toponyme._id },
-      {
-        toponyme: null,
-        _updated: toponymeUpdated._updated,
-      },
-    );
-
-    // SET _updated OF TOPONYME
-    await this.baseLocaleService.touch(toponyme._bal);
-    return toponymeUpdated;
+  public async softDelete(toponyme: Toponyme): Promise<void> {
+    // On archive le toponyme
+    const { affected }: UpdateResult =
+      await this.toponymesRepository.softDelete({
+        id: toponyme.id,
+      });
+    // Si le toponyme a bien été archivé
+    if (affected) {
+      // On détache le numéro qui appartenait a ce toponyme
+      await this.numeroService.updateMany(
+        { toponymeId: toponyme.id },
+        {
+          toponymeId: null,
+        },
+      );
+      // On met a jour le updatedAt de la BAL
+      await this.baseLocaleService.touch(toponyme.balId);
+    }
   }
 
   public async restore(toponyme: Toponyme): Promise<Toponyme> {
-    const updatedToponyme = await this.toponymeModel.findOneAndUpdate(
-      { _id: toponyme._id },
-      { $set: { _deleted: null, _updated: new Date() } },
-      { new: true },
-    );
-    // SET _updated OF TOPONYME
-    await this.baseLocaleService.touch(toponyme._bal);
-
-    return updatedToponyme;
+    // On rétabli le toponyme
+    const { affected }: UpdateResult = await this.toponymesRepository.restore({
+      id: toponyme.id,
+    });
+    // Si le toponyme a été rétabli on met a jour le updateAt de la BAL
+    if (affected) {
+      await this.baseLocaleService.touch(toponyme.balId);
+    }
+    // On retourne le toponyme rétabli
+    return this.toponymesRepository.findOneBy({
+      id: toponyme.id,
+    });
   }
 
   public async delete(toponyme: Toponyme) {
-    // DELETE TOPONYME
-    const { deletedCount } = await this.toponymeModel.deleteOne({
-      _id: toponyme._id,
+    // On supprime le toponyme
+    const { affected }: DeleteResult = await this.toponymesRepository.delete({
+      id: toponyme.id,
     });
-
-    if (deletedCount >= 1) {
-      // SET _updated OF TOPONYME
-      await this.baseLocaleService.touch(toponyme._bal);
+    // Si le toponyme a été supprimer on met a jour le updateAt de la BAL
+    if (affected > 0) {
+      await this.baseLocaleService.touch(toponyme.balId);
     }
   }
 
-  async importMany(baseLocale: BaseLocale, rawToponymes: any[]) {
-    const toponymes = rawToponymes
-      .map((rawToponyme) => {
-        if (!rawToponyme.commune || !rawToponyme.nom) {
-          return null;
-        }
+  public async deleteMany(where: FindOptionsWhere<Toponyme>) {
+    // On supprime les toponyme
+    await this.toponymesRepository.delete(where);
+  }
 
-        const toponyme = {
-          _id: rawToponyme._id,
-          _bal: baseLocale._id,
-          banId: rawToponyme.banId || uuid(),
-          nom: cleanNom(rawToponyme.nom),
-          positions: rawToponyme.positions || [],
-          parcelles: rawToponyme.parcelles || [],
-          code: rawToponyme.code || null,
-          commune: rawToponyme.commune,
-          nomAlt: getNomAltDefault(rawToponyme.nomAlt),
-        } as Partial<Toponyme>;
-
-        if (rawToponyme._updated && rawToponyme._created) {
-          toponyme._created = rawToponyme._created;
-          toponyme._updated = rawToponyme._updated;
-        }
-
-        return toponyme;
-      })
-      .filter(Boolean);
-
+  async importMany(baseLocale: BaseLocale, rawToponymes: Partial<Toponyme>[]) {
+    // On transforme les raw en toponymes
+    const toponymes: Partial<Toponyme>[] = rawToponymes
+      // On garde seulement les toponymes qui ont un nom
+      .filter(({ nom }) => Boolean(nom))
+      // On map les raw pour obtenir de vrai topnymes
+      .map((rawToponyme) => ({
+        id: rawToponyme.id,
+        balId: baseLocale.id,
+        banId: rawToponyme.banId || uuid(),
+        nom: cleanNom(rawToponyme.nom),
+        parcelles: rawToponyme.parcelles || [],
+        nomAlt: getNomAltDefault(rawToponyme.nomAlt),
+        ...(rawToponyme.updatedAt && { updatedAt: rawToponyme.updatedAt }),
+        ...(rawToponyme.createdAt && { createdAt: rawToponyme.createdAt }),
+      }));
+    // On ne retourne rien si il n'y a pas de topnyme a insert
     if (toponymes.length === 0) {
       return;
     }
-
-    await this.toponymeModel.insertMany(toponymes);
+    // On insert les toponymes
+    await this.toponymesRepository
+      .createQueryBuilder()
+      .insert()
+      .into(Toponyme)
+      .values(toponymes)
+      .execute();
+    // On créer les positions
+    const positions: Partial<Position>[] = [];
+    for (const rawToponyme of rawToponymes) {
+      let rank = 0;
+      for (const { source, type, point } of rawToponyme.positions) {
+        positions.push({
+          id: new ObjectId().toHexString(),
+          toponymeId: rawToponyme.id,
+          source,
+          type,
+          point,
+          rank,
+        });
+        rank++;
+      }
+    }
+    if (positions.length === 0) {
+      return;
+    }
+    // On insert les positions
+    await this.toponymesRepository
+      .createQueryBuilder()
+      .insert()
+      .into(Position)
+      .values(positions)
+      .execute();
   }
 
-  async isToponymeExist(
-    _id: Types.ObjectId,
-    _bal: Types.ObjectId = null,
+  public async isToponymeExist(
+    id: string,
+    balId: string = null,
   ): Promise<boolean> {
-    const query = { _id, _deleted: null };
-    if (_bal) {
-      query['_bal'] = _bal;
-    }
-    const toponymeExist = await this.toponymeModel.exists(query).exec();
-    return toponymeExist !== null;
+    // On créer le where avec id et balId et lance la requète
+    const where: FindOptionsWhere<Toponyme> = {
+      id,
+      ...(balId && { balId }),
+    };
+    return this.toponymesRepository.exists({ where });
   }
 
   getBBOX(toponyme: Toponyme, numeros: Numero[]): BboxTurf {
+    // On concat toutes les positions de tous les numeros
     const allPositions: Position[] = numeros
       .filter((n) => n.positions && n.positions.length > 0)
       .reduce((acc, n) => [...acc, ...n.positions], []);
 
     if (allPositions.length > 0) {
+      // On créer une feature collection avec toutes les positions des numeros
       const features: FeatureTurf[] = allPositions.map(({ point }) =>
         turf.feature(point),
       );
       const featuresCollection = turf.featureCollection(features);
-
+      // On renvoie la bbox de la feature collection
       return bbox(featuresCollection);
     } else if (toponyme.positions && toponyme.positions.length > 0) {
+      // On créer une feature collection avec toutes les positions du toponyme
       const features: FeatureTurf[] = toponyme.positions.map(({ point }) =>
         turf.feature(point),
       );
       const featuresCollection = turf.featureCollection(features);
-
+      // On renvoie la bbox de la feature collection
       return bbox(featuresCollection);
     }
   }
 
-  touch(toponymeId: Types.ObjectId, _updated: Date = new Date()) {
-    return this.toponymeModel.updateOne(
-      { _id: toponymeId },
-      { $set: { _updated } },
-    );
+  touch(toponymeId: string, updatedAt: Date = new Date()) {
+    return this.toponymesRepository.update({ id: toponymeId }, { updatedAt });
   }
 }

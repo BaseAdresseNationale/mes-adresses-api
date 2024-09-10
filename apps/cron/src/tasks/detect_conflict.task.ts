@@ -1,15 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { In, Repository } from 'typeorm';
 
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
 import {
+  BaseLocale,
   StatusSyncEnum,
   StatusBaseLocalEnum,
-} from '@/shared/schemas/base_locale/status.enum';
+} from '@/shared/entities/base_locale.entity';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
-import { CacheService } from '@/shared/modules/cache/cache.service';
 
 import { Task } from '../task_queue.class';
 
@@ -22,14 +22,17 @@ export class DetectConflictTask implements Task {
 
   constructor(
     private readonly apiDepotService: ApiDepotService,
-    private readonly cacheService: CacheService,
-    @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectRepository(BaseLocale)
+    private basesLocalesRepository: Repository<BaseLocale>,
   ) {}
 
   public async run() {
     const futurePublishedSince = new Date();
-    const detectConflictPublishedSince = await this.cacheService.get(
-      KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
+    const detectConflictPublishedSince = new Date(
+      (await this.cacheManager.get<Date>(
+        KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
+      )) || '1970-01-01',
     );
     const currentRevisions: Revision[] =
       await this.apiDepotService.getCurrentRevisions(
@@ -37,7 +40,7 @@ export class DetectConflictTask implements Task {
       );
     const revisedCommunes = currentRevisions.map((r) => r.codeCommune);
 
-    await this.cacheService.set(
+    await this.cacheManager.set(
       KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
       futurePublishedSince,
     );
@@ -52,11 +55,9 @@ export class DetectConflictTask implements Task {
   }
 
   private async updateConflictStatus(codeCommune: string) {
-    const basesLocales = await this.baseLocaleModel.find({
+    const basesLocales = await this.basesLocalesRepository.findBy({
       commune: codeCommune,
-      status: {
-        $in: [StatusBaseLocalEnum.REPLACED, StatusBaseLocalEnum.PUBLISHED],
-      },
+      status: In([StatusBaseLocalEnum.REPLACED, StatusBaseLocalEnum.PUBLISHED]),
     });
 
     if (basesLocales.length === 0) {
@@ -74,27 +75,26 @@ export class DetectConflictTask implements Task {
     }
 
     for (const baseLocale of basesLocales) {
-      if (
-        currentRevision._id ===
-        baseLocale.sync.lastUploadedRevisionId.toString()
-      ) {
-        await this.baseLocaleModel.updateOne(
-          { _id: baseLocale._id, status: StatusBaseLocalEnum.REPLACED },
+      if (currentRevision._id === baseLocale.sync.lastUploadedRevisionId) {
+        await this.basesLocalesRepository.update(
           {
-            $set: {
-              status: StatusBaseLocalEnum.PUBLISHED,
-              'sync.status': StatusSyncEnum.SYNCED,
-            },
+            id: baseLocale.id,
+            status: StatusBaseLocalEnum.REPLACED,
+          },
+          {
+            status: StatusBaseLocalEnum.PUBLISHED,
+            sync: { status: StatusSyncEnum.SYNCED },
           },
         );
       } else {
-        await this.baseLocaleModel.updateOne(
-          { _id: baseLocale._id, status: StatusBaseLocalEnum.PUBLISHED },
+        await this.basesLocalesRepository.update(
           {
-            $set: {
-              status: StatusBaseLocalEnum.REPLACED,
-              'sync.status': StatusSyncEnum.CONFLICT,
-            },
+            id: baseLocale.id,
+            status: StatusBaseLocalEnum.PUBLISHED,
+          },
+          {
+            status: StatusBaseLocalEnum.REPLACED,
+            sync: { status: StatusSyncEnum.CONFLICT },
           },
         );
       }

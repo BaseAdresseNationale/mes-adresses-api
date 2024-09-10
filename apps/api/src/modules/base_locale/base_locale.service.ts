@@ -5,56 +5,59 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
 import {
-  FilterQuery,
-  Model,
-  Types,
-  QueryWithHelpers,
-  Aggregate,
-  PipelineStage,
-} from 'mongoose';
+  ArrayContains,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  In,
+  IsNull,
+  Not,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { uniq, difference, groupBy } from 'lodash';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { Voie } from '@/shared/entities/voie.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
+import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 import {
   getApiRecoveryUrl,
   getApiUrl,
   getEditorUrl,
 } from '@/shared/utils/mailer.utils';
+import { extendWithNumeros } from '@/shared/utils/numero.utils';
 
+import { generateBase62String } from '@/lib/utils/token.utils';
+import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
-import { generateBase62String } from '@/lib/utils/token.utils';
 import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
-import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
-import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 import { getCommune } from '@/shared/utils/cog.utils';
 import { PopulateService } from './sub_modules/populate/populate.service';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
-import { extractFromCsv } from '@/lib/utils/csv.utils';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
-import { PopulateVoie } from '@/shared/schemas/voie/voie.populate';
-import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 
 @Injectable()
 export class BaseLocaleService {
   constructor(
-    @InjectModel(BaseLocale.name) private baseLocaleModel: Model<BaseLocale>,
+    @InjectRepository(BaseLocale)
+    private basesLocalesRepository: Repository<BaseLocale>,
     private readonly mailerService: MailerService,
     @Inject(forwardRef(() => VoieService))
     private voieService: VoieService,
@@ -69,15 +72,17 @@ export class BaseLocaleService {
     private configService: ConfigService,
   ) {}
 
-  async findOneOrFail(id: string): Promise<BaseLocale> {
-    const filter = {
-      _id: id,
-    };
-    const baseLocale = await this.baseLocaleModel.findOne(filter).lean().exec();
-
+  public async findOneOrFail(balId: string): Promise<BaseLocale> {
+    // Créer le filtre where et lance la requète postgres
+    const where: FindOptionsWhere<BaseLocale> = { id: balId };
+    const baseLocale = await this.basesLocalesRepository.findOne({
+      where,
+      withDeleted: true,
+    });
+    // Si la bal n'existe pas, on throw une erreur
     if (!baseLocale) {
       throw new HttpException(
-        `BaseLocale ${id} not found`,
+        `BaseLocale ${balId} not found`,
         HttpStatus.NOT_FOUND,
       );
     }
@@ -85,118 +90,139 @@ export class BaseLocaleService {
     return baseLocale;
   }
 
-  async findOne(filter?: FilterQuery<BaseLocale>): Promise<BaseLocale> {
-    return this.baseLocaleModel.findOne(filter).lean();
+  public async count(where: FindOptionsWhere<BaseLocale>): Promise<number> {
+    return this.basesLocalesRepository.count({ where });
   }
 
-  async count(filter?: FilterQuery<BaseLocale>): Promise<number> {
-    return this.baseLocaleModel.countDocuments(filter);
-  }
-
-  async findMany(
-    filter?: FilterQuery<BaseLocale>,
-    selector: Record<string, number> = null,
-    limit: number = null,
-    offset: number = null,
+  public async findMany(
+    where: FindOptionsWhere<BaseLocale>,
+    select?: FindOptionsSelect<BaseLocale>,
   ): Promise<BaseLocale[]> {
-    const query: QueryWithHelpers<
-      Array<BaseLocale>,
-      BaseLocale
-    > = this.baseLocaleModel.find(filter);
-
-    if (selector) {
-      query.select(selector);
-    }
-    if (limit) {
-      query.limit(limit);
-    }
-    if (offset) {
-      query.skip(offset);
-    }
-
-    return query.lean().exec();
+    return this.basesLocalesRepository.find({
+      where,
+      ...(select && { select }),
+    });
   }
 
-  async createOne(
+  public async searchMany(
+    where: FindOptionsWhere<BaseLocale>,
+    email?: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<BaseLocale[]> {
+    return this.basesLocalesRepository
+      .createQueryBuilder()
+      .select()
+      .where(where)
+      .andWhere('lower(emails::text)::text[] @> ARRAY[:email]', { email })
+      .limit(limit)
+      .offset(offset)
+      .getMany();
+  }
+
+  public async countGroupByStatus(): Promise<any[]> {
+    return this.basesLocalesRepository
+      .createQueryBuilder()
+      .select('status')
+      .addSelect('COUNT(id)', 'count')
+      .groupBy('status')
+      .getRawMany();
+  }
+
+  public async createOne(
     createInput: CreateBaseLocaleDTO,
-    sendMail: boolean = true,
   ): Promise<BaseLocale> {
+    // On récupère l'id ban de la BAL
     const banId: string = await this.banPlateformService.getIdBanCommune(
       createInput.commune,
     );
-    const newBaseLocale = await this.baseLocaleModel.create({
+    // On créer l'object bal
+    const entityToSave: BaseLocale = this.basesLocalesRepository.create({
       banId,
       ...createInput,
       token: generateBase62String(20),
       status: StatusBaseLocalEnum.DRAFT,
     });
-
-    if (sendMail) {
-      const editorUrl = getEditorUrl(newBaseLocale);
-      const apiUrl = getApiUrl();
-      await this.mailerService.sendMail({
-        to: newBaseLocale.emails,
-        subject: 'Création d’une nouvelle Base Adresse Locale',
-        template: 'bal-creation-notification',
-        bcc: this.configService.get('SMTP_BCC'),
-        context: {
-          baseLocale: newBaseLocale,
-          editorUrl,
-          apiUrl,
-        },
-      });
-    }
-
+    // On insert l'object dans postgres
+    const newBaseLocale: BaseLocale =
+      await this.basesLocalesRepository.save(entityToSave);
+    // On envoie un mail de création de Bal
+    const editorUrl = getEditorUrl(newBaseLocale);
+    const apiUrl = getApiUrl();
+    await this.mailerService.sendMail({
+      to: newBaseLocale.emails,
+      subject: 'Création d’une nouvelle Base Adresse Locale',
+      template: 'bal-creation-notification',
+      bcc: this.configService.get('SMTP_BCC'),
+      context: {
+        baseLocale: newBaseLocale,
+        editorUrl,
+        apiUrl,
+      },
+    });
+    // On retourne la Bal créé
     return newBaseLocale;
   }
 
-  async createDemo(
-    createDemoInput: CreateDemoBaseLocaleDTO,
-  ): Promise<BaseLocale> {
-    const { commune, populate } = createDemoInput;
-    const banId: string = await this.banPlateformService.getIdBanCommune(
-      createDemoInput.commune,
-    );
-    const newDemoBaseLocale = await this.baseLocaleModel.create({
+  public async createDemo({
+    commune,
+    populate,
+  }: CreateDemoBaseLocaleDTO): Promise<BaseLocale> {
+    // Insere la nouvelle Bal de demo
+    const banId: string =
+      await this.banPlateformService.getIdBanCommune(commune);
+    // On créer l'object bal
+    const entityToSave = this.basesLocalesRepository.create({
       banId,
       token: generateBase62String(20),
       commune,
       nom: `Adresses de ${getCommune(commune).nom} [démo]`,
       status: StatusBaseLocalEnum.DEMO,
     });
-
+    // On insert l'object dans postgres
+    const newDemoBaseLocale: BaseLocale =
+      await this.basesLocalesRepository.save(entityToSave);
+    // Si besoin on populate la Bal
     if (populate) {
       await this.extractAndPopulate(newDemoBaseLocale);
     }
-
+    // On retourne la Bal de demo créé
     return newDemoBaseLocale;
   }
 
   async extractAndPopulate(baseLocale: BaseLocale): Promise<BaseLocale> {
-    const { numeros, voies, toponymes } = await this.populateService.extract(
+    // On extrait la Bal de l'assemblage BAN ou la derniere revision sur l'api-depot
+    const data: FromCsvType = await this.populateService.extract(
       baseLocale.commune,
     );
-
-    return this.populate(baseLocale, { numeros, voies, toponymes });
+    // On populate la Bal
+    return this.populate(baseLocale, data);
   }
 
   async importFile(
     baseLocale: BaseLocale,
     file: Buffer,
   ): Promise<ImportFileBaseLocaleDTO> {
-    const { voies, numeros, toponymes, isValid, accepted, rejected } =
-      await extractFromCsv(file, baseLocale.commune);
-
+    // On extrait les infos du fichier
+    const {
+      voies,
+      numeros,
+      toponymes,
+      isValid,
+      accepted,
+      rejected,
+    }: FromCsvType = await extractFromCsv(file, baseLocale.commune);
+    // Si les informations ne sont pas valide on lance une erreur
     if (!isValid) {
       throw new HttpException(
         `CSV file is not valid`,
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-
+    // On populate la Bal avec les infos du fichier
     await this.populate(baseLocale, { voies, numeros, toponymes });
-
-    await this.touch(baseLocale._id);
+    // On met a jour le updatedAt de la Bal
+    await this.touch(baseLocale.id);
 
     return {
       isValid: true,
@@ -212,162 +238,147 @@ export class BaseLocaleService {
     baseLocale: BaseLocale,
     update: UpdateBaseLocaleDTO,
   ): Promise<BaseLocale> {
+    // On lance une erreur si la Bal est demo
     if (baseLocale.status === StatusBaseLocalEnum.DEMO) {
       throw new HttpException(
         'Une Base Adresse Locale de démonstration ne peut pas être modifiée. Elle doit d’abord être transformée en brouillon.',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
+    const { affected }: UpdateResult = await this.basesLocalesRepository
+      .createQueryBuilder('bases_locales')
+      .update(BaseLocale)
+      .set({
+        ...update,
+        updatedAt: () => `updatedAt`,
+      })
+      .where(`bases_locales.id = :id`, {
+        id: baseLocale.id,
+      })
+      .execute();
 
-    if (
-      [StatusBaseLocalEnum.PUBLISHED, StatusBaseLocalEnum.REPLACED].includes(
-        baseLocale.status,
-      ) &&
-      update.status &&
-      update.status !== baseLocale.status
-    ) {
-      throw new HttpException(
-        'La base locale a été publiée, son statut ne peut plus être changé',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
-    const updatedBaseLocale = await this.baseLocaleModel.findOneAndUpdate(
-      { _id: baseLocale._id },
-      { $set: update },
-      { new: true },
-    );
-
-    // If emails fields is overrided, we compare with current array to send a notification to new email addresses
-    if (update.emails) {
+    // On récupère la Bal mis a jour
+    const updatedBaseLocale: BaseLocale =
+      await this.basesLocalesRepository.findOneBy({ id: baseLocale.id });
+    // Si les mails de la Bal ont été modifié
+    if (affected > 0 && update.emails) {
+      // On envoie un mail au nouveau mails
       const newCollaborators = difference(update.emails, baseLocale.emails);
       const editorUrl = getEditorUrl(baseLocale);
       const apiUrl = getApiUrl();
-      await this.mailerService.sendMail({
-        to: newCollaborators,
-        subject: 'Invitation à l’administration d’une Base Adresse Locale',
-        template: 'new-admin-notification',
-        bcc: this.configService.get('SMTP_BCC'),
-        context: {
-          baseLocale,
-          editorUrl,
-          apiUrl,
-        },
-      });
+      if (newCollaborators?.length > 0) {
+        await this.mailerService.sendMail({
+          to: newCollaborators,
+          subject: 'Invitation à l’administration d’une Base Adresse Locale',
+          template: 'new-admin-notification',
+          bcc: this.configService.get('SMTP_BCC'),
+          context: {
+            baseLocale,
+            editorUrl,
+            apiUrl,
+          },
+        });
+      }
     }
-
+    // On retourne la Bal mis a jour
     return updatedBaseLocale;
   }
 
   async updateStatusToDraft(
     baseLocale: BaseLocale,
-    update: UpdateBaseLocaleDemoDTO,
+    { nom, email }: UpdateBaseLocaleDemoDTO,
   ): Promise<BaseLocale> {
+    // On lance une erreur si la Bal est demo
     if (baseLocale.status !== StatusBaseLocalEnum.DEMO) {
       throw new HttpException(
         'La Base Adresse Locale n’est pas une Base Adresse Locale de démonstration.',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
-
-    const { nom, email } = update;
-    const updatedBaseLocale = await this.baseLocaleModel.findOneAndUpdate(
-      { _id: baseLocale._id },
+    // On met a jour la Bal
+    const { affected }: UpdateResult = await this.basesLocalesRepository.update(
+      { id: baseLocale.id },
       {
-        $set: {
-          nom,
-          emails: [email],
-          status: StatusBaseLocalEnum.DRAFT,
-        },
+        nom,
+        emails: [email],
+        status: StatusBaseLocalEnum.DRAFT,
       },
-      { new: true },
     );
-
-    const editorUrl = getEditorUrl(updatedBaseLocale);
-    const apiUrl = getApiUrl();
-    await this.mailerService.sendMail({
-      to: updatedBaseLocale.emails,
-      subject: 'Création d’une nouvelle Base Adresse Locale',
-      template: 'bal-creation-notification',
-      bcc: this.configService.get('SMTP_BCC'),
-      context: {
-        baseLocale: updatedBaseLocale,
-        editorUrl,
-        apiUrl,
-      },
-    });
-
+    // On récupère la Bal mofifié
+    const updatedBaseLocale: BaseLocale =
+      await this.basesLocalesRepository.findOneBy({ id: baseLocale.id });
+    // On envoie un mail si la Bal a été modifié
+    if (affected > 0) {
+      const editorUrl = getEditorUrl(updatedBaseLocale);
+      const apiUrl = getApiUrl();
+      await this.mailerService.sendMail({
+        to: updatedBaseLocale.emails,
+        subject: 'Création d’une nouvelle Base Adresse Locale',
+        template: 'bal-creation-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          baseLocale: updatedBaseLocale,
+          editorUrl,
+          apiUrl,
+        },
+      });
+    }
+    // On retourne la Bal modifié
     return updatedBaseLocale;
   }
 
   async deleteOne(baseLocale: BaseLocale) {
     if (baseLocale.status === StatusBaseLocalEnum.DEMO) {
-      await this.hardDeleteOne(baseLocale);
+      // Si la Bal est en demo on la supprime
+      await this.delete(baseLocale);
     } else {
-      await this.softDeleteOne(baseLocale);
+      // Si la Bal n'est pas en demo on l'archive
+      await this.softDelete(baseLocale);
     }
   }
 
-  async deleteData(baseLocale: BaseLocale) {
-    await this.numeroService.deleteMany({
-      _bal: baseLocale._id,
-    });
-    await this.voieService.deleteMany({ _bal: baseLocale._id });
-    await this.toponymeService.deleteMany({
-      _bal: baseLocale._id,
-    });
+  async delete(baseLocale: BaseLocale) {
+    // On supprime la Bal
+    // Par CASCADE cela va supprimer les voies, toponymes et numeros dans postgres
+    await this.basesLocalesRepository.delete({ id: baseLocale.id });
   }
 
-  async hardDeleteOne(baseLocale: BaseLocale) {
-    await this.deleteData(baseLocale);
-    await this.baseLocaleModel.deleteOne({ _id: baseLocale._id });
-  }
-
-  async softDeleteOne(baseLocale: BaseLocale) {
-    await this.baseLocaleModel.updateOne(
-      { _id: baseLocale._id },
-      { $set: { _deleted: new Date() } },
-    );
-  }
-
-  async aggregate(aggregation?: PipelineStage[]): Promise<Aggregate<any>> {
-    return this.baseLocaleModel.aggregate(aggregation);
+  async softDelete(baseLocale: BaseLocale) {
+    // On archive la Bal
+    await this.basesLocalesRepository.softDelete({ id: baseLocale.id });
   }
 
   async findAllDeletedByBal(
     baseLocale: BaseLocale,
   ): Promise<AllDeletedInBalDTO> {
-    const numerosDeleted = await this.numeroService.findMany({
-      _bal: baseLocale._id,
-      _deleted: { $ne: null },
+    // On récupère les numeros archivés
+    const numerosDeleted = await this.numeroService.findManyWithDeleted({
+      balId: baseLocale.id,
+      deletedAt: Not(IsNull()),
     });
-
-    const numerosByVoieId = groupBy(numerosDeleted, 'voie');
-    const voies: any[] = await this.voieService.findMany({
-      _bal: baseLocale._id,
-      $or: [
-        {
-          _id: {
-            $in: Object.keys(numerosByVoieId),
-          },
-        },
-        { _deleted: { $ne: null } },
-      ],
-    });
-
-    const voiesPopulate: PopulateVoie[] = [];
-    for (const voie of voies) {
-      const voiePopulate: PopulateVoie = {
-        ...voie,
-        numeros: numerosByVoieId[voie._id.toString()] || [],
-      };
-      voiesPopulate.push(voiePopulate);
-    }
-
-    const toponymes: Toponyme[] = await this.toponymeService.findMany({
-      _bal: baseLocale._id,
-      _deleted: { $ne: null },
-    });
+    const numerosByVoieId = groupBy(numerosDeleted, 'voieId');
+    // On récupère les voies archivés ou celle qui ont des numéros archivés
+    const voies: any[] = await this.voieService.findManyWithDeleted([
+      {
+        id: In(Object.keys(numerosByVoieId)),
+      },
+      {
+        balId: baseLocale.id,
+        deletedAt: Not(IsNull()),
+      },
+    ]);
+    // On populate les voie avec les numeros
+    const voiesPopulate: Voie[] = voies.map((voie: Voie) => ({
+      ...voie,
+      numeros: numerosByVoieId[voie.id] || [],
+    }));
+    // On récupère les toponyme archivé de la bal
+    const toponymes: Toponyme[] =
+      await this.toponymeService.findManyWithDeleted({
+        balId: baseLocale.id,
+        deletedAt: Not(IsNull()),
+      });
+    // On retourne le voies et toponyme archivé
     return {
       voies: voiesPopulate,
       toponymes,
@@ -376,80 +387,80 @@ export class BaseLocaleService {
 
   async populate(
     baseLocale: BaseLocale,
-    data: { voies: Voie[]; toponymes: Toponyme[]; numeros: Numero[] },
-    deleteData: boolean = true,
+    { voies, toponymes, numeros }: FromCsvType,
   ): Promise<BaseLocale> {
-    if (deleteData) {
-      await this.deleteData(baseLocale);
-    }
-
-    const { voies, toponymes, numeros } = data;
-
+    // On supprime les numeros, vois et toponymes si il y en a
+    await this.numeroService.deleteMany({ balId: baseLocale.id });
+    await this.voieService.deleteMany({ balId: baseLocale.id });
+    await this.toponymeService.deleteMany({ balId: baseLocale.id });
+    // On import les voies, toponymes et numeros du fichier
     await this.voieService.importMany(baseLocale, voies);
     await this.toponymeService.importMany(baseLocale, toponymes);
     await this.numeroService.importMany(baseLocale, numeros);
-
+    // On calcule les centroid des voies
+    const voiesCreated: Voie[] = await this.voieService.findMany({
+      balId: baseLocale.id,
+    });
+    await Promise.all(
+      voiesCreated.map(({ id }) => this.voieService.calcCentroid(id)),
+    );
+    // On retourne la Bal
     return baseLocale;
   }
 
   async extendWithNumeros(
     baseLocale: BaseLocale,
   ): Promise<ExtendedBaseLocaleDTO> {
+    // On récupère les numeros de la Bal
     const numeros = await this.numeroService.findMany(
       {
-        _bal: baseLocale._id,
-        _deleted: null,
+        balId: baseLocale.id,
       },
-      { certifie: 1, numero: 1, comment: 1 },
+      { certifie: true, numero: true, comment: true },
     );
-
+    // On rajoute les metas des numeros a la Bal
     return extendWithNumeros(baseLocale, numeros);
   }
 
   async getParcelles(basesLocale: BaseLocale): Promise<string[]> {
-    const toponymesWithParcelles = await this.toponymeService.findDistinct(
-      {
-        _bal: basesLocale._id,
-        _deleted: null,
-      },
-      'parcelles',
+    // On récupère les parcelle des toponyme de la Bal
+    const toponymesWithParcelles =
+      await this.toponymeService.findDistinctParcelles(basesLocale.id);
+    // On récupère les parcelles des numeros de la Bal
+    const numerosWithParcelles = await this.numeroService.findDistinctParcelles(
+      basesLocale.id,
     );
-
-    const numerosWithParcelles = await this.numeroService.findDistinct(
-      {
-        _bal: basesLocale._id,
-        _deleted: null,
-      },
-      'parcelles',
-    );
-
-    const parcelles = [...numerosWithParcelles, ...toponymesWithParcelles];
-
-    return uniq(parcelles);
+    // On concat et unifie les parcelles et on les retourne
+    const parcelles = uniq([
+      ...numerosWithParcelles,
+      ...toponymesWithParcelles,
+    ]);
+    return parcelles;
   }
 
   async updateHabilitation(
     baseLocale: BaseLocale,
     habilitation: Habilitation,
   ): Promise<void> {
-    await this.baseLocaleModel.updateOne(
-      { _id: baseLocale._id },
-      { _habilitation: habilitation._id },
+    await this.basesLocalesRepository.update(
+      { id: baseLocale.id },
+      { habilitationId: habilitation._id },
     );
   }
 
   async recoverAccess({ id, email }: RecoverBaseLocaleDTO) {
-    const filters = {
-      emails: { $regex: new RegExp(`^${email}$`, 'i') },
-    } as FilterQuery<BaseLocale>;
-
-    if (id) {
-      filters._id = id;
-    }
-
-    const basesLocales = await this.findMany(filters);
-
+    // On créer le where de la requète
+    const where: FindOptionsWhere<BaseLocale> = {
+      emails: ArrayContains([email]),
+      ...(id && { id }),
+    };
+    // On lance la requète
+    const basesLocales = await this.basesLocalesRepository.find({
+      where,
+      withDeleted: true,
+    });
     if (basesLocales.length > 0) {
+      // Si il a des Bal qui correspondent, on envoie un mail pour retouver l'accès a ses Bal
       const STATUS = {
         [StatusBaseLocalEnum.DRAFT]: 'Brouillon',
         [StatusBaseLocalEnum.PUBLISHED]: 'Publiée',
@@ -458,22 +469,22 @@ export class BaseLocaleService {
 
       const apiUrl = getApiUrl();
       const recoveryBals = basesLocales
-        .filter(({ _deleted }) => !_deleted)
+        .filter(({ deletedAt }) => !deletedAt)
         .map((baseLocale) => ({
           ...baseLocale,
           recoveryUrl: getEditorUrl(baseLocale),
           statusFr: STATUS[baseLocale.status],
-          createdAt: format(baseLocale._created, 'P', { locale: fr }),
+          createdAt: format(baseLocale.createdAt, 'P', { locale: fr }),
         }));
 
       const deletedBals = basesLocales
-        .filter(({ _deleted }) => _deleted)
+        .filter(({ deletedAt }) => deletedAt)
         .map((baseLocale) => ({
           ...baseLocale,
           statusFr: 'Supprimée',
           deletedRecoveryUrl: getApiRecoveryUrl(baseLocale),
-          deletedAt: baseLocale._deleted
-            ? format(baseLocale._deleted, 'P', { locale: fr })
+          deletedAt: baseLocale.deletedAt
+            ? format(baseLocale.deletedAt, 'P', { locale: fr })
             : null,
         }));
 
@@ -489,6 +500,7 @@ export class BaseLocaleService {
         },
       });
     } else {
+      // Si aucune Bal ne correspond, on lance un erreur
       throw new HttpException(
         'Aucune base locale ne correspond à ces critères',
         HttpStatus.NOT_FOUND,
@@ -496,67 +508,47 @@ export class BaseLocaleService {
     }
   }
 
-  async recovery(baseLocale: BaseLocale) {
-    const now = new Date();
-    const recoveredBaseLocale = await this.baseLocaleModel
-      .findByIdAndUpdate(
-        { _id: baseLocale._id },
-        { $set: { _deleted: null, _updated: now } },
-        { new: true },
-      )
-      .lean();
-
-    return recoveredBaseLocale;
+  async restore(baseLocale: BaseLocale) {
+    // On restore la Bal
+    await this.basesLocalesRepository.restore({
+      id: baseLocale.id,
+    });
   }
 
   async renewToken(baseLocale: BaseLocale) {
+    // On génère un token
     const token = generateBase62String(20);
-    const updatedBaseLocale = await this.baseLocaleModel
-      .findByIdAndUpdate(
-        { _id: baseLocale._id },
-        { $set: { token } },
-        { new: true },
-      )
-      .lean();
-
-    const editorUrl = getEditorUrl(updatedBaseLocale);
-    const apiUrl = getApiUrl();
-    await this.mailerService.sendMail({
-      to: updatedBaseLocale.emails,
-      subject: 'Renouvellement de jeton de Base Adresse Locale',
-      template: 'bal-renewal-notification',
-      bcc: this.configService.get('SMTP_BCC'),
-      context: {
-        baseLocale: updatedBaseLocale,
-        editorUrl,
-        apiUrl,
-      },
-    });
-
+    // On update le token de la Bal dans postgres
+    const { affected }: UpdateResult = await this.basesLocalesRepository.update(
+      { id: baseLocale.id },
+      { token },
+    );
+    // On récupère la Bal modifié
+    const updatedBaseLocale: BaseLocale =
+      await this.basesLocalesRepository.findOneBy({
+        id: baseLocale.id,
+      });
+    // Si la Bal a été modifié on envoie un mail avec le nouveau token
+    if (affected > 0) {
+      const editorUrl = getEditorUrl(updatedBaseLocale);
+      const apiUrl = getApiUrl();
+      await this.mailerService.sendMail({
+        to: updatedBaseLocale.emails,
+        subject: 'Renouvellement de jeton de Base Adresse Locale',
+        template: 'bal-renewal-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          baseLocale: updatedBaseLocale,
+          editorUrl,
+          apiUrl,
+        },
+      });
+    }
+    // On retourne la Bal mis a jour
     return updatedBaseLocale;
   }
 
-  async findMetas(balId: string) {
-    const voies: Voie[] = await this.voieService.findMany({
-      _bal: balId,
-    });
-    const toponymes: Toponyme[] = await this.toponymeService.findMany({
-      _bal: balId,
-    });
-    const numeros: Numero[] = await this.numeroService.findMany({
-      _bal: balId,
-    });
-    return { voies, toponymes, numeros };
-  }
-
-  async findDistinct(field: string): Promise<any> {
-    return this.baseLocaleModel.distinct(field).exec();
-  }
-
-  touch(baseLocaleId: Types.ObjectId, _updated: Date = new Date()) {
-    return this.baseLocaleModel.updateOne(
-      { _id: baseLocaleId },
-      { $set: { _updated } },
-    );
+  touch(balId: string, updatedAt: Date = new Date()) {
+    return this.basesLocalesRepository.update({ id: balId }, { updatedAt });
   }
 }

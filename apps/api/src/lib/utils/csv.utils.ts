@@ -3,16 +3,23 @@ import { normalize } from '@ban-team/adresses-util/lib/voies';
 import { chain, compact, keyBy, min, max } from 'lodash';
 
 import { beautifyUppercased, beautifyNomAlt } from './string.utils';
-import { ObjectId } from 'mongodb';
-import { PositionTypeEnum } from '@/shared/schemas/position_type.enum';
-import { Position } from '@/shared/schemas/position.schema';
 
-interface Row {
-  parsedValues: Record<string, any>;
-  additionalValues: any;
-  localizedValues: any;
-  isValid: boolean;
-}
+import { PositionTypeEnum } from '@/shared/entities/position.entity';
+import { Voie } from '@/shared/entities/voie.entity';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { Row } from '../types/validator.types';
+import { ObjectId } from 'mongodb';
+
+export type FromCsvType = {
+  isValid?: boolean;
+  validationError?: string;
+  accepted?: number;
+  rejected?: number;
+  voies?: Partial<Voie>[];
+  numeros?: Partial<Numero>[];
+  toponymes?: Partial<Toponyme>[];
+};
 
 export function extractIdBanAdresse({
   parsedValues,
@@ -45,7 +52,7 @@ export function extractCodeCommune({
   );
 }
 
-export function extractPosition(row: Row): Position {
+function extractPosition(row: any) {
   return {
     source: row.parsedValues.source || null,
     type: row.parsedValues.position || PositionTypeEnum.INCONNUE,
@@ -56,66 +63,67 @@ export function extractPosition(row: Row): Position {
   };
 }
 
-export function extractPositions(rows: Row[]): Position[] {
+function extractPositions(rows: any) {
   return rows
     .filter((r) => r.parsedValues.long && r.parsedValues.lat)
     .map((r) => extractPosition(r));
 }
 
-export function extractDate(row: Row): Date | null {
+function extractDate(row: any) {
   if (row.parsedValues.date_der_maj) {
     return new Date(row.parsedValues.date_der_maj);
   }
 }
 
-export function extractData(rows: Row[], codeCommune: string) {
-  const toponymes = chain(rows)
-    .filter((r: Row) => r.parsedValues.numero === 99999)
-    .groupBy((r: Row) => normalize(r.parsedValues.voie_nom))
-    .map((toponymeRows: Row[]) => {
+function extractData(rows: Row[]): {
+  voies: Partial<Voie>[];
+  numeros: Partial<Numero>[];
+  toponymes: Partial<Toponyme>[];
+} {
+  const toponymes: Partial<Toponyme>[] = chain(rows)
+    .filter((r) => r.parsedValues.numero === 99999)
+    .groupBy((r) => normalize(r.parsedValues.voie_nom))
+    .map((toponymeRows) => {
       const date = extractDate(toponymeRows[0]) || new Date();
-
       return {
-        _id: new ObjectId(),
+        id: new ObjectId().toHexString(),
         banId: extractIdBanToponyme(toponymeRows[0]),
-        commune: codeCommune,
         nom: beautifyUppercased(toponymeRows[0].parsedValues.voie_nom),
         nomAlt: toponymeRows[0].localizedValues.voie_nom
           ? beautifyNomAlt(toponymeRows[0].localizedValues.voie_nom)
           : null,
         positions: extractPositions(toponymeRows),
-        _created: date,
-        _updated: date,
+        createdAt: date,
+        updatedAt: date,
       };
     })
     .value();
 
   const toponymesIndex = keyBy(toponymes, (t) => normalize(t.nom));
 
-  const voies = chain(rows)
-    .filter((r: Row) => r.parsedValues.numero !== 99999)
-    .groupBy((r: Row) => normalize(r.parsedValues.voie_nom))
-    .map((voieRows: Row[]) => {
+  const voies: Partial<Voie>[] = chain(rows)
+    .filter((r) => r.parsedValues.numero !== 99999)
+    .groupBy((r) => normalize(r.parsedValues.voie_nom))
+    .map((voieRows) => {
       const dates = compact(voieRows.map((r) => r.parsedValues.date_der_maj));
 
       return {
-        _id: new ObjectId(),
+        id: new ObjectId().toHexString(),
         banId: extractIdBanToponyme(voieRows[0]),
-        commune: codeCommune,
         nom: beautifyUppercased(voieRows[0].parsedValues.voie_nom),
         nomAlt: voieRows[0].localizedValues.voie_nom
           ? beautifyNomAlt(voieRows[0].localizedValues.voie_nom)
           : null,
-        _created: dates.length > 0 ? new Date(min(dates)) : new Date(),
-        _updated: dates.length > 0 ? new Date(max(dates)) : new Date(),
+        createdAt: dates.length > 0 ? new Date(min(dates)) : new Date(),
+        updatedAt: dates.length > 0 ? new Date(max(dates)) : new Date(),
       };
     })
     .value();
 
   const voiesIndex = keyBy(voies, (v) => normalize(v.nom));
 
-  const numeros = chain(rows)
-    .filter((r: Row) => r.parsedValues.numero !== 99999)
+  const numeros: Partial<Numero>[] = chain(rows)
+    .filter((r) => r.parsedValues.numero !== 99999)
     .groupBy(
       (r: Row) =>
         `${r.parsedValues.numero}@@@${r.parsedValues.suffixe}@@@${normalize(
@@ -134,18 +142,17 @@ export function extractData(rows: Row[], codeCommune: string) {
         : null;
 
       if (toponymeString && !(toponymeString in toponymesIndex)) {
-        const toponyme = {
-          _id: new ObjectId(),
+        const toponyme: Partial<Toponyme> = {
+          id: new ObjectId().toHexString(),
           banId: extractIdBanToponyme(numeroRows[0]),
-          commune: codeCommune,
           nom: beautifyUppercased(
             numeroRows[0].parsedValues.lieudit_complement_nom,
           ),
           nomAlt: toponymeAlt,
           positions: [],
           parcelles: numeroRows[0].parsedValues.cad_parcelles,
-          _created: new Date(),
-          _updated: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         };
 
         toponymes.push(toponyme);
@@ -153,18 +160,17 @@ export function extractData(rows: Row[], codeCommune: string) {
       }
 
       return {
-        _id: new ObjectId(),
+        id: new ObjectId().toHexString(),
         banId: extractIdBanAdresse(numeroRows[0]),
-        commune: codeCommune,
-        voie: voiesIndex[voieString]._id,
-        toponyme: toponymeString ? toponymesIndex[toponymeString]._id : null,
+        voieId: voiesIndex[voieString].id,
+        toponymeId: toponymeString ? toponymesIndex[toponymeString].id : null,
         numero: numeroRows[0].parsedValues.numero,
         suffixe: numeroRows[0].parsedValues.suffixe || null,
         certifie: numeroRows[0].parsedValues.certification_commune,
         positions: extractPositions(numeroRows),
         parcelles: numeroRows[0].parsedValues.cad_parcelles,
-        _created: date,
-        _updated: date,
+        createdAt: date,
+        updatedAt: date,
       };
     })
     .value();
@@ -172,7 +178,10 @@ export function extractData(rows: Row[], codeCommune: string) {
   return { voies, numeros, toponymes };
 }
 
-export async function extractFromCsv(file: Buffer, codeCommune: string) {
+export async function extractFromCsv(
+  file: Buffer,
+  codeCommune: string,
+): Promise<FromCsvType> {
   try {
     const {
       rows,
@@ -190,8 +199,7 @@ export async function extractFromCsv(file: Buffer, codeCommune: string) {
     const rejected: Row[] = rows.filter(({ isValid }) => !isValid);
 
     const communesData = extractData(
-      accepted.filter((r: Row) => extractCodeCommune(r) === codeCommune),
-      codeCommune,
+      accepted.filter((r) => extractCodeCommune(r) === codeCommune),
     );
 
     return {
@@ -203,7 +211,7 @@ export async function extractFromCsv(file: Buffer, codeCommune: string) {
       toponymes: communesData.toponymes,
     };
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return { isValid: false, validationError: error.message };
   }
 }

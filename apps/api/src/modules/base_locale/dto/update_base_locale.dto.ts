@@ -1,10 +1,8 @@
-import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
   ArrayNotEmpty,
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsOptional,
 } from 'class-validator';
@@ -14,11 +12,6 @@ export class UpdateBaseLocaleDTO {
   @ApiProperty({ required: false, nullable: false })
   @IsNotEmpty()
   nom?: string;
-
-  @IsOptional()
-  @ApiProperty({ required: false, nullable: false, enum: StatusBaseLocalEnum })
-  @IsEnum(StatusBaseLocalEnum)
-  status?: StatusBaseLocalEnum;
 
   @IsOptional()
   @ApiProperty({ required: false, nullable: false })

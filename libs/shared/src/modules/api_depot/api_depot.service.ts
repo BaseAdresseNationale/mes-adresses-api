@@ -5,7 +5,7 @@ import { of, catchError, firstValueFrom } from 'rxjs';
 import * as hasha from 'hasha';
 
 import { Habilitation } from './types/habilitation.type';
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
 import { ConfigService } from '@nestjs/config';
 import { ObjectId } from 'mongodb';

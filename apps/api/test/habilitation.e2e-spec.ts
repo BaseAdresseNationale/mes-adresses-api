@@ -1,13 +1,23 @@
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
+import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Connection, connect, Model, Types } from 'mongoose';
+import { ObjectId } from 'mongodb';
+import { v4 as uuid } from 'uuid';
 
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
+import { Numero } from '@/shared/entities/numero.entity';
+import { Voie } from '@/shared/entities/voie.entity';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
+import { Position } from '@/shared/entities/position.entity';
 
-import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
 import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
@@ -17,66 +27,96 @@ import {
 } from '@/shared/modules/api_depot/types/habilitation.type';
 import { add } from 'date-fns';
 import { MailerModule } from '@/shared/test/mailer.module.test';
+import { Repository } from 'typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 
 describe('HABILITATION MODULE', () => {
   let app: INestApplication;
-  let mongod: MongoMemoryServer;
-  let mongoConnection: Connection;
-  let balModel: Model<BaseLocale>;
+  // DB
+  let postgresContainer: StartedPostgreSqlContainer;
+  let postgresClient: Client;
+  let numeroRepository: Repository<Numero>;
+  let voieRepository: Repository<Voie>;
+  let balRepository: Repository<BaseLocale>;
+  let toponymeRepository: Repository<Toponyme>;
   // VAR
   const token = 'xxxx';
-  const _created = new Date('2000-01-01');
-  const _updated = new Date('2000-01-02');
-
+  const createdAt = new Date('2000-01-01');
+  const updatedAt = new Date('2000-01-02');
+  // AXIOS
   const axiosMock = new MockAdapter(axios);
 
   beforeAll(async () => {
     // INIT DB
-    mongod = await MongoMemoryServer.create();
-    const uri = mongod.getUri();
-    mongoConnection = (await connect(uri)).connection;
-
+    postgresContainer = await new PostgreSqlContainer(
+      'postgis/postgis:12-3.0',
+    ).start();
+    postgresClient = new Client({
+      host: postgresContainer.getHost(),
+      port: postgresContainer.getPort(),
+      database: postgresContainer.getDatabase(),
+      user: postgresContainer.getUsername(),
+      password: postgresContainer.getPassword(),
+    });
+    await postgresClient.connect();
+    // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), HabilitationModule, MailerModule],
+      imports: [
+        TypeOrmModule.forRoot({
+          type: 'postgres',
+          host: postgresContainer.getHost(),
+          port: postgresContainer.getPort(),
+          username: postgresContainer.getUsername(),
+          password: postgresContainer.getPassword(),
+          database: postgresContainer.getDatabase(),
+          synchronize: true,
+          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
+        }),
+        HabilitationModule,
+        MailerModule,
+      ],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
-
-    balModel = app.get<Model<BaseLocale>>(getModelToken(BaseLocale.name));
+    // INIT REPOSITORY
+    numeroRepository = app.get(getRepositoryToken(Numero));
+    voieRepository = app.get(getRepositoryToken(Voie));
+    balRepository = app.get(getRepositoryToken(BaseLocale));
+    toponymeRepository = app.get(getRepositoryToken(Toponyme));
   });
 
   afterAll(async () => {
-    await mongoConnection.dropDatabase();
-    await mongoConnection.close();
-    await mongod.stop();
+    await postgresClient.end();
+    await postgresContainer.stop();
     await app.close();
   });
 
   afterEach(async () => {
-    jest.clearAllMocks();
     axiosMock.reset();
-    await balModel.deleteMany({});
+    await numeroRepository.delete({});
+    await voieRepository.delete({});
+    await balRepository.delete({});
+    await toponymeRepository.delete({});
   });
 
   async function createBal(props: Partial<BaseLocale> = {}) {
-    const balId = new Types.ObjectId();
-    const bal: Partial<BaseLocale> = {
-      _id: balId,
-      _created,
-      _updated,
+    const payload: Partial<BaseLocale> = {
+      banId: uuid(),
+      createdAt,
+      updatedAt,
       status: props.status ?? StatusBaseLocalEnum.DRAFT,
       token,
       ...props,
     };
-    await balModel.create(bal);
-    return balId;
+    const entityToInsert = balRepository.create(payload);
+    const result = await balRepository.save(entityToInsert);
+    return result.id;
   }
 
   describe('GET /bases-locales/:id/habilitation', () => {
     it('expect 200 with admin token', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -84,11 +124,11 @@ describe('HABILITATION MODULE', () => {
         emails: ['test@test.fr'],
         token,
         status: StatusBaseLocalEnum.PUBLISHED,
-        _habilitation: habilitationId.toString(),
+        habilitationId,
       });
 
       const habilitation: Habilitation = {
-        _id: habilitationId.toString(),
+        _id: habilitationId,
         status: StatusHabiliation.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
@@ -109,7 +149,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 403 without admin token', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -117,11 +157,11 @@ describe('HABILITATION MODULE', () => {
         emails: ['test@test.fr'],
         token,
         status: StatusBaseLocalEnum.PUBLISHED,
-        _habilitation: habilitationId.toString(),
+        habilitationId,
       });
 
       const habilitation: Habilitation = {
-        _id: habilitationId.toString(),
+        _id: habilitationId,
         status: StatusHabiliation.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
@@ -137,7 +177,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 404 with admin token', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -145,7 +185,7 @@ describe('HABILITATION MODULE', () => {
         emails: ['test@test.fr'],
         token,
         status: StatusBaseLocalEnum.PUBLISHED,
-        _habilitation: habilitationId.toString(),
+        habilitationId,
       });
       const responseBody = {
         code: 404,
@@ -171,7 +211,7 @@ describe('HABILITATION MODULE', () => {
 
   describe('POST /bases-locales/:id/habilitation', () => {
     it('expect 201 Create habilitation', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -182,7 +222,7 @@ describe('HABILITATION MODULE', () => {
       });
 
       const habilitation: Habilitation = {
-        _id: habilitationId.toString(),
+        _id: habilitationId,
         status: StatusHabiliation.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
@@ -201,12 +241,12 @@ describe('HABILITATION MODULE', () => {
         JSON.stringify(habilitation),
       );
 
-      const updatedBAL = await balModel.findById(balId);
-      expect(updatedBAL._habilitation).toBe(habilitation._id);
+      const updatedBAL = await balRepository.findOneBy({ id: balId });
+      expect(updatedBAL.habilitationId).toBe(habilitation._id);
     });
 
     it('expect 412 BAL already has habilitation', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -214,11 +254,11 @@ describe('HABILITATION MODULE', () => {
         emails: ['test@test.fr'],
         token,
         status: StatusBaseLocalEnum.DRAFT,
-        _habilitation: habilitationId.toString(),
+        habilitationId,
       });
 
       const habilitation: Habilitation = {
-        _id: habilitationId.toString(),
+        _id: habilitationId,
         status: StatusHabiliation.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
@@ -243,7 +283,7 @@ describe('HABILITATION MODULE', () => {
 
   describe('POST /bases-locales/:id/habilitation/email/send-pin-code', () => {
     it('expect 200', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -251,11 +291,11 @@ describe('HABILITATION MODULE', () => {
         emails: ['test@test.fr'],
         token,
         status: StatusBaseLocalEnum.DRAFT,
-        _habilitation: habilitationId.toString(),
+        habilitationId,
       });
 
       const habilitation: Habilitation = {
-        _id: habilitationId.toString(),
+        _id: habilitationId,
         status: StatusHabiliation.PENDING,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
@@ -282,7 +322,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 412 no pending habilitation', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -290,11 +330,11 @@ describe('HABILITATION MODULE', () => {
         emails: ['test@test.fr'],
         token,
         status: StatusBaseLocalEnum.DRAFT,
-        _habilitation: habilitationId.toString(),
+        habilitationId,
       });
 
       const habilitation: Habilitation = {
-        _id: habilitationId.toString(),
+        _id: habilitationId,
         status: StatusHabiliation.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
@@ -319,7 +359,7 @@ describe('HABILITATION MODULE', () => {
 
   describe('POST /bases-locales/:id/habilitation/email/validate-pin-code', () => {
     it('expect 200', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -327,11 +367,11 @@ describe('HABILITATION MODULE', () => {
         emails: ['test@test.fr'],
         token,
         status: StatusBaseLocalEnum.DRAFT,
-        _habilitation: habilitationId.toString(),
+        habilitationId,
       });
 
       const habilitation: Habilitation = {
-        _id: habilitationId.toString(),
+        _id: habilitationId,
         status: StatusHabiliation.PENDING,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
@@ -356,7 +396,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 200 incorrect PIN code', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -364,11 +404,11 @@ describe('HABILITATION MODULE', () => {
         emails: ['test@test.fr'],
         token,
         status: StatusBaseLocalEnum.DRAFT,
-        _habilitation: habilitationId.toString(),
+        habilitationId,
       });
 
       const habilitation: Habilitation = {
-        _id: habilitationId.toString(),
+        _id: habilitationId,
         status: StatusHabiliation.PENDING,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
@@ -403,7 +443,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('expect 412 no pending habilitation', async () => {
-      const habilitationId = new Types.ObjectId();
+      const habilitationId = new ObjectId().toHexString();
       const commune = '91534';
       const balId = await createBal({
         nom: 'BAL de test',
@@ -411,11 +451,11 @@ describe('HABILITATION MODULE', () => {
         emails: ['test@test.fr'],
         token,
         status: StatusBaseLocalEnum.DRAFT,
-        _habilitation: habilitationId.toString(),
+        habilitationId,
       });
 
       const habilitation: Habilitation = {
-        _id: habilitationId.toString(),
+        _id: habilitationId,
         status: StatusHabiliation.REJECTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,

@@ -1,4 +1,4 @@
-import { Numero } from '../schemas/numero/numero.schema';
+import { Numero } from '../entities/numero.entity';
 
 export type WithNumero<T> = T & {
   nbNumeros: number;

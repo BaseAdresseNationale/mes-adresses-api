@@ -1,5 +1,4 @@
-import { Numero } from '../schemas/numero/numero.schema';
-import { NumeroPopulate } from '../schemas/numero/numero.populate';
+import { Numero } from '../entities/numero.entity';
 import { WithNumero } from '../types/with-numero.type';
 
 export function displaySuffix(numero: Numero): string {
@@ -14,9 +13,9 @@ export function displaySuffix(numero: Numero): string {
 }
 
 export function filterSensitiveFields(
-  numero: Numero | NumeroPopulate,
+  numero: Numero,
   filter: boolean = true,
-): Numero | NumeroPopulate {
+): Numero {
   if (filter && numero.comment) {
     numero.comment = null;
   }

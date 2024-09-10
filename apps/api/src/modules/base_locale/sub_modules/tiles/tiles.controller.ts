@@ -13,12 +13,10 @@ import * as geojsonvt from 'geojson-vt';
 import * as vtpbf from 'vt-pbf';
 import * as zlib from 'zlib';
 import { promisify } from 'util';
+
 import { CustomRequest } from '@/lib/types/request.type';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
-import {
-  GeoJsonCollectionType,
-  TileType,
-} from '@/modules/base_locale/sub_modules/tiles/types/features.type';
+import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
 
 const gzip = promisify(zlib.gzip);
 
@@ -45,29 +43,28 @@ export class TilesController {
     @Query('colorblindMode') colorblindMode: boolean,
     @Res() res: Response,
   ) {
-    const tile: TileType = { z: parseInt(z), x: parseInt(x), y: parseInt(y) };
-    const geoJson: GeoJsonCollectionType =
+    const tile: number[] = [parseInt(x), parseInt(y), parseInt(z)];
+    const { numeroPoints, voiePoints, voieLineStrings }: GeoJsonCollectionType =
       await this.tilesService.getGeoJsonByTile(
-        req.baseLocale._id,
+        req.baseLocale.id,
         tile,
         colorblindMode,
       );
     const options = { maxZoom: 20 };
-
-    const numerosTiles = geojsonvt(geoJson.numeroPoints, options).getTile(
-      tile.z,
-      tile.x,
-      tile.y,
+    const numerosTiles = geojsonvt(numeroPoints, options).getTile(
+      tile[2],
+      tile[0],
+      tile[1],
     );
-    const voieTiles = geojsonvt(geoJson.voiePoints, options).getTile(
-      tile.z,
-      tile.x,
-      tile.y,
+    const voieTiles = geojsonvt(voiePoints, options).getTile(
+      tile[2],
+      tile[0],
+      tile[1],
     );
-    const voieTraceTiles = geojsonvt(geoJson.voieLineStrings, options).getTile(
-      tile.z,
-      tile.x,
-      tile.y,
+    const voieTraceTiles = geojsonvt(voieLineStrings, options).getTile(
+      tile[2],
+      tile[0],
+      tile[1],
     );
 
     if (!numerosTiles && !voieTiles && !voieTraceTiles) {

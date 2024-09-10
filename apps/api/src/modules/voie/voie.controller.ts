@@ -23,9 +23,10 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 
-import { Voie } from '@/shared/schemas/voie/voie.schema';
-import { Numero } from '@/shared/schemas/numero/numero.schema';
+import { Voie } from '@/shared/entities/voie.entity';
+import { Numero } from '@/shared/entities/numero.entity';
 import { filterSensitiveFields } from '@/shared/utils/numero.utils';
+import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
@@ -35,7 +36,6 @@ import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
-import { Toponyme } from '@/shared/schemas/toponyme/toponyme.schema';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -84,8 +84,8 @@ export class VoieController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
-    const result: Voie = await this.voieService.softDelete(req.voie);
-    res.status(HttpStatus.OK).json(result);
+    await this.voieService.softDelete(req.voie);
+    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @Put(':voieId/restore')
@@ -130,11 +130,16 @@ export class VoieController {
   async findNumerosByVoie(@Req() req: CustomRequest, @Res() res: Response) {
     const numeros: Numero[] = await this.numeroService.findMany(
       {
-        voie: req.voie._id,
-        _deleted: null,
+        voieId: req.voie.id,
       },
       null,
-      { numero: 1 },
+      {
+        numero: 1,
+        suffixe: {
+          direction: 'ASC',
+          nulls: 'FIRST',
+        },
+      },
     );
     const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);

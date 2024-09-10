@@ -1,15 +1,17 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import { groupBy, mapValues } from 'lodash';
 import { format } from 'date-fns';
 
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-import { StatusBaseLocalEnum } from '@/shared/schemas/base_locale/status.enum';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
 import { BasesLocalesStatusDTO } from '@/modules/stats/dto/bases_locales_status.dto';
 import { BasesLocalesCreationDTO } from '@/modules/stats/dto/bases_locales_creations.dto';
+import { Between, FindOptionsSelect, FindOptionsWhere, In, Not } from 'typeorm';
 
 @Injectable()
 export class StatsService {
@@ -22,50 +24,48 @@ export class StatsService {
     fields: string[] = [],
     codeCommunes: string[] = [],
   ): Promise<Omit<BaseLocale, 'token' | 'emails'>[]> {
-    const filters: FilterQuery<BaseLocale> = {
-      status: { $ne: 'demo' },
-      _deleted: null,
+    const where: FindOptionsWhere<BaseLocale> = {
+      status: Not(StatusBaseLocalEnum.DEMO),
       ...(codeCommunes &&
-        codeCommunes.length > 0 && { commune: { $in: codeCommunes } }),
+        codeCommunes.length > 0 && { commune: In(codeCommunes) }),
     };
-    const selector: Record<string, number> = {};
+    const select: FindOptionsSelect<BaseLocale> = { id: true };
     if (fields.length > 0) {
       fields.forEach((f) => {
-        selector[f] = 1;
+        select[f] = 1;
       });
     }
 
     const bals: BaseLocale[] = await this.baseLocaleService.findMany(
-      filters,
-      selector,
+      where,
+      select,
     );
 
     return bals.map((bal) => filterSensitiveFields(bal));
   }
 
   public async findBalsStatusRepartition(): Promise<BasesLocalesStatusDTO[]> {
-    const aggregation: PipelineStage[] = [
-      { $group: { _id: '$status', count: { $sum: 1 } } },
-    ];
-    const statusRepartition: { _id: Types.ObjectId; count: number }[] =
-      await this.baseLocaleService.aggregate(aggregation);
-
-    return statusRepartition.map(({ _id, count }) => ({ status: _id, count }));
+    const result: any[] = await this.baseLocaleService.countGroupByStatus();
+    return result.map(({ status, count }) => ({
+      status,
+      count: Number(count),
+    }));
   }
 
-  public async findBalsCreationByDays(dates: {
+  public async findBalsCreationByDays({
+    from,
+    to,
+  }: {
     from: Date;
     to: Date;
   }): Promise<BasesLocalesCreationDTO[]> {
-    const filter: FilterQuery<BaseLocale> = {
-      _created: {
-        $gte: dates.from,
-        $lte: dates.to,
-      },
+    const where: FindOptionsWhere<BaseLocale> = {
+      createdAt: Between(from, to),
     };
-    const bals = await this.baseLocaleService.findMany(filter);
-    const balsGroupByDays: Record<string, BaseLocale> = groupBy(bals, (bal) =>
-      format(bal._created, 'yyyy-MM-dd'),
+    const bals: BaseLocale[] = await this.baseLocaleService.findMany(where);
+    const balsGroupByDays: Record<string, BaseLocale> = groupBy(
+      bals,
+      (bal: BaseLocale) => format(bal.createdAt, 'yyyy-MM-dd'),
     );
     return Object.entries(balsGroupByDays).map(([date, bals]) => {
       const balsGroupedByCommune = groupBy(bals, (bal) => bal.commune);
