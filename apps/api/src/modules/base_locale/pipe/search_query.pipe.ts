@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { FindOptionsWhere, Not } from 'typeorm';
+import { FindOptionsWhere, IsNull, Not } from 'typeorm';
 
 import {
   BaseLocale,
@@ -46,9 +46,9 @@ export class SearchQueryPipe implements PipeTransform {
     }
 
     if (query.deleted === 'false') {
-      res.filters.deletedAt = null;
+      res.filters.deletedAt = IsNull();
     } else if (query.deleted === 'true') {
-      res.filters.deletedAt = Not(null);
+      res.filters.deletedAt = Not(IsNull());
     } else if (query.deleted) {
       throw new HttpException(
         'La valeur du champ "deleted" est invalide',
