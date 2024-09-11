@@ -188,12 +188,14 @@ export class PublicationService {
   }
 
   private async setIsPaused(balId: string, isPaused: boolean): Promise<void> {
-    await this.basesLocalesRepository.update(
-      {
-        id: balId,
-      },
-      { sync: { isPaused } },
-    );
+    await this.basesLocalesRepository
+      .createQueryBuilder('bases_locales')
+      .update(BaseLocale)
+      .set({
+        sync: () => `sync || '{"isPaused": ${isPaused}}'`,
+      })
+      .where({ id: balId })
+      .execute();
   }
 
   private async updateSync(
