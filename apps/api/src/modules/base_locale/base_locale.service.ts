@@ -110,14 +110,17 @@ export class BaseLocaleService {
     limit?: number,
     offset?: number,
   ): Promise<BaseLocale[]> {
-    return this.basesLocalesRepository
+    const query = this.basesLocalesRepository
       .createQueryBuilder()
       .select()
       .where(where)
-      .andWhere('lower(emails::text)::text[] @> ARRAY[:email]', { email })
       .limit(limit)
-      .offset(offset)
-      .getMany();
+      .offset(offset);
+
+    if (email) {
+      query.andWhere('lower(emails::text)::text[] @> ARRAY[:email]', { email });
+    }
+    return query.getMany();
   }
 
   public async countGroupByStatus(): Promise<any[]> {
