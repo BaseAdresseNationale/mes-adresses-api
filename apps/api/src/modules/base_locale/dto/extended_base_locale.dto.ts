@@ -1,5 +1,4 @@
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
-import { Numero } from '@/shared/entities/numero.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ExtendedBaseLocaleDTO extends BaseLocale {
@@ -11,7 +10,4 @@ export class ExtendedBaseLocaleDTO extends BaseLocale {
 
   @ApiProperty()
   isAllCertified?: boolean;
-
-  @ApiProperty()
-  commentedNumeros?: Numero[];
 }
