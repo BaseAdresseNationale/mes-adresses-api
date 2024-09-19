@@ -89,7 +89,9 @@ export class Numero extends GlobalEntity {
   }
 
   @ApiProperty({ type: () => BaseLocale })
-  @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.numeros)
+  @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.numeros, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'bal_id' })
   baseLocale?: BaseLocale;
 
