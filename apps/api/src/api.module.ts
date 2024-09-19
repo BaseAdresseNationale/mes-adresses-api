@@ -5,6 +5,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
 import { Initialization1725371358514 } from 'migrations/1725371358514-initialization';
+import { OnDeleteCascadeNumeros1726747666619 } from 'migrations/1726747666619-on_delete_cascade_numeros';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
@@ -34,7 +35,10 @@ import { MailerParams } from '@/shared/params/mailer.params';
         keepConnectionAlive: true,
         schema: 'public',
         migrationsRun: true,
-        migrations: [Initialization1725371358514],
+        migrations: [
+          Initialization1725371358514,
+          OnDeleteCascadeNumeros1726747666619,
+        ],
         entities: [BaseLocale, Voie, Numero, Toponyme, Position],
       }),
       inject: [ConfigService],
