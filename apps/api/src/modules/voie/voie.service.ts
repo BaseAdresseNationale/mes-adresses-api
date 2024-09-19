@@ -16,14 +16,13 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { groupBy } from 'lodash';
+import { keyBy } from 'lodash';
 import * as turf from '@turf/turf';
 import bbox from '@turf/bbox';
-import { Feature as FeatureTurf, BBox as BboxTurf } from '@turf/helpers';
+import { Feature as FeatureTurf, BBox, Polygon } from '@turf/helpers';
 import { v4 as uuid } from 'uuid';
 
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
-import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/entities/position.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
@@ -324,19 +323,53 @@ export class VoieService {
     return toponyme;
   }
 
-  public async extendVoies(voies: Voie[]): Promise<ExtendedVoieDTO[]> {
-    const numeros = await this.numeroService.findMany(
-      {
-        voieId: In(voies.map(({ id }) => id)),
-      },
-      { certifie: true, comment: true, voieId: true },
-    );
-    const numerosByVoies = groupBy(numeros, 'voieId');
+  public async extendVoies(
+    balId: string,
+    voies: Voie[],
+  ): Promise<ExtendedVoieDTO[]> {
+    const voiesMetas =
+      await this.numeroService.countVoiesNumeroAndCertifie(balId);
+    // console.log(voiesMetas);
+    const voiesMetasIndex = keyBy(voiesMetas, 'voieId');
 
-    return voies.map((voie) => ({
-      ...extendWithNumeros(voie, numerosByVoies[voie.id] || []),
-      bbox: this.getBBOX(voie, numerosByVoies[voie.id] || []),
-    }));
+    return voies.map((voie) =>
+      this.extendVoieWithMeta(voie, voiesMetasIndex[voie.id]),
+    );
+  }
+
+  private polygonToBbox(polygon: Polygon): BBox {
+    return [
+      polygon.coordinates[0][0][0],
+      polygon.coordinates[0][0][1],
+      polygon.coordinates[0][2][0],
+      polygon.coordinates[0][2][1],
+    ];
+  }
+
+  private extendVoieWithMeta(
+    voie: Voie,
+    voieMeta?: {
+      voieId: string;
+      nbNumeros: string;
+      nbNumerosCertifies: string;
+      comments: string[];
+      bbox: string;
+    },
+  ): ExtendedVoieDTO {
+    const nbNumeros: number = Number(voieMeta?.nbNumeros) || 0;
+    const nbNumerosCertifies: number =
+      Number(voieMeta?.nbNumerosCertifies) || 0;
+    const polygon: Polygon = JSON.parse(voieMeta.bbox);
+    const bbox: BBox | [] =
+      polygon?.type == 'Polygon' ? this.polygonToBbox(polygon) : [];
+    return {
+      ...voie,
+      nbNumeros,
+      nbNumerosCertifies,
+      isAllCertified: nbNumeros > 0 ? nbNumeros === nbNumerosCertifies : false,
+      comments: voieMeta.comments || [],
+      bbox,
+    };
   }
 
   public async extendVoie(voie: Voie): Promise<ExtendedVoieDTO> {
@@ -344,8 +377,24 @@ export class VoieService {
       voieId: voie.id,
     });
 
+    const nbNumerosCertifies = numeros.filter(
+      (n) => n.certifie === true,
+    ).length;
+
     return {
-      ...extendWithNumeros(voie, numeros),
+      ...voie,
+      nbNumeros: numeros.length,
+      nbNumerosCertifies: nbNumerosCertifies,
+      isAllCertified:
+        numeros.length > 0 && numeros.length === nbNumerosCertifies,
+      comments: numeros
+        .filter(
+          (n) =>
+            n.comment !== undefined && n.comment !== null && n.comment !== '',
+        )
+        .map(
+          ({ numero, suffixe, comment }) => `${numero}${suffixe} - ${comment}`,
+        ),
       bbox: this.getBBOX(voie, numeros),
     };
   }
@@ -379,7 +428,7 @@ export class VoieService {
     await this.voiesRepository.update({ id: voie.id }, { centroid });
   }
 
-  private getBBOX(voie: Voie, numeros: Numero[]): BboxTurf {
+  private getBBOX(voie: Voie, numeros: Numero[]): BBox {
     // On récupère toutes les positions des numeros de la voie
     const allPositions: Position[] = numeros
       .filter((n) => n.positions && n.positions.length > 0)

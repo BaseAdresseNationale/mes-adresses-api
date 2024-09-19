@@ -87,6 +87,35 @@ export class NumeroService {
     });
   }
 
+  async countVoiesNumeroAndCertifie(balId: string): Promise<
+    {
+      voieId: string;
+      nbNumeros: string;
+      nbNumerosCertifies: string;
+      comments: string[];
+      bbox: string;
+    }[]
+  > {
+    const query = this.numerosRepository
+      .createQueryBuilder('numeros')
+      .select('numeros.voie_id', 'voieId')
+      .addSelect('count(numeros.id)', 'nbNumeros')
+      .addSelect(
+        'count(CASE WHEN numeros.certifie THEN true END)',
+        'nbNumerosCertifies',
+      )
+      .addSelect(
+        `array_remove(array_agg(numeros.numero || numeros.suffixe || ' - ' || numeros.comment), NULL)`,
+        'comments',
+      )
+      .addSelect(`ST_AsGeoJSON(ST_Extent(positions.point::geometry))`, 'bbox')
+      .leftJoin('numeros.positions', 'positions')
+      .where('numeros.bal_id = :balId', { balId })
+      .groupBy('numeros.voie_id');
+    console.log(query.getSql());
+    return query.getRawMany();
+  }
+
   async countBalNumeroAndCertifie(balId: string): Promise<{
     nbNumeros: string;
     nbNumerosCertifies: string;
