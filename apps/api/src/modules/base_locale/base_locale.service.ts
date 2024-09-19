@@ -35,7 +35,6 @@ import {
   getApiUrl,
   getEditorUrl,
 } from '@/shared/utils/mailer.utils';
-import { extendWithNumeros } from '@/shared/utils/numero.utils';
 
 import { generateBase62String } from '@/lib/utils/token.utils';
 import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
@@ -414,15 +413,18 @@ export class BaseLocaleService {
   async extendWithNumeros(
     baseLocale: BaseLocale,
   ): Promise<ExtendedBaseLocaleDTO> {
-    // On récupère les numeros de la Bal
-    const numeros = await this.numeroService.findMany(
-      {
-        balId: baseLocale.id,
-      },
-      { certifie: true, numero: true, comment: true },
-    );
-    // On rajoute les metas des numeros a la Bal
-    return extendWithNumeros(baseLocale, numeros);
+    const { nbNumeros, nbNumerosCertifies } =
+      await this.numeroService.countBalNumeroAndCertifie(baseLocale.id);
+    const balExtended: ExtendedBaseLocaleDTO = {
+      ...baseLocale,
+      nbNumeros: Number(nbNumeros),
+      nbNumerosCertifies: Number(nbNumerosCertifies),
+      isAllCertified:
+        Number(nbNumeros) > 0
+          ? Number(nbNumeros) === Number(nbNumerosCertifies)
+          : false,
+    };
+    return balExtended;
   }
 
   async getParcelles(basesLocale: BaseLocale): Promise<string[]> {

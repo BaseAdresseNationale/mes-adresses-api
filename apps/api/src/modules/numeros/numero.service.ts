@@ -87,6 +87,21 @@ export class NumeroService {
     });
   }
 
+  async countBalNumeroAndCertifie(balId: string): Promise<{
+    nbNumeros: string;
+    nbNumerosCertifies: string;
+  }> {
+    const query = this.numerosRepository
+      .createQueryBuilder()
+      .select('count(id)', 'nbNumeros')
+      .addSelect(
+        'count(CASE WHEN certifie THEN true END)',
+        'nbNumerosCertifies',
+      )
+      .where('bal_id = :balId', { balId });
+    return query.getRawOne();
+  }
+
   async findManyWithDeleted(
     where: FindOptionsWhere<Numero>,
   ): Promise<Numero[]> {
