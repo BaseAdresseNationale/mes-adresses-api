@@ -34,9 +34,12 @@ export class AdminController {
     const emails: string[] =
       await this.baseLocaleService.findDistinct('emails');
 
+    const flattenEmails = emails.reduce((acc, email) => [...acc, ...email], []);
+    const uniqueEmails = [...new Set(flattenEmails)];
+
     const csvFile = await getStream(
       pumpify.obj(
-        intoStream.object(emails.filter(Boolean).map((email) => ({ email }))),
+        intoStream.object(Array.from(uniqueEmails).map((email) => ({ email }))),
         csvWriter(),
       ),
     );
