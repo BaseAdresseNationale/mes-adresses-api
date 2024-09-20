@@ -1,14 +1,5 @@
+import { Controller, Get, HttpStatus, Res, UseGuards } from '@nestjs/common';
 import {
-  Body,
-  Controller,
-  Get,
-  HttpStatus,
-  Post,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiBody,
   ApiResponse,
   ApiTags,
   ApiOperation,
@@ -19,41 +10,18 @@ import * as csvWriter from 'csv-write-stream';
 import * as getStream from 'get-stream';
 import * as intoStream from 'into-stream';
 import * as pumpify from 'pumpify';
-
-import { BaseLocale } from '@/shared/schemas/base_locale/base_locale.schema';
-
-import { FusionCommunesDTO } from './dto/fusion_bases_locales.dto';
-import { AdminService } from './admin.service';
-import { SuperAdminGuard } from '@/lib/guards/admin.guard';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
-import { Voie } from '@/shared/schemas/voie/voie.schema';
+import { SuperAdminGuard } from '@/lib/guards/admin.guard';
+import { VoieService } from '../voie/voie.service';
+import { FilaireVoieDTO } from '../voie/dto/filaire_voie.dto';
 
 @ApiTags('admin')
 @Controller('admin')
 export class AdminController {
   constructor(
-    private adminService: AdminService,
     private baseLocaleService: BaseLocaleService,
+    private voieService: VoieService,
   ) {}
-
-  @Post('/fusion-communes')
-  @ApiOperation({
-    summary: 'Fusion communes',
-    operationId: 'fusionCommunes',
-  })
-  @ApiBody({ type: FusionCommunesDTO, required: true })
-  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale, isArray: true })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(SuperAdminGuard)
-  async fusionCommunes(
-    @Body() fusionCommunesDTO: FusionCommunesDTO,
-    @Res() res: Response,
-  ) {
-    const result: BaseLocale =
-      await this.adminService.fusionCommunes(fusionCommunesDTO);
-
-    res.status(HttpStatus.OK).json(result);
-  }
 
   @Get('/emails.csv')
   @ApiOperation({
@@ -87,14 +55,14 @@ export class AdminController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: Array<Partial<Voie>>,
+    type: Array<Partial<FilaireVoieDTO>>,
     isArray: true,
   })
   @ApiBearerAuth('admin-token')
   @UseGuards(SuperAdminGuard)
   async getFilairesVoies(@Res() res: Response) {
-    const filaires: Partial<Voie>[] =
-      await this.adminService.getFilairesVoies();
+    const filaires: Partial<FilaireVoieDTO>[] =
+      await this.voieService.getFilairesVoies();
 
     res.status(HttpStatus.OK).json(filaires);
   }
