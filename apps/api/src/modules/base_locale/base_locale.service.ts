@@ -553,6 +553,15 @@ export class BaseLocaleService {
     return updatedBaseLocale;
   }
 
+  async findDistinct(field: string): Promise<string[]> {
+    const distinctValues = await this.basesLocalesRepository
+      .createQueryBuilder()
+      .select(`DISTINCT ${field}`)
+      .getRawMany();
+
+    return distinctValues.map((value) => value[field]);
+  }
+
   touch(balId: string, updatedAt: Date = new Date()) {
     return this.basesLocalesRepository.update({ id: balId }, { updatedAt });
   }
