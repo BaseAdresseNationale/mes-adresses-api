@@ -19,6 +19,7 @@ import { ToponymeModule } from './modules/toponyme/toponyme.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailerParams } from '@/shared/params/mailer.params';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { MailerParams } from '@/shared/params/mailer.params';
     VoieModule,
     ToponymeModule,
     StatsModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [],
