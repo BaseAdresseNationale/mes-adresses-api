@@ -57,6 +57,10 @@ export class Voie extends GlobalEntity {
   })
   trace: LineString | null;
 
+  @ApiProperty()
+  @Column('float', { nullable: true, array: true })
+  bbox: number[] | null;
+
   @ApiProperty({ type: () => BaseLocale })
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.voies, {
     onDelete: 'CASCADE',

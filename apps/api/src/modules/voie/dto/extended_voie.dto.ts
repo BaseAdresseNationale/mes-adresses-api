@@ -14,7 +14,4 @@ export class ExtendedVoieDTO extends Voie {
 
   @ApiProperty()
   comments?: string[];
-
-  @ApiProperty({ type: Number, isArray: true })
-  bbox?: number[];
 }

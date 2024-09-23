@@ -12,19 +12,14 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
-  Point,
   Repository,
   UpdateResult,
 } from 'typeorm';
 import { keyBy } from 'lodash';
 import * as turf from '@turf/turf';
-import bbox from '@turf/bbox';
-import { Feature as FeatureTurf, BBox, Polygon } from '@turf/helpers';
 import { v4 as uuid } from 'uuid';
 
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
-import { Position } from '@/shared/entities/position.entity';
-import { Numero } from '@/shared/entities/numero.entity';
 import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 
@@ -212,7 +207,7 @@ export class VoieService {
         updateVoieDto.trace &&
         voieUpdated.typeNumerotation === TypeNumerotationEnum.METRIQUE
       ) {
-        await this.calcCentroidWithTrace(voieUpdated);
+        await this.calcCentroidAndBboxWithTrace(voieUpdated);
       }
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(
@@ -270,7 +265,7 @@ export class VoieService {
         id: In(numerosIds),
       });
       // On met a jour le centroid de la voie
-      this.calcCentroid(voie.id);
+      this.calcCentroidAndBbox(voie.id);
     }
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
@@ -329,21 +324,11 @@ export class VoieService {
   ): Promise<ExtendedVoieDTO[]> {
     const voiesMetas =
       await this.numeroService.countVoiesNumeroAndCertifie(balId);
-    // console.log(voiesMetas);
     const voiesMetasIndex = keyBy(voiesMetas, 'voieId');
 
     return voies.map((voie) =>
       this.extendVoieWithMeta(voie, voiesMetasIndex[voie.id]),
     );
-  }
-
-  private polygonToBbox(polygon: Polygon): BBox {
-    return [
-      polygon.coordinates[0][0][0],
-      polygon.coordinates[0][0][1],
-      polygon.coordinates[0][2][0],
-      polygon.coordinates[0][2][1],
-    ];
   }
 
   private extendVoieWithMeta(
@@ -353,22 +338,17 @@ export class VoieService {
       nbNumeros: string;
       nbNumerosCertifies: string;
       comments: string[];
-      bbox: string;
     },
   ): ExtendedVoieDTO {
     const nbNumeros: number = Number(voieMeta?.nbNumeros) || 0;
     const nbNumerosCertifies: number =
       Number(voieMeta?.nbNumerosCertifies) || 0;
-    const polygon: Polygon = JSON.parse(voieMeta.bbox);
-    const bbox: BBox | [] =
-      polygon?.type == 'Polygon' ? this.polygonToBbox(polygon) : [];
     return {
       ...voie,
       nbNumeros,
       nbNumerosCertifies,
       isAllCertified: nbNumeros > 0 ? nbNumeros === nbNumerosCertifies : false,
       comments: voieMeta.comments || [],
-      bbox,
     };
   }
 
@@ -395,7 +375,6 @@ export class VoieService {
         .map(
           ({ numero, suffixe, comment }) => `${numero}${suffixe} - ${comment}`,
         ),
-      bbox: this.getBBOX(voie, numeros),
     };
   }
 
@@ -403,53 +382,31 @@ export class VoieService {
     return this.voiesRepository.update({ id: voieId }, { updatedAt });
   }
 
-  public async calcCentroid(voieId: string): Promise<void> {
+  public async calcCentroidAndBbox(voieId: string): Promise<void> {
     // On récupère la voie
     const voie: Voie = await this.findOneOrFail(voieId);
     if (voie.typeNumerotation === TypeNumerotationEnum.NUMERIQUE) {
       // On calcule la voie avec les numero si la voie est numerique
-      await this.calcCentroidWithNumeros(voieId);
+      await this.calcCentroidAndBboxWithNumeros(voieId);
     } else if (
       voie.trace &&
       voie.typeNumerotation === TypeNumerotationEnum.METRIQUE
     ) {
       // On calcul la voie avec la trace si la voie est metrique
-      await this.calcCentroidWithTrace(voie);
+      await this.calcCentroidAndBboxWithTrace(voie);
     }
   }
 
-  private async calcCentroidWithNumeros(voieId: string): Promise<void> {
-    const centroid: Point = await this.numeroService.findCentroid(voieId);
-    await this.voiesRepository.update({ id: voieId }, { centroid });
+  private async calcCentroidAndBboxWithNumeros(voieId: string): Promise<void> {
+    const { centroid, polygon } =
+      await this.numeroService.findCentroidAndBboxVoie(voieId);
+    const bbox: number[] = turf.bbox(polygon);
+    await this.voiesRepository.update({ id: voieId }, { centroid, bbox });
   }
 
-  private async calcCentroidWithTrace(voie: Voie): Promise<void> {
+  private async calcCentroidAndBboxWithTrace(voie: Voie): Promise<void> {
     const centroid = turf.centroid(voie.trace)?.geometry;
-    await this.voiesRepository.update({ id: voie.id }, { centroid });
-  }
-
-  private getBBOX(voie: Voie, numeros: Numero[]): BBox {
-    // On récupère toutes les positions des numeros de la voie
-    const allPositions: Position[] = numeros
-      .filter((n) => n.positions && n.positions.length > 0)
-      .reduce((acc, n) => [...acc, ...n.positions], []);
-
-    if (allPositions.length > 0) {
-      // Si il y a des positions de numeros
-      // On créer un feature collection avec turf
-      const features: FeatureTurf[] = allPositions.map(({ point }) =>
-        turf.feature(point),
-      );
-      const featuresCollection = turf.featureCollection(features);
-      // On créer un bbox a partir de la feature collection
-      return bbox(featuresCollection);
-    } else if (
-      voie.trace &&
-      voie.typeNumerotation === TypeNumerotationEnum.METRIQUE
-    ) {
-      // Si la voie a une trace et est de type metrique
-      // On créer un bbox a partir de la trace
-      return bbox(voie.trace);
-    }
+    const bbox = turf.bbox(voie.trace);
+    await this.voiesRepository.update({ id: voie.id }, { centroid, bbox });
   }
 }
