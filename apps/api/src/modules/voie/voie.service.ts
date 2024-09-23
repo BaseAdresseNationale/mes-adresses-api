@@ -19,7 +19,10 @@ import { keyBy } from 'lodash';
 import * as turf from '@turf/turf';
 import { v4 as uuid } from 'uuid';
 
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 
@@ -31,6 +34,7 @@ import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
+import { FilaireVoieDTO } from './dto/filaire_voie.dto';
 
 @Injectable()
 export class VoieService {
@@ -408,5 +412,31 @@ export class VoieService {
     const centroid = turf.centroid(voie.trace)?.geometry;
     const bbox = turf.bbox(voie.trace);
     await this.voiesRepository.update({ id: voie.id }, { centroid, bbox });
+  }
+
+  async getFilairesVoies(): Promise<FilaireVoieDTO[]> {
+    const filaires = await this.voiesRepository
+      .createQueryBuilder('voies')
+      .select([
+        'bal.commune as commune',
+        'voies.nom as nom',
+        'ST_AsGeoJSON(voies.trace) as trace',
+        'voies.updatedAt as updatedAt',
+        'voies.createdAt as createdAt',
+      ])
+      .innerJoin('voies.baseLocale', 'bal')
+      .where('voies.type_numerotation = :typeNumerotation', {
+        typeNumerotation: TypeNumerotationEnum.METRIQUE,
+      })
+      .andWhere('bal.status = :status', {
+        status: StatusBaseLocalEnum.PUBLISHED,
+      })
+      .andWhere('voies.trace IS NOT NULL')
+      .getRawMany();
+
+    return filaires.map((f) => ({
+      ...f,
+      trace: JSON.parse(f.trace),
+    }));
   }
 }
