@@ -30,7 +30,8 @@
     "test:cron": "jest --config ./apps/cron/test/jest-e2e.json",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
     "push-staging": "./scripts/push-staging.sh",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "typeorm": "typeorm-ts-node-commonjs",
+    "typeorm:migration:run": "yarn typeorm migration:run -- -d ./typeorm.config.ts"
   },
   "dependencies": {
     "@ban-team/adresses-util": "^0.9.0",
