@@ -570,7 +570,7 @@ export class NumeroService {
 
   public async findCentroidAndBboxVoie(
     voieId: string,
-  ): Promise<{ centroid: Point; polygon: Polygon }> {
+  ): Promise<{ centroid: Point; polygon: Polygon } | undefined> {
     const res: { centroid: string; polygon: string } =
       await this.numerosRepository
         .createQueryBuilder('numeros')
@@ -586,10 +586,12 @@ export class NumeroService {
         .where('numeros.voie_id = :voieId', { voieId })
         .groupBy('numeros.voie_id')
         .getRawOne();
-    return {
-      centroid: JSON.parse(res.centroid),
-      polygon: JSON.parse(res.polygon),
-    };
+    return (
+      res && {
+        centroid: JSON.parse(res.centroid),
+        polygon: JSON.parse(res.polygon),
+      }
+    );
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {

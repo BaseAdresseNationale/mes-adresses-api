@@ -141,6 +141,7 @@ export class VoieService {
       trace: createVoieDto.trace || null,
       nomAlt: createVoieDto.nomAlt ? cleanNomAlt(createVoieDto.nomAlt) : null,
       centroid: null,
+      bbox: null,
     };
     // Calculer le centroid si la trace et le type de numerotation est metrique
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
@@ -402,10 +403,17 @@ export class VoieService {
   }
 
   private async calcCentroidAndBboxWithNumeros(voieId: string): Promise<void> {
-    const { centroid, polygon } =
-      await this.numeroService.findCentroidAndBboxVoie(voieId);
-    const bbox: number[] = turf.bbox(polygon);
-    await this.voiesRepository.update({ id: voieId }, { centroid, bbox });
+    const res = await this.numeroService.findCentroidAndBboxVoie(voieId);
+    if (res) {
+      const { centroid, polygon } = res;
+      const bbox: number[] = turf.bbox(polygon);
+      await this.voiesRepository.update({ id: voieId }, { centroid, bbox });
+    } else {
+      await this.voiesRepository.update(
+        { id: voieId },
+        { centroid: null, bbox: null },
+      );
+    }
   }
 
   private async calcCentroidAndBboxWithTrace(voie: Voie): Promise<void> {
