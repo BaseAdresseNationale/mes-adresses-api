@@ -6,8 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
 
-import { Initialization1725371358514 } from 'migrations/1725371358514-initialization';
-import { OnDeleteCascadeNumeros1726747666619 } from 'migrations/1726747666619-on_delete_cascade_numeros';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
@@ -34,11 +32,6 @@ import { CronService } from './cron.service';
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
         schema: 'public',
-        migrationsRun: true,
-        migrations: [
-          Initialization1725371358514,
-          OnDeleteCascadeNumeros1726747666619,
-        ],
         entities: [BaseLocale, Voie, Numero, Toponyme, Position],
       }),
       inject: [ConfigService],
