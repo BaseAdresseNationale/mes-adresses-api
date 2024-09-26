@@ -45,7 +45,8 @@ import { PublicationModule } from '@/shared/modules/publication/publication.modu
 import { MailerService } from '@nestjs-modules/mailer';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CacheModule } from '@/shared/modules/cache/cache.module';
+import { Cache } from '@/shared/entities/cache.entity';
 
 @Global()
 @Module({
@@ -70,6 +71,7 @@ describe('TASK MODULE', () => {
   let voieRepository: Repository<Voie>;
   let balRepository: Repository<BaseLocale>;
   let toponymeRepository: Repository<Toponyme>;
+  let cacheRepository: Repository<Cache>;
   // SERVICE
   let detectOutdated: DetectOutdatedTask;
   let detectConflict: DetectConflictTask;
@@ -78,10 +80,6 @@ describe('TASK MODULE', () => {
   const token = 'xxxx';
   const createdAt = new Date('2000-01-01');
   const updatedAt = new Date('2000-01-02');
-  // CACHE
-  const cache = {};
-  const setCache = (key: string, value: any) => (cache[key] = value);
-  const getCache = (key: string) => cache[key];
 
   // AXIOS
   const axiosMock = new MockAdapter(axios);
@@ -110,25 +108,15 @@ describe('TASK MODULE', () => {
           password: postgresContainer.getPassword(),
           database: postgresContainer.getDatabase(),
           synchronize: true,
-          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
+          entities: [BaseLocale, Voie, Numero, Toponyme, Position, Cache],
         }),
         TypeOrmModule.forFeature([BaseLocale]),
         ApiDepotModule,
         PublicationModule,
         MailerModule,
+        CacheModule,
       ],
-      providers: [
-        DetectOutdatedTask,
-        DetectConflictTask,
-        SyncOutdatedTask,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            get: getCache,
-            set: setCache,
-          },
-        },
-      ],
+      providers: [DetectOutdatedTask, DetectConflictTask, SyncOutdatedTask],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -140,6 +128,7 @@ describe('TASK MODULE', () => {
     voieRepository = app.get(getRepositoryToken(Voie));
     balRepository = app.get(getRepositoryToken(BaseLocale));
     toponymeRepository = app.get(getRepositoryToken(Toponyme));
+    cacheRepository = app.get(getRepositoryToken(Cache));
     // INIT TASK
     detectOutdated = app.get<DetectOutdatedTask>(DetectOutdatedTask);
     detectConflict = app.get<DetectConflictTask>(DetectConflictTask);
@@ -242,7 +231,10 @@ describe('TASK MODULE', () => {
   it('detectConflict', async () => {
     const commune = '97354';
     const date = new Date('2000-01-01');
-    await setCache(KEY_DETECT_CONFLICT_PUBLISHED_SINCE, date);
+    await cacheRepository.save({
+      key: KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
+      value: date.toISOString(),
+    });
 
     const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
@@ -255,7 +247,7 @@ describe('TASK MODULE', () => {
     };
 
     axiosMock
-      .onGet(`current-revisions?publishedSince=${date.toISOString()}`)
+      .onGet(`/current-revisions?publishedSince=${date.toISOString()}`)
       .reply(200, [revision]);
 
     axiosMock
@@ -284,9 +276,11 @@ describe('TASK MODULE', () => {
 
     await detectConflict.run();
 
-    const resultDate = await getCache(KEY_DETECT_CONFLICT_PUBLISHED_SINCE);
+    const cachedDate = await cacheRepository.findOne({
+      where: { key: KEY_DETECT_CONFLICT_PUBLISHED_SINCE },
+    });
 
-    expect(date.toISOString()).not.toEqual(resultDate.toISOString());
+    expect(date.toISOString()).not.toEqual(cachedDate);
 
     const bal1After = await balRepository.findOneBy({ id: balId1 });
     const bal2After = await balRepository.findOneBy({ id: balId2 });
