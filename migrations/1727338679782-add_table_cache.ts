@@ -6,8 +6,7 @@ export class AddTableCache1727338679782 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `CREATE TABLE "cache" (
-        "id" SERIAL PRIMARY KEY,
-        "key" VARCHAR(255) NOT NULL,
+        "key" VARCHAR(255) NOT NULL PRIMARY KEY,
         "value" TEXT NOT NULL,
         "created_at" TIMESTAMP DEFAULT now(),
         "updated_at" TIMESTAMP DEFAULT now()

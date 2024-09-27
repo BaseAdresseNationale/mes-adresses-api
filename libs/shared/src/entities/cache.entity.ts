@@ -2,16 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ name: 'cache' })
 export class Cache {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ type: 'varchar', length: 255 })
+  @PrimaryColumn({ type: 'varchar', length: 255 })
   key: string;
 
   @Column({ type: 'text' })
