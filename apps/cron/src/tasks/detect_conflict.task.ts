@@ -80,27 +80,25 @@ export class DetectConflictTask implements Task {
 
     for (const baseLocale of basesLocales) {
       if (currentRevision._id === baseLocale.sync.lastUploadedRevisionId) {
-        await this.basesLocalesRepository.update(
-          {
-            id: baseLocale.id,
-            status: StatusBaseLocalEnum.REPLACED,
-          },
-          {
+        await this.basesLocalesRepository
+          .createQueryBuilder('bases_locales')
+          .update(BaseLocale)
+          .set({
             status: StatusBaseLocalEnum.PUBLISHED,
-            sync: { status: StatusSyncEnum.SYNCED },
-          },
-        );
+            sync: () => `sync || '{"status": "${StatusSyncEnum.SYNCED}"}'`,
+          })
+          .where({ id: baseLocale.id, status: StatusBaseLocalEnum.REPLACED })
+          .execute();
       } else {
-        await this.basesLocalesRepository.update(
-          {
-            id: baseLocale.id,
-            status: StatusBaseLocalEnum.PUBLISHED,
-          },
-          {
+        await this.basesLocalesRepository
+          .createQueryBuilder('bases_locales')
+          .update(BaseLocale)
+          .set({
             status: StatusBaseLocalEnum.REPLACED,
-            sync: { status: StatusSyncEnum.CONFLICT },
-          },
-        );
+            sync: () => `sync || '{"status": "${StatusSyncEnum.CONFLICT}"}'`,
+          })
+          .where({ id: baseLocale.id, status: StatusBaseLocalEnum.PUBLISHED })
+          .execute();
       }
     }
   }
