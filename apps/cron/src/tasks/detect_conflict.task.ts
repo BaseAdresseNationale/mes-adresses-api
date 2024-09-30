@@ -1,6 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { In, Repository } from 'typeorm';
 
 import {
@@ -12,6 +11,7 @@ import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
 
 import { Task } from '../task_queue.class';
+import { CacheService } from '@/shared/modules/cache/cache.service';
 
 export const KEY_DETECT_CONFLICT_PUBLISHED_SINCE =
   'detectConflictPublishedSince';
@@ -22,27 +22,31 @@ export class DetectConflictTask implements Task {
 
   constructor(
     private readonly apiDepotService: ApiDepotService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
+    private cacheService: CacheService,
   ) {}
 
   public async run() {
     const futurePublishedSince = new Date();
-    const detectConflictPublishedSince = new Date(
-      (await this.cacheManager.get<Date>(
-        KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
-      )) || '1970-01-01',
+    const cache = await this.cacheService.get(
+      KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
     );
+    const detectConflictPublishedSince = new Date(cache?.value || '1970-01-01');
+    console.log('Detect conflict since : ', detectConflictPublishedSince);
     const currentRevisions: Revision[] =
       await this.apiDepotService.getCurrentRevisions(
         detectConflictPublishedSince,
       );
+    console.log(
+      'Number of current revisions processed : ',
+      currentRevisions.length,
+    );
     const revisedCommunes = currentRevisions.map((r) => r.codeCommune);
 
-    await this.cacheManager.set(
+    await this.cacheService.set(
       KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
-      futurePublishedSince,
+      futurePublishedSince.toISOString(),
     );
 
     for (const codeCommune of revisedCommunes) {
