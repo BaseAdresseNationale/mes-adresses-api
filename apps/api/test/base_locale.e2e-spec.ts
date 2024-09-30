@@ -41,7 +41,6 @@ const baseLocalePublicProperties = [
   'nbNumeros',
   'nbNumerosCertifies',
   'isAllCertified',
-  'commentedNumeros',
   'status',
   'updatedAt',
   'createdAt',
@@ -654,7 +653,6 @@ describe('BASE LOCAL MODULE', () => {
         nbNumeros: 0,
         nbNumerosCertifies: 0,
         isAllCertified: false,
-        commentedNumeros: [],
         status: StatusBaseLocalEnum.DRAFT,
         sync: null,
         habilitationId: null,
@@ -830,28 +828,6 @@ describe('BASE LOCAL MODULE', () => {
       expect(response.body.nbNumeros).toEqual(2);
       expect(response.body.nbNumerosCertifies).toEqual(2);
       expect(response.body.isAllCertified).toEqual(true);
-    });
-    it('Commented numeros', async () => {
-      const balId = await createBal({
-        nom: 'foo',
-        commune: '27115',
-        emails: ['me@domain.co'],
-      });
-      const voidId = await createVoie(balId, {
-        nom: 'rue',
-      });
-      await createNumero(balId, voidId, {
-        numero: 1,
-        comment: 'blabla',
-      });
-      await createNumero(balId, voidId, {
-        numero: 2,
-        comment: 'blibli',
-      });
-      const response = await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}`)
-        .expect(200);
-      expect(response.body.commentedNumeros.length).toEqual(2);
     });
   });
 

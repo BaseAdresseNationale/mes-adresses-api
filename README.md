@@ -14,7 +14,6 @@ https://adresse-data-gouv-fr.gitbook.io/bal/mes-adresses
 - [Node.js](https://nodejs.org) 18+
 - [yarn](https://www.yarnpkg.com)
 - [PostgresSQL](https://www.postgresql.org/)
-- [Redis](https://redis.io/fr/)
 
 ### Postgres
 
@@ -108,7 +107,6 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | Nom de la variable        | Description                                                                 |
 | ------------------------- | --------------------------------------------------------------------------- |
 | `POSTGRES_URL`            | Url de connection a la db postgres                                          |
-| `REDIS_URL`               | Url de connection a la db redis                                             |
 | `PORT`                    | Port à utiliser pour l'API                                                  |
 | `API_URL`                 | URL de base de l’API                                                        |
 | `API_DEPOT_URL`           | URL de l'api-depot                                                          |

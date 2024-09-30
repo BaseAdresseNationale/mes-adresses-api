@@ -1,6 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { In, Repository } from 'typeorm';
 
 import {
@@ -12,6 +11,7 @@ import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
 
 import { Task } from '../task_queue.class';
+import { CacheService } from '@/shared/modules/cache/cache.service';
 
 export const KEY_DETECT_CONFLICT_PUBLISHED_SINCE =
   'detectConflictPublishedSince';
@@ -22,27 +22,31 @@ export class DetectConflictTask implements Task {
 
   constructor(
     private readonly apiDepotService: ApiDepotService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
+    private cacheService: CacheService,
   ) {}
 
   public async run() {
     const futurePublishedSince = new Date();
-    const detectConflictPublishedSince = new Date(
-      (await this.cacheManager.get<Date>(
-        KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
-      )) || '1970-01-01',
+    const cache = await this.cacheService.get(
+      KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
     );
+    const detectConflictPublishedSince = new Date(cache?.value || '1970-01-01');
+    console.log('Detect conflict since : ', detectConflictPublishedSince);
     const currentRevisions: Revision[] =
       await this.apiDepotService.getCurrentRevisions(
         detectConflictPublishedSince,
       );
+    console.log(
+      'Number of current revisions processed : ',
+      currentRevisions.length,
+    );
     const revisedCommunes = currentRevisions.map((r) => r.codeCommune);
 
-    await this.cacheManager.set(
+    await this.cacheService.set(
       KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
-      futurePublishedSince,
+      futurePublishedSince.toISOString(),
     );
 
     for (const codeCommune of revisedCommunes) {
@@ -76,27 +80,25 @@ export class DetectConflictTask implements Task {
 
     for (const baseLocale of basesLocales) {
       if (currentRevision._id === baseLocale.sync.lastUploadedRevisionId) {
-        await this.basesLocalesRepository.update(
-          {
-            id: baseLocale.id,
-            status: StatusBaseLocalEnum.REPLACED,
-          },
-          {
+        await this.basesLocalesRepository
+          .createQueryBuilder('bases_locales')
+          .update(BaseLocale)
+          .set({
             status: StatusBaseLocalEnum.PUBLISHED,
-            sync: { status: StatusSyncEnum.SYNCED },
-          },
-        );
+            sync: () => `sync || '{"status": "${StatusSyncEnum.SYNCED}"}'`,
+          })
+          .where({ id: baseLocale.id, status: StatusBaseLocalEnum.REPLACED })
+          .execute();
       } else {
-        await this.basesLocalesRepository.update(
-          {
-            id: baseLocale.id,
-            status: StatusBaseLocalEnum.PUBLISHED,
-          },
-          {
+        await this.basesLocalesRepository
+          .createQueryBuilder('bases_locales')
+          .update(BaseLocale)
+          .set({
             status: StatusBaseLocalEnum.REPLACED,
-            sync: { status: StatusSyncEnum.CONFLICT },
-          },
-        );
+            sync: () => `sync || '{"status": "${StatusSyncEnum.CONFLICT}"}'`,
+          })
+          .where({ id: baseLocale.id, status: StatusBaseLocalEnum.PUBLISHED })
+          .execute();
       }
     }
   }
