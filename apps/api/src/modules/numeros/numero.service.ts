@@ -198,10 +198,12 @@ export class NumeroService {
     baseLocale: BaseLocale,
     rawNumeros: Partial<Numero>[],
   ): Promise<void> {
+    const validRawNumeros: Partial<Numero>[] = rawNumeros.filter(
+      ({ voieId, numero }) => Boolean(voieId && numero),
+    );
     // On transforme les raw en numeros
-    const numeros = rawNumeros
+    const numeros = validRawNumeros
       // On garde seulement les numeros qui ont une voie et un numero
-      .filter(({ voieId, numero }) => Boolean(voieId && numero))
       .map((rawNumero) => ({
         id: rawNumero.id,
         balId: baseLocale.id,
@@ -233,7 +235,7 @@ export class NumeroService {
     }
     // On créer les positions
     const positions: Partial<Position>[] = [];
-    for (const rawNumero of rawNumeros) {
+    for (const rawNumero of validRawNumeros) {
       let rank = 0;
       for (const { source, type, point } of rawNumero.positions) {
         positions.push({

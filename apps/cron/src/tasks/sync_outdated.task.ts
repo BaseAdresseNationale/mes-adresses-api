@@ -33,8 +33,11 @@ export class SyncOutdatedTask implements Task {
 
     const bals: BaseLocale[] = await this.basesLocalesRepository.findBy(where);
 
+    console.log(`Number of outdated bases locales to sync : ${bals.length}`);
+
     for (const bal of bals) {
       try {
+        console.log(`Syncing BAL :  ${bal.id}`);
         await this.publicationService.exec(bal.id);
       } catch (error) {
         console.error(`Unable to sync ${bal.id}`, error);
