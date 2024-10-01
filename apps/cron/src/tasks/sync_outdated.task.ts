@@ -37,10 +37,11 @@ export class SyncOutdatedTask implements Task {
 
     for (const bal of bals) {
       try {
-        console.log(`Syncing BAL :  ${bal.id}`);
+        console.log(`Syncing BAL : ${bal.id}`);
         await this.publicationService.exec(bal.id);
       } catch (error) {
-        console.error(`Unable to sync ${bal.id}`, error);
+        console.error(`Unable to sync BAL : ${bal.id}`);
+        console.error(error);
       }
     }
   }

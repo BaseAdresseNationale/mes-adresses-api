@@ -29,7 +29,8 @@ export class BanPlateformService {
     const { data } = await firstValueFrom(
       await this.httpService.get<any>(`/api/district/cog/${codeCommune}`).pipe(
         catchError((error: AxiosError) => {
-          console.error('error', error.response.data);
+          console.error('ERROR getIdBanCommune');
+          console.error(error);
           throw error;
         }),
       ),
