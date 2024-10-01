@@ -53,7 +53,8 @@ export class DetectConflictTask implements Task {
       try {
         await this.updateConflictStatus(codeCommune);
       } catch (error) {
-        console.error(`Unable to detect conflict for ${codeCommune}`, error);
+        console.error(`Unable to detect conflict for ${codeCommune}`);
+        console.error(error);
       }
     }
   }

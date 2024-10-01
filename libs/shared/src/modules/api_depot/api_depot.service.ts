@@ -45,7 +45,8 @@ export class ApiDepotService {
         .post<Habilitation>(`communes/${baseLocale.commune}/habilitations`)
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('error', error.response.data);
+            console.error('ERROR createOneHabiliation');
+            console.error(error);
             throw error;
           }),
         ),
@@ -62,7 +63,8 @@ export class ApiDepotService {
         )
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('error', error.response.data);
+            console.error('ERROR sendPinCodeHabiliation');
+            console.error(error);
             throw error;
           }),
         ),
@@ -81,7 +83,8 @@ export class ApiDepotService {
         )
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('error', error.response.data);
+            console.error('ERROR validatePinCodeHabiliation');
+            console.error(error);
             throw error;
           }),
         ),
@@ -99,7 +102,8 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('error', error.response.data);
+            console.error('ERROR createRevision');
+            console.error(error);
             throw error;
           }),
         ),
@@ -118,7 +122,8 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('error', error.response.data);
+            console.error('ERROR uploadFileRevision');
+            console.error(error);
             throw error;
           }),
         ),
@@ -131,7 +136,8 @@ export class ApiDepotService {
         .post<Revision>(`/revisions/${revisionId}/compute`)
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('error', error.response.data);
+            console.error('ERROR computeRevision');
+            console.error(error);
             throw error;
           }),
         ),
@@ -150,7 +156,8 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('error', error.response.data);
+            console.error('ERROR publishRevision');
+            console.error(error);
             throw error;
           }),
         ),
@@ -192,7 +199,8 @@ export class ApiDepotService {
             if (error.response && error.response.status === 404) {
               return of({ data: null });
             }
-            console.error('error', error.response.data);
+            console.error('ERROR getCurrentRevision');
+            console.error(error);
             throw error;
           }),
         ),
@@ -214,7 +222,8 @@ export class ApiDepotService {
             if (error.response && error.response.status === 404) {
               return of({ data: null });
             }
-            console.error('error', error.response.data);
+            console.error('ERROR getCurrentRevisions');
+            console.error(error);
             throw error;
           }),
         ),
