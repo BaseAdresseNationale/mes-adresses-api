@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 
@@ -15,7 +15,7 @@ import { BanPlateformService } from './ban_plateform.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [BanPlateformService],
+  providers: [BanPlateformService, Logger],
   exports: [BanPlateformService],
 })
 export class BanPlateformModule {}
