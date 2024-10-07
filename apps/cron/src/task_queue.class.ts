@@ -19,13 +19,14 @@ export class TaskQueue {
 
     while (this.queue.length > 0) {
       const task = this.queue.shift();
-      console.debug(`Task start ${task.title}`);
+      console.log(`TASK START ${task.title}`);
       try {
         await task.run();
-      } catch (e) {
-        console.debug(`Task error ${task.title}`, e);
+      } catch (error) {
+        console.error(`TASK ERROR ${task.title}`);
+        console.error(error);
       }
-      console.debug(`Task end ${task.title}`);
+      console.log(`TASK END ${task.title}`);
     }
 
     this.isTaskRunning = false;
