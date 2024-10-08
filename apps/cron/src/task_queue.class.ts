@@ -21,13 +21,16 @@ export class TaskQueue {
 
     while (this.queue.length > 0) {
       const task = this.queue.shift();
-      Logger.info(`TASK START ${task.title}`);
+      Logger.info(
+        `[${TaskQueue.name}] TASK START ${task.title}`,
+        TaskQueue.name,
+      );
       try {
         await task.run();
       } catch (error) {
-        Logger.error(`TASK ERROR ${task.title}`, error);
+        Logger.error(`[${TaskQueue.name}] TASK ERROR ${task.title}`, error);
       }
-      Logger.info(`TASK END ${task.title}`);
+      Logger.info(`[${TaskQueue.name}] TASK END ${task.title}`, TaskQueue.name);
     }
 
     this.isTaskRunning = false;

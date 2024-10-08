@@ -212,7 +212,11 @@ export async function extractFromCsv(
       toponymes: communesData.toponymes,
     };
   } catch (error) {
-    Logger.error(`Impossible d'extraire la BAL sur CSV`, error);
+    Logger.error(
+      `Impossible d'extraire la BAL sur CSV`,
+      error,
+      extractFromCsv.name,
+    );
     return { isValid: false, validationError: error.message };
   }
 }

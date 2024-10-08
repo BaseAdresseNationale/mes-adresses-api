@@ -51,6 +51,8 @@ export class PopulateService {
 
     this.logger.error(
       `Aucune adresse n’a pu être extraite avec le code commune: ${codeCommune}`,
+      null,
+      PopulateService.name,
     );
 
     return { voies: [], numeros: [], toponymes: [] };

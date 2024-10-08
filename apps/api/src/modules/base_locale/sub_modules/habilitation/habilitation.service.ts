@@ -99,6 +99,7 @@ export class HabilitationService {
       this.logger.error(
         `Impossible de créer une habilitation pour la commune ${baseLocale.commune}`,
         error,
+        HabilitationService.name,
       );
       const message =
         (error.response?.data as any)?.message || 'No server response';
@@ -125,6 +126,7 @@ export class HabilitationService {
       this.logger.error(
         `Impossible d'envoyer le code pour l'habilitation ${habilitationId}`,
         error,
+        HabilitationService.name,
       );
       const message =
         (error.response?.data as any)?.message || 'No server response';
@@ -152,6 +154,7 @@ export class HabilitationService {
       this.logger.error(
         `Impossible de valider le code pour l'habilitation ${habilitationId}`,
         error,
+        HabilitationService.name,
       );
       const message =
         (error.response?.data as any)?.message || 'No server response';

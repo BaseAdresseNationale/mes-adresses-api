@@ -35,6 +35,7 @@ export class BanPlateformService {
           this.logger.error(
             `Impossible de récupérer le code distict pour la commune ${codeCommune}`,
             error,
+            BanPlateformService.name,
           );
           throw new HttpException(
             'Impossible de récupérer le code distict',

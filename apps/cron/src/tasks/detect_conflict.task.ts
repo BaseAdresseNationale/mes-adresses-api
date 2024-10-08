@@ -34,13 +34,17 @@ export class DetectConflictTask implements Task {
       KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
     );
     const detectConflictPublishedSince = new Date(cache?.value || '1970-01-01');
-    this.logger.log(`Detect conflict since : ${detectConflictPublishedSince}`);
+    this.logger.log(
+      `Detect conflict since : ${detectConflictPublishedSince}`,
+      DetectConflictTask.name,
+    );
     const currentRevisions: Revision[] =
       await this.apiDepotService.getCurrentRevisions(
         detectConflictPublishedSince,
       );
     this.logger.log(
       `Number of current revisions processed : ${currentRevisions.length}`,
+      DetectConflictTask.name,
     );
     const revisedCommunes = currentRevisions.map((r) => r.codeCommune);
 
@@ -56,6 +60,7 @@ export class DetectConflictTask implements Task {
         this.logger.error(
           `Unable to detect conflict for ${codeCommune}`,
           error,
+          DetectConflictTask.name,
         );
       }
     }
@@ -77,6 +82,8 @@ export class DetectConflictTask implements Task {
     if (!currentRevision) {
       this.logger.error(
         `Comportement inattendu : pas de révision courante pour la commune ${codeCommune}`,
+        null,
+        DetectConflictTask.name,
       );
       return;
     }
