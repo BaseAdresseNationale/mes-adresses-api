@@ -10,7 +10,6 @@ export class Bbox1726841060714 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "voies" ADD "bbox" double precision array`,
     );
-
     const result = await queryRunner.manager
       .getRepository(Numero)
       .createQueryBuilder('numeros')
@@ -23,7 +22,6 @@ export class Bbox1726841060714 implements MigrationInterface {
       .groupBy('numeros.voie_id')
       .getRawMany();
 
-    console.log(result);
     for (const { voieId, polygon } of result) {
       const bbox: number[] = turf.bbox(JSON.parse(polygon));
       await queryRunner.manager
