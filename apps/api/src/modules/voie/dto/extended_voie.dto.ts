@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BBox as BboxTurf } from '@turf/helpers';
 
-import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 
 export class ExtendedVoieDTO extends Voie {
@@ -15,8 +13,5 @@ export class ExtendedVoieDTO extends Voie {
   isAllCertified?: boolean;
 
   @ApiProperty()
-  commentedNumeros?: Numero[];
-
-  @ApiProperty()
-  bbox?: BboxTurf;
+  comments?: string[];
 }

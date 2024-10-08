@@ -404,7 +404,7 @@ export class BaseLocaleService {
       balId: baseLocale.id,
     });
     await Promise.all(
-      voiesCreated.map(({ id }) => this.voieService.calcCentroid(id)),
+      voiesCreated.map(({ id }) => this.voieService.calcCentroidAndBbox(id)),
     );
     // On retourne la Bal
     return baseLocale;
