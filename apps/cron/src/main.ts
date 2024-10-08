@@ -5,8 +5,7 @@ import { WinstonLogger } from '@/shared/modules/logger/logger.service';
 import { Logger } from '@/shared/utils/logger.utils';
 
 async function bootstrap() {
-  await NestFactory.createApplicationContext(CronModule, {
-    logger: new WinstonLogger(Logger),
-  });
+  const app = await NestFactory.createApplicationContext(CronModule);
+  app.useLogger(new WinstonLogger(Logger));
 }
 bootstrap();
