@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 
@@ -20,7 +20,7 @@ import { ApiDepotService } from './api_depot.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [ApiDepotService],
+  providers: [ApiDepotService, Logger],
   exports: [ApiDepotService],
 })
 export class ApiDepotModule {}

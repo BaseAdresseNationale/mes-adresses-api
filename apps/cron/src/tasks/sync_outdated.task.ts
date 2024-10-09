@@ -1,6 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, JsonContains, LessThan, Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { sub } from 'date-fns';
 
 import {
@@ -19,6 +19,7 @@ export class SyncOutdatedTask implements Task {
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
     private readonly publicationService: PublicationService,
+    private readonly logger: Logger,
   ) {}
 
   public async run() {
@@ -33,15 +34,21 @@ export class SyncOutdatedTask implements Task {
 
     const bals: BaseLocale[] = await this.basesLocalesRepository.findBy(where);
 
-    console.log(`Number of outdated bases locales to sync : ${bals.length}`);
+    this.logger.log(
+      `Number of outdated bases locales to sync : ${bals.length}`,
+      SyncOutdatedTask.name,
+    );
 
     for (const bal of bals) {
       try {
-        console.log(`Syncing BAL : ${bal.id}`);
+        this.logger.log(`Syncing BAL : ${bal.id}`, SyncOutdatedTask.name);
         await this.publicationService.exec(bal.id);
       } catch (error) {
-        console.error(`Unable to sync BAL : ${bal.id}`);
-        console.error(error);
+        this.logger.error(
+          `Unable to sync BAL : ${bal.id}`,
+          error,
+          SyncOutdatedTask.name,
+        );
       }
     }
   }

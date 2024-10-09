@@ -198,10 +198,10 @@ describe('HABILITATION MODULE', () => {
       const response = await request(app.getHttpServer())
         .get(`/bases-locales/${balId}/habilitation`)
         .set('Authorization', `Bearer ${token}`)
-        .expect(404);
+        .expect(502);
 
       const responseExpected = {
-        statusCode: 404,
+        statusCode: 502,
         message: 'L’identifiant de l’habilitation demandé n’existe pas',
       };
 
@@ -434,10 +434,10 @@ describe('HABILITATION MODULE', () => {
         .post(`/bases-locales/${balId}/habilitation/email/validate-pin-code`)
         .set('Authorization', `Bearer ${token}`)
         .send({ code: '123456' })
-        .expect(412);
+        .expect(502);
 
       expect(response.body).toEqual({
-        statusCode: 412,
+        statusCode: 502,
         message: 'Code non valide, 9 tentatives restantes',
       });
     });

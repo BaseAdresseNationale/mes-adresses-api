@@ -7,6 +7,7 @@ import { Client } from 'pg';
 import {
   Global,
   INestApplication,
+  Logger,
   Module,
   ValidationPipe,
 } from '@nestjs/common';
@@ -116,7 +117,12 @@ describe('TASK MODULE', () => {
         MailerModule,
         CacheModule,
       ],
-      providers: [DetectOutdatedTask, DetectConflictTask, SyncOutdatedTask],
+      providers: [
+        DetectOutdatedTask,
+        DetectConflictTask,
+        SyncOutdatedTask,
+        Logger,
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();

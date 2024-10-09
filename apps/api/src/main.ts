@@ -3,11 +3,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import { ApiModule } from './api.module';
+import { WinstonLogger } from '@/shared/modules/logger/logger.service';
+import { Logger } from '@/shared/utils/logger.utils';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule, {
     cors: true,
   });
+
+  app.useLogger(new WinstonLogger(Logger));
 
   const config = new DocumentBuilder()
     .setTitle('Mes adresses API')
