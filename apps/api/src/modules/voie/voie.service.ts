@@ -142,6 +142,7 @@ export class VoieService {
       balId: bal.id,
       banId: uuid(),
       nom: createVoieDto.nom,
+      communeDeleguee: createVoieDto.communeDeleguee || null,
       typeNumerotation:
         createVoieDto.typeNumerotation || TypeNumerotationEnum.NUMERIQUE,
       trace: createVoieDto.trace || null,
@@ -173,6 +174,7 @@ export class VoieService {
         banId: rawVoie.banId || uuid(),
         nom: cleanNom(rawVoie.nom),
         nomAlt: getNomAltDefault(rawVoie.nomAlt),
+        communeDeleguee: rawVoie.communeDeleguee,
         typeNumerotation: rawVoie.typeNumerotation,
         trace: rawVoie.trace || null,
         ...(rawVoie.updatedAt && { updatedAt: rawVoie.updatedAt }),
