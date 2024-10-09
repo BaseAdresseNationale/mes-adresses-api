@@ -9,6 +9,7 @@ import {
   IsEnum,
 } from 'class-validator';
 
+import { ValidatorCogCommune } from '@/shared/validators/cog.validator';
 import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { LineString } from './line_string';
 
@@ -22,6 +23,10 @@ export class CreateVoieDTO {
   @Validate(ValidatorBal, ['langAlt'])
   @ApiProperty({ required: false, nullable: true })
   nomAlt: Record<string, string>;
+
+  @Validate(ValidatorCogCommune, ['commune_deleguee'])
+  @ApiProperty({ required: false, nullable: true })
+  communeDeleguee: string;
 
   @IsOptional()
   @IsEnum(TypeNumerotationEnum)
