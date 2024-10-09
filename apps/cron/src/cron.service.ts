@@ -18,7 +18,9 @@ export class CronService {
     private readonly syncOutdatedTask: SyncOutdatedTask,
     private readonly removeSoftDeleteBalTask: RemoveSoftDeleteBalTask,
     private readonly removeDemoBalTask: RemoveDemoBalTask,
-  ) {}
+  ) {
+    this.queue.pushTask(this.syncOutdatedTask);
+  }
 
   // Every 30 seconds
   @Interval(30000)

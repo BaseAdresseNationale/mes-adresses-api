@@ -28,14 +28,16 @@ export class HabilitationService {
     try {
       return await this.apiDepotService.findOneHabiliation(habilitationId);
     } catch (error) {
+      console.log(error.response?.data);
       this.logger.error(
         `Impossible de trouver l'habilitation ${habilitationId}`,
-        error,
+        error.response?.data || 'No server response',
         HabilitationService.name,
       );
-      const message =
-        (error.response?.data as any)?.message || 'No server response';
-      throw new HttpException(message, HttpStatus.BAD_GATEWAY);
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
     }
   }
 
@@ -55,12 +57,13 @@ export class HabilitationService {
     } catch (error) {
       this.logger.error(
         `Impossible de trouver l'habilitation ${habilitationId}`,
-        error,
+        error.response?.data || 'No server response',
         HabilitationService.name,
       );
-      const message =
-        (error.response?.data as any)?.message || 'No server response';
-      throw new HttpException(message, HttpStatus.BAD_GATEWAY);
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
     }
 
     // On verifie que l'habilitation est valide
@@ -98,12 +101,13 @@ export class HabilitationService {
     } catch (error) {
       this.logger.error(
         `Impossible de créer une habilitation pour la commune ${baseLocale.commune}`,
-        error,
+        error.response?.data || 'No server response',
         HabilitationService.name,
       );
-      const message =
-        (error.response?.data as any)?.message || 'No server response';
-      throw new HttpException(message, HttpStatus.BAD_GATEWAY);
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
     }
 
     await this.baseLocaleService.updateHabilitation(baseLocale, habilitation);
@@ -125,12 +129,13 @@ export class HabilitationService {
     } catch (error) {
       this.logger.error(
         `Impossible d'envoyer le code pour l'habilitation ${habilitationId}`,
-        error,
+        error.response?.data || 'No server response',
         HabilitationService.name,
       );
-      const message =
-        (error.response?.data as any)?.message || 'No server response';
-      throw new HttpException(message, HttpStatus.BAD_GATEWAY);
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
     }
   }
 
@@ -153,12 +158,13 @@ export class HabilitationService {
     } catch (error) {
       this.logger.error(
         `Impossible de valider le code pour l'habilitation ${habilitationId}`,
-        error,
+        error.response?.data || 'No server response',
         HabilitationService.name,
       );
-      const message =
-        (error.response?.data as any)?.message || 'No server response';
-      throw new HttpException(message, HttpStatus.BAD_GATEWAY);
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
     }
   }
 }

@@ -17,9 +17,9 @@ export class WinstonLogger implements LoggerService {
     this.instanceLogger.error(`[${context}] ${message}`);
   }
 
-  error(message: any, stack?: any, context?: string) {
+  error(message: any, errors?: any, context?: string) {
     // console.log(message, stack, context);
-    this.instanceLogger.error(`[${context}] ${message}`, stack);
+    this.instanceLogger.error(`[${context}] ${message}`, { errors });
   }
 
   warn(message: any, context?: string) {

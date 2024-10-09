@@ -28,7 +28,11 @@ export class TaskQueue {
       try {
         await task.run();
       } catch (error) {
-        Logger.error(`[${TaskQueue.name}] TASK ERROR ${task.title}`, error);
+        Logger.error(
+          `[${TaskQueue.name}] TASK ERROR ${task.title}`,
+          error,
+          TaskQueue.name,
+        );
       }
       Logger.info(`[${TaskQueue.name}] TASK END ${task.title}`, TaskQueue.name);
     }

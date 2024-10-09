@@ -34,11 +34,11 @@ export class BanPlateformService {
         catchError((error: AxiosError) => {
           this.logger.error(
             `Impossible de récupérer le code distict pour la commune ${codeCommune}`,
-            error,
+            error.response?.data || 'No server response',
             BanPlateformService.name,
           );
           throw new HttpException(
-            'Impossible de récupérer le code distict',
+            (error.response?.data as any).message || 'No server response',
             HttpStatus.BAD_GATEWAY,
           );
         }),
