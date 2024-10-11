@@ -353,7 +353,7 @@ export class VoieService {
       nbNumeros,
       nbNumerosCertifies,
       isAllCertified: nbNumeros > 0 ? nbNumeros === nbNumerosCertifies : false,
-      comments: voieMeta.comments || [],
+      comments: voieMeta?.comments || [],
     };
   }
 
