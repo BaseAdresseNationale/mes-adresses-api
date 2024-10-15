@@ -27,7 +27,7 @@ export class UpdateVoieDTO {
 
   @Validate(ValidatorCogCommune, ['commune_deleguee'], {})
   @ApiProperty({ required: false, nullable: true })
-  communeDeleguee: string;
+  communeDeleguee?: string;
 
   @IsOptional()
   @IsEnum(TypeNumerotationEnum)
