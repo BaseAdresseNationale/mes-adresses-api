@@ -527,8 +527,8 @@ describe('VOIE MODULE', () => {
         .expect(200);
       expect(response.body.id).toEqual(voieId);
       expect(response.body.balId).toEqual(balId);
-      expect(response.body.nom).toEqual('08294');
-      expect(response.body.communeDeleguee).toEqual('coucou');
+      expect(response.body.nom).toEqual('coucou');
+      expect(response.body.communeDeleguee).toEqual('08294');
       expect(response.body.typeNumerotation).toEqual(
         TypeNumerotationEnum.NUMERIQUE,
       );
@@ -538,7 +538,7 @@ describe('VOIE MODULE', () => {
       expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
-    it('Return 200', async () => {
+    it('Return 400 bad commune déléguée', async () => {
       const balId = await createBal({ nom: 'bal', commune: '08053' });
       const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
@@ -547,7 +547,7 @@ describe('VOIE MODULE', () => {
         nom: 'coucou',
         nomAlt: null,
         typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
-        communeDeleguee: '91534',
+        communeDeleguee: '91400',
         trace: {
           type: 'LineString',
           coordinates: [
@@ -557,12 +557,11 @@ describe('VOIE MODULE', () => {
         },
       };
 
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .put(`/voies/${voieId}`)
         .send(changes)
-        .set('authorization', `Bearer ${token}`);
-      // .expect(200)
-      console.log(response);
+        .set('authorization', `Bearer ${token}`)
+        .expect(400);
     });
 
     it('Return 200 trace empty', async () => {

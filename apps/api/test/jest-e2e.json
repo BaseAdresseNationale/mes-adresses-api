@@ -6,7 +6,7 @@
   ],
   "rootDir": ".",
   "testEnvironment": "node",
-  "testRegex": "voie.e2e-spec.ts$",
+  "testRegex": "toponyme.e2e-spec.ts$",
   "testTimeout": 6000000,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
