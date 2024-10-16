@@ -521,24 +521,27 @@ describe('BASE LOCAL MODULE', () => {
 
   describe('GET /bases-locales/csv', () => {
     it('GET CSV 200', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91534' });
+      const balId = await createBal({ nom: 'bal', commune: '08053' });
       const { banId: communeUuid } = await balRepository.findOneBy({
         id: balId,
       });
       const voieId1 = await createVoie(balId, {
         nom: 'rue de la paix',
+        communeDeleguee: '08294',
       });
       const { banId: voieUuid1 } = await voieRepository.findOneBy({
         id: voieId1,
       });
       const voieId2 = await createVoie(balId, {
         nom: 'rue de paris',
+        communeDeleguee: '08053',
       });
       const { banId: voieUuid2 } = await voieRepository.findOneBy({
         id: voieId2,
       });
       const toponymeId1 = await createToponyme(balId, {
         nom: 'allée',
+        communeDeleguee: '08294',
       });
       const { banId: toponymeUuid1 } = await toponymeRepository.findOneBy({
         id: toponymeId1,
@@ -577,10 +580,10 @@ describe('BASE LOCAL MODULE', () => {
       expect(response.headers['content-type']).toEqual(
         'text/csv; charset=utf-8',
       );
-      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-    91534_xxxx_00001_bis;${communeUuid};${voieUuid1};${numeroUuid1};rue de la paix;allée;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
-    91534_xxxx_00001_ter;${communeUuid};${voieUuid2};${numeroUuid2};rue de paris;allée;1;ter;0;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
-    91534_xxxx_99999;${communeUuid};${toponymeUuid1};;allée;;99999;;;91534;Saclay;;;;;;;commune;2000-01-02`;
+      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+    08053_xxxx_00001_bis;${communeUuid};${voieUuid1};${numeroUuid1};rue de la paix;allée;1;bis;1;08053;Bazeilles;08294;La Moncelle;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
+    08053_xxxx_00001_ter;${communeUuid};${voieUuid2};${numeroUuid2};rue de paris;allée;1;ter;0;08053;Bazeilles;08053;Bazeilles;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
+    08053_xxxx_99999;${communeUuid};${toponymeUuid1};;allée;;99999;;;08053;Bazeilles;08294;La Moncelle;;;;;;;commune;2000-01-02`;
       expect(response.text.replace(/\s/g, '')).toEqual(
         csvFile.replace(/\s/g, ''),
       );
