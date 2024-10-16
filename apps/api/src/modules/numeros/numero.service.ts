@@ -105,7 +105,7 @@ export class NumeroService {
         'nbNumerosCertifies',
       )
       .addSelect(
-        `array_remove(array_agg(numeros.numero || numeros.suffixe || ' - ' || numeros.comment), NULL)`,
+        `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
         'comments',
       )
       .where('numeros.bal_id = :balId', { balId })
