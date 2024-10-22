@@ -595,8 +595,10 @@ export class BaseLocaleController {
     const voies: Voie[] = await this.voieService.findMany({
       balId: req.baseLocale.id,
     });
-    const extendedVoie: ExtendedVoieDTO[] =
-      await this.voieService.extendVoies(voies);
+    const extendedVoie: ExtendedVoieDTO[] = await this.voieService.extendVoies(
+      req.baseLocale.id,
+      voies,
+    );
     res.status(HttpStatus.OK).json(extendedVoie);
   }
 

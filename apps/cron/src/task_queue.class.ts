@@ -1,3 +1,5 @@
+import { Logger } from '@/shared/utils/logger.utils';
+
 export type Task = {
   title: string;
   run(): Promise<void>;
@@ -19,14 +21,20 @@ export class TaskQueue {
 
     while (this.queue.length > 0) {
       const task = this.queue.shift();
-      console.log(`TASK START ${task.title}`);
+      Logger.info(
+        `[${TaskQueue.name}] TASK START ${task.title}`,
+        TaskQueue.name,
+      );
       try {
         await task.run();
       } catch (error) {
-        console.error(`TASK ERROR ${task.title}`);
-        console.error(error);
+        Logger.error(
+          `[${TaskQueue.name}] TASK ERROR ${task.title}`,
+          error,
+          TaskQueue.name,
+        );
       }
-      console.log(`TASK END ${task.title}`);
+      Logger.info(`[${TaskQueue.name}] TASK END ${task.title}`, TaskQueue.name);
     }
 
     this.isTaskRunning = false;

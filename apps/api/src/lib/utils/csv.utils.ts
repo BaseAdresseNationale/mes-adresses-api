@@ -10,6 +10,7 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Row } from '../types/validator.types';
 import { ObjectId } from 'mongodb';
+import { Logger } from '@/shared/utils/logger.utils';
 
 export type FromCsvType = {
   isValid?: boolean;
@@ -211,8 +212,11 @@ export async function extractFromCsv(
       toponymes: communesData.toponymes,
     };
   } catch (error) {
-    console.log('ERROR extractFromCsv');
-    console.error(error);
+    Logger.error(
+      `Impossible d'extraire la BAL sur CSV`,
+      error,
+      extractFromCsv.name,
+    );
     return { isValid: false, validationError: error.message };
   }
 }

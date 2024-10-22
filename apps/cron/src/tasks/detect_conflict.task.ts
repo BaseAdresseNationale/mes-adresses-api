@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
@@ -25,6 +25,7 @@ export class DetectConflictTask implements Task {
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
     private cacheService: CacheService,
+    private readonly logger: Logger,
   ) {}
 
   public async run() {
@@ -33,14 +34,17 @@ export class DetectConflictTask implements Task {
       KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
     );
     const detectConflictPublishedSince = new Date(cache?.value || '1970-01-01');
-    console.log('Detect conflict since : ', detectConflictPublishedSince);
+    this.logger.log(
+      `Detect conflict since : ${detectConflictPublishedSince}`,
+      DetectConflictTask.name,
+    );
     const currentRevisions: Revision[] =
       await this.apiDepotService.getCurrentRevisions(
         detectConflictPublishedSince,
       );
-    console.log(
-      'Number of current revisions processed : ',
-      currentRevisions.length,
+    this.logger.log(
+      `Number of current revisions processed : ${currentRevisions.length}`,
+      DetectConflictTask.name,
     );
     const revisedCommunes = currentRevisions.map((r) => r.codeCommune);
 
@@ -53,8 +57,11 @@ export class DetectConflictTask implements Task {
       try {
         await this.updateConflictStatus(codeCommune);
       } catch (error) {
-        console.error(`Unable to detect conflict for ${codeCommune}`);
-        console.error(error);
+        this.logger.error(
+          `Unable to detect conflict for ${codeCommune}`,
+          error,
+          DetectConflictTask.name,
+        );
       }
     }
   }
@@ -73,8 +80,10 @@ export class DetectConflictTask implements Task {
       await this.apiDepotService.getCurrentRevision(codeCommune);
 
     if (!currentRevision) {
-      console.error(
+      this.logger.error(
         `Comportement inattendu : pas de révision courante pour la commune ${codeCommune}`,
+        null,
+        DetectConflictTask.name,
       );
       return;
     }

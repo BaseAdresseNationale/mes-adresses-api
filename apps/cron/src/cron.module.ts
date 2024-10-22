@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -51,6 +51,7 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     DetectConflictTask,
     RemoveSoftDeleteBalTask,
     RemoveDemoBalTask,
+    Logger,
   ],
 })
 export class CronModule {}

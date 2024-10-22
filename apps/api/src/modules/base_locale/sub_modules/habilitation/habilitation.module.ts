@@ -1,4 +1,4 @@
-import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
+import { Module, MiddlewareConsumer, forwardRef, Logger } from '@nestjs/common';
 
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
 
@@ -14,7 +14,7 @@ import { PublicationModule } from '@/shared/modules/publication/publication.modu
     forwardRef(() => BaseLocaleModule),
     PublicationModule,
   ],
-  providers: [HabilitationService, BaseLocaleMiddleware],
+  providers: [HabilitationService, BaseLocaleMiddleware, Logger],
   controllers: [HabilitationController],
   exports: [HabilitationService],
 })
