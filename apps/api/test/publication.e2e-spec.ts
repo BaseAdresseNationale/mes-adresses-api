@@ -23,17 +23,18 @@ import {
 import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
 import {
   Habilitation,
-  StatusHabiliation,
+  StatusHabilitationEnum,
 } from '@/shared/modules/api_depot/types/habilitation.type';
 import {
   Revision,
-  StatusRevision,
+  StatusRevisionEnum,
 } from '@/shared/modules/api_depot/types/revision.type';
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
+import { TypeFileEnum } from '@/shared/modules/api_depot/types/file.type';
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
@@ -197,8 +198,8 @@ describe('PUBLICATION MODULE', () => {
       });
       // MOCK AXIOS
       const habilitation: Habilitation = {
-        _id: habilitationId,
-        status: StatusHabiliation.ACCEPTED,
+        id: habilitationId,
+        status: StatusHabilitationEnum.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
@@ -209,9 +210,9 @@ describe('PUBLICATION MODULE', () => {
 
       const revisionId = new ObjectId().toHexString();
       const revision: Revision = {
-        _id: revisionId,
+        id: revisionId,
         codeCommune: commune,
-        status: StatusRevision.PENDING,
+        status: StatusRevisionEnum.PENDING,
         ready: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -234,9 +235,9 @@ describe('PUBLICATION MODULE', () => {
         });
 
       const publishedRevision: Revision = {
-        _id: revisionId,
+        id: revisionId,
         codeCommune: commune,
-        status: StatusRevision.PUBLISHED,
+        status: StatusRevisionEnum.PUBLISHED,
         ready: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -275,9 +276,9 @@ describe('PUBLICATION MODULE', () => {
       // REVSION
       const revisionId = new ObjectId().toHexString();
       const revision: Revision = {
-        _id: revisionId,
+        id: revisionId,
         codeCommune: commune,
-        status: StatusRevision.PENDING,
+        status: StatusRevisionEnum.PENDING,
         ready: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -287,7 +288,7 @@ describe('PUBLICATION MODULE', () => {
         },
         files: [
           {
-            type: 'bal',
+            type: TypeFileEnum.BAL,
             hash: '',
           },
         ],
@@ -331,8 +332,8 @@ describe('PUBLICATION MODULE', () => {
         .reply(200, revision);
 
       const habilitation: Habilitation = {
-        _id: habilitationId,
-        status: StatusHabiliation.ACCEPTED,
+        id: habilitationId,
+        status: StatusHabilitationEnum.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
@@ -355,9 +356,9 @@ describe('PUBLICATION MODULE', () => {
         });
 
       const publishedRevision: Revision = {
-        _id: revisionId,
+        id: revisionId,
         codeCommune: commune,
-        status: StatusRevision.PUBLISHED,
+        status: StatusRevisionEnum.PUBLISHED,
         ready: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -396,9 +397,9 @@ describe('PUBLICATION MODULE', () => {
       // REVSION
       const revisionId = new ObjectId().toHexString();
       const revision: Revision = {
-        _id: revisionId,
+        id: revisionId,
         codeCommune: commune,
-        status: StatusRevision.PENDING,
+        status: StatusRevisionEnum.PENDING,
         ready: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -408,7 +409,7 @@ describe('PUBLICATION MODULE', () => {
         },
         files: [
           {
-            type: 'bal',
+            type: TypeFileEnum.BAL,
             hash: '0c5d808a7e5612c9467607c574cb2317a76fe04d493efbd61b55a31bbd194227',
           },
         ],
@@ -446,8 +447,8 @@ describe('PUBLICATION MODULE', () => {
         .reply(200, revision);
 
       const habilitation: Habilitation = {
-        _id: habilitationId,
-        status: StatusHabiliation.ACCEPTED,
+        id: habilitationId,
+        status: StatusHabilitationEnum.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
@@ -537,8 +538,8 @@ describe('PUBLICATION MODULE', () => {
 
       // MOCK AXIOS
       const habilitation: Habilitation = {
-        _id: habilitationId,
-        status: StatusHabiliation.PENDING,
+        id: habilitationId,
+        status: StatusHabilitationEnum.PENDING,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
@@ -574,8 +575,8 @@ describe('PUBLICATION MODULE', () => {
 
       // MOCK AXIOS
       const habilitation: Habilitation = {
-        _id: habilitationId,
-        status: StatusHabiliation.ACCEPTED,
+        id: habilitationId,
+        status: StatusHabilitationEnum.ACCEPTED,
         expiresAt: sub(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
@@ -611,8 +612,8 @@ describe('PUBLICATION MODULE', () => {
 
       // MOCK AXIOS
       const habilitation: Habilitation = {
-        _id: habilitationId,
-        status: StatusHabiliation.ACCEPTED,
+        id: habilitationId,
+        status: StatusHabilitationEnum.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',

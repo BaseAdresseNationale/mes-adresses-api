@@ -5,8 +5,8 @@ export enum TypeFileEnum {
 export type File = {
   id?: string;
   revisionId?: string;
-  size: number;
-  hash: string;
-  type: TypeFileEnum;
-  createdAt: Date;
+  size?: number;
+  hash?: string;
+  type?: TypeFileEnum;
+  createdAt?: Date;
 };

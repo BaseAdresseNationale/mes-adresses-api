@@ -30,12 +30,10 @@ export type Revision = {
   ready: boolean;
   current: boolean;
   status: StatusRevisionEnum;
-  fileId?: string;
-  fileHash: string;
-  context: Context;
-  validation: Validation | null;
-  habilitation: Habilitation | null;
-  publishedAt: Date;
+  context?: Context;
+  validation?: Validation | null;
+  habilitation?: Habilitation | null;
+  publishedAt?: Date;
   files?: File[];
   createdAt: Date;
   updatedAt: Date;
