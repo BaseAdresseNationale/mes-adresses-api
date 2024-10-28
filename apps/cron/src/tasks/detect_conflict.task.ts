@@ -89,7 +89,7 @@ export class DetectConflictTask implements Task {
     }
 
     for (const baseLocale of basesLocales) {
-      if (currentRevision._id === baseLocale.sync.lastUploadedRevisionId) {
+      if (currentRevision.id === baseLocale.sync.lastUploadedRevisionId) {
         await this.basesLocalesRepository
           .createQueryBuilder('bases_locales')
           .update(BaseLocale)

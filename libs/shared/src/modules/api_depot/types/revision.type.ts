@@ -1,44 +1,42 @@
-export type ValidationRevision = {
-  valid?: boolean;
+import { File } from './file.type';
+import { Habilitation } from './habilitation.type';
+import { ParseError } from './validator.types';
+
+export enum StatusRevisionEnum {
+  PENDING = 'pending',
+  PUBLISHED = 'published',
+}
+
+export type Validation = {
+  valid: boolean;
   validatorVersion?: string;
+  parseErrors?: ParseError[];
   errors?: string[];
   warnings?: string[];
   infos?: string[];
   rowsCount?: number;
 };
 
-export type ContextRevision = {
-  nomComplet: string;
-  organisation: string;
-  extras: any;
-};
-
-export enum StatusRevision {
-  PENDING = 'pending',
-  PUBLISHED = 'published',
-}
-
-export type FileRevision = {
-  _id?: string;
-  revisionId?: string;
-  name?: string;
-  type: string;
-  size?: number;
-  hash: string;
-  createdAt?: Date;
+export type Context = {
+  nomComplet?: string;
+  organisation?: string;
+  extras?: Record<string, any> | null;
 };
 
 export type Revision = {
-  _id: string;
+  id?: string;
+  clientId?: string;
   codeCommune: string;
-  context?: ContextRevision;
-  validation?: ValidationRevision;
-  client?: string;
-  status?: StatusRevision;
   ready: boolean;
-  files?: FileRevision[];
+  current: boolean;
+  status: StatusRevisionEnum;
+  fileId?: string;
+  fileHash: string;
+  context: Context;
+  validation: Validation | null;
+  habilitation: Habilitation | null;
+  publishedAt: Date;
+  files?: File[];
   createdAt: Date;
   updatedAt: Date;
-  publishedAt?: Date;
-  current: boolean;
 };

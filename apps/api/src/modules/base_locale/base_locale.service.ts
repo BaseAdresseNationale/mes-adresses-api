@@ -449,7 +449,7 @@ export class BaseLocaleService {
   ): Promise<void> {
     await this.basesLocalesRepository.update(
       { id: baseLocale.id },
-      { habilitationId: habilitation._id },
+      { habilitationId: habilitation.id },
     );
   }
 

@@ -150,8 +150,8 @@ export class ApiDepotService {
     habilitationId: string,
   ) {
     const revision: Revision = await this.createRevision(codeCommune, balId);
-    await this.uploadFileRevision(revision._id, balFile);
-    const computedRevision: Revision = await this.computeRevision(revision._id);
+    await this.uploadFileRevision(revision.id, balFile);
+    const computedRevision: Revision = await this.computeRevision(revision.id);
 
     if (!computedRevision.validation.valid) {
       this.logger.warn(
@@ -164,7 +164,7 @@ export class ApiDepotService {
       );
     }
     const publishedRevision: Revision = await this.publishRevision(
-      computedRevision._id,
+      computedRevision.id,
       habilitationId,
     );
     return publishedRevision;

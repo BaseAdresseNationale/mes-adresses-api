@@ -1,30 +1,44 @@
-export type EmailStrategy = {
-  pinCode: string;
-  type: 'email';
-  pinCodeExpiration: Date;
-  remainingAttempts: number;
-  createdAt: Date;
-};
-
-export type FranceConnectStrategy = {
-  type: 'franceconnect';
-};
-
-export enum StatusHabiliation {
-  PENDING = 'pending',
+export enum StatusHabilitationEnum {
   ACCEPTED = 'accepted',
+  PENDING = 'pending',
   REJECTED = 'rejected',
 }
 
+export enum TypeStrategyEnum {
+  EMAIL = 'email',
+  FRANCECONNECT = 'franceconnect',
+  INTERNAL = 'internal',
+}
+
+export type Mandat = {
+  nomMarital: string;
+  nomNaissance: string;
+  prenom: string;
+};
+
+export type Strategy = {
+  type: TypeStrategyEnum;
+  // EMAIL
+  pinCode?: string;
+  pinCodeExpiration?: Date | null;
+  createdAt?: Date | null;
+  remainingAttempts?: number;
+  // FRANCECONNECT
+  mandat?: Mandat;
+  authenticationError?: string;
+};
+
 export type Habilitation = {
-  _id: string;
+  id?: string;
+  clientId?: string;
   codeCommune: string;
   emailCommune: string;
   franceconnectAuthenticationUrl?: string;
-  strategy?: EmailStrategy | FranceConnectStrategy;
-  client?: string;
-  status: StatusHabiliation;
+  status: StatusHabilitationEnum;
+  strategy?: Strategy | null;
+  expiresAt?: Date;
+  acceptedAt?: Date;
+  rejectedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
-  expiresAt?: Date;
 };
