@@ -34,12 +34,11 @@ import {
 import {
   Revision,
   StatusRevisionEnum,
-} from '@/shared/modules/api_depot/types/revision.type';
-import { add, sub } from 'date-fns';
-import {
   Habilitation,
   StatusHabilitationEnum,
-} from '@/shared/modules/api_depot/types/habilitation.type';
+  TypeFileEnum,
+} from '@/shared/modules/api_depot/api-depot.types';
+import { add, sub } from 'date-fns';
 import { SyncOutdatedTask } from '../src/tasks/sync_outdated.task';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
@@ -48,7 +47,6 @@ import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
 import { Cache } from '@/shared/entities/cache.entity';
-import { TypeFileEnum } from '@/shared/modules/api_depot/types/file.type';
 
 @Global()
 @Module({
@@ -248,8 +246,8 @@ describe('TASK MODULE', () => {
       id: revisionId,
       codeCommune: commune,
       status: StatusRevisionEnum.PUBLISHED,
-      ready: true,
-      current: true,
+      isReady: true,
+      isCurrent: true,
       updatedAt: new Date('2000-01-01'),
       createdAt: new Date('2000-01-01'),
     };
@@ -309,10 +307,10 @@ describe('TASK MODULE', () => {
       id: revisionId,
       codeCommune: commune,
       status: StatusRevisionEnum.PENDING,
-      ready: false,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
@@ -382,10 +380,10 @@ describe('TASK MODULE', () => {
       id: revisionId,
       codeCommune: commune,
       status: StatusRevisionEnum.PUBLISHED,
-      ready: true,
+      isReady: true,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: true,
+      isCurrent: true,
       validation: {
         valid: true,
       },
@@ -417,10 +415,10 @@ describe('TASK MODULE', () => {
       id: revisionId.toString(),
       codeCommune: commune,
       status: StatusRevisionEnum.PENDING,
-      ready: false,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
@@ -491,10 +489,10 @@ describe('TASK MODULE', () => {
       id: revisionId.toString(),
       codeCommune: commune,
       status: StatusRevisionEnum.PENDING,
-      ready: false,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
@@ -539,10 +537,10 @@ describe('TASK MODULE', () => {
       id: revisionId.toString(),
       codeCommune: commune,
       status: StatusRevisionEnum.PENDING,
-      ready: false,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
@@ -598,10 +596,10 @@ describe('TASK MODULE', () => {
       id: revisionId.toString(),
       codeCommune: commune,
       status: StatusRevisionEnum.PENDING,
-      ready: false,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
@@ -657,10 +655,10 @@ describe('TASK MODULE', () => {
       id: revisionId.toString(),
       codeCommune: commune,
       status: StatusRevisionEnum.PENDING,
-      ready: false,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },

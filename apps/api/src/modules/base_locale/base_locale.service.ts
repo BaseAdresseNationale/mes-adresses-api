@@ -28,7 +28,7 @@ import {
   BaseLocale,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
-import { Habilitation } from '@/shared/modules/api_depot/types/habilitation.type';
+import { Habilitation } from '@/shared/modules/api_depot/api-depot.types';
 import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 import {
   getApiRecoveryUrl,

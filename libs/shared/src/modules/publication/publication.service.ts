@@ -6,10 +6,11 @@ import { ConfigService } from '@nestjs/config';
 import * as hasha from 'hasha';
 
 import {
+  Revision,
   Habilitation,
   StatusHabilitationEnum,
-} from '@/shared/modules/api_depot/types/habilitation.type';
-import { Revision } from '@/shared/modules/api_depot/types/revision.type';
+  TypeFileEnum,
+} from '@/shared/modules/api_depot/api-depot.types';
 import {
   BaseLocale,
   StatusBaseLocalEnum,
@@ -20,7 +21,6 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
 import { getApiUrl, getEditorUrl } from '@/shared/utils/mailer.utils';
-import { TypeFileEnum } from '../api_depot/types/file.type';
 
 @Injectable()
 export class PublicationService {

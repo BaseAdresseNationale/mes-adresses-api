@@ -24,7 +24,7 @@ import axios from 'axios';
 import {
   Habilitation,
   StatusHabilitationEnum,
-} from '@/shared/modules/api_depot/types/habilitation.type';
+} from '@/shared/modules/api_depot/api-depot.types';
 import { add } from 'date-fns';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { Repository } from 'typeorm';

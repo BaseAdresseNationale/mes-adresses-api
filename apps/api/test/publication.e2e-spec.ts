@@ -22,19 +22,17 @@ import {
 } from '@/shared/entities/base_locale.entity';
 import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
 import {
-  Habilitation,
-  StatusHabilitationEnum,
-} from '@/shared/modules/api_depot/types/habilitation.type';
-import {
   Revision,
   StatusRevisionEnum,
-} from '@/shared/modules/api_depot/types/revision.type';
+  TypeFileEnum,
+  Habilitation,
+  StatusHabilitationEnum,
+} from '@/shared/modules/api_depot/api-depot.types';
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
-import { TypeFileEnum } from '@/shared/modules/api_depot/types/file.type';
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
@@ -213,10 +211,10 @@ describe('PUBLICATION MODULE', () => {
         id: revisionId,
         codeCommune: commune,
         status: StatusRevisionEnum.PENDING,
-        ready: false,
+        isReady: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-        current: false,
+        isCurrent: false,
         validation: {
           valid: true,
         },
@@ -238,10 +236,10 @@ describe('PUBLICATION MODULE', () => {
         id: revisionId,
         codeCommune: commune,
         status: StatusRevisionEnum.PUBLISHED,
-        ready: true,
+        isReady: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-        current: true,
+        isCurrent: true,
         validation: {
           valid: true,
         },
@@ -279,10 +277,10 @@ describe('PUBLICATION MODULE', () => {
         id: revisionId,
         codeCommune: commune,
         status: StatusRevisionEnum.PENDING,
-        ready: false,
+        isReady: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-        current: false,
+        isCurrent: false,
         validation: {
           valid: true,
         },
@@ -359,10 +357,10 @@ describe('PUBLICATION MODULE', () => {
         id: revisionId,
         codeCommune: commune,
         status: StatusRevisionEnum.PUBLISHED,
-        ready: true,
+        isReady: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-        current: true,
+        isCurrent: true,
         validation: {
           valid: true,
         },
@@ -400,10 +398,10 @@ describe('PUBLICATION MODULE', () => {
         id: revisionId,
         codeCommune: commune,
         status: StatusRevisionEnum.PENDING,
-        ready: false,
+        isReady: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-        current: false,
+        isCurrent: false,
         validation: {
           valid: true,
         },

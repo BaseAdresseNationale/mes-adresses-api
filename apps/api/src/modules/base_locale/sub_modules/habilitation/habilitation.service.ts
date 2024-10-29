@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import {
   Habilitation,
   StatusHabilitationEnum,
-} from '@/shared/modules/api_depot/types/habilitation.type';
+} from '@/shared/modules/api_depot/api-depot.types';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { BaseLocaleService } from '../../base_locale.service';
