@@ -74,6 +74,7 @@ export class Position {
   @ApiProperty({ type: () => Toponyme })
   @ManyToOne(() => Toponyme, (toponyme) => toponyme.positions, {
     onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
   })
   @JoinColumn({ name: 'toponyme_id' })
   toponyme?: Toponyme;
@@ -81,6 +82,7 @@ export class Position {
   @ApiProperty({ type: () => Numero })
   @ManyToOne(() => Numero, (numero) => numero.positions, {
     onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
   })
   @JoinColumn({ name: 'numero_id' })
   numero?: Numero;
