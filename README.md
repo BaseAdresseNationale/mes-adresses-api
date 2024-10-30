@@ -11,7 +11,7 @@ https://adresse-data-gouv-fr.gitbook.io/bal/mes-adresses
 
 ## Pré-requis
 
-- [Node.js](https://nodejs.org) 18+
+- [Node.js](https://nodejs.org) 22
 - [yarn](https://www.yarnpkg.com)
 - [PostgresSQL](https://www.postgresql.org/)
 
