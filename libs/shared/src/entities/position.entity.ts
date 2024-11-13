@@ -12,6 +12,8 @@ import {
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
 import { ObjectId } from 'mongodb';
+import { Validate } from 'class-validator';
+import { PointValidator } from '../validators/coord.validator';
 
 export enum PositionTypeEnum {
   ENTREE = 'entrée',
@@ -64,6 +66,7 @@ export class Position {
 
   @Index('IDX_positions_point', { spatial: true })
   @ApiProperty()
+  @Validate(PointValidator)
   @Column('geometry', {
     nullable: false,
     spatialFeatureType: 'Point',

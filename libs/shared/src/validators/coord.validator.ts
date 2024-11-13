@@ -2,7 +2,9 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import * as proj from '@etalab/project-legal';
 import { getLabel, readValue } from '@ban-team/validateur-bal';
+import { Point } from '@turf/turf';
 
 async function validateurBAL(value, label) {
   const { errors } = await readValue(label, value);
@@ -12,22 +14,24 @@ async function validateurBAL(value, label) {
   };
 }
 
+function harmlessProj(coordinates: number[]) {
+  try {
+    return proj(coordinates);
+  } catch {}
+}
+
 @ValidatorConstraint({ name: 'pointCoord', async: true })
 export class PointValidator implements ValidatorConstraintInterface {
-  async validate(coordinates: any) {
-    if (Array.isArray(coordinates) && coordinates.length === 2) {
-      const [lat, long] = coordinates;
-      if (typeof lat !== 'number' || typeof long !== 'number') {
+  async validate(point: Point) {
+    if (Array.isArray(point.coordinates) && point.coordinates.length === 2) {
+      if (
+        typeof point.coordinates[0] !== 'number' ||
+        typeof point.coordinates[0] !== 'number'
+      ) {
         return false;
       }
-
-      const latResults = await validateurBAL(lat.toString(), 'lat');
-      if (latResults.errors.length > 0) {
-        return false;
-      }
-
-      const longResults = await validateurBAL(long.toString(), 'long');
-      if (longResults.errors.length > 0) {
+      const projectedCoordInMeters = harmlessProj(point.coordinates);
+      if (!projectedCoordInMeters) {
         return false;
       }
     } else {
@@ -38,7 +42,7 @@ export class PointValidator implements ValidatorConstraintInterface {
   }
 
   defaultMessage() {
-    return 'Les coordonnées du point ne sont pas valide';
+    return " Les coordonnées du point ne sont pas valides. Contactez nous sur adresse@data.gouv.fr avec l'objet 'Mauvaise positions' pour nous aider à corriger le bug";
   }
 }
 
