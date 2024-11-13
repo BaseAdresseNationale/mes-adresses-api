@@ -553,7 +553,7 @@ export class BaseLocaleService {
     return updatedBaseLocale;
   }
 
-  async findDistinct(field: string): Promise<string[]> {
+  async findDistinct(field: string): Promise<string[][]> {
     const distinctValues = await this.basesLocalesRepository
       .createQueryBuilder()
       .select(`DISTINCT ${field}`)
