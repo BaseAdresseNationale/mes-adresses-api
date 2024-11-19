@@ -26,7 +26,7 @@ export class PointValidator implements ValidatorConstraintInterface {
     if (Array.isArray(point.coordinates) && point.coordinates.length === 2) {
       if (
         typeof point.coordinates[0] !== 'number' ||
-        typeof point.coordinates[0] !== 'number'
+        typeof point.coordinates[1] !== 'number'
       ) {
         return false;
       }
