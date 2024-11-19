@@ -31,10 +31,12 @@ export class AdminController {
   @ApiBearerAuth('admin-token')
   @UseGuards(SuperAdminGuard)
   async downloadEmailCsv(@Res() res: Response) {
-    const emails: string[] =
+    const emails: string[][] =
       await this.baseLocaleService.findDistinct('emails');
-
-    const flattenEmails = emails.reduce((acc, email) => [...acc, ...email], []);
+    const flattenEmails = emails.reduce(
+      (acc, email) => [...acc, ...(email || [])],
+      [],
+    );
     const uniqueEmails = [...new Set(flattenEmails)];
 
     const csvFile = await getStream(
