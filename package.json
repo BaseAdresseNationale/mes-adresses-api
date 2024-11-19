@@ -77,7 +77,6 @@
     "into-stream": "^6.0.0",
     "lodash": "^4.17.21",
     "mongodb": "^6.1.0",
-    "mysql2": "^3.9.7",
     "nodemailer": "^6.9.9",
     "pg": "^8.11.5",
     "pumpify": "^2.0.1",
