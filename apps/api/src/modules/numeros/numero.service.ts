@@ -93,7 +93,7 @@ export class NumeroService {
       voieId: string;
       nbNumeros: string;
       nbNumerosCertifies: string;
-      comments: string[];
+      commentNumeros: string[];
     }[]
   > {
     const query = this.numerosRepository
@@ -106,7 +106,7 @@ export class NumeroService {
       )
       .addSelect(
         `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
-        'comments',
+        'commentNumeros',
       )
       .where('numeros.bal_id = :balId', { balId })
       .groupBy('numeros.voie_id');

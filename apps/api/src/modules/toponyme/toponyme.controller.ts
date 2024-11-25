@@ -22,7 +22,6 @@ import {
 } from '@nestjs/swagger';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
-import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
@@ -31,6 +30,7 @@ import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dt
 import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { Numero } from '@/shared/entities/numero.entity';
+import { filterComments } from '@/shared/utils/filter.utils';
 
 @ApiTags('toponymes')
 @Controller('toponymes')
@@ -133,7 +133,7 @@ export class ToponymeController {
       null,
       { voie: true },
     );
-    const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
+    const result = numeros.map((n) => filterComments(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
   }
 }

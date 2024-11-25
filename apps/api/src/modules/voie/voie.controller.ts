@@ -25,7 +25,6 @@ import {
 
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
-import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
@@ -36,6 +35,7 @@ import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
+import { filterComments } from '@/shared/utils/filter.utils';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -52,9 +52,9 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoieDTO })
   @ApiBearerAuth('admin-token')
   async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const voieExtended: ExtendedVoieDTO = await this.voieService.extendVoie(
-      req.voie,
-    );
+    const voie: Voie = filterComments(req.voie, !req.isAdmin);
+    const voieExtended: ExtendedVoieDTO =
+      await this.voieService.extendVoie(voie);
     res.status(HttpStatus.OK).json(voieExtended);
   }
 
@@ -141,7 +141,7 @@ export class VoieController {
         },
       },
     );
-    const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
+    const result = numeros.map((n) => filterComments(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
   }
 

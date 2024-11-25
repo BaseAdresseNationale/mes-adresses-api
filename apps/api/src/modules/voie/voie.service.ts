@@ -142,6 +142,7 @@ export class VoieService {
       nomAlt: createVoieDto.nomAlt ? cleanNomAlt(createVoieDto.nomAlt) : null,
       centroid: null,
       bbox: null,
+      comment: createVoieDto.comment,
     };
     // Calculer le centroid si la trace et le type de numerotation est metrique
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
@@ -342,7 +343,7 @@ export class VoieService {
       voieId: string;
       nbNumeros: string;
       nbNumerosCertifies: string;
-      comments: string[];
+      commentNumeros: string[];
     },
   ): ExtendedVoieDTO {
     const nbNumeros: number = Number(voieMeta?.nbNumeros) || 0;
@@ -353,7 +354,7 @@ export class VoieService {
       nbNumeros,
       nbNumerosCertifies,
       isAllCertified: nbNumeros > 0 ? nbNumeros === nbNumerosCertifies : false,
-      comments: voieMeta?.comments || [],
+      commentNumeros: voieMeta?.commentNumeros || [],
     };
   }
 
@@ -372,7 +373,7 @@ export class VoieService {
       nbNumerosCertifies: nbNumerosCertifies,
       isAllCertified:
         numeros.length > 0 && numeros.length === nbNumerosCertifies,
-      comments: numeros
+      commentNumeros: numeros
         .filter(
           (n) =>
             n.comment !== undefined && n.comment !== null && n.comment !== '',

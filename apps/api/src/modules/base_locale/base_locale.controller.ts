@@ -68,6 +68,7 @@ import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto
 import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
 import { Numero } from '@/shared/entities/numero.entity';
+import { filterComments } from '@/shared/utils/filter.utils';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -595,10 +596,16 @@ export class BaseLocaleController {
     const voies: Voie[] = await this.voieService.findMany({
       balId: req.baseLocale.id,
     });
+
+    const voiesFiltered: Voie[] = voies.map((v) =>
+      filterComments(v, !req.isAdmin),
+    );
+
     const extendedVoie: ExtendedVoieDTO[] = await this.voieService.extendVoies(
       req.baseLocale.id,
-      voies,
+      voiesFiltered,
     );
+
     res.status(HttpStatus.OK).json(extendedVoie);
   }
 
