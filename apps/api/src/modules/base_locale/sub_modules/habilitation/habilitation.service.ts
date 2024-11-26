@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { ObjectId } from 'mongodb';
 
 import {
   Habilitation,
@@ -6,7 +7,6 @@ import {
 } from '@/shared/modules/api_depot/types/habilitation.type';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
-
 import { BaseLocaleService } from '../../base_locale.service';
 
 @Injectable()
@@ -14,15 +14,57 @@ export class HabilitationService {
   constructor(
     private readonly baseLocaleService: BaseLocaleService,
     private readonly apiDepotService: ApiDepotService,
+    private readonly logger: Logger,
   ) {}
 
   async findOne(habilitationId: string): Promise<Habilitation> {
-    return this.apiDepotService.findOneHabiliation(habilitationId);
+    if (!ObjectId.isValid(habilitationId)) {
+      throw new HttpException(
+        'L’identifiant de l’habilitation est invalide',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      return await this.apiDepotService.findOneHabiliation(habilitationId);
+    } catch (error) {
+      this.logger.error(
+        `Impossible de trouver l'habilitation ${habilitationId}`,
+        error.response?.data || 'No server response',
+        HabilitationService.name,
+      );
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
   }
 
   async isValid(habilitationId: string): Promise<boolean> {
-    const habilitation: Habilitation =
-      await this.apiDepotService.findOneHabiliation(habilitationId);
+    let habilitation: Habilitation;
+
+    if (!ObjectId.isValid(habilitationId)) {
+      throw new HttpException(
+        'L’identifiant de l’habilitation est invalide',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      habilitation =
+        await this.apiDepotService.findOneHabiliation(habilitationId);
+    } catch (error) {
+      this.logger.error(
+        `Impossible de trouver l'habilitation ${habilitationId}`,
+        error.response?.data || 'No server response',
+        HabilitationService.name,
+      );
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+
     // On verifie que l'habilitation est valide
     if (habilitation.status !== StatusHabiliation.ACCEPTED) {
       return false;
@@ -51,9 +93,21 @@ export class HabilitationService {
         );
       }
     }
-
-    const habilitation: Habilitation =
-      await this.apiDepotService.createOneHabiliation(baseLocale);
+    let habilitation: Habilitation;
+    try {
+      habilitation =
+        await this.apiDepotService.createOneHabiliation(baseLocale);
+    } catch (error) {
+      this.logger.error(
+        `Impossible de créer une habilitation pour la commune ${baseLocale.commune}`,
+        error.response?.data || 'No server response',
+        HabilitationService.name,
+      );
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
 
     await this.baseLocaleService.updateHabilitation(baseLocale, habilitation);
 
@@ -72,8 +126,15 @@ export class HabilitationService {
     try {
       await this.apiDepotService.sendPinCodeHabiliation(habilitationId);
     } catch (error) {
-      const { statusCode, message } = error.response.data;
-      throw new HttpException(message, statusCode);
+      this.logger.error(
+        `Impossible d'envoyer le code pour l'habilitation ${habilitationId}`,
+        error.response?.data || 'No server response',
+        HabilitationService.name,
+      );
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
     }
   }
 
@@ -94,8 +155,15 @@ export class HabilitationService {
       );
       return data;
     } catch (error) {
-      const { statusCode, message } = error.response.data;
-      throw new HttpException(message, statusCode);
+      this.logger.error(
+        `Impossible de valider le code pour l'habilitation ${habilitationId}`,
+        error.response?.data || 'No server response',
+        HabilitationService.name,
+      );
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
     }
   }
 }

@@ -16,6 +16,7 @@ import {
   Point,
   Repository,
   UpdateResult,
+  Polygon,
 } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { pick, chunk } from 'lodash';
@@ -87,6 +88,31 @@ export class NumeroService {
     });
   }
 
+  async countVoiesNumeroAndCertifie(balId: string): Promise<
+    {
+      voieId: string;
+      nbNumeros: string;
+      nbNumerosCertifies: string;
+      comments: string[];
+    }[]
+  > {
+    const query = this.numerosRepository
+      .createQueryBuilder('numeros')
+      .select('numeros.voie_id', 'voieId')
+      .addSelect('count(numeros.id)', 'nbNumeros')
+      .addSelect(
+        'count(CASE WHEN numeros.certifie THEN true END)',
+        'nbNumerosCertifies',
+      )
+      .addSelect(
+        `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
+        'comments',
+      )
+      .where('numeros.bal_id = :balId', { balId })
+      .groupBy('numeros.voie_id');
+    return query.getRawMany();
+  }
+
   async countBalNumeroAndCertifie(balId: string): Promise<{
     nbNumeros: string;
     nbNumerosCertifies: string;
@@ -153,6 +179,24 @@ export class NumeroService {
           xmax: bbox[2],
           ymax: bbox[3],
         },
+      );
+    return query.getMany();
+  }
+
+  async findManyWherePositionInPolygon(
+    balId: string,
+    polygon: number[][],
+  ): Promise<Numero[]> {
+    const linestring: string = polygon
+      .map((arr) => `${arr[0]} ${arr[1]}`)
+      .join(',');
+    // Requète postgis qui permet de récupèré les numeros dans un polygon simple
+    const query = this.numerosRepository
+      .createQueryBuilder('numeros')
+      .leftJoinAndSelect('numeros.positions', 'positions')
+      .where('numeros.balId = :balId', { balId })
+      .andWhere(
+        `ST_Contains(ST_Polygon('LINESTRING(${linestring})'::geometry, 4326), positions.point)`,
       );
     return query.getMany();
   }
@@ -270,7 +314,7 @@ export class NumeroService {
     const numeroCreated: Numero =
       await this.numerosRepository.save(entityToSave);
     // On calcule le centroid de la voie
-    await this.voieService.calcCentroid(voie.id);
+    await this.voieService.calcCentroidAndBbox(voie.id);
     // On met a jour le updatedAt de la Bal
     await this.baseLocaleService.touch(numero.balId);
     return numeroCreated;
@@ -312,11 +356,11 @@ export class NumeroService {
     // Si le numero a été modifié
     if (updateNumeroDto.voieId) {
       // On recalcule le centroid de l'ancienne et la nouvelle voie si le numero a changé de voie
-      await this.voieService.calcCentroid(numero.voieId);
-      await this.voieService.calcCentroid(numeroUpdated.voieId);
+      await this.voieService.calcCentroidAndBbox(numero.voieId);
+      await this.voieService.calcCentroidAndBbox(numeroUpdated.voieId);
     } else if (updateNumeroDto.positions) {
       // On recalcule le centroid de la voie si les positions du numeros on changé
-      await this.voieService.calcCentroid(numero.voieId);
+      await this.voieService.calcCentroidAndBbox(numero.voieId);
     }
     // On met a jour le updatedAt de la voie
     await this.voieService.touch(numero.voieId);
@@ -353,7 +397,7 @@ export class NumeroService {
     // Si le numero a été suprimé
     if (affected > 0) {
       // On recalcule le centroid de la voie du numéro
-      await this.voieService.calcCentroid(numero.voieId);
+      await this.voieService.calcCentroidAndBbox(numero.voieId);
       // On met a jour le updatedAt de la bal, la voie et le toponyme
       await this.touch(numero);
     }
@@ -446,9 +490,9 @@ export class NumeroService {
         await this.voieService.touch(changes.voieId);
         // On recalcule tous les centroid des voies
         await Promise.all(
-          voieIds.map((voieId) => this.voieService.calcCentroid(voieId)),
+          voieIds.map((voieId) => this.voieService.calcCentroidAndBbox(voieId)),
         );
-        await this.voieService.calcCentroid(changes.voieId);
+        await this.voieService.calcCentroidAndBbox(changes.voieId);
       } else {
         // Sinon on met a jour les updatedAt des voies des numeros
         await Promise.all(
@@ -494,7 +538,7 @@ export class NumeroService {
       await this.baseLocaleService.touch(baseLocale.id);
       // On met a jour les centroid des voies des numeros archivé
       await Promise.all(
-        voieIds.map((voidId) => this.voieService.calcCentroid(voidId)),
+        voieIds.map((voidId) => this.voieService.calcCentroidAndBbox(voidId)),
       );
       // Si les numeros avaient des toponyme, on met a jour leurs updatedAt
       if (toponymeIds.length > 0) {
@@ -544,14 +588,30 @@ export class NumeroService {
     }
   }
 
-  public async findCentroid(voieId: string): Promise<Point> {
-    const res: { st_asgeojson: string }[] = await this.numerosRepository
-      .createQueryBuilder('numeros')
-      .select('ST_AsGeoJSON(st_centroid(st_union(positions.point)))')
-      .leftJoin('numeros.positions', 'positions')
-      .where('numeros.voie_id = :voieId', { voieId })
-      .execute();
-    return JSON.parse(res[0].st_asgeojson);
+  public async findCentroidAndBboxVoie(
+    voieId: string,
+  ): Promise<{ centroid: Point; polygon: Polygon } | undefined> {
+    const res: { centroid: string; polygon: string } =
+      await this.numerosRepository
+        .createQueryBuilder('numeros')
+        .select(
+          'ST_AsGeoJSON(st_centroid(st_union(positions.point)))',
+          'centroid',
+        )
+        .addSelect(
+          'ST_AsGeoJSON(ST_Extent(positions.point::geometry))',
+          'polygon',
+        )
+        .leftJoin('numeros.positions', 'positions')
+        .where('numeros.voie_id = :voieId', { voieId })
+        .groupBy('numeros.voie_id')
+        .getRawOne();
+    return (
+      res && {
+        centroid: JSON.parse(res.centroid),
+        polygon: JSON.parse(res.polygon),
+      }
+    );
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {

@@ -66,6 +66,8 @@ import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
 import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
+import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
+import { Numero } from '@/shared/entities/numero.entity';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -463,6 +465,29 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(allDeleted);
   }
 
+  @Put(':baseLocaleId/numeros')
+  @ApiOperation({
+    summary: 'Search numero',
+    operationId: 'searchNumeros',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: SearchNumeroDTO, required: true })
+  @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async searchNumeros(
+    @Req() req: CustomRequest,
+    @Body() searchNumeroDTO: SearchNumeroDTO,
+    @Res() res: Response,
+  ) {
+    const result: Numero[] =
+      await this.numeroService.findManyWherePositionInPolygon(
+        req.baseLocale.id,
+        searchNumeroDTO.polygon,
+      );
+    res.status(HttpStatus.OK).json(result);
+  }
+
   @Put(':baseLocaleId/numeros/uncertify-all')
   @ApiOperation({
     summary: 'Uncertify all numeros in Bal',
@@ -570,8 +595,10 @@ export class BaseLocaleController {
     const voies: Voie[] = await this.voieService.findMany({
       balId: req.baseLocale.id,
     });
-    const extendedVoie: ExtendedVoieDTO[] =
-      await this.voieService.extendVoies(voies);
+    const extendedVoie: ExtendedVoieDTO[] = await this.voieService.extendVoies(
+      req.baseLocale.id,
+      voies,
+    );
     res.status(HttpStatus.OK).json(extendedVoie);
   }
 

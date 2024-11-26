@@ -12,23 +12,17 @@ import {
   FindOptionsSelect,
   FindOptionsWhere,
   In,
-  Point,
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { groupBy } from 'lodash';
+import { keyBy } from 'lodash';
 import * as turf from '@turf/turf';
-import bbox from '@turf/bbox';
-import { Feature as FeatureTurf, BBox as BboxTurf } from '@turf/helpers';
 import { v4 as uuid } from 'uuid';
 
 import {
   BaseLocale,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
-import { extendWithNumeros } from '@/shared/utils/numero.utils';
-import { Position } from '@/shared/entities/position.entity';
-import { Numero } from '@/shared/entities/numero.entity';
 import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 
@@ -148,6 +142,7 @@ export class VoieService {
       trace: createVoieDto.trace || null,
       nomAlt: createVoieDto.nomAlt ? cleanNomAlt(createVoieDto.nomAlt) : null,
       centroid: null,
+      bbox: null,
     };
     // Calculer le centroid si la trace et le type de numerotation est metrique
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
@@ -219,7 +214,7 @@ export class VoieService {
         updateVoieDto.trace &&
         voieUpdated.typeNumerotation === TypeNumerotationEnum.METRIQUE
       ) {
-        await this.calcCentroidWithTrace(voieUpdated);
+        await this.calcCentroidAndBboxWithTrace(voieUpdated);
       }
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(
@@ -277,7 +272,7 @@ export class VoieService {
         id: In(numerosIds),
       });
       // On met a jour le centroid de la voie
-      this.calcCentroid(voie.id);
+      this.calcCentroidAndBbox(voie.id);
     }
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
@@ -330,19 +325,38 @@ export class VoieService {
     return toponyme;
   }
 
-  public async extendVoies(voies: Voie[]): Promise<ExtendedVoieDTO[]> {
-    const numeros = await this.numeroService.findMany(
-      {
-        voieId: In(voies.map(({ id }) => id)),
-      },
-      { certifie: true, comment: true, voieId: true },
-    );
-    const numerosByVoies = groupBy(numeros, 'voieId');
+  public async extendVoies(
+    balId: string,
+    voies: Voie[],
+  ): Promise<ExtendedVoieDTO[]> {
+    const voiesMetas =
+      await this.numeroService.countVoiesNumeroAndCertifie(balId);
+    const voiesMetasIndex = keyBy(voiesMetas, 'voieId');
 
-    return voies.map((voie) => ({
-      ...extendWithNumeros(voie, numerosByVoies[voie.id] || []),
-      bbox: this.getBBOX(voie, numerosByVoies[voie.id] || []),
-    }));
+    return voies.map((voie) =>
+      this.extendVoieWithMeta(voie, voiesMetasIndex[voie.id]),
+    );
+  }
+
+  private extendVoieWithMeta(
+    voie: Voie,
+    voieMeta?: {
+      voieId: string;
+      nbNumeros: string;
+      nbNumerosCertifies: string;
+      comments: string[];
+    },
+  ): ExtendedVoieDTO {
+    const nbNumeros: number = Number(voieMeta?.nbNumeros) || 0;
+    const nbNumerosCertifies: number =
+      Number(voieMeta?.nbNumerosCertifies) || 0;
+    return {
+      ...voie,
+      nbNumeros,
+      nbNumerosCertifies,
+      isAllCertified: nbNumeros > 0 ? nbNumeros === nbNumerosCertifies : false,
+      comments: voieMeta?.comments || [],
+    };
   }
 
   public async extendVoie(voie: Voie): Promise<ExtendedVoieDTO> {
@@ -350,9 +364,24 @@ export class VoieService {
       voieId: voie.id,
     });
 
+    const nbNumerosCertifies = numeros.filter(
+      (n) => n.certifie === true,
+    ).length;
+
     return {
-      ...extendWithNumeros(voie, numeros),
-      bbox: this.getBBOX(voie, numeros),
+      ...voie,
+      nbNumeros: numeros.length,
+      nbNumerosCertifies: nbNumerosCertifies,
+      isAllCertified:
+        numeros.length > 0 && numeros.length === nbNumerosCertifies,
+      comments: numeros
+        .filter(
+          (n) =>
+            n.comment !== undefined && n.comment !== null && n.comment !== '',
+        )
+        .map(
+          ({ numero, suffixe, comment }) => `${numero}${suffixe} - ${comment}`,
+        ),
     };
   }
 
@@ -360,54 +389,39 @@ export class VoieService {
     return this.voiesRepository.update({ id: voieId }, { updatedAt });
   }
 
-  public async calcCentroid(voieId: string): Promise<void> {
+  public async calcCentroidAndBbox(voieId: string): Promise<void> {
     // On récupère la voie
     const voie: Voie = await this.findOneOrFail(voieId);
     if (voie.typeNumerotation === TypeNumerotationEnum.NUMERIQUE) {
       // On calcule la voie avec les numero si la voie est numerique
-      await this.calcCentroidWithNumeros(voieId);
+      await this.calcCentroidAndBboxWithNumeros(voieId);
     } else if (
       voie.trace &&
       voie.typeNumerotation === TypeNumerotationEnum.METRIQUE
     ) {
       // On calcul la voie avec la trace si la voie est metrique
-      await this.calcCentroidWithTrace(voie);
+      await this.calcCentroidAndBboxWithTrace(voie);
     }
   }
 
-  private async calcCentroidWithNumeros(voieId: string): Promise<void> {
-    const centroid: Point = await this.numeroService.findCentroid(voieId);
-    await this.voiesRepository.update({ id: voieId }, { centroid });
-  }
-
-  private async calcCentroidWithTrace(voie: Voie): Promise<void> {
-    const centroid = turf.centroid(voie.trace)?.geometry;
-    await this.voiesRepository.update({ id: voie.id }, { centroid });
-  }
-
-  private getBBOX(voie: Voie, numeros: Numero[]): BboxTurf {
-    // On récupère toutes les positions des numeros de la voie
-    const allPositions: Position[] = numeros
-      .filter((n) => n.positions && n.positions.length > 0)
-      .reduce((acc, n) => [...acc, ...n.positions], []);
-
-    if (allPositions.length > 0) {
-      // Si il y a des positions de numeros
-      // On créer un feature collection avec turf
-      const features: FeatureTurf[] = allPositions.map(({ point }) =>
-        turf.feature(point),
+  private async calcCentroidAndBboxWithNumeros(voieId: string): Promise<void> {
+    const res = await this.numeroService.findCentroidAndBboxVoie(voieId);
+    if (res) {
+      const { centroid, polygon } = res;
+      const bbox: number[] = turf.bbox(polygon);
+      await this.voiesRepository.update({ id: voieId }, { centroid, bbox });
+    } else {
+      await this.voiesRepository.update(
+        { id: voieId },
+        { centroid: null, bbox: null },
       );
-      const featuresCollection = turf.featureCollection(features);
-      // On créer un bbox a partir de la feature collection
-      return bbox(featuresCollection);
-    } else if (
-      voie.trace &&
-      voie.typeNumerotation === TypeNumerotationEnum.METRIQUE
-    ) {
-      // Si la voie a une trace et est de type metrique
-      // On créer un bbox a partir de la trace
-      return bbox(voie.trace);
     }
+  }
+
+  private async calcCentroidAndBboxWithTrace(voie: Voie): Promise<void> {
+    const centroid = turf.centroid(voie.trace)?.geometry;
+    const bbox = turf.bbox(voie.trace);
+    await this.voiesRepository.update({ id: voie.id }, { centroid, bbox });
   }
 
   async getFilairesVoies(): Promise<FilaireVoieDTO[]> {

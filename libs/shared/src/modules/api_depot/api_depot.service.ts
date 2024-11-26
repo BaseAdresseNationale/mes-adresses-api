@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { of, catchError, firstValueFrom } from 'rxjs';
 import * as hasha from 'hasha';
@@ -8,30 +8,22 @@ import { Habilitation } from './types/habilitation.type';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Revision } from '@/shared/modules/api_depot/types/revision.type';
 import { ConfigService } from '@nestjs/config';
-import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class ApiDepotService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly logger: Logger,
   ) {}
 
   async findOneHabiliation(habilitationId: string): Promise<Habilitation> {
-    if (!ObjectId.isValid(habilitationId)) {
-      throw new HttpException(
-        'L’identifiant de l’habilitation est invalide',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
     const { data } = await firstValueFrom(
       this.httpService
         .get<Habilitation>(`habilitations/${habilitationId}`)
         .pipe(
           catchError((error: AxiosError) => {
-            const { message, code } = error.response.data as any;
-            throw new HttpException(message, code);
+            throw error;
           }),
         ),
     );
@@ -45,8 +37,6 @@ export class ApiDepotService {
         .post<Habilitation>(`communes/${baseLocale.commune}/habilitations`)
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('ERROR createOneHabiliation');
-            console.error(error);
             throw error;
           }),
         ),
@@ -63,8 +53,6 @@ export class ApiDepotService {
         )
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('ERROR sendPinCodeHabiliation');
-            console.error(error);
             throw error;
           }),
         ),
@@ -83,8 +71,6 @@ export class ApiDepotService {
         )
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('ERROR validatePinCodeHabiliation');
-            console.error(error);
             throw error;
           }),
         ),
@@ -102,8 +88,6 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('ERROR createRevision');
-            console.error(error);
             throw error;
           }),
         ),
@@ -122,8 +106,6 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('ERROR uploadFileRevision');
-            console.error(error);
             throw error;
           }),
         ),
@@ -136,8 +118,6 @@ export class ApiDepotService {
         .post<Revision>(`/revisions/${revisionId}/compute`)
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('ERROR computeRevision');
-            console.error(error);
             throw error;
           }),
         ),
@@ -156,8 +136,6 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            console.error('ERROR publishRevision');
-            console.error(error);
             throw error;
           }),
         ),
@@ -176,8 +154,10 @@ export class ApiDepotService {
     const computedRevision: Revision = await this.computeRevision(revision._id);
 
     if (!computedRevision.validation.valid) {
-      console.warn(`Export BAL non valide : ${balId}`);
-      console.warn(computedRevision.validation.errors);
+      this.logger.warn(
+        `Export BAL non valide : ${balId}`,
+        ApiDepotService.name,
+      );
       throw new HttpException(
         'La fichier BAL n’est pas valide. Merci de contacter le support.',
         HttpStatus.EXPECTATION_FAILED,
@@ -199,8 +179,6 @@ export class ApiDepotService {
             if (error.response && error.response.status === 404) {
               return of({ data: null });
             }
-            console.error('ERROR getCurrentRevision');
-            console.error(error);
             throw error;
           }),
         ),
@@ -222,8 +200,6 @@ export class ApiDepotService {
             if (error.response && error.response.status === 404) {
               return of({ data: null });
             }
-            console.error('ERROR getCurrentRevisions');
-            console.error(error);
             throw error;
           }),
         ),

@@ -1,11 +1,14 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { of, catchError, firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class BanPlateformService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly logger: Logger,
+  ) {}
 
   public async getBanAssemblage(codeCommune: string): Promise<Buffer> {
     const { data } = await firstValueFrom(
@@ -29,9 +32,15 @@ export class BanPlateformService {
     const { data } = await firstValueFrom(
       await this.httpService.get<any>(`/api/district/cog/${codeCommune}`).pipe(
         catchError((error: AxiosError) => {
-          console.error('ERROR getIdBanCommune');
-          console.error(error);
-          throw error;
+          this.logger.error(
+            `Impossible de récupérer le code distict pour la commune ${codeCommune}`,
+            error.response?.data || 'No server response',
+            BanPlateformService.name,
+          );
+          throw new HttpException(
+            (error.response?.data as any).message || 'No server response',
+            HttpStatus.BAD_GATEWAY,
+          );
         }),
       ),
     );

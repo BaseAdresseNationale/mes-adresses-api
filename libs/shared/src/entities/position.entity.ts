@@ -12,6 +12,8 @@ import {
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
 import { ObjectId } from 'mongodb';
+import { Validate } from 'class-validator';
+import { PointValidator } from '../validators/coord.validator';
 
 export enum PositionTypeEnum {
   ENTREE = 'entrée',
@@ -64,6 +66,7 @@ export class Position {
 
   @Index('IDX_positions_point', { spatial: true })
   @ApiProperty()
+  @Validate(PointValidator)
   @Column('geometry', {
     nullable: false,
     spatialFeatureType: 'Point',
@@ -74,6 +77,7 @@ export class Position {
   @ApiProperty({ type: () => Toponyme })
   @ManyToOne(() => Toponyme, (toponyme) => toponyme.positions, {
     onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
   })
   @JoinColumn({ name: 'toponyme_id' })
   toponyme?: Toponyme;
@@ -81,6 +85,7 @@ export class Position {
   @ApiProperty({ type: () => Numero })
   @ManyToOne(() => Numero, (numero) => numero.positions, {
     onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
   })
   @JoinColumn({ name: 'numero_id' })
   numero?: Numero;
