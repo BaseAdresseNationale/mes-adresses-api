@@ -343,7 +343,7 @@ export class VoieService {
       voieId: string;
       nbNumeros: string;
       nbNumerosCertifies: string;
-      commentNumeros: string[];
+      commentedNumeros: string[];
     },
   ): ExtendedVoieDTO {
     const nbNumeros: number = Number(voieMeta?.nbNumeros) || 0;
@@ -354,7 +354,7 @@ export class VoieService {
       nbNumeros,
       nbNumerosCertifies,
       isAllCertified: nbNumeros > 0 ? nbNumeros === nbNumerosCertifies : false,
-      commentNumeros: voieMeta?.commentNumeros || [],
+      commentedNumeros: voieMeta?.commentedNumeros || [],
     };
   }
 
@@ -373,7 +373,7 @@ export class VoieService {
       nbNumerosCertifies: nbNumerosCertifies,
       isAllCertified:
         numeros.length > 0 && numeros.length === nbNumerosCertifies,
-      commentNumeros: numeros
+      commentedNumeros: numeros
         .filter(
           (n) =>
             n.comment !== undefined && n.comment !== null && n.comment !== '',

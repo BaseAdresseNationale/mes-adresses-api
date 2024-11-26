@@ -13,5 +13,5 @@ export class ExtendedVoieDTO extends Voie {
   isAllCertified?: boolean;
 
   @ApiProperty()
-  commentNumeros?: string[];
+  commentedNumeros?: string[];
 }
