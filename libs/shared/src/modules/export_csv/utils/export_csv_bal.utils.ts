@@ -37,6 +37,7 @@ type RowType = {
   position?: any;
   updatedAt: Date;
   comment?: string;
+  commentVoie?: string;
 };
 
 type CsvRowType = {
@@ -60,6 +61,7 @@ type CsvRowType = {
   source: string;
   date_der_maj: string;
   commentaire?: string;
+  commentaire_voie?: string;
 };
 
 function formatCleInterop(
@@ -131,6 +133,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
 
   if (withComment) {
     row.commentaire = obj.comment;
+    row.commentaire_voie = obj.commentVoie;
   }
 
   if (obj.nomVoieAlt) {
@@ -206,6 +209,7 @@ export async function exportBalToCsv(
           parcelles: n.parcelles,
           position: p,
           comment: n.comment,
+          commentVoie: v.comment,
         });
       });
     }
