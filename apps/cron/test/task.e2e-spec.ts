@@ -33,13 +33,12 @@ import {
 } from '../src/tasks/detect_conflict.task';
 import {
   Revision,
-  StatusRevision,
-} from '@/shared/modules/api_depot/types/revision.type';
-import { add, sub } from 'date-fns';
-import {
+  StatusRevisionEnum,
   Habilitation,
-  StatusHabiliation,
-} from '@/shared/modules/api_depot/types/habilitation.type';
+  StatusHabilitationEnum,
+  TypeFileEnum,
+} from '@/shared/modules/api_depot/api-depot.types';
+import { add, sub } from 'date-fns';
 import { SyncOutdatedTask } from '../src/tasks/sync_outdated.task';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
@@ -244,10 +243,11 @@ describe('TASK MODULE', () => {
 
     const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
-      _id: revisionId,
+      id: revisionId,
       codeCommune: commune,
-      ready: true,
-      current: true,
+      status: StatusRevisionEnum.PUBLISHED,
+      isReady: true,
+      isCurrent: true,
       updatedAt: new Date('2000-01-01'),
       createdAt: new Date('2000-01-01'),
     };
@@ -304,19 +304,19 @@ describe('TASK MODULE', () => {
     // REVSION
     const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
-      _id: revisionId,
+      id: revisionId,
       codeCommune: commune,
-      status: StatusRevision.PENDING,
-      ready: false,
+      status: StatusRevisionEnum.PENDING,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
       files: [
         {
-          type: 'bal',
+          type: TypeFileEnum.BAL,
           hash: '',
         },
       ],
@@ -357,8 +357,8 @@ describe('TASK MODULE', () => {
       .reply(200, revision);
 
     const habilitation: Habilitation = {
-      _id: habilitationId.toString(),
-      status: StatusHabiliation.ACCEPTED,
+      id: habilitationId.toString(),
+      status: StatusHabilitationEnum.ACCEPTED,
       expiresAt: add(new Date(), { months: 1 }),
       codeCommune: commune,
       emailCommune: 'test@test.fr',
@@ -377,13 +377,13 @@ describe('TASK MODULE', () => {
     });
 
     const publishedRevision: Revision = {
-      _id: revisionId,
+      id: revisionId,
       codeCommune: commune,
-      status: StatusRevision.PUBLISHED,
-      ready: true,
+      status: StatusRevisionEnum.PUBLISHED,
+      isReady: true,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: true,
+      isCurrent: true,
       validation: {
         valid: true,
       },
@@ -412,19 +412,19 @@ describe('TASK MODULE', () => {
     // REVSION
     const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
-      _id: revisionId.toString(),
+      id: revisionId.toString(),
       codeCommune: commune,
-      status: StatusRevision.PENDING,
-      ready: false,
+      status: StatusRevisionEnum.PENDING,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
       files: [
         {
-          type: 'bal',
+          type: TypeFileEnum.BAL,
           hash: 'a62492c9dbd6c74e7cfb2b67b3a9e49be89da7b8fa4dff3c061b0f82805b65c9',
         },
       ],
@@ -463,8 +463,8 @@ describe('TASK MODULE', () => {
       .reply(200, revision);
 
     const habilitation: Habilitation = {
-      _id: habilitationId.toString(),
-      status: StatusHabiliation.ACCEPTED,
+      id: habilitationId.toString(),
+      status: StatusHabilitationEnum.ACCEPTED,
       expiresAt: add(new Date(), { months: 1 }),
       codeCommune: commune,
       emailCommune: 'test@test.fr',
@@ -486,19 +486,19 @@ describe('TASK MODULE', () => {
     // REVSION
     const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
-      _id: revisionId.toString(),
+      id: revisionId.toString(),
       codeCommune: commune,
-      status: StatusRevision.PENDING,
-      ready: false,
+      status: StatusRevisionEnum.PENDING,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
       files: [
         {
-          type: 'bal',
+          type: TypeFileEnum.BAL,
           hash: '',
         },
       ],
@@ -534,19 +534,19 @@ describe('TASK MODULE', () => {
     // REVSION
     const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
-      _id: revisionId.toString(),
+      id: revisionId.toString(),
       codeCommune: commune,
-      status: StatusRevision.PENDING,
-      ready: false,
+      status: StatusRevisionEnum.PENDING,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
       files: [
         {
-          type: 'bal',
+          type: TypeFileEnum.BAL,
           hash: '',
         },
       ],
@@ -573,8 +573,8 @@ describe('TASK MODULE', () => {
       .reply(200, revision);
 
     const habilitation: Habilitation = {
-      _id: habilitationId.toString(),
-      status: StatusHabiliation.PENDING,
+      id: habilitationId.toString(),
+      status: StatusHabilitationEnum.PENDING,
       expiresAt: add(new Date(), { months: 1 }),
       codeCommune: commune,
       emailCommune: 'test@test.fr',
@@ -593,19 +593,19 @@ describe('TASK MODULE', () => {
     // REVSION
     const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
-      _id: revisionId.toString(),
+      id: revisionId.toString(),
       codeCommune: commune,
-      status: StatusRevision.PENDING,
-      ready: false,
+      status: StatusRevisionEnum.PENDING,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
       files: [
         {
-          type: 'bal',
+          type: TypeFileEnum.BAL,
           hash: '',
         },
       ],
@@ -632,8 +632,8 @@ describe('TASK MODULE', () => {
       .reply(200, revision);
 
     const habilitation: Habilitation = {
-      _id: habilitationId.toString(),
-      status: StatusHabiliation.ACCEPTED,
+      id: habilitationId.toString(),
+      status: StatusHabilitationEnum.ACCEPTED,
       expiresAt: sub(new Date(), { months: 1 }),
       codeCommune: commune,
       emailCommune: 'test@test.fr',
@@ -652,19 +652,19 @@ describe('TASK MODULE', () => {
     // REVSION
     const revisionId = new ObjectId().toHexString();
     const revision: Revision = {
-      _id: revisionId.toString(),
+      id: revisionId.toString(),
       codeCommune: commune,
-      status: StatusRevision.PENDING,
-      ready: false,
+      status: StatusRevisionEnum.PENDING,
+      isReady: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      current: false,
+      isCurrent: false,
       validation: {
         valid: true,
       },
       files: [
         {
-          type: 'bal',
+          type: TypeFileEnum.BAL,
           hash: '',
         },
       ],
@@ -691,8 +691,8 @@ describe('TASK MODULE', () => {
       .reply(200, revision);
 
     const habilitation: Habilitation = {
-      _id: habilitationId.toString(),
-      status: StatusHabiliation.ACCEPTED,
+      id: habilitationId.toString(),
+      status: StatusHabilitationEnum.ACCEPTED,
       expiresAt: add(new Date(), { months: 1 }),
       codeCommune: commune,
       emailCommune: 'test@test.fr',
