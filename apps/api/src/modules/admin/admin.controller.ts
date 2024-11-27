@@ -1,10 +1,5 @@
 import { Controller, Get, HttpStatus, Res, UseGuards } from '@nestjs/common';
-import {
-  ApiResponse,
-  ApiTags,
-  ApiOperation,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+
 import { Response } from 'express';
 import * as csvWriter from 'csv-write-stream';
 import * as getStream from 'get-stream';
@@ -14,9 +9,10 @@ import { BaseLocaleService } from '../base_locale/base_locale.service';
 import { SuperAdminGuard } from '@/lib/guards/admin.guard';
 import { VoieService } from '../voie/voie.service';
 import { FilaireVoieDTO } from '../voie/dto/filaire_voie.dto';
+import { ApiExcludeController } from '@nestjs/swagger';
 
-@ApiTags('admin')
 @Controller('admin')
+@ApiExcludeController()
 export class AdminController {
   constructor(
     private baseLocaleService: BaseLocaleService,
@@ -24,11 +20,6 @@ export class AdminController {
   ) {}
 
   @Get('/emails.csv')
-  @ApiOperation({
-    summary: 'download email.csv',
-    operationId: 'downloadEmailCsv',
-  })
-  @ApiBearerAuth('admin-token')
   @UseGuards(SuperAdminGuard)
   async downloadEmailCsv(@Res() res: Response) {
     const emails: string[][] =
@@ -54,16 +45,6 @@ export class AdminController {
   }
 
   @Get('filaires-voies')
-  @ApiOperation({
-    summary: 'Get filaires voies from the published BALs',
-    operationId: 'getFilairesVoies',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: Array<Partial<FilaireVoieDTO>>,
-    isArray: true,
-  })
-  @ApiBearerAuth('admin-token')
   @UseGuards(SuperAdminGuard)
   async getFilairesVoies(@Res() res: Response) {
     const filaires: Partial<FilaireVoieDTO>[] =
