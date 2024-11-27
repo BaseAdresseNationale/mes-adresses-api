@@ -129,6 +129,7 @@ export class ToponymeService {
       nomAlt: createToponymeDto.nomAlt
         ? cleanNomAlt(createToponymeDto.nomAlt)
         : null,
+      communeDeleguee: createToponymeDto.communeDeleguee || null,
       positions: createToponymeDto.positions || [],
       parcelles: createToponymeDto.parcelles || [],
     };
@@ -226,6 +227,7 @@ export class ToponymeService {
         balId: baseLocale.id,
         banId: rawToponyme.banId || uuid(),
         nom: cleanNom(rawToponyme.nom),
+        communeDeleguee: rawToponyme.communeDeleguee,
         parcelles: rawToponyme.parcelles || [],
         nomAlt: getNomAltDefault(rawToponyme.nomAlt),
         ...(rawToponyme.updatedAt && { updatedAt: rawToponyme.updatedAt }),
