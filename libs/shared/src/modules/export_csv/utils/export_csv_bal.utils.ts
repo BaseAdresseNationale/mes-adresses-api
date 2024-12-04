@@ -36,7 +36,7 @@ type RowType = {
   parcelles: string[];
   position?: any;
   updatedAt: Date;
-  comment?: string;
+  commentNumero?: string;
   commentVoie?: string;
 };
 
@@ -60,7 +60,7 @@ type CsvRowType = {
   cad_parcelles: string;
   source: string;
   date_der_maj: string;
-  commentaire?: string;
+  commentaire_numero?: string;
   commentaire_voie?: string;
 };
 
@@ -132,7 +132,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
   };
 
   if (withComment) {
-    row.commentaire = obj.comment;
+    row.commentaire_numero = obj.commentNumero;
     row.commentaire_voie = obj.commentVoie;
   }
 
@@ -208,7 +208,7 @@ export async function exportBalToCsv(
           nomToponymeAlt: toponyme?.nomAlt || null,
           parcelles: n.parcelles,
           position: p,
-          comment: n.comment,
+          commentNumero: n.comment,
           commentVoie: v.comment,
         });
       });
