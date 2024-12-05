@@ -104,24 +104,26 @@ $ yarn lint
 Cette application utilise des variables d'environnement pour sa configuration.
 Elles peuvent être définies classiquement ou en créant un fichier `.env` sur la base du modèle `.env.sample`.
 
-| Nom de la variable        | Description                                                                 |
-| ------------------------- | --------------------------------------------------------------------------- |
-| `POSTGRES_URL`            | Url de connection a la db postgres                                          |
-| `PORT`                    | Port à utiliser pour l'API                                                  |
-| `API_URL`                 | URL de base de l’API                                                        |
-| `API_DEPOT_URL`           | URL de l'api-depot                                                          |
-| `API_DEPOT_CLIENT_ID`     | Id du client de l'api-depot                                                 |
-| `API_DEPOT_CLIENT_SECRET` | Token du client de l'api-depot                                              |
-| `EDITOR_URL_PATTERN`      | Pattern permettant de construire l'URL vers l'édition d'une BAL             |
-| `BAN_API_URL`             | URL de ban-plateform                                                        |
-| ---                       | ---                                                                         |
-| `SMTP_HOST`               | Nom d'hôte du serveur SMTP                                                  |
-| `SMTP_PORT`               | Port du serveur SMTP                                                        |
-| `SMTP_USER`               | Nom d'utilisateur pour se connecter au serveur SMTP                         |
-| `SMTP_PASS`               | Mot de passe pour se connecter au serveur SMTP                              |
-| `SMTP_SECURE`             | Indique si le serveur SMTP nécessite une connexion sécurisée (`YES`)        |
-| `SMTP_FROM`               | Adresse à utiliser en tant qu'expéditeur des emails                         |
-| `SMTP_BCC`                | Adresse(s) en copie cachée à utiliser pour tous les envois de notifications |
+| Nom de la variable              | Description                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| `POSTGRES_URL`                  | Url de connection a la db postgres                                          |
+| `PORT`                          | Port à utiliser pour l'API                                                  |
+| `API_URL`                       | URL de base de l’API                                                        |
+| `API_DEPOT_URL`                 | URL de l'api-depot                                                          |
+| `API_DEPOT_CLIENT_ID`           | Id du client de l'api-depot                                                 |
+| `API_DEPOT_CLIENT_SECRET`       | Token du client de l'api-depot                                              |
+| `EDITOR_URL_PATTERN`            | Pattern permettant de construire l'URL vers l'édition d'une BAL             |
+| `BAN_API_URL`                   | URL de ban-plateform                                                        |
+| `API_SIGNALEMENT_URL`           | URL de l'API Signalement                                                    |
+| `API_SIGNALEMENT_CLIENT_SECRET` | URL du client de l'API Signalement                                          |
+| ---                             | ---                                                                         |
+| `SMTP_HOST`                     | Nom d'hôte du serveur SMTP                                                  |
+| `SMTP_PORT`                     | Port du serveur SMTP                                                        |
+| `SMTP_USER`                     | Nom d'utilisateur pour se connecter au serveur SMTP                         |
+| `SMTP_PASS`                     | Mot de passe pour se connecter au serveur SMTP                              |
+| `SMTP_SECURE`                   | Indique si le serveur SMTP nécessite une connexion sécurisée (`YES`)        |
+| `SMTP_FROM`                     | Adresse à utiliser en tant qu'expéditeur des emails                         |
+| `SMTP_BCC`                      | Adresse(s) en copie cachée à utiliser pour tous les envois de notifications |
 
 Toutes ces variables ont des valeurs par défaut que vous trouverez dans le fichier `.env.sample`.
 
