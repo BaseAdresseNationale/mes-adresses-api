@@ -68,6 +68,22 @@ export class VoieController {
     res.status(HttpStatus.OK).json(voieExtended);
   }
 
+  @Get(':voieId/metas')
+  @ApiOperation({
+    summary: 'Find Voie Metas by id',
+    operationId: 'findVoieMetas',
+  })
+  @ApiParam({ name: 'voieId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: VoieMetas })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async findMetas(@Req() req: CustomRequest, @Res() res: Response) {
+    const voieMetas: VoieMetas = await this.numeroService.findVoieMetas(
+      req.voie.id,
+    );
+    res.status(HttpStatus.OK).json(voieMetas);
+  }
+
   @Put(':voieId')
   @ApiOperation({ summary: 'Update Voie by id', operationId: 'updateVoie' })
   @ApiParam({ name: 'voieId', required: true, type: String })

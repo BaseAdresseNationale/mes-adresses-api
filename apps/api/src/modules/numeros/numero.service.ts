@@ -89,9 +89,7 @@ export class NumeroService {
     });
   }
 
-  async findVoiesMetas(
-    balId: string,
-  ): Promise<(VoieMetas & { voieId: string })[]> {
+  async findVoiesMetas(balId: string): Promise<VoieMetas[]> {
     const query = this.numerosRepository
       .createQueryBuilder('numeros')
       .select('numeros.voie_id', 'id')
@@ -104,12 +102,14 @@ export class NumeroService {
         'CASE WHEN count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true END',
         'isAllCertified',
       )
+      .addSelect('voies.comment', 'comment')
       .addSelect(
         `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
         'commentedNumeros',
       )
       .where('numeros.bal_id = :balId', { balId })
-      .groupBy('numeros.voie_id');
+      .leftJoin('numeros.voie', 'voies')
+      .groupBy('numeros.voie_id, voies.comment');
     return query.getRawMany();
   }
 
@@ -126,12 +126,14 @@ export class NumeroService {
         'CASE WHEN count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true END',
         'isAllCertified',
       )
+      .addSelect('voies.comment', 'comment')
       .addSelect(
         `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
         'commentedNumeros',
       )
       .where('numeros.voie_id = :voieId', { voieId })
-      .groupBy('numeros.voie_id');
+      .leftJoin('numeros.voie', 'voies')
+      .groupBy('numeros.voie_id, voies.comment');
 
     return query.getRawOne();
   }

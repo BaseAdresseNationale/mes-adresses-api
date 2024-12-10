@@ -16,6 +16,9 @@ export class VoieMetas {
   isAllCertified?: boolean;
 
   @ApiProperty()
+  comment?: string;
+
+  @ApiProperty()
   commentedNumeros?: string[];
 }
 
