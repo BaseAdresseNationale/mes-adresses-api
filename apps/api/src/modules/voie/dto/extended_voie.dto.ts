@@ -1,8 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 
 import { Voie } from '@/shared/entities/voie.entity';
 
-export class ExtendedVoieDTO extends Voie {
+export class VoieMetas {
+  @ApiProperty()
+  id: string;
+
   @ApiProperty()
   nbNumeros?: number;
 
@@ -15,3 +18,5 @@ export class ExtendedVoieDTO extends Voie {
   @ApiProperty()
   commentedNumeros?: string[];
 }
+
+export class ExtendedVoieDTO extends IntersectionType(Voie, VoieMetas) {}

@@ -50,7 +50,7 @@ import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dt
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
 import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
-import { ExtendedVoieDTO } from '../voie/dto/extended_voie.dto';
+import { ExtendedVoieDTO, VoieMetas } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
@@ -597,16 +597,35 @@ export class BaseLocaleController {
       balId: req.baseLocale.id,
     });
 
-    const voiesFiltered: Voie[] = voies.map((v) =>
-      filterComments(v, !req.isAdmin),
-    );
-
     const extendedVoie: ExtendedVoieDTO[] = await this.voieService.extendVoies(
       req.baseLocale.id,
-      voiesFiltered,
+      voies,
+    );
+    const voiesFiltered: ExtendedVoieDTO[] = extendedVoie.map((v) =>
+      filterComments(v, !req.isAdmin),
+    );
+    res.status(HttpStatus.OK).json(voiesFiltered);
+  }
+
+  @Get(':baseLocaleId/voies/metas')
+  @ApiOperation({
+    summary: 'Find all Metas Voie in Bal',
+    operationId: 'findVoieMetasByBal',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: VoieMetas,
+    isArray: true,
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async findVoieMetasByBal(@Req() req: CustomRequest, @Res() res: Response) {
+    const voiesMetas: VoieMetas[] = await this.numeroService.findVoiesMetas(
+      req.baseLocale.id,
     );
 
-    res.status(HttpStatus.OK).json(extendedVoie);
+    res.status(HttpStatus.OK).json(voiesMetas);
   }
 
   @Post(':baseLocaleId/voies')

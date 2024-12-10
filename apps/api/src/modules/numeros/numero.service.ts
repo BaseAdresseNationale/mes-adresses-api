@@ -36,6 +36,7 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
+import { VoieMetas } from '../voie/dto/extended_voie.dto';
 
 @Injectable()
 export class NumeroService {
@@ -88,21 +89,20 @@ export class NumeroService {
     });
   }
 
-  async countVoiesNumeroAndCertifie(balId: string): Promise<
-    {
-      voieId: string;
-      nbNumeros: string;
-      nbNumerosCertifies: string;
-      commentedNumeros: string[];
-    }[]
-  > {
+  async findVoiesMetas(
+    balId: string,
+  ): Promise<(VoieMetas & { voieId: string })[]> {
     const query = this.numerosRepository
       .createQueryBuilder('numeros')
-      .select('numeros.voie_id', 'voieId')
+      .select('numeros.voie_id', 'id')
       .addSelect('count(numeros.id)', 'nbNumeros')
       .addSelect(
         'count(CASE WHEN numeros.certifie THEN true END)',
         'nbNumerosCertifies',
+      )
+      .addSelect(
+        'CASE WHEN count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true END',
+        'isAllCertified',
       )
       .addSelect(
         `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
@@ -111,6 +111,29 @@ export class NumeroService {
       .where('numeros.bal_id = :balId', { balId })
       .groupBy('numeros.voie_id');
     return query.getRawMany();
+  }
+
+  async findVoieMetas(voieId: string): Promise<VoieMetas> {
+    const query = this.numerosRepository
+      .createQueryBuilder('numeros')
+      .select('numeros.voie_id', 'id')
+      .addSelect('count(numeros.id)', 'nbNumeros')
+      .addSelect(
+        'count(CASE WHEN numeros.certifie THEN true END)',
+        'nbNumerosCertifies',
+      )
+      .addSelect(
+        'CASE WHEN count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true END',
+        'isAllCertified',
+      )
+      .addSelect(
+        `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
+        'commentedNumeros',
+      )
+      .where('numeros.voie_id = :voieId', { voieId })
+      .groupBy('numeros.voie_id');
+
+    return query.getRawOne();
   }
 
   async countBalNumeroAndCertifie(balId: string): Promise<{

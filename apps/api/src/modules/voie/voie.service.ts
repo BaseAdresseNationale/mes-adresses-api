@@ -328,60 +328,9 @@ export class VoieService {
     balId: string,
     voies: Voie[],
   ): Promise<ExtendedVoieDTO[]> {
-    const voiesMetas =
-      await this.numeroService.countVoiesNumeroAndCertifie(balId);
-    const voiesMetasIndex = keyBy(voiesMetas, 'voieId');
-
-    return voies.map((voie) =>
-      this.extendVoieWithMeta(voie, voiesMetasIndex[voie.id]),
-    );
-  }
-
-  private extendVoieWithMeta(
-    voie: Voie,
-    voieMeta?: {
-      voieId: string;
-      nbNumeros: string;
-      nbNumerosCertifies: string;
-      commentedNumeros: string[];
-    },
-  ): ExtendedVoieDTO {
-    const nbNumeros: number = Number(voieMeta?.nbNumeros) || 0;
-    const nbNumerosCertifies: number =
-      Number(voieMeta?.nbNumerosCertifies) || 0;
-    return {
-      ...voie,
-      nbNumeros,
-      nbNumerosCertifies,
-      isAllCertified: nbNumeros > 0 ? nbNumeros === nbNumerosCertifies : false,
-      commentedNumeros: voieMeta?.commentedNumeros || [],
-    };
-  }
-
-  public async extendVoie(voie: Voie): Promise<ExtendedVoieDTO> {
-    const numeros = await this.numeroService.findMany({
-      voieId: voie.id,
-    });
-
-    const nbNumerosCertifies = numeros.filter(
-      (n) => n.certifie === true,
-    ).length;
-
-    return {
-      ...voie,
-      nbNumeros: numeros.length,
-      nbNumerosCertifies: nbNumerosCertifies,
-      isAllCertified:
-        numeros.length > 0 && numeros.length === nbNumerosCertifies,
-      commentedNumeros: numeros
-        .filter(
-          (n) =>
-            n.comment !== undefined && n.comment !== null && n.comment !== '',
-        )
-        .map(
-          ({ numero, suffixe, comment }) => `${numero}${suffixe} - ${comment}`,
-        ),
-    };
+    const voiesMetas = await this.numeroService.findVoiesMetas(balId);
+    const voiesMetasIndex = keyBy(voiesMetas, 'id');
+    return voies.map((voie) => ({ ...voie, ...voiesMetasIndex[voie.id] }));
   }
 
   public async touch(voieId: string, updatedAt: Date = new Date()) {

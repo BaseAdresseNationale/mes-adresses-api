@@ -30,7 +30,10 @@ import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { VoieService } from '@/modules/voie/voie.service';
-import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
+import {
+  ExtendedVoieDTO,
+  VoieMetas,
+} from '@/modules/voie/dto/extended_voie.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
@@ -52,9 +55,16 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoieDTO })
   @ApiBearerAuth('admin-token')
   async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const voie: Voie = filterComments(req.voie, !req.isAdmin);
-    const voieExtended: ExtendedVoieDTO =
-      await this.voieService.extendVoie(voie);
+    const voieMetas: VoieMetas = await this.numeroService.findVoieMetas(
+      req.voie.id,
+    );
+    const voieExtended: ExtendedVoieDTO = filterComments(
+      {
+        ...req.voie,
+        ...voieMetas,
+      },
+      !req.isAdmin,
+    );
     res.status(HttpStatus.OK).json(voieExtended);
   }
 
