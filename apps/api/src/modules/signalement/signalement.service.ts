@@ -3,22 +3,12 @@ import {
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-
 import { UpdateSignalementDTO } from './dto/update-signalement-dto';
-import {
-  SignalementsService,
-  OpenAPI as OpenAPISignalement,
-} from 'libs/openapi-signalement';
+import { OpenAPISignalementService } from './openAPI-signalement.service';
 
 @Injectable()
 export class SignalementService {
-  constructor(private configService: ConfigService) {
-    OpenAPISignalement.BASE = this.configService.get('API_SIGNALEMENT_URL');
-    OpenAPISignalement.TOKEN = this.configService.get(
-      'API_SIGNALEMENT_CLIENT_SECRET',
-    );
-  }
+  constructor(private openAPISignalementService: OpenAPISignalementService) {}
 
   async updateMany(
     baseLocale: BaseLocale,
@@ -35,7 +25,7 @@ export class SignalementService {
 
     for (const signalementId of ids) {
       const fetchedSignalement =
-        await SignalementsService.getSignalementById(signalementId);
+        await this.openAPISignalementService.getSignalementById(signalementId);
 
       if (!fetchedSignalement) {
         throw new HttpException(
@@ -51,7 +41,7 @@ export class SignalementService {
         );
       }
 
-      await SignalementsService.updateSignalement(signalementId, {
+      await this.openAPISignalementService.updateSignalement(signalementId, {
         status,
       });
     }

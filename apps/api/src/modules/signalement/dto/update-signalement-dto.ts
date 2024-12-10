@@ -1,4 +1,4 @@
-import { Signalement } from 'libs/openapi-signalement';
+import { Signalement } from '@/shared/openapi-signalement';
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMinSize, IsEnum } from 'class-validator';
 

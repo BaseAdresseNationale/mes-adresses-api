@@ -5,10 +5,11 @@ import { ConfigModule } from '@nestjs/config';
 import { BaseLocaleModule } from '../base_locale/base_locale.module';
 import { SignalementService } from './signalement.service';
 import { SignalementController } from './signalement.controller';
+import { OpenAPISignalementService } from './openAPI-signalement.service';
 
 @Module({
   imports: [ConfigModule, forwardRef(() => BaseLocaleModule)],
-  providers: [SignalementService],
+  providers: [SignalementService, OpenAPISignalementService],
   controllers: [SignalementController],
   exports: [SignalementService],
 })
