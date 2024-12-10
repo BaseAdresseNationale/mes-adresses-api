@@ -1122,6 +1122,7 @@ describe('BASE LOCAL MODULE', () => {
       expect(response.body[0].nbNumeros).toEqual(2);
       expect(response.body[0].nbNumerosCertifies).toEqual(1);
       expect(response.body[0].isAllCertified).toBeFalsy();
+      expect(response.body[0].commentedNumeros).toBeNull();
     });
   });
 

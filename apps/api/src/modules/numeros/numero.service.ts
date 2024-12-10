@@ -93,9 +93,9 @@ export class NumeroService {
     const query = this.numerosRepository
       .createQueryBuilder('numeros')
       .select('numeros.voie_id', 'id')
-      .addSelect('count(numeros.id)', 'nbNumeros')
+      .addSelect('count(numeros.id)::int', 'nbNumeros')
       .addSelect(
-        'count(CASE WHEN numeros.certifie THEN true END)',
+        'count(CASE WHEN numeros.certifie THEN true END)::int',
         'nbNumerosCertifies',
       )
       .addSelect(
@@ -117,9 +117,9 @@ export class NumeroService {
     const query = this.numerosRepository
       .createQueryBuilder('numeros')
       .select('numeros.voie_id', 'id')
-      .addSelect('count(numeros.id)', 'nbNumeros')
+      .addSelect('count(numeros.id)::int', 'nbNumeros')
       .addSelect(
-        'count(CASE WHEN numeros.certifie THEN true END)',
+        'count(CASE WHEN numeros.certifie THEN true END)::int',
         'nbNumerosCertifies',
       )
       .addSelect(
