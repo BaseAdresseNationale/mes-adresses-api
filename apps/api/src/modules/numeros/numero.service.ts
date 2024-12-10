@@ -36,6 +36,7 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
+import { VoieMetas } from '../voie/dto/extended_voie.dto';
 
 @Injectable()
 export class NumeroService {
@@ -88,29 +89,53 @@ export class NumeroService {
     });
   }
 
-  async countVoiesNumeroAndCertifie(balId: string): Promise<
-    {
-      voieId: string;
-      nbNumeros: string;
-      nbNumerosCertifies: string;
-      comments: string[];
-    }[]
-  > {
+  async findVoiesMetas(balId: string): Promise<VoieMetas[]> {
     const query = this.numerosRepository
       .createQueryBuilder('numeros')
-      .select('numeros.voie_id', 'voieId')
-      .addSelect('count(numeros.id)', 'nbNumeros')
+      .select('numeros.voie_id', 'id')
+      .addSelect('count(numeros.id)::int', 'nbNumeros')
       .addSelect(
-        'count(CASE WHEN numeros.certifie THEN true END)',
+        'count(CASE WHEN numeros.certifie THEN true END)::int',
         'nbNumerosCertifies',
       )
       .addSelect(
+        'CASE WHEN count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true END',
+        'isAllCertified',
+      )
+      .addSelect('voies.comment', 'comment')
+      .addSelect(
         `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
-        'comments',
+        'commentedNumeros',
       )
       .where('numeros.bal_id = :balId', { balId })
-      .groupBy('numeros.voie_id');
+      .leftJoin('numeros.voie', 'voies')
+      .groupBy('numeros.voie_id, voies.comment');
     return query.getRawMany();
+  }
+
+  async findVoieMetas(voieId: string): Promise<VoieMetas> {
+    const query = this.numerosRepository
+      .createQueryBuilder('numeros')
+      .select('numeros.voie_id', 'id')
+      .addSelect('count(numeros.id)::int', 'nbNumeros')
+      .addSelect(
+        'count(CASE WHEN numeros.certifie THEN true END)::int',
+        'nbNumerosCertifies',
+      )
+      .addSelect(
+        'CASE WHEN count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true END',
+        'isAllCertified',
+      )
+      .addSelect('voies.comment', 'comment')
+      .addSelect(
+        `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
+        'commentedNumeros',
+      )
+      .where('numeros.voie_id = :voieId', { voieId })
+      .leftJoin('numeros.voie', 'voies')
+      .groupBy('numeros.voie_id, voies.comment');
+
+    return query.getRawOne();
   }
 
   async countBalNumeroAndCertifie(balId: string): Promise<{

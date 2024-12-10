@@ -142,6 +142,7 @@ export class VoieService {
       nomAlt: createVoieDto.nomAlt ? cleanNomAlt(createVoieDto.nomAlt) : null,
       centroid: null,
       bbox: null,
+      comment: createVoieDto.comment,
     };
     // Calculer le centroid si la trace et le type de numerotation est metrique
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
@@ -327,60 +328,9 @@ export class VoieService {
     balId: string,
     voies: Voie[],
   ): Promise<ExtendedVoieDTO[]> {
-    const voiesMetas =
-      await this.numeroService.countVoiesNumeroAndCertifie(balId);
-    const voiesMetasIndex = keyBy(voiesMetas, 'voieId');
-
-    return voies.map((voie) =>
-      this.extendVoieWithMeta(voie, voiesMetasIndex[voie.id]),
-    );
-  }
-
-  private extendVoieWithMeta(
-    voie: Voie,
-    voieMeta?: {
-      voieId: string;
-      nbNumeros: string;
-      nbNumerosCertifies: string;
-      comments: string[];
-    },
-  ): ExtendedVoieDTO {
-    const nbNumeros: number = Number(voieMeta?.nbNumeros) || 0;
-    const nbNumerosCertifies: number =
-      Number(voieMeta?.nbNumerosCertifies) || 0;
-    return {
-      ...voie,
-      nbNumeros,
-      nbNumerosCertifies,
-      isAllCertified: nbNumeros > 0 ? nbNumeros === nbNumerosCertifies : false,
-      comments: voieMeta?.comments || [],
-    };
-  }
-
-  public async extendVoie(voie: Voie): Promise<ExtendedVoieDTO> {
-    const numeros = await this.numeroService.findMany({
-      voieId: voie.id,
-    });
-
-    const nbNumerosCertifies = numeros.filter(
-      (n) => n.certifie === true,
-    ).length;
-
-    return {
-      ...voie,
-      nbNumeros: numeros.length,
-      nbNumerosCertifies: nbNumerosCertifies,
-      isAllCertified:
-        numeros.length > 0 && numeros.length === nbNumerosCertifies,
-      comments: numeros
-        .filter(
-          (n) =>
-            n.comment !== undefined && n.comment !== null && n.comment !== '',
-        )
-        .map(
-          ({ numero, suffixe, comment }) => `${numero}${suffixe} - ${comment}`,
-        ),
-    };
+    const voiesMetas = await this.numeroService.findVoiesMetas(balId);
+    const voiesMetasIndex = keyBy(voiesMetas, 'id');
+    return voies.map((voie) => ({ ...voie, ...voiesMetasIndex[voie.id] }));
   }
 
   public async touch(voieId: string, updatedAt: Date = new Date()) {
