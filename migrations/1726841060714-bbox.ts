@@ -20,12 +20,14 @@ export class Bbox1726841060714 implements MigrationInterface {
         GROUP BY voie.id
       )
       UPDATE voies
-      SET bbox = ARRAY[
-          ST_XMin("voie_polygon"."bbox")::double precision,
-          ST_YMin("voie_polygon"."bbox")::double precision,
-          ST_XMax("voie_polygon"."bbox")::double precision,
-          ST_YMax("voie_polygon"."bbox")::double precision
-        ]
+        SET bbox = CASE WHEN "voie_polygon"."bbox" IS NOT NULL THEN
+          ARRAY[
+            ST_XMin("voie_polygon"."bbox")::double precision,
+            ST_YMin("voie_polygon"."bbox")::double precision,
+            ST_XMax("voie_polygon"."bbox")::double precision,
+            ST_YMax("voie_polygon"."bbox")::double precision
+          ]
+          END
       FROM voie_polygon
       WHERE voie_polygon.id = voies.id`,
     );
