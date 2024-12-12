@@ -10,6 +10,20 @@ import { OpenAPISignalementService } from './openAPI-signalement.service';
 export class SignalementService {
   constructor(private openAPISignalementService: OpenAPISignalementService) {}
 
+  async findOneOrFail(signalementId: string) {
+    const fetchedSignalement =
+      await this.openAPISignalementService.getSignalementById(signalementId);
+
+    if (!fetchedSignalement) {
+      throw new HttpException(
+        `Signalement ${signalementId} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return fetchedSignalement;
+  }
+
   async updateMany(
     baseLocale: BaseLocale,
     updateSignalementDTO: UpdateSignalementDTO,
@@ -24,15 +38,7 @@ export class SignalementService {
     }
 
     for (const signalementId of ids) {
-      const fetchedSignalement =
-        await this.openAPISignalementService.getSignalementById(signalementId);
-
-      if (!fetchedSignalement) {
-        throw new HttpException(
-          `Signalement ${signalementId} not found`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
+      const fetchedSignalement = await this.findOneOrFail(signalementId);
 
       if (baseLocale.commune !== fetchedSignalement.codeCommune) {
         throw new HttpException(

@@ -65,6 +65,7 @@ export class SignalementsService {
     }
     /**
      * Get signalement by id
+     * Get a signalement by its id, returns author info if client is authenticated
      * @param idSignalement
      * @returns Signalement
      * @throws ApiError
