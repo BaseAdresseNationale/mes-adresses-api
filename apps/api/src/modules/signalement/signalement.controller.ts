@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Inject,
+  Param,
   Put,
   Req,
   Res,
@@ -55,5 +57,28 @@ export class SignalementController {
       updateSignalementDTO,
     );
     res.status(HttpStatus.OK).json(true);
+  }
+
+  @Get('/:baseLocaleId/:idSignalement/author')
+  @ApiOperation({
+    summary: 'Get author by signalement id',
+    operationId: 'getAuthor',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiParam({ name: 'idSignalement', required: true, type: String })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  async getAuthor(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param('idSignalement') idSignalement: string,
+  ) {
+    const signalement =
+      await this.signalementService.findOneOrFail(idSignalement);
+
+    res.status(HttpStatus.OK).json(signalement.author);
   }
 }
