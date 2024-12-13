@@ -115,7 +115,7 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `EDITOR_URL_PATTERN`            | Pattern permettant de construire l'URL vers l'édition d'une BAL             |
 | `BAN_API_URL`                   | URL de ban-plateform                                                        |
 | `API_SIGNALEMENT_URL`           | URL de l'API Signalement                                                    |
-| `API_SIGNALEMENT_CLIENT_SECRET` | URL du client de l'API Signalement                                          |
+| `API_SIGNALEMENT_CLIENT_SECRET` | Secret du client de l'API Signalement                                       |
 | ---                             | ---                                                                         |
 | `SMTP_HOST`                     | Nom d'hôte du serveur SMTP                                                  |
 | `SMTP_PORT`                     | Port du serveur SMTP                                                        |
