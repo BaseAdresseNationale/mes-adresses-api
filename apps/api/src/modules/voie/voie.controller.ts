@@ -55,7 +55,7 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoieDTO })
   @ApiBearerAuth('admin-token')
   async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const voieMetas: VoieMetas = await this.numeroService.findVoieMetas(
+    const voieMetas: VoieMetas = await this.voieService.findVoieMetas(
       req.voie.id,
     );
     const voieExtended: ExtendedVoieDTO = filterComments(
@@ -78,7 +78,7 @@ export class VoieController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async findMetas(@Req() req: CustomRequest, @Res() res: Response) {
-    const voieMetas: VoieMetas = await this.numeroService.findVoieMetas(
+    const voieMetas: VoieMetas = await this.voieService.findVoieMetas(
       req.voie.id,
     );
     res.status(HttpStatus.OK).json(voieMetas);

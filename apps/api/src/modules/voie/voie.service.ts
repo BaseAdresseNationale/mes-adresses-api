@@ -27,7 +27,10 @@ import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
-import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
+import {
+  ExtendedVoieDTO,
+  VoieMetas,
+} from '@/modules/voie/dto/extended_voie.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
@@ -328,7 +331,7 @@ export class VoieService {
     balId: string,
     voies: Voie[],
   ): Promise<ExtendedVoieDTO[]> {
-    const voiesMetas = await this.numeroService.findVoiesMetas(balId);
+    const voiesMetas = await this.findVoiesMetas(balId);
     const voiesMetasIndex = keyBy(voiesMetas, 'id');
     return voies.map((voie) => ({ ...voie, ...voiesMetasIndex[voie.id] }));
   }
@@ -396,5 +399,53 @@ export class VoieService {
       ...f,
       trace: JSON.parse(f.trace),
     }));
+  }
+
+  async findVoieMetas(voieId: string): Promise<VoieMetas> {
+    const query = this.voiesRepository
+      .createQueryBuilder('voies')
+      .select('voies.id', 'id')
+      .addSelect('count(numeros.id)::int', 'nbNumeros')
+      .addSelect(
+        'count(CASE WHEN numeros.certifie THEN true END)::int',
+        'nbNumerosCertifies',
+      )
+      .addSelect(
+        'CASE WHEN count(numeros.id) > 0 AND count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true ELSE false END',
+        'isAllCertified',
+      )
+      .addSelect('voies.comment', 'comment')
+      .addSelect(
+        `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
+        'commentedNumeros',
+      )
+      .where('voies.id = :voieId', { voieId })
+      .leftJoin('voies.numeros', 'numeros')
+      .groupBy('voies.id, voies.comment');
+    return query.getRawOne();
+  }
+
+  async findVoiesMetas(balId: string): Promise<VoieMetas[]> {
+    const query = this.voiesRepository
+      .createQueryBuilder('voies')
+      .select('voies.id', 'id')
+      .addSelect('count(numeros.id)::int', 'nbNumeros')
+      .addSelect(
+        'count(CASE WHEN numeros.certifie THEN true END)::int',
+        'nbNumerosCertifies',
+      )
+      .addSelect(
+        'CASE WHEN count(numeros.id) > 0 AND count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true ELSE false END',
+        'isAllCertified',
+      )
+      .addSelect('voies.comment', 'comment')
+      .addSelect(
+        `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
+        'commentedNumeros',
+      )
+      .where('voies.bal_id = :balId', { balId })
+      .leftJoin('voies.numeros', 'numeros')
+      .groupBy('voies.id, voies.comment');
+    return query.getRawMany();
   }
 }

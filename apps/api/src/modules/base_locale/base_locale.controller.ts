@@ -621,7 +621,7 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async findVoieMetasByBal(@Req() req: CustomRequest, @Res() res: Response) {
-    const voiesMetas: VoieMetas[] = await this.numeroService.findVoiesMetas(
+    const voiesMetas: VoieMetas[] = await this.voieService.findVoiesMetas(
       req.baseLocale.id,
     );
 
