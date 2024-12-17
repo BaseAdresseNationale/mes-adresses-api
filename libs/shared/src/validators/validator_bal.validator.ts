@@ -35,10 +35,8 @@ export class ValidatorBal implements ValidatorConstraintInterface {
           if (supportedNomAlt.has(codeISO)) {
             const nomVoie = value[codeISO];
             const { errors } = await validateurBAL(nomVoie, 'voie_nom');
-            console.log('validateurBAL', errors);
             return errors.length === 0;
           } else {
-            console.log('other');
             return false;
           }
         }
@@ -51,7 +49,6 @@ export class ValidatorBal implements ValidatorConstraintInterface {
   }
 
   defaultMessage(args: ValidationArguments) {
-    console.log('MESSAGE');
     const field = args.constraints[0];
     return 'Le champ ' + field + ' : ' + args.value + " n'est pas valide";
   }
