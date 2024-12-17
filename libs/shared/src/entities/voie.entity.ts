@@ -33,6 +33,15 @@ export class Voie extends GlobalEntity {
   @Column('json', { name: 'nom_alt', nullable: true })
   nomAlt: Record<string, string> | null;
 
+  @ApiProperty()
+  @Column('varchar', {
+    name: 'commune_deleguee',
+    default: null,
+    nullable: true,
+    length: 5,
+  })
+  communeDeleguee: string | null;
+
   @ApiProperty({ enum: TypeNumerotationEnum })
   @Column('enum', {
     name: 'type_numerotation',
