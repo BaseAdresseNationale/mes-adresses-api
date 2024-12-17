@@ -13,6 +13,7 @@ import {
   FindOptionsWhere,
   In,
   Repository,
+  SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
 import { keyBy } from 'lodash';
@@ -401,51 +402,37 @@ export class VoieService {
     }));
   }
 
+  createQueryVoieMetas: SelectQueryBuilder<Voie> = this.voiesRepository
+    .createQueryBuilder('voies')
+    .select('voies.id', 'id')
+    .addSelect('count(numeros.id)::int', 'nbNumeros')
+    .addSelect(
+      'count(CASE WHEN numeros.certifie THEN true END)::int',
+      'nbNumerosCertifies',
+    )
+    .addSelect(
+      'CASE WHEN count(numeros.id) > 0 AND count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true ELSE false END',
+      'isAllCertified',
+    )
+    .addSelect('voies.comment', 'comment')
+    .addSelect(
+      `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
+      'commentedNumeros',
+    )
+    .leftJoin('voies.numeros', 'numeros')
+    .groupBy('voies.id, voies.comment');
+
   async findVoieMetas(voieId: string): Promise<VoieMetas> {
-    const query = this.voiesRepository
-      .createQueryBuilder('voies')
-      .select('voies.id', 'id')
-      .addSelect('count(numeros.id)::int', 'nbNumeros')
-      .addSelect(
-        'count(CASE WHEN numeros.certifie THEN true END)::int',
-        'nbNumerosCertifies',
-      )
-      .addSelect(
-        'CASE WHEN count(numeros.id) > 0 AND count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true ELSE false END',
-        'isAllCertified',
-      )
-      .addSelect('voies.comment', 'comment')
-      .addSelect(
-        `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
-        'commentedNumeros',
-      )
-      .where('voies.id = :voieId', { voieId })
-      .leftJoin('voies.numeros', 'numeros')
-      .groupBy('voies.id, voies.comment');
+    const query = this.createQueryVoieMetas.where('voies.id = :voieId', {
+      voieId,
+    });
     return query.getRawOne();
   }
 
   async findVoiesMetas(balId: string): Promise<VoieMetas[]> {
-    const query = this.voiesRepository
-      .createQueryBuilder('voies')
-      .select('voies.id', 'id')
-      .addSelect('count(numeros.id)::int', 'nbNumeros')
-      .addSelect(
-        'count(CASE WHEN numeros.certifie THEN true END)::int',
-        'nbNumerosCertifies',
-      )
-      .addSelect(
-        'CASE WHEN count(numeros.id) > 0 AND count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true ELSE false END',
-        'isAllCertified',
-      )
-      .addSelect('voies.comment', 'comment')
-      .addSelect(
-        `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
-        'commentedNumeros',
-      )
-      .where('voies.bal_id = :balId', { balId })
-      .leftJoin('voies.numeros', 'numeros')
-      .groupBy('voies.id, voies.comment');
+    const query = this.createQueryVoieMetas.where('voies.bal_id = :balId', {
+      balId,
+    });
     return query.getRawMany();
   }
 }
