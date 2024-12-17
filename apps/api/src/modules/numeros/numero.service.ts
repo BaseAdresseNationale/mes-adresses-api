@@ -36,7 +36,6 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
-import { VoieMetas } from '../voie/dto/extended_voie.dto';
 
 @Injectable()
 export class NumeroService {
