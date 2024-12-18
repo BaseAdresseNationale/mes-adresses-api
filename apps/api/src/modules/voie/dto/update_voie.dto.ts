@@ -7,6 +7,7 @@ import {
   ValidateNested,
   IsNotEmptyObject,
   IsEnum,
+  MaxLength,
 } from 'class-validator';
 
 import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
@@ -38,4 +39,9 @@ export class UpdateVoieDTO {
     nullable: false,
   })
   trace: LineString;
+
+  @IsOptional()
+  @MaxLength(5000)
+  @ApiProperty({ required: false, nullable: true })
+  comment?: string;
 }

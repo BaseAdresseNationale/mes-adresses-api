@@ -61,6 +61,10 @@ export class Voie extends GlobalEntity {
   @Column('float', { nullable: true, array: true })
   bbox: number[] | null;
 
+  @ApiProperty()
+  @Column('text', { nullable: true })
+  comment?: string | null;
+
   @ApiProperty({ type: () => BaseLocale })
   @ManyToOne(() => BaseLocale, (baseLocale) => baseLocale.voies, {
     onDelete: 'CASCADE',

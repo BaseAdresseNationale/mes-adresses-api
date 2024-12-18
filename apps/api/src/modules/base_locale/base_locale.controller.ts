@@ -50,7 +50,7 @@ import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dt
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
 import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
-import { ExtendedVoieDTO } from '../voie/dto/extended_voie.dto';
+import { ExtendedVoieDTO, VoieMetas } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
@@ -68,6 +68,7 @@ import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto
 import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
 import { Numero } from '@/shared/entities/numero.entity';
+import { filterComments } from '@/shared/utils/filter.utils';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -595,11 +596,36 @@ export class BaseLocaleController {
     const voies: Voie[] = await this.voieService.findMany({
       balId: req.baseLocale.id,
     });
+
     const extendedVoie: ExtendedVoieDTO[] = await this.voieService.extendVoies(
       req.baseLocale.id,
       voies,
     );
-    res.status(HttpStatus.OK).json(extendedVoie);
+    const voiesFiltered: ExtendedVoieDTO[] = extendedVoie.map((v) =>
+      filterComments(v, !req.isAdmin),
+    );
+    res.status(HttpStatus.OK).json(voiesFiltered);
+  }
+
+  @Get(':baseLocaleId/voies/metas')
+  @ApiOperation({
+    summary: 'Find all Metas Voie in Bal',
+    operationId: 'findVoieMetasByBal',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: VoieMetas,
+    isArray: true,
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async findVoieMetasByBal(@Req() req: CustomRequest, @Res() res: Response) {
+    const voiesMetas: VoieMetas[] = await this.voieService.findVoiesMetas(
+      req.baseLocale.id,
+    );
+
+    res.status(HttpStatus.OK).json(voiesMetas);
   }
 
   @Post(':baseLocaleId/voies')

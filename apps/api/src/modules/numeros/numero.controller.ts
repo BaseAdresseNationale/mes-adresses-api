@@ -20,12 +20,12 @@ import {
 } from '@nestjs/swagger';
 
 import { Numero } from '@/shared/entities/numero.entity';
-import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
+import { filterComments } from '@/shared/utils/filter.utils';
 
 @ApiTags('numeros')
 @Controller('numeros')
@@ -41,7 +41,7 @@ export class NumeroController {
   @ApiResponse({ status: HttpStatus.OK, type: Numero })
   @ApiBearerAuth('admin-token')
   find(@Req() req: CustomRequest, @Res() res: Response) {
-    const numero: Numero = filterSensitiveFields(req.numero, !req.isAdmin);
+    const numero: Numero = filterComments(req.numero, !req.isAdmin);
     res.status(HttpStatus.OK).json(numero);
   }
 
