@@ -32,7 +32,8 @@
     "push-staging": "./scripts/push-staging.sh",
     "typeorm": "typeorm-ts-node-commonjs",
     "typeorm:migration:run": "yarn typeorm migration:run -- -d ./typeorm.config.ts",
-    "typeorm:migration:down": "yarn typeorm migration:revert -- -d ./typeorm.config.ts"
+    "typeorm:migration:down": "yarn typeorm migration:revert -- -d ./typeorm.config.ts",
+    "generate:openapi:signalement": "openapi --input http://localhost:5005/api-json --output ./libs/shared/src/openapi-signalement"
   },
   "dependencies": {
     "@ban-team/adresses-util": "^0.9.0",
@@ -106,6 +107,7 @@
     "jest": "^29.5.0",
     "nock": "^13.3.3",
     "nyc": "^15.1.0",
+    "openapi-typescript-codegen": "^0.29.0",
     "prettier": "^3.0.0",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.3",
