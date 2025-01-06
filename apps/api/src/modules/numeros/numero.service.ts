@@ -88,31 +88,6 @@ export class NumeroService {
     });
   }
 
-  async countVoiesNumeroAndCertifie(balId: string): Promise<
-    {
-      voieId: string;
-      nbNumeros: string;
-      nbNumerosCertifies: string;
-      comments: string[];
-    }[]
-  > {
-    const query = this.numerosRepository
-      .createQueryBuilder('numeros')
-      .select('numeros.voie_id', 'voieId')
-      .addSelect('count(numeros.id)', 'nbNumeros')
-      .addSelect(
-        'count(CASE WHEN numeros.certifie THEN true END)',
-        'nbNumerosCertifies',
-      )
-      .addSelect(
-        `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
-        'comments',
-      )
-      .where('numeros.bal_id = :balId', { balId })
-      .groupBy('numeros.voie_id');
-    return query.getRawMany();
-  }
-
   async countBalNumeroAndCertifie(balId: string): Promise<{
     nbNumeros: string;
     nbNumerosCertifies: string;

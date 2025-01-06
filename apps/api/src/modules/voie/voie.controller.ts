@@ -25,17 +25,20 @@ import {
 
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
-import { filterSensitiveFields } from '@/shared/utils/numero.utils';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { VoieService } from '@/modules/voie/voie.service';
-import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
+import {
+  ExtendedVoieDTO,
+  VoieMetas,
+} from '@/modules/voie/dto/extended_voie.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
+import { filterComments } from '@/shared/utils/filter.utils';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -52,10 +55,33 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK, type: ExtendedVoieDTO })
   @ApiBearerAuth('admin-token')
   async find(@Req() req: CustomRequest, @Res() res: Response) {
-    const voieExtended: ExtendedVoieDTO = await this.voieService.extendVoie(
-      req.voie,
+    const voieMetas: VoieMetas = await this.voieService.findVoieMetas(
+      req.voie.id,
+    );
+    const voieExtended: ExtendedVoieDTO = filterComments(
+      {
+        ...req.voie,
+        ...voieMetas,
+      },
+      !req.isAdmin,
     );
     res.status(HttpStatus.OK).json(voieExtended);
+  }
+
+  @Get(':voieId/metas')
+  @ApiOperation({
+    summary: 'Find Voie Metas by id',
+    operationId: 'findVoieMetas',
+  })
+  @ApiParam({ name: 'voieId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: VoieMetas })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async findMetas(@Req() req: CustomRequest, @Res() res: Response) {
+    const voieMetas: VoieMetas = await this.voieService.findVoieMetas(
+      req.voie.id,
+    );
+    res.status(HttpStatus.OK).json(voieMetas);
   }
 
   @Put(':voieId')
@@ -141,7 +167,7 @@ export class VoieController {
         },
       },
     );
-    const result = numeros.map((n) => filterSensitiveFields(n, !req.isAdmin));
+    const result = numeros.map((n) => filterComments(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);
   }
 

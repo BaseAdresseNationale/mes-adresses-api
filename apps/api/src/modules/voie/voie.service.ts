@@ -13,6 +13,7 @@ import {
   FindOptionsWhere,
   In,
   Repository,
+  SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
 import { keyBy } from 'lodash';
@@ -27,7 +28,10 @@ import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
-import { ExtendedVoieDTO } from '@/modules/voie/dto/extended_voie.dto';
+import {
+  ExtendedVoieDTO,
+  VoieMetas,
+} from '@/modules/voie/dto/extended_voie.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
 import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
@@ -142,6 +146,7 @@ export class VoieService {
       nomAlt: createVoieDto.nomAlt ? cleanNomAlt(createVoieDto.nomAlt) : null,
       centroid: null,
       bbox: null,
+      comment: createVoieDto.comment,
     };
     // Calculer le centroid si la trace et le type de numerotation est metrique
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
@@ -327,60 +332,9 @@ export class VoieService {
     balId: string,
     voies: Voie[],
   ): Promise<ExtendedVoieDTO[]> {
-    const voiesMetas =
-      await this.numeroService.countVoiesNumeroAndCertifie(balId);
-    const voiesMetasIndex = keyBy(voiesMetas, 'voieId');
-
-    return voies.map((voie) =>
-      this.extendVoieWithMeta(voie, voiesMetasIndex[voie.id]),
-    );
-  }
-
-  private extendVoieWithMeta(
-    voie: Voie,
-    voieMeta?: {
-      voieId: string;
-      nbNumeros: string;
-      nbNumerosCertifies: string;
-      comments: string[];
-    },
-  ): ExtendedVoieDTO {
-    const nbNumeros: number = Number(voieMeta?.nbNumeros) || 0;
-    const nbNumerosCertifies: number =
-      Number(voieMeta?.nbNumerosCertifies) || 0;
-    return {
-      ...voie,
-      nbNumeros,
-      nbNumerosCertifies,
-      isAllCertified: nbNumeros > 0 ? nbNumeros === nbNumerosCertifies : false,
-      comments: voieMeta?.comments || [],
-    };
-  }
-
-  public async extendVoie(voie: Voie): Promise<ExtendedVoieDTO> {
-    const numeros = await this.numeroService.findMany({
-      voieId: voie.id,
-    });
-
-    const nbNumerosCertifies = numeros.filter(
-      (n) => n.certifie === true,
-    ).length;
-
-    return {
-      ...voie,
-      nbNumeros: numeros.length,
-      nbNumerosCertifies: nbNumerosCertifies,
-      isAllCertified:
-        numeros.length > 0 && numeros.length === nbNumerosCertifies,
-      comments: numeros
-        .filter(
-          (n) =>
-            n.comment !== undefined && n.comment !== null && n.comment !== '',
-        )
-        .map(
-          ({ numero, suffixe, comment }) => `${numero}${suffixe} - ${comment}`,
-        ),
-    };
+    const voiesMetas = await this.findVoiesMetas(balId);
+    const voiesMetasIndex = keyBy(voiesMetas, 'id');
+    return voies.map((voie) => ({ ...voie, ...voiesMetasIndex[voie.id] }));
   }
 
   public async touch(voieId: string, updatedAt: Date = new Date()) {
@@ -446,5 +400,39 @@ export class VoieService {
       ...f,
       trace: JSON.parse(f.trace),
     }));
+  }
+
+  createQueryVoieMetas: SelectQueryBuilder<Voie> = this.voiesRepository
+    .createQueryBuilder('voies')
+    .select('voies.id', 'id')
+    .addSelect('count(numeros.id)::int', 'nbNumeros')
+    .addSelect(
+      'count(CASE WHEN numeros.certifie THEN true END)::int',
+      'nbNumerosCertifies',
+    )
+    .addSelect(
+      'CASE WHEN count(numeros.id) > 0 AND count(CASE WHEN numeros.certifie THEN true END) = count(numeros.id) THEN true ELSE false END',
+      'isAllCertified',
+    )
+    .addSelect('voies.comment', 'comment')
+    .addSelect(
+      `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
+      'commentedNumeros',
+    )
+    .leftJoin('voies.numeros', 'numeros')
+    .groupBy('voies.id, voies.comment');
+
+  async findVoieMetas(voieId: string): Promise<VoieMetas> {
+    const query = this.createQueryVoieMetas.where('voies.id = :voieId', {
+      voieId,
+    });
+    return query.getRawOne();
+  }
+
+  async findVoiesMetas(balId: string): Promise<VoieMetas[]> {
+    const query = this.createQueryVoieMetas.where('voies.bal_id = :balId', {
+      balId,
+    });
+    return query.getRawMany();
   }
 }
