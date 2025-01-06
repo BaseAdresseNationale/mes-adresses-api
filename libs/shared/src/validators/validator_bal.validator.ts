@@ -50,6 +50,8 @@ export class ValidatorBal implements ValidatorConstraintInterface {
 
   defaultMessage(args: ValidationArguments) {
     const field = args.constraints[0];
-    return 'Le champ ' + field + ' : ' + args.value + " n'est pas valide";
+    const value =
+      field === 'langAlt' ? Object.values(args.value)[0] : args.value;
+    return 'Le champ ' + field + ' : ' + value + " n'est pas valide";
   }
 }
