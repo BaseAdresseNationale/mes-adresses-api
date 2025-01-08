@@ -25,6 +25,7 @@ type BanIdsType = {
 type RowType = {
   banIds: BanIdsType;
   codeCommune: string;
+  nomCommuneAlt: Record<string, string>;
   codeVoie: string;
   numero: number;
   suffixe?: string;
@@ -136,6 +137,12 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
     row.commentaire_voie = obj.commentVoie;
   }
 
+  if (obj.nomCommuneAlt) {
+    Object.keys(obj.nomCommuneAlt).forEach((o) => {
+      row['commune_nom_' + o] = obj.nomCommuneAlt[o];
+    });
+  }
+
   if (obj.nomVoieAlt) {
     Object.keys(obj.nomVoieAlt).forEach((o) => {
       row['voie_nom_' + o] = obj.nomVoieAlt[o];
@@ -191,12 +198,13 @@ export async function exportBalToCsv(
     if (n.positions && n.positions.length > 0) {
       n.positions.forEach((p) => {
         rows.push({
-          codeCommune: baseLocale.commune,
           banIds: {
             commune: baseLocale.banId,
             toponyme: v.banId,
             adresse: n.banId,
           },
+          codeCommune: baseLocale.commune,
+          nomCommuneAlt: baseLocale.nomAlt,
           codeVoie: DEFAULT_CODE_VOIE,
           numero: n.numero,
           suffixe: n.suffixe,
@@ -219,11 +227,12 @@ export async function exportBalToCsv(
     if (t.positions.length > 0) {
       t.positions.forEach((p) => {
         rows.push({
-          codeCommune: baseLocale.commune,
           banIds: {
             commune: baseLocale.banId,
             toponyme: t.banId,
           },
+          codeCommune: baseLocale.commune,
+          nomCommuneAlt: baseLocale.nomAlt,
           codeVoie: DEFAULT_CODE_VOIE,
           numero: DEFAULT_NUMERO_TOPONYME,
           updatedAt: t.updatedAt,
@@ -240,6 +249,7 @@ export async function exportBalToCsv(
           toponyme: t.banId,
         },
         codeCommune: baseLocale.commune,
+        nomCommuneAlt: baseLocale.nomAlt,
         codeVoie: DEFAULT_CODE_VOIE,
         numero: DEFAULT_NUMERO_TOPONYME,
         updatedAt: t.updatedAt,

@@ -1,10 +1,13 @@
+import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
   ArrayNotEmpty,
   IsEmail,
   IsNotEmpty,
+  IsNotEmptyObject,
   IsOptional,
+  Validate,
 } from 'class-validator';
 
 export class UpdateBaseLocaleDTO {
@@ -12,6 +15,12 @@ export class UpdateBaseLocaleDTO {
   @ApiProperty({ required: false, nullable: false })
   @IsNotEmpty()
   nom?: string;
+
+  @IsOptional()
+  @IsNotEmptyObject()
+  @Validate(ValidatorBal, ['langAlt'])
+  @ApiProperty({ required: false, nullable: true })
+  nomAlt: Record<string, string>;
 
   @IsOptional()
   @ApiProperty({ required: false, nullable: false })
