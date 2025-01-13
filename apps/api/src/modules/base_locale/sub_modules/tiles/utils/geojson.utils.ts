@@ -1,6 +1,5 @@
 import * as turf from '@turf/turf';
 import { Feature as FeatureTurf } from '@turf/helpers';
-import * as randomColor from 'randomcolor';
 import { FeatureCollection } from 'geojson';
 
 import { Numero } from '@/shared/entities/numero.entity';
@@ -10,7 +9,7 @@ import { getPriorityPosition } from '@/lib/utils/positions.util';
 import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
 
 // Paul Tol's vibrant palette for accessibility
-const colorblindFriendlyHues = [
+const colorblindFriendlyPalette = [
   '#EE7733',
   '#0077BB',
   '#33BBEE',
@@ -19,23 +18,25 @@ const colorblindFriendlyHues = [
   '#009988',
 ];
 
-function getColorById(id: string): string {
-  return randomColor({
-    luminosity: 'dark',
-    seed: id,
-  });
-}
-
-// Returns a color of the palette based on the bal ID
-function getColorblindFriendlyHue(id: string): string {
-  const slicedId = id.slice(16).replace(/-/g, '');
-  return colorblindFriendlyHues[
-    Number.parseInt(slicedId, 16) % colorblindFriendlyHues.length
-  ];
-}
+const colorPalette = [
+  '#8B1A1A',
+  '#1874CD',
+  '#00875A',
+  '#E6C200',
+  '#805BA5',
+  '#D47300',
+  '#36B3B3',
+  '#D1127A',
+];
 
 function getFeatureColor(id: string, colorblindMode: boolean = false): string {
-  return colorblindMode ? getColorblindFriendlyHue(id) : getColorById(id);
+  const slicedId = id.slice(16).replace(/-/g, '');
+  if (colorblindMode) {
+    return colorblindFriendlyPalette[
+      Number.parseInt(slicedId, 16) % colorblindFriendlyPalette.length
+    ];
+  }
+  return colorPalette[Number.parseInt(slicedId, 16) % colorPalette.length];
 }
 
 function numeroToPointFeature(n: Numero, colorblindMode: boolean): FeatureTurf {
