@@ -35,11 +35,14 @@ export class ValidatorBal implements ValidatorConstraintInterface {
           if (supportedNomAlt.has(codeISO)) {
             const nomVoie = value[codeISO];
             const { errors } = await validateurBAL(nomVoie, 'voie_nom');
-            return errors.length === 0;
+            if (errors.length > 0) {
+              return false;
+            }
           } else {
             return false;
           }
         }
+        return true;
       }
     } catch {
       return false;

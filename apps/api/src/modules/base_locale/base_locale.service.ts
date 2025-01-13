@@ -210,7 +210,7 @@ export class BaseLocaleService {
       voies,
       numeros,
       toponymes,
-      communeNomAlt,
+      communeNomsAlt,
       isValid,
       accepted,
       rejected,
@@ -227,7 +227,7 @@ export class BaseLocaleService {
       voies,
       numeros,
       toponymes,
-      communeNomAlt,
+      communeNomsAlt,
     });
     // On met a jour le updatedAt de la Bal
     await this.touch(baseLocale.id);
@@ -395,11 +395,11 @@ export class BaseLocaleService {
 
   async populate(
     baseLocale: BaseLocale,
-    { voies, toponymes, numeros, communeNomAlt }: FromCsvType,
+    { voies, toponymes, numeros, communeNomsAlt }: FromCsvType,
   ): Promise<BaseLocale> {
-    if (communeNomAlt) {
+    if (communeNomsAlt) {
       this.basesLocalesRepository.update(baseLocale.id, {
-        nomAlt: communeNomAlt,
+        communeNomsAlt,
       });
     }
     // On supprime les numeros, vois et toponymes si il y en a

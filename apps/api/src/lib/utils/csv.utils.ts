@@ -17,7 +17,7 @@ export type FromCsvType = {
   validationError?: string;
   accepted?: number;
   rejected?: number;
-  communeNomAlt?: Record<string, string>;
+  communeNomsAlt?: Record<string, string>;
   voies?: Partial<Voie>[];
   numeros?: Partial<Numero>[];
   toponymes?: Partial<Toponyme>[];
@@ -203,7 +203,7 @@ export async function extractFromCsv(
       accepted.filter((r) => extractCodeCommune(r) === codeCommune),
     );
 
-    const communeNomAlt =
+    const communeNomsAlt =
       rows.find((row) => row.localizedValues?.commune_nom)?.localizedValues
         ?.commune_nom || null;
 
@@ -211,7 +211,7 @@ export async function extractFromCsv(
       isValid: true,
       accepted: accepted.length,
       rejected: rejected.length,
-      communeNomAlt,
+      communeNomsAlt,
       voies: communesData.voies,
       numeros: communesData.numeros,
       toponymes: communesData.toponymes,

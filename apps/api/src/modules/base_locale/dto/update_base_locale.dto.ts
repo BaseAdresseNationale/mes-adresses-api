@@ -20,7 +20,7 @@ export class UpdateBaseLocaleDTO {
   @IsNotEmptyObject()
   @Validate(ValidatorBal, ['langAlt'])
   @ApiProperty({ required: false, nullable: true })
-  nomAlt: Record<string, string>;
+  communeNomsAlt: Record<string, string>;
 
   @IsOptional()
   @ApiProperty({ required: false, nullable: false })
