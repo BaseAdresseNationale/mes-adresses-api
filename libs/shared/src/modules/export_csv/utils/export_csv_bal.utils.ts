@@ -167,7 +167,6 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
       row.y = projectedCoords[1].toString();
     }
   }
-
   return row;
 }
 
@@ -249,6 +248,7 @@ export async function exportBalToCsv(
           toponyme: t.banId,
         },
         codeCommune: baseLocale.commune,
+        communeDeleguee: t.communeDeleguee,
         codeVoie: DEFAULT_CODE_VOIE,
         numero: DEFAULT_NUMERO_TOPONYME,
         updatedAt: t.updatedAt,
@@ -258,7 +258,6 @@ export async function exportBalToCsv(
       });
     }
   });
-
   const csvRows: CsvRowType[] = rows.map((row) => createRow(row, withComment));
   const headers: string[] = extractHeaders(csvRows);
 
