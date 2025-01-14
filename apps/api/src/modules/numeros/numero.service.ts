@@ -210,6 +210,7 @@ export class NumeroService {
         }),
         parcelles: rawNumero.parcelles || [],
         certifie: rawNumero.certifie || false,
+        communeDeleguee: rawNumero.communeDeleguee,
         ...(rawNumero.updatedAt && { updatedAt: rawNumero.updatedAt }),
         ...(rawNumero.createdAt && { createdAt: rawNumero.createdAt }),
       }));

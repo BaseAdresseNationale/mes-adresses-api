@@ -154,6 +154,8 @@ function extractData(rows: Row[]): {
           nomAlt: toponymeAlt,
           positions: [],
           parcelles: numeroRows[0].parsedValues.cad_parcelles,
+          communeDeleguee:
+            numeroRows[0].rawValues.commune_deleguee_insee || null,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
