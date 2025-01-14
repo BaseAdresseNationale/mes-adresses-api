@@ -45,7 +45,7 @@ export class CreateNumeroDTO {
   @IsOptional()
   @Validate(ValidatorCogCommune, ['commune_deleguee'])
   @ApiProperty({ required: false, nullable: false })
-  communeDeleguee: string | null;
+  communeDeleguee?: string | null;
 
   @ValidateNested({ each: true, message: 'positions must be an array' })
   @ArrayNotEmpty()

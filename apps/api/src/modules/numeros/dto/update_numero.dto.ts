@@ -51,7 +51,7 @@ export class UpdateNumeroDTO {
   @IsOptional()
   @Validate(ValidatorCogCommune, ['commune_deleguee'])
   @ApiProperty({ required: false, nullable: false })
-  communeDeleguee: string | null;
+  communeDeleguee?: string | null;
 
   @IsOptional()
   @ValidateNested({ each: true, message: 'positions must be an array' })
