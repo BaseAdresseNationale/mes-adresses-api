@@ -1,2 +1,2 @@
 clock: yarn start:cron
-postdeploy: bash bin/postdeploy.sh
+postdeploy: yarn typeorm:migration:run
