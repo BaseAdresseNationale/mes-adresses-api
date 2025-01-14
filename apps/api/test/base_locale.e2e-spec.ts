@@ -186,7 +186,7 @@ describe('BASE LOCAL MODULE', () => {
     };
     return {
       id,
-      type: PositionTypeEnum.INCONNUE,
+      type: PositionTypeEnum.ENTREE,
       source: 'ban',
       point,
     } as Position;
@@ -578,8 +578,8 @@ describe('BASE LOCAL MODULE', () => {
         'text/csv; charset=utf-8',
       );
       const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-    91534_xxxx_00001_bis;${communeUuid};${voieUuid1};${numeroUuid1};rue de la paix;allée;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
-    91534_xxxx_00001_ter;${communeUuid};${voieUuid2};${numeroUuid2};rue de paris;allée;1;ter;0;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-02
+    91534_xxxx_00001_bis;${communeUuid};${voieUuid1};${numeroUuid1};rue de la paix;allée;1;bis;1;91534;Saclay;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-02
+    91534_xxxx_00001_ter;${communeUuid};${voieUuid2};${numeroUuid2};rue de paris;allée;1;ter;0;91534;Saclay;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-02
     91534_xxxx_99999;${communeUuid};${toponymeUuid1};;allée;;99999;;;91534;Saclay;;;;;;;commune;2000-01-02`;
       expect(response.text.replace(/\s/g, '')).toEqual(
         csvFile.replace(/\s/g, ''),

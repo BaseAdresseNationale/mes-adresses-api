@@ -14,6 +14,7 @@ import { Toponyme } from './toponyme.entity';
 import { ObjectId } from 'mongodb';
 import { Validate } from 'class-validator';
 import { PointValidator } from '../validators/coord.validator';
+import { ValidatorBal } from '../validators/validator_bal.validator';
 
 export enum PositionTypeEnum {
   ENTREE = 'entrée',
@@ -24,7 +25,6 @@ export enum PositionTypeEnum {
   DELIVRANCE_POSTALE = 'délivrance postale',
   PARCELLE = 'parcelle',
   SEGMENT = 'segment',
-  INCONNUE = 'inconnue',
 }
 
 @Entity({ name: 'positions' })
@@ -49,6 +49,7 @@ export class Position {
   numeroId?: string;
 
   @ApiProperty({ enum: PositionTypeEnum })
+  @Validate(ValidatorBal, ['position'])
   @Column('enum', {
     enum: PositionTypeEnum,
     default: PositionTypeEnum.ENTREE,
