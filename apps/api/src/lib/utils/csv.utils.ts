@@ -57,7 +57,7 @@ export function extractCodeCommune({
 function extractPosition(row: any) {
   return {
     source: row.parsedValues.source || null,
-    type: row.parsedValues.position || PositionTypeEnum.INCONNUE,
+    type: row.parsedValues.position || PositionTypeEnum.ENTREE,
     point: {
       type: 'Point',
       coordinates: [row.parsedValues.long, row.parsedValues.lat],
