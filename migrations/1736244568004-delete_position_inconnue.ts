@@ -3,10 +3,29 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class DeletePositionInconnue1736244568004 implements MigrationInterface {
   name = 'DeletePositionInconnue1736244568004';
 
-  public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `UPDATE positions SET type = 'entrée' WHERE type = 'inconnue'`,
+  private async queryPositionTypeToEntree(queryRunner: QueryRunner, limit) {
+    return await queryRunner.query(
+      `WITH updated_rows AS (
+          SELECT id
+          FROM positions
+          WHERE type = 'inconnue'
+          LIMIT ${limit}
+      )
+      UPDATE positions
+      SET type = 'entrée'
+      WHERE id IN (SELECT id FROM updated_rows);`,
     );
+  }
+
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    const limit = 10000;
+    let count = 0;
+    let res = await this.queryPositionTypeToEntree(queryRunner, limit);
+    while (res[1] >= limit) {
+      count += res[1];
+      console.log(`COUNT ${count}`);
+      res = await this.queryPositionTypeToEntree(queryRunner, limit);
+    }
     await queryRunner.query(
       `ALTER TYPE "public"."positions_type_enum" RENAME TO "positions_type_enum_old"`,
     );
