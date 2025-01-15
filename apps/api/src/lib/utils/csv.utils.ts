@@ -17,6 +17,7 @@ export type FromCsvType = {
   validationError?: string;
   accepted?: number;
   rejected?: number;
+  communeNomsAlt?: Record<string, string>;
   voies?: Partial<Voie>[];
   numeros?: Partial<Numero>[];
   toponymes?: Partial<Toponyme>[];
@@ -107,7 +108,6 @@ function extractData(rows: Row[]): {
     .groupBy((r) => normalize(r.parsedValues.voie_nom))
     .map((voieRows) => {
       const dates = compact(voieRows.map((r) => r.parsedValues.date_der_maj));
-
       return {
         id: new ObjectId().toHexString(),
         banId: extractIdBanToponyme(voieRows[0]),
@@ -203,10 +203,15 @@ export async function extractFromCsv(
       accepted.filter((r) => extractCodeCommune(r) === codeCommune),
     );
 
+    const communeNomsAlt =
+      rows.find((row) => row.localizedValues?.commune_nom)?.localizedValues
+        ?.commune_nom || null;
+
     return {
       isValid: true,
       accepted: accepted.length,
       rejected: rejected.length,
+      communeNomsAlt,
       voies: communesData.voies,
       numeros: communesData.numeros,
       toponymes: communesData.toponymes,

@@ -39,6 +39,10 @@ export class BaseLocale extends GlobalEntity {
   nom: string;
 
   @ApiProperty()
+  @Column('json', { name: 'commune_noms_alt', nullable: true })
+  communeNomsAlt: Record<string, string> | null;
+
+  @ApiProperty()
   @Column('varchar', { nullable: false, length: 5 })
   commune: string;
 

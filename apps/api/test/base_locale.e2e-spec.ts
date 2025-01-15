@@ -37,6 +37,7 @@ const baseLocalePublicProperties = [
   'id',
   'banId',
   'nom',
+  'communeNomsAlt',
   'commune',
   'nbNumeros',
   'nbNumerosCertifies',
