@@ -6,11 +6,9 @@ import {
   IsNotEmpty,
   IsMongoId,
   ValidateIf,
-  Validate,
 } from 'class-validator';
 
 import { PositionTypeEnum } from '@/shared/entities/position.entity';
-import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 
 export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
@@ -33,7 +31,6 @@ export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
   @IsNotEmpty()
   @IsEnum(PositionTypeEnum)
-  @Validate(ValidatorBal, ['position'])
   @ApiProperty({ required: false, nullable: false })
   positionType?: PositionTypeEnum;
 
