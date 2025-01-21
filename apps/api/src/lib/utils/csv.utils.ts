@@ -1,6 +1,7 @@
 import { validate } from '@ban-team/validateur-bal';
 import { normalize } from '@ban-team/adresses-util/lib/voies';
 import { chain, compact, keyBy, min, max } from 'lodash';
+import { v4 as uuid } from 'uuid';
 
 import { beautifyUppercased, beautifyNomAlt } from './string.utils';
 
@@ -145,7 +146,7 @@ function extractData(rows: Row[]): {
       if (toponymeString && !(toponymeString in toponymesIndex)) {
         const toponyme: Partial<Toponyme> = {
           id: new ObjectId().toHexString(),
-          banId: extractIdBanToponyme(numeroRows[0]),
+          banId: uuid(),
           nom: beautifyUppercased(
             numeroRows[0].parsedValues.lieudit_complement_nom,
           ),
