@@ -158,7 +158,7 @@ describe('TOPONYME MODULE', () => {
     };
     return {
       id,
-      type: PositionTypeEnum.INCONNUE,
+      type: PositionTypeEnum.ENTREE,
       source: 'ban',
       point,
     } as Position;

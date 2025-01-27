@@ -11,6 +11,7 @@ import {
 
 import { PositionTypeEnum } from '@/shared/entities/position.entity';
 import { ValidatorCogCommune } from '@/shared/validators/cog.validator';
+import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 
 export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
@@ -33,6 +34,7 @@ export class UpdateBatchNumeroChangeDTO {
   @IsOptional()
   @IsNotEmpty()
   @IsEnum(PositionTypeEnum)
+  @Validate(ValidatorBal, ['position'])
   @ApiProperty({ required: false, nullable: false })
   positionType?: PositionTypeEnum;
 

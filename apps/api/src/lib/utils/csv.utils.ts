@@ -1,6 +1,7 @@
 import { validate } from '@ban-team/validateur-bal';
 import { normalize } from '@ban-team/adresses-util/lib/voies';
 import { chain, compact, keyBy, min, max } from 'lodash';
+import { v4 as uuid } from 'uuid';
 
 import { beautifyUppercased, beautifyNomAlt } from './string.utils';
 
@@ -17,6 +18,7 @@ export type FromCsvType = {
   validationError?: string;
   accepted?: number;
   rejected?: number;
+  communeNomsAlt?: Record<string, string>;
   voies?: Partial<Voie>[];
   numeros?: Partial<Numero>[];
   toponymes?: Partial<Toponyme>[];
@@ -56,7 +58,7 @@ export function extractCodeCommune({
 function extractPosition(row: any) {
   return {
     source: row.parsedValues.source || null,
-    type: row.parsedValues.position || PositionTypeEnum.INCONNUE,
+    type: row.parsedValues.position || PositionTypeEnum.ENTREE,
     point: {
       type: 'Point',
       coordinates: [row.parsedValues.long, row.parsedValues.lat],
@@ -109,7 +111,6 @@ function extractData(rows: Row[]): {
     .groupBy((r) => normalize(r.parsedValues.voie_nom))
     .map((voieRows) => {
       const dates = compact(voieRows.map((r) => r.parsedValues.date_der_maj));
-
       return {
         id: new ObjectId().toHexString(),
         banId: extractIdBanToponyme(voieRows[0]),
@@ -147,7 +148,7 @@ function extractData(rows: Row[]): {
       if (toponymeString && !(toponymeString in toponymesIndex)) {
         const toponyme: Partial<Toponyme> = {
           id: new ObjectId().toHexString(),
-          banId: extractIdBanToponyme(numeroRows[0]),
+          banId: uuid(),
           nom: beautifyUppercased(
             numeroRows[0].parsedValues.lieudit_complement_nom,
           ),
@@ -208,10 +209,15 @@ export async function extractFromCsv(
       accepted.filter((r) => extractCodeCommune(r) === codeCommune),
     );
 
+    const communeNomsAlt =
+      rows.find((row) => row.localizedValues?.commune_nom)?.localizedValues
+        ?.commune_nom || null;
+
     return {
       isValid: true,
       accepted: accepted.length,
       rejected: rejected.length,
+      communeNomsAlt,
       voies: communesData.voies,
       numeros: communesData.numeros,
       toponymes: communesData.toponymes,

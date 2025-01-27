@@ -208,7 +208,7 @@ describe('TASK MODULE', () => {
     };
     return {
       id,
-      type: PositionTypeEnum.INCONNUE,
+      type: PositionTypeEnum.ENTREE,
       source: 'ban',
       point,
     } as Position;
@@ -370,7 +370,7 @@ describe('TASK MODULE', () => {
     axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
     const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-  91534_xxxx_00001_bis;52c4de09-6b82-45eb-8ed7-b212607282f7;26734c2d-2a14-4eeb-ac5b-1be055c0a5ae;2da3bb47-1a10-495a-8c29-6b8d0e79f9af;rue de la paix;;1;bis;1;91534;Saclay;;;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+  91534_xxxx_00001_bis;52c4de09-6b82-45eb-8ed7-b212607282f7;26734c2d-2a14-4eeb-ac5b-1be055c0a5ae;2da3bb47-1a10-495a-8c29-6b8d0e79f9af;rue de la paix;;1;bis;1;91534;Saclay;;;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
     axiosMock.onPut(`/revisions/${revisionId}/files/bal`).reply(({ data }) => {
       expect(data.replace(/\s/g, '')).toEqual(csvFile.replace(/\s/g, ''));
       return [200, null];
@@ -414,7 +414,7 @@ describe('TASK MODULE', () => {
     const revision: Revision = {
       _id: revisionId.toString(),
       codeCommune: commune,
-      status: StatusRevision.PENDING,
+      status: StatusRevision.PUBLISHED,
       ready: false,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -425,7 +425,7 @@ describe('TASK MODULE', () => {
       files: [
         {
           type: 'bal',
-          hash: 'e80613f07843ede61ef9d3b396c2878fab65c165af9eac8b75c5aa12419907b8',
+          hash: '5387136992a3d0ca40c53dc14c21fda9a4ca566b18bd6c45df7aa852774b4c8a',
         },
       ],
     };

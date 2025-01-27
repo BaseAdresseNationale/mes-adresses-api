@@ -159,7 +159,7 @@ describe('PUBLICATION MODULE', () => {
     };
     return {
       id,
-      type: PositionTypeEnum.INCONNUE,
+      type: PositionTypeEnum.ENTREE,
       source: 'ban',
       point,
     } as Position;
@@ -226,7 +226,7 @@ describe('PUBLICATION MODULE', () => {
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
       const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-      08053_xxxx_00001_bis;${communeUuid};${voieUuid};${numeroUuid};rue de la paix;;1;bis;1;08053;Bazeilles;08294;La Moncelle;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+      08053_xxxx_00001_bis;${communeUuid};${voieUuid};${numeroUuid};rue de la paix;;1;bis;1;08053;Bazeilles;08294;La Moncelle;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -347,7 +347,7 @@ describe('PUBLICATION MODULE', () => {
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
       const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-      91534_xxxx_00001_bis;${communeUuid};${toponymeUuid};${numeroUuid};rue de la paix;;1;bis;1;91534;Saclay;;;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+      91534_xxxx_00001_bis;${communeUuid};${toponymeUuid};${numeroUuid};rue de la paix;;1;bis;1;91534;Saclay;;;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -410,7 +410,7 @@ describe('PUBLICATION MODULE', () => {
         files: [
           {
             type: 'bal',
-            hash: 'a512238a358a47446e4eb6b89dbfbecc03b81fcb2492eed54e277699d1c49c62',
+            hash: '37925d84890a965635aa5f119efade4fb2dc02331039a80c57497a9bb21ea82b',
           },
         ],
       };
@@ -456,7 +456,6 @@ describe('PUBLICATION MODULE', () => {
       axiosMock
         .onGet(`habilitations/${habilitationId}`)
         .reply(200, habilitation);
-
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)

@@ -404,7 +404,7 @@ describe('NUMERO', () => {
         positions: [
           {
             id: new ObjectId().toHexString(),
-            type: PositionTypeEnum.INCONNUE,
+            type: PositionTypeEnum.ENTREE,
             source: 'ban',
             point: {
               type: 'Point',
