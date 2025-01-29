@@ -210,6 +210,7 @@ export class BaseLocaleService {
       voies,
       numeros,
       toponymes,
+      communeNomsAlt,
       isValid,
       accepted,
       rejected,
@@ -222,7 +223,12 @@ export class BaseLocaleService {
       );
     }
     // On populate la Bal avec les infos du fichier
-    await this.populate(baseLocale, { voies, numeros, toponymes });
+    await this.populate(baseLocale, {
+      voies,
+      numeros,
+      toponymes,
+      communeNomsAlt,
+    });
     // On met a jour le updatedAt de la Bal
     await this.touch(baseLocale.id);
 
@@ -389,8 +395,13 @@ export class BaseLocaleService {
 
   async populate(
     baseLocale: BaseLocale,
-    { voies, toponymes, numeros }: FromCsvType,
+    { voies, toponymes, numeros, communeNomsAlt }: FromCsvType,
   ): Promise<BaseLocale> {
+    if (communeNomsAlt) {
+      this.basesLocalesRepository.update(baseLocale.id, {
+        communeNomsAlt,
+      });
+    }
     // On supprime les numeros, vois et toponymes si il y en a
     await this.numeroService.deleteMany({ balId: baseLocale.id });
     await this.voieService.deleteMany({ balId: baseLocale.id });

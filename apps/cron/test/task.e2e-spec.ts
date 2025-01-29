@@ -207,7 +207,7 @@ describe('TASK MODULE', () => {
     };
     return {
       id,
-      type: PositionTypeEnum.INCONNUE,
+      type: PositionTypeEnum.ENTREE,
       source: 'ban',
       point,
     } as Position;
@@ -370,7 +370,7 @@ describe('TASK MODULE', () => {
     axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
     const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-  91534_xxxx_00001_bis;52c4de09-6b82-45eb-8ed7-b212607282f7;26734c2d-2a14-4eeb-ac5b-1be055c0a5ae;2da3bb47-1a10-495a-8c29-6b8d0e79f9af;rue de la paix;;1;bis;1;91534;Saclay;inconnue;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+  91534_xxxx_00001_bis;52c4de09-6b82-45eb-8ed7-b212607282f7;26734c2d-2a14-4eeb-ac5b-1be055c0a5ae;2da3bb47-1a10-495a-8c29-6b8d0e79f9af;rue de la paix;;1;bis;1;91534;Saclay;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
     axiosMock.onPut(`/revisions/${revisionId}/files/bal`).reply(({ data }) => {
       expect(data.replace(/\s/g, '')).toEqual(csvFile.replace(/\s/g, ''));
       return [200, null];
@@ -425,7 +425,7 @@ describe('TASK MODULE', () => {
       files: [
         {
           type: TypeFileEnum.BAL,
-          hash: 'a62492c9dbd6c74e7cfb2b67b3a9e49be89da7b8fa4dff3c061b0f82805b65c9',
+          hash: '5a9646ce4fe552b0dc619e166b0ce7968fa34c94e634331b090452a26c888f7d',
         },
       ],
     };
@@ -470,7 +470,6 @@ describe('TASK MODULE', () => {
       emailCommune: 'test@test.fr',
     };
     axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
-
     await syncOutdatedTask.run();
 
     const balResult = await balRepository.findOneBy({ id: balId });
