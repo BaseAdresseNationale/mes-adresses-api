@@ -166,7 +166,7 @@ describe('PUBLICATION MODULE', () => {
 
   describe('POST /bases-locales/sync/exec', () => {
     it('Publish 200 DRAFT', async () => {
-      const commune = '91534';
+      const commune = '08053';
       const habilitationId = new ObjectId().toHexString();
       const balId = await createBal({
         nom: 'bal',
@@ -190,6 +190,7 @@ describe('PUBLICATION MODULE', () => {
         positions: [createPositions()],
         certifie: true,
         updatedAt: new Date('2000-01-01'),
+        communeDeleguee: '08294',
       });
       const { banId: numeroUuid } = await numeroRepository.findOneBy({
         id: numeroId,
@@ -223,8 +224,8 @@ describe('PUBLICATION MODULE', () => {
 
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
-      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-    91534_xxxx_00001_bis;${communeUuid};${voieUuid};${numeroUuid};rue de la paix;;1;bis;1;91534;Saclay;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+      08053_xxxx_00001_bis;${communeUuid};${voieUuid};${numeroUuid};rue de la paix;;1;bis;1;08053;Bazeilles;08294;La Moncelle;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -344,8 +345,8 @@ describe('PUBLICATION MODULE', () => {
 
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
-      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-      91534_xxxx_00001_bis;${communeUuid};${toponymeUuid};${numeroUuid};rue de la paix;;1;bis;1;91534;Saclay;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+      91534_xxxx_00001_bis;${communeUuid};${toponymeUuid};${numeroUuid};rue de la paix;;1;bis;1;91534;Saclay;;;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -408,7 +409,7 @@ describe('PUBLICATION MODULE', () => {
         files: [
           {
             type: TypeFileEnum.BAL,
-            hash: '8e23f1782299e8d5970c1fa800a7074beaac7eeac4c1f0c484e4f6441f680011',
+            hash: '37925d84890a965635aa5f119efade4fb2dc02331039a80c57497a9bb21ea82b',
           },
         ],
       };
@@ -454,7 +455,6 @@ describe('PUBLICATION MODULE', () => {
       axiosMock
         .onGet(`habilitations/${habilitationId}`)
         .reply(200, habilitation);
-
       // SEND REQUEST
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/sync/exec`)
