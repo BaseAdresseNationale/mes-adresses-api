@@ -299,7 +299,7 @@ describe('HABILITATION MODULE', () => {
         status: StatusHabilitationEnum.PENDING,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
-        emailCommune: 'test@test.fr',
+        emailCommune: null,
       };
 
       axiosMock
@@ -317,6 +317,7 @@ describe('HABILITATION MODULE', () => {
 
       await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/send-pin-code`)
+        .send({ email: 'mairie@test.fr' })
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
     });
@@ -338,7 +339,7 @@ describe('HABILITATION MODULE', () => {
         status: StatusHabilitationEnum.ACCEPTED,
         expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
-        emailCommune: 'test@test.fr',
+        emailCommune: null,
       };
 
       axiosMock
@@ -347,6 +348,7 @@ describe('HABILITATION MODULE', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/habilitation/email/send-pin-code`)
+        .send({ email: 'mairie@test.fr' })
         .set('Authorization', `Bearer ${token}`)
         .expect(412);
 

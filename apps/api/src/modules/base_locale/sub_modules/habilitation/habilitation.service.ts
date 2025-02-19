@@ -117,7 +117,7 @@ export class HabilitationService {
     return habilitation;
   }
 
-  async sendPinCode(habilitationId: string): Promise<void> {
+  async sendPinCode(habilitationId: string, email: string): Promise<void> {
     const habilitation: Habilitation = await this.findOne(habilitationId);
     if (habilitation.status !== StatusHabilitationEnum.PENDING) {
       throw new HttpException(
@@ -127,7 +127,7 @@ export class HabilitationService {
     }
 
     try {
-      await this.apiDepotService.sendPinCodeHabiliation(habilitationId);
+      await this.apiDepotService.sendPinCodeHabiliation(habilitationId, email);
     } catch (error) {
       this.logger.error(
         `Impossible d'envoyer le code pour l'habilitation ${habilitationId}`,
