@@ -96,8 +96,6 @@ function extractData(rows: Row[]): {
           ? beautifyNomAlt(toponymeRows[0].localizedValues.voie_nom)
           : null,
         positions: extractPositions(toponymeRows),
-        communeDeleguee:
-          toponymeRows[0].rawValues.commune_deleguee_insee || null,
         createdAt: date,
         updatedAt: date,
       };
@@ -155,8 +153,6 @@ function extractData(rows: Row[]): {
           nomAlt: toponymeAlt,
           positions: [],
           parcelles: numeroRows[0].parsedValues.cad_parcelles,
-          communeDeleguee:
-            numeroRows[0].rawValues.commune_deleguee_insee || null,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
