@@ -1,4 +1,8 @@
-import { validate } from '@ban-team/validateur-bal';
+import {
+  validate,
+  ValidateProfile,
+  ValidateRowType,
+} from '@ban-team/validateur-bal';
 import { normalize } from '@ban-team/adresses-util/lib/voies';
 import { chain, compact, keyBy, min, max } from 'lodash';
 import { v4 as uuid } from 'uuid';
@@ -9,7 +13,6 @@ import { PositionTypeEnum } from '@/shared/entities/position.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
-import { Row } from '../types/validator.types';
 import { ObjectId } from 'mongodb';
 import { Logger } from '@/shared/utils/logger.utils';
 
@@ -27,7 +30,7 @@ export type FromCsvType = {
 export function extractIdBanAdresse({
   parsedValues,
   additionalValues,
-}: Row): string | null {
+}: ValidateRowType): string | null {
   return (
     parsedValues?.id_ban_adresse ||
     additionalValues?.uid_adresse?.idBanAdresse ||
@@ -38,7 +41,7 @@ export function extractIdBanAdresse({
 export function extractIdBanToponyme({
   parsedValues,
   additionalValues,
-}: Row): string | null {
+}: ValidateRowType): string | null {
   return (
     parsedValues?.id_ban_toponyme ||
     additionalValues?.uid_adresse?.idBanToponyme ||
@@ -49,7 +52,7 @@ export function extractIdBanToponyme({
 export function extractCodeCommune({
   parsedValues,
   additionalValues,
-}: Row): string | null {
+}: ValidateRowType): string | null {
   return (
     parsedValues.commune_insee || additionalValues?.cle_interop?.codeCommune
   );
@@ -78,7 +81,7 @@ function extractDate(row: any) {
   }
 }
 
-function extractData(rows: Row[]): {
+function extractData(rows: ValidateRowType[]): {
   voies: Partial<Voie>[];
   numeros: Partial<Numero>[];
   toponymes: Partial<Toponyme>[];
@@ -127,12 +130,12 @@ function extractData(rows: Row[]): {
   const numeros: Partial<Numero>[] = chain(rows)
     .filter((r) => r.parsedValues.numero !== 99999)
     .groupBy(
-      (r: Row) =>
+      (r: ValidateRowType) =>
         `${r.parsedValues.numero}@@@${r.parsedValues.suffixe}@@@${normalize(
           r.parsedValues.voie_nom,
         )}`,
     )
-    .map((numeroRows: Row[]) => {
+    .map((numeroRows: ValidateRowType[]) => {
       const date = extractDate(numeroRows[0]) || new Date();
 
       const voieString = normalize(numeroRows[0].parsedValues.voie_nom);
@@ -152,7 +155,7 @@ function extractData(rows: Row[]): {
           ),
           nomAlt: toponymeAlt,
           positions: [],
-          parcelles: numeroRows[0].parsedValues.cad_parcelles,
+          parcelles: numeroRows[0].parsedValues.cad_parcelles as string[],
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -186,21 +189,15 @@ export async function extractFromCsv(
   codeCommune: string,
 ): Promise<FromCsvType> {
   try {
-    const {
-      rows,
-      parseOk,
-    }: {
-      rows: Row[];
-      parseOk: boolean;
-    } = await validate(file, { profile: '1.4-relax' });
-
+    const { rows, parseOk }: ValidateProfile = (await validate(file, {
+      profile: '1.3-relax',
+    })) as ValidateProfile;
     if (!parseOk) {
       return { isValid: false };
     }
 
-    const accepted: Row[] = rows.filter(({ isValid }) => isValid);
-    const rejected: Row[] = rows.filter(({ isValid }) => !isValid);
-
+    const accepted: ValidateRowType[] = rows.filter(({ isValid }) => isValid);
+    const rejected: ValidateRowType[] = rows.filter(({ isValid }) => !isValid);
     const communesData = extractData(
       accepted.filter((r) => extractCodeCommune(r) === codeCommune),
     );
