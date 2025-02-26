@@ -44,11 +44,15 @@ export class ApiDepotService {
     return habilitation;
   }
 
-  async sendPinCodeHabiliation(habilitationId: string): Promise<void> {
+  async sendPinCodeHabiliation(
+    habilitationId: string,
+    email: string,
+  ): Promise<void> {
     await firstValueFrom(
       this.httpService
         .post<void>(
           `habilitations/${habilitationId}/authentication/email/send-pin-code`,
+          { email },
         )
         .pipe(
           catchError((error: AxiosError) => {
