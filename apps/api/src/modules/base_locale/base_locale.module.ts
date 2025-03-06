@@ -23,12 +23,14 @@ import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
 import { ConfigModule } from '@nestjs/config';
+import { CacheModule } from '@/shared/modules/cache/cache.module';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([BaseLocale]),
     PublicationModule,
+    CacheModule,
     forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),
     forwardRef(() => ExportCsvModule),

@@ -9,6 +9,7 @@ import { Voie } from '@/shared/entities/voie.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Position } from '@/shared/entities/position.entity';
+import { Cache } from '@/shared/entities/cache.entity';
 
 import { NumeroModule } from './modules/numeros/numero.module';
 import { BaseLocaleModule } from './modules/base_locale/base_locale.module';
@@ -34,7 +35,7 @@ import { SignalementModule } from './modules/signalement/signalement.module';
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
         schema: 'public',
-        entities: [BaseLocale, Voie, Numero, Toponyme, Position],
+        entities: [BaseLocale, Voie, Numero, Toponyme, Position, Cache],
       }),
       inject: [ConfigService],
     }),

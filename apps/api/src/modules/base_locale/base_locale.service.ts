@@ -41,6 +41,7 @@ import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
+import { CacheService } from '@/shared/modules/cache/cache.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
@@ -51,6 +52,8 @@ import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
+
+const KEY_POPULATE_BAL_ID = 'populateBalID';
 
 @Injectable()
 export class BaseLocaleService {
@@ -69,6 +72,7 @@ export class BaseLocaleService {
     @Inject(forwardRef(() => BanPlateformService))
     private banPlateformService: BanPlateformService,
     private configService: ConfigService,
+    private cacheService: CacheService,
   ) {}
 
   public async findOneOrFail(balId: string): Promise<BaseLocale> {
@@ -193,12 +197,21 @@ export class BaseLocaleService {
   }
 
   async extractAndPopulate(baseLocale: BaseLocale): Promise<BaseLocale> {
+    const key = `${KEY_POPULATE_BAL_ID}#${baseLocale.id}`;
+    await this.cacheService.set(key, '');
     // On extrait la Bal de l'assemblage BAN ou la derniere revision sur l'api-depot
     const data: FromCsvType = await this.populateService.extract(
       baseLocale.commune,
     );
     // On populate la Bal
-    return this.populate(baseLocale, data);
+    const res = await this.populate(baseLocale, data);
+    await this.cacheService.del(key);
+    return res;
+  }
+
+  async isPopulating(baseLocale: BaseLocale): Promise<boolean> {
+    const key = `${KEY_POPULATE_BAL_ID}#${baseLocale.id}`;
+    return (await this.cacheService.get(key)) !== null;
   }
 
   async importFile(
