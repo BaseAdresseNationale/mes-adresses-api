@@ -356,6 +356,23 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(populatedBAL);
   }
 
+  @Post(':baseLocaleId/is_populating')
+  @ApiOperation({
+    summary: 'Is populate Base Locale',
+    operationId: 'isPopulatingBaseLocale',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: Boolean })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async isPopulating(@Req() req: CustomRequest, @Res() res: Response) {
+    const isPopulating = await this.baseLocaleService.isPopulating(
+      req.baseLocale,
+    );
+
+    res.status(HttpStatus.OK).json(isPopulating);
+  }
+
   @Post(':baseLocaleId/token/renew')
   @ApiOperation({
     summary: 'Renew Base Locale token',

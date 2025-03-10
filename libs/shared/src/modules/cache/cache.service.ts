@@ -14,6 +14,10 @@ export class CacheService {
     return this.cacheRepository.findOne({ where: { key } });
   }
 
+  async del(key: string) {
+    return await this.cacheRepository.delete(key);
+  }
+
   async set(key: string, value: string) {
     const existingCache = await this.cacheRepository.findOne({
       where: { key },
