@@ -211,7 +211,8 @@ export class BaseLocaleService {
 
   async isPopulating(baseLocale: BaseLocale): Promise<boolean> {
     const key = `${KEY_POPULATE_BAL_ID}#${baseLocale.id}`;
-    return (await this.cacheService.get(key)) !== null;
+    const value = await this.cacheService.get(key);
+    return value !== null;
   }
 
   async importFile(
