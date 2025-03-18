@@ -2,11 +2,10 @@ import * as turf from '@turf/turf';
 import { Feature as FeatureTurf } from '@turf/helpers';
 import { FeatureCollection } from 'geojson';
 
-import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 
-import { getPriorityPosition } from '@/lib/utils/positions.util';
 import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
+import { NumeroInBbox } from '@/modules/numeros/numero.service';
 
 // Paul Tol's vibrant palette for accessibility
 const colorblindFriendlyPalette = [
@@ -39,14 +38,17 @@ function getFeatureColor(id: string, colorblindMode: boolean = false): string {
   return colorPalette[Number.parseInt(slicedId, 16) % colorPalette.length];
 }
 
-function numeroToPointFeature(n: Numero, colorblindMode: boolean): FeatureTurf {
-  const position = getPriorityPosition(n.positions);
-  return turf.feature(position.point, {
+function numeroToPointFeature(
+  n: NumeroInBbox,
+  colorblindMode: boolean,
+): FeatureTurf {
+  // const position = getPriorityPosition(n.positions);
+  return turf.feature(n.point, {
     type: 'adresse',
     id: n.id,
     numero: n.numero,
     suffixe: n.suffixe,
-    typePosition: position.type,
+    typePosition: n.typePosition,
     parcelles: n.parcelles,
     certifie: n.certifie,
     idVoie: n.voieId,
@@ -96,7 +98,7 @@ export function voiesLineStringsToGeoJSON(
 }
 
 export function numerosPointsToGeoJSON(
-  numeros: Numero[],
+  numeros: NumeroInBbox[],
   colorblindMode: boolean,
 ): FeatureCollection {
   return turf.featureCollection(
@@ -107,7 +109,7 @@ export function numerosPointsToGeoJSON(
 export function getGeoJson(
   voies: Voie[],
   traces: Voie[],
-  numeros: Numero[],
+  numeros: NumeroInBbox[],
   colorblindMode: boolean,
 ): GeoJsonCollectionType {
   return {
