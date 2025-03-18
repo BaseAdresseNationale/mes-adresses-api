@@ -48,11 +48,9 @@ function numeroToPointFeature(
     id: n.id,
     numero: n.numero,
     suffixe: n.suffixe,
-    typePosition: n.typePosition,
     parcelles: n.parcelles,
     certifie: n.certifie,
     idVoie: n.voieId,
-    idToponyme: n.toponymeId,
     color: getFeatureColor(n.voieId, colorblindMode),
   });
 }

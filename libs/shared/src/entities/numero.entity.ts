@@ -19,10 +19,13 @@ import { Voie } from './voie.entity';
 import { Toponyme } from './toponyme.entity';
 import { Position } from './position.entity';
 
-export function getPriorityPosition(positions) {
-  return positions.length === 0
-    ? {}
-    : maxBy(positions, (p) => getPositionPriorityByType(p.type));
+export function getPriorityPosition(
+  positions: Position[],
+): Position | undefined {
+  return (
+    positions?.length > 0 &&
+    maxBy(positions, (p) => getPositionPriorityByType(p.type))
+  );
 }
 
 export function displaySuffix(numero: Numero): string {
@@ -99,7 +102,9 @@ export class Numero extends GlobalEntity {
       this.positions[i].isDefault = false;
     }
     const positionDefault = getPriorityPosition(this.positions);
-    positionDefault.isDefault = true;
+    if (positionDefault) {
+      positionDefault.isDefault = true;
+    }
   }
 
   @AfterLoad()
