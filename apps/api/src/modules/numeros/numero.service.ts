@@ -164,9 +164,8 @@ export class NumeroService {
       .addSelect('positions.point', 'point')
       .leftJoin('numeros.positions', 'positions')
       .where('numeros.balId = :balId', { balId })
-      .where('positions.is_default IS true')
       .andWhere(
-        'ST_Contains(ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326), positions.point)',
+        'positions.point @ ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326)',
         {
           xmin: bbox[0],
           ymin: bbox[1],
@@ -174,7 +173,7 @@ export class NumeroService {
           ymax: bbox[3],
         },
       );
-    console.log(query.getSql(), query.getParameters());
+
     return query.getRawMany();
   }
 

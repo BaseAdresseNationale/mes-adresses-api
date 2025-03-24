@@ -61,9 +61,6 @@ export class Position {
   @Column('text', { nullable: true })
   source?: string;
 
-  @Column('bool', { name: 'is_default', nullable: false, default: false })
-  isDefault?: boolean;
-
   @ApiProperty()
   @Column('int', { nullable: false })
   rank?: number;

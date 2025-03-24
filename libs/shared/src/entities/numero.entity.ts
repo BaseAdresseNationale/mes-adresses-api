@@ -10,23 +10,12 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { maxBy } from 'lodash';
-import { getPositionPriorityByType } from '@ban-team/adresses-util';
 
 import { GlobalEntity } from './global.entity';
 import { BaseLocale } from './base_locale.entity';
 import { Voie } from './voie.entity';
 import { Toponyme } from './toponyme.entity';
 import { Position } from './position.entity';
-
-export function getPriorityPosition(
-  positions: Position[],
-): Position | undefined {
-  return (
-    positions?.length > 0 &&
-    maxBy(positions, (p) => getPositionPriorityByType(p.type))
-  );
-}
 
 export function displaySuffix(numero: Numero): string {
   if (numero.suffixe) {
@@ -99,11 +88,6 @@ export class Numero extends GlobalEntity {
   setRankPosition?() {
     for (let i = 0; i < this?.positions?.length; i++) {
       this.positions[i].rank = i;
-      this.positions[i].isDefault = false;
-    }
-    const positionDefault = getPriorityPosition(this.positions);
-    if (positionDefault) {
-      positionDefault.isDefault = true;
     }
   }
 
