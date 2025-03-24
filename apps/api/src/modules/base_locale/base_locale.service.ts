@@ -37,7 +37,7 @@ import {
 } from '@/shared/utils/mailer.utils';
 
 import { generateBase62String } from '@/lib/utils/token.utils';
-import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
+import { FromCsvValid, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
@@ -52,6 +52,7 @@ import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
+import { ValidateurApiService } from '@/shared/modules/validateur_api/validateur_api.service';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
@@ -73,6 +74,7 @@ export class BaseLocaleService {
     private banPlateformService: BanPlateformService,
     private configService: ConfigService,
     private cacheService: CacheService,
+    private validateurApiService: ValidateurApiService,
   ) {}
 
   public async findOneOrFail(balId: string): Promise<BaseLocale> {
@@ -200,7 +202,7 @@ export class BaseLocaleService {
     const key = `${KEY_POPULATE_BAL_ID}#${baseLocale.id}`;
     await this.cacheService.set(key, '');
     // On extrait la Bal de l'assemblage BAN ou la derniere revision sur l'api-depot
-    const data: FromCsvType = await this.populateService.extract(
+    const data: FromCsvValid = await this.populateService.extract(
       baseLocale.commune,
     );
     // On populate la Bal
@@ -220,6 +222,7 @@ export class BaseLocaleService {
     file: Buffer,
   ): Promise<ImportFileBaseLocaleDTO> {
     // On extrait les infos du fichier
+    const report = await this.validateurApiService.validateFile(file);
     const {
       voies,
       numeros,
@@ -228,7 +231,7 @@ export class BaseLocaleService {
       isValid,
       accepted,
       rejected,
-    }: FromCsvType = await extractFromCsv(file, baseLocale.commune);
+    }: FromCsvValid = await extractFromCsv(report, baseLocale.commune);
     // Si les informations ne sont pas valide on lance une erreur
     if (!isValid) {
       throw new HttpException(
@@ -409,7 +412,7 @@ export class BaseLocaleService {
 
   async populate(
     baseLocale: BaseLocale,
-    { voies, toponymes, numeros, communeNomsAlt }: FromCsvType,
+    { voies, toponymes, numeros, communeNomsAlt }: FromCsvValid,
   ): Promise<BaseLocale> {
     if (communeNomsAlt) {
       this.basesLocalesRepository.update(baseLocale.id, {

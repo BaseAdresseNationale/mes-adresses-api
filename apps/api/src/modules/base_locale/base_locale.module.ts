@@ -24,6 +24,7 @@ import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
+import { ValidateurApiModule } from '@/shared/modules/validateur_api/validateur_api.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     TypeOrmModule.forFeature([BaseLocale]),
     PublicationModule,
     CacheModule,
+    ValidateurApiModule,
     forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),
     forwardRef(() => ExportCsvModule),

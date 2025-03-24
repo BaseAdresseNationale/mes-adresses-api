@@ -1,6 +1,12 @@
-import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
+import {
+  FromCsv,
+  FromCsvError,
+  FromCsvValid,
+  extractFromCsv,
+} from '@/lib/utils/csv.utils';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
+import { ValidateurApiService } from '@/shared/modules/validateur_api/validateur_api.service';
 import { Inject, Injectable, forwardRef, Logger } from '@nestjs/common';
 
 @Injectable()
@@ -9,15 +15,19 @@ export class PopulateService {
     private apiDepotService: ApiDepotService,
     @Inject(forwardRef(() => BanPlateformService))
     private banPlateformService: BanPlateformService,
+    private validateurApiService: ValidateurApiService,
     private readonly logger: Logger,
   ) {}
 
-  private async extractFromApiDepot(codeCommune: string): Promise<FromCsvType> {
+  private async extractFromApiDepot(
+    codeCommune: string,
+  ): Promise<FromCsvValid> {
     try {
-      const fileData =
+      const file: Buffer =
         await this.apiDepotService.downloadCurrentRevisionFile(codeCommune);
-
-      const result: FromCsvType = await extractFromCsv(fileData, codeCommune);
+      const report = await this.validateurApiService.validateFile(file);
+      const result: FromCsv | FromCsvError | FromCsvValid =
+        await extractFromCsv(report, codeCommune);
       if (!result.isValid) {
         throw new Error('Invalid CSV file');
       }
@@ -26,12 +36,13 @@ export class PopulateService {
     } catch {}
   }
 
-  private async extractFromBAN(codeCommune: string): Promise<FromCsvType> {
+  private async extractFromBAN(codeCommune: string): Promise<FromCsvValid> {
     try {
       const file: Buffer =
         await this.banPlateformService.getBanAssemblage(codeCommune);
-
-      const result = await extractFromCsv(file, codeCommune);
+      const report = await this.validateurApiService.validateFile(file);
+      const result: FromCsv | FromCsvError | FromCsvValid =
+        await extractFromCsv(report, codeCommune);
       if (!result.isValid) {
         throw new Error('Invalid CSV file');
       }
@@ -40,11 +51,10 @@ export class PopulateService {
     } catch {}
   }
 
-  public async extract(codeCommune: string): Promise<FromCsvType> {
+  public async extract(codeCommune: string): Promise<FromCsvValid> {
     const data =
       (await this.extractFromApiDepot(codeCommune)) ||
       (await this.extractFromBAN(codeCommune));
-
     if (data) {
       return data;
     }
