@@ -5,8 +5,10 @@
 
 export type { FieldDTO } from './models/FieldDTO';
 export { FileUploadDTO } from './models/FileUploadDTO';
-export type { NotFoundFieldDTO } from './models/NotFoundFieldDTO';
+export { NotFoundFieldDTO } from './models/NotFoundFieldDTO';
+export { ParseErrorDTO } from './models/ParseErrorDTO';
+export { ProfileErrorDTO } from './models/ProfileErrorDTO';
 export type { ProfilesValidationDTO } from './models/ProfilesValidationDTO';
 export type { ValidateFileDTO } from './models/ValidateFileDTO';
-export { ValidateProfileDTO } from './models/ValidateProfileDTO';
+export type { ValidateProfileDTO } from './models/ValidateProfileDTO';
 export type { ValidateRowDTO } from './models/ValidateRowDTO';
