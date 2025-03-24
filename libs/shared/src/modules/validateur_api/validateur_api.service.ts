@@ -10,13 +10,16 @@ import { FileUploadDTO, ValidateProfileDTO } from './type';
 export class ValidateurApiService {
   constructor(private readonly httpService: HttpService) {}
 
-  public async validateFile(file: Buffer): Promise<ValidateProfileDTO> {
+  public async validateFile(
+    file: Buffer,
+    profile: FileUploadDTO.profile = FileUploadDTO.profile._1_3_RELAX,
+  ): Promise<ValidateProfileDTO> {
     const formData = new FormData();
     formData.append('file', file, {
       filename: 'bal.csv',
       contentType: 'application/octet-stream',
     });
-    formData.append('profile', FileUploadDTO.profile._1_3_STRICT);
+    formData.append('profile', profile);
     const headers = formData.getHeaders();
 
     const { data: report } = await firstValueFrom(
