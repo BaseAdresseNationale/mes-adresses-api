@@ -10,7 +10,6 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-
 import { GlobalEntity } from './global.entity';
 import { BaseLocale } from './base_locale.entity';
 import { Voie } from './voie.entity';
