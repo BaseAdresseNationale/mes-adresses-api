@@ -1,8 +1,3 @@
-import {
-  validate,
-  ValidateProfile,
-  ValidateRowType,
-} from '@ban-team/validateur-bal';
 import { normalize } from '@ban-team/adresses-util/lib/voies';
 import { chain, compact, keyBy, min, max } from 'lodash';
 import { v4 as uuid } from 'uuid';
@@ -15,10 +10,27 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { ObjectId } from 'mongodb';
 import { Logger } from '@/shared/utils/logger.utils';
+import {
+  ValidateProfileDTO,
+  ValidateRowDTO,
+} from '@/shared/modules/validateur_api/type';
 
-export type FromCsvType = {
+export type FromCsv = {
   isValid?: boolean;
   validationError?: string;
+  accepted?: number;
+  rejected?: number;
+  communeNomsAlt?: Record<string, string>;
+  voies?: Partial<Voie>[];
+  numeros?: Partial<Numero>[];
+  toponymes?: Partial<Toponyme>[];
+};
+
+export type FromCsvError = FromCsv & {
+  validationError?: string;
+};
+
+export type FromCsvValid = FromCsv & {
   accepted?: number;
   rejected?: number;
   communeNomsAlt?: Record<string, string>;
@@ -30,7 +42,7 @@ export type FromCsvType = {
 export function extractIdBanAdresse({
   parsedValues,
   additionalValues,
-}: ValidateRowType): string | null {
+}: ValidateRowDTO): string | null {
   return (
     parsedValues?.id_ban_adresse ||
     additionalValues?.uid_adresse?.idBanAdresse ||
@@ -41,7 +53,7 @@ export function extractIdBanAdresse({
 export function extractIdBanToponyme({
   parsedValues,
   additionalValues,
-}: ValidateRowType): string | null {
+}: ValidateRowDTO): string | null {
   return (
     parsedValues?.id_ban_toponyme ||
     additionalValues?.uid_adresse?.idBanToponyme ||
@@ -52,19 +64,19 @@ export function extractIdBanToponyme({
 export function extractCodeCommune({
   parsedValues,
   additionalValues,
-}: ValidateRowType): string | null {
+}: ValidateRowDTO): string | null {
   return (
     parsedValues.commune_insee || additionalValues?.cle_interop?.codeCommune
   );
 }
 
-function extractPosition(row: any) {
+function extractPosition({ parsedValues }: ValidateRowDTO) {
   return {
-    source: row.parsedValues.source || null,
-    type: row.parsedValues.position || PositionTypeEnum.ENTREE,
+    source: parsedValues.source || null,
+    type: parsedValues.position || PositionTypeEnum.ENTREE,
     point: {
       type: 'Point',
-      coordinates: [row.parsedValues.long, row.parsedValues.lat],
+      coordinates: [parsedValues.long, parsedValues.lat],
     },
   };
 }
@@ -81,7 +93,7 @@ function extractDate(row: any) {
   }
 }
 
-function extractData(rows: ValidateRowType[]): {
+function extractData(rows: ValidateRowDTO[]): {
   voies: Partial<Voie>[];
   numeros: Partial<Numero>[];
   toponymes: Partial<Toponyme>[];
@@ -130,12 +142,12 @@ function extractData(rows: ValidateRowType[]): {
   const numeros: Partial<Numero>[] = chain(rows)
     .filter((r) => r.parsedValues.numero !== 99999)
     .groupBy(
-      (r: ValidateRowType) =>
+      (r: ValidateRowDTO) =>
         `${r.parsedValues.numero}@@@${r.parsedValues.suffixe}@@@${normalize(
           r.parsedValues.voie_nom,
         )}`,
     )
-    .map((numeroRows: ValidateRowType[]) => {
+    .map((numeroRows: ValidateRowDTO[]) => {
       const date = extractDate(numeroRows[0]) || new Date();
 
       const voieString = normalize(numeroRows[0].parsedValues.voie_nom);
@@ -185,19 +197,16 @@ function extractData(rows: ValidateRowType[]): {
 }
 
 export async function extractFromCsv(
-  file: Buffer,
+  { rows, parseOk }: ValidateProfileDTO,
   codeCommune: string,
-): Promise<FromCsvType> {
+): Promise<FromCsv | FromCsvError | FromCsvValid> {
   try {
-    const { rows, parseOk }: ValidateProfile = (await validate(file, {
-      profile: '1.3-relax',
-    })) as ValidateProfile;
     if (!parseOk) {
       return { isValid: false };
     }
 
-    const accepted: ValidateRowType[] = rows.filter(({ isValid }) => isValid);
-    const rejected: ValidateRowType[] = rows.filter(({ isValid }) => !isValid);
+    const accepted: ValidateRowDTO[] = rows.filter(({ isValid }) => isValid);
+    const rejected: ValidateRowDTO[] = rows.filter(({ isValid }) => !isValid);
     const communesData = extractData(
       accepted.filter((r) => extractCodeCommune(r) === codeCommune),
     );
@@ -216,6 +225,7 @@ export async function extractFromCsv(
       toponymes: communesData.toponymes,
     };
   } catch (error) {
+    // console.error(error);
     Logger.error(
       `Impossible d'extraire la BAL sur CSV`,
       error,
