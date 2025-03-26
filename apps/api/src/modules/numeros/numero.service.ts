@@ -36,16 +36,7 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
-
-export type NumeroInBbox = {
-  id: string;
-  numero: number;
-  suffixe: string;
-  parcelles: string[];
-  certifie: string;
-  voieId: string;
-  point: { type: string; coordinates: number[][] };
-};
+import { NumeroInBbox } from '@/lib/types/numero.type';
 
 @Injectable()
 export class NumeroService {
@@ -160,10 +151,11 @@ export class NumeroService {
       .addSelect('numeros.suffixe', 'suffixe')
       .addSelect('numeros.parcelles', 'parcelles')
       .addSelect('numeros.certifie', 'certifie')
-      .addSelect('numeros.voieId', 'voieId')
+      .addSelect('numeros.voie_id', 'voieId')
+      .addSelect('numeros.toponyme_id', 'toponymeId')
       .addSelect('positions.point', 'point')
       .leftJoin('numeros.positions', 'positions')
-      .where('numeros.balId = :balId', { balId })
+      .where('numeros.bal_id = :balId', { balId })
       .andWhere(
         'positions.point @ ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326)',
         {

@@ -2,7 +2,7 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { tileToBBOX } from '@mapbox/tilebelt';
 
 import { VoieService } from '@/modules/voie/voie.service';
-import { NumeroInBbox, NumeroService } from '@/modules/numeros/numero.service';
+import { NumeroService } from '@/modules/numeros/numero.service';
 import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
 import { ZOOM } from '@/modules/base_locale/sub_modules/tiles/const/zoom.const';
 import { getGeoJson } from '@/modules/base_locale/sub_modules/tiles/utils/geojson.utils';
@@ -34,7 +34,7 @@ export class TilesService {
         ? await this.voieService.findManyWhereTraceInBBox(balId, bbox)
         : [];
 
-    const numeros: NumeroInBbox[] =
+    const numeros =
       z >= ZOOM.NUMEROS_ZOOM.minZoom && z <= ZOOM.NUMEROS_ZOOM.maxZoom
         ? await this.numeroService.findManyWherePositionInBBox(balId, bbox)
         : [];
