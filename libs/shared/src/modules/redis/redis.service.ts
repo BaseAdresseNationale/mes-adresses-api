@@ -7,11 +7,12 @@ export class RedisService {
   redis = new Redis();
 
   constructor(private configService: ConfigService) {
-    this.redis = new Redis(); //this.configService.get('REDIS_URL'));
+    this.redis = new Redis();
+    // this.redis = new Redis(this.configService.get('REDIS_URL'));
   }
 
   async setFile(key: string, buffer: Buffer): Promise<Buffer> {
-    return await this.redis.setBuffer(key, buffer, 'GET');
+    return await this.redis.setBuffer(key, buffer, 'EX', 300, 'GET');
   }
 
   async getFile(key: string): Promise<Buffer> {

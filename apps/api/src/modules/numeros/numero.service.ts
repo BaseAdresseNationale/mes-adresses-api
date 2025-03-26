@@ -19,7 +19,7 @@ import {
   Polygon,
 } from 'typeorm';
 import { v4 as uuid } from 'uuid';
-import { pick, chunk, flatMap, map } from 'lodash';
+import { pick, chunk, flatMap } from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import { Numero } from '@/shared/entities/numero.entity';
@@ -76,10 +76,17 @@ export class NumeroService {
 
   async findMany(
     where: FindOptionsWhere<Numero>,
-    select?: FindOptionsSelect<Numero>,
-    order?: FindOptionsOrder<Numero>,
-    relations?: FindOptionsRelations<Numero>,
-    withDeleted?: boolean,
+    {
+      select,
+      order,
+      relations,
+      withDeleted,
+    }: {
+      select?: FindOptionsSelect<Numero>;
+      order?: FindOptionsOrder<Numero>;
+      relations?: FindOptionsRelations<Numero>;
+      withDeleted?: boolean;
+    } = {},
   ): Promise<Numero[]> {
     // Get les numeros en fonction du where, select, order et des relations
     return this.numerosRepository.find({
@@ -295,9 +302,25 @@ export class NumeroService {
       await this.numerosRepository.save(entityToSave);
     // On calcule le centroid de la voie
     await this.voieService.calcCentroidAndBbox(voie.id);
+    // On clear le cache de tuile vectorielle
+    await this.removeTileCacheFromNumeros(voie.balId, [numeroCreated]);
     // On met a jour le updatedAt de la Bal
     await this.baseLocaleService.touch(numero.balId);
     return numeroCreated;
+  }
+
+  private isPositionsSame(from: Numero, to: Numero): boolean {
+    if (from.positions.length !== to.positions.length) {
+      return false;
+    }
+
+    return from.positions.every(({ point: pointFrom }) =>
+      to.positions.some(
+        ({ point: pointTo }) =>
+          pointFrom.coordinates[0] === pointTo.coordinates[0] &&
+          pointFrom.coordinates[1] === pointTo.coordinates[1],
+      ),
+    );
   }
 
   public async update(
@@ -342,6 +365,15 @@ export class NumeroService {
       // On recalcule le centroid de la voie si les positions du numeros on changé
       await this.voieService.calcCentroidAndBbox(numero.voieId);
     }
+
+    if (!this.isPositionsSame(numero, numeroUpdated)) {
+      // On clear le cache de tuile vectorielle
+      await this.removeTileCacheFromNumeros(numero.balId, [
+        numero,
+        numeroUpdated,
+      ]);
+    }
+
     // On met a jour le updatedAt de la voie
     await this.voieService.touch(numero.voieId);
     // On met a jour le updatedAt de la BAL
@@ -510,10 +542,8 @@ export class NumeroService {
     const voieIds: string[] = await this.findDistinct(where, 'voie_id');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
     // On archive les numeros dans postgres
-    const { affected }: UpdateResult = await this.numerosRepository.softDelete({
-      id: In(numerosIds),
-      balId: baseLocale.id,
-    });
+    const { affected }: UpdateResult =
+      await this.numerosRepository.softDelete(where);
     // Si des numeros ont été archivés
     if (affected > 0) {
       // On met a jour le updatedAt de la BAL
@@ -530,6 +560,11 @@ export class NumeroService {
           ),
         );
       }
+      // On clear le cache de tuile vectorielle
+      const numeros: Numero[] = await this.findMany(where, {
+        withDeleted: true,
+      });
+      await this.removeTileCacheFromNumeros(baseLocale.id, numeros);
     }
 
     return { modifiedCount: affected };

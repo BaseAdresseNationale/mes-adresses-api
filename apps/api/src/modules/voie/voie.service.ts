@@ -39,6 +39,7 @@ import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { FilaireVoieDTO } from './dto/filaire_voie.dto';
+import { Numero } from '@/shared/entities/numero.entity';
 
 @Injectable()
 export class VoieService {
@@ -270,12 +271,16 @@ export class VoieService {
     await this.voiesRepository.restore(where);
     // Si des numéros sont également restauré
     if (numerosIds.length > 0) {
-      // On restaure le numéros
-      await this.numeroService.restore({
+      const where: FindOptionsWhere<Numero> = {
         id: In(numerosIds),
-      });
+      };
+      // On restaure le numéros
+      await this.numeroService.restore(where);
       // On met a jour le centroid de la voie
       this.calcCentroidAndBbox(voie.id);
+      // On clear le cache de tuile vectorielle
+      const numeros = await this.numeroService.findMany(where);
+      await this.numeroService.removeTileCacheFromNumeros(voie.balId, numeros);
     }
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
