@@ -1,5 +1,13 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { tileToBBOX, pointToTile } from '@mapbox/tilebelt';
+import {
+  tileToBBOX,
+  pointToTile,
+  bboxToTile,
+  getChildren,
+  getParent,
+} from '@mapbox/tilebelt';
+import { Point, LineString } from '@turf/turf';
+import * as turf from '@turf/turf';
 import * as geojsonvt from 'geojson-vt';
 import * as vtpbf from 'vt-pbf';
 import * as zlib from 'zlib';
@@ -11,7 +19,6 @@ import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/t
 import { ZOOM } from '@/modules/base_locale/sub_modules/tiles/const/zoom.const';
 import { getGeoJson } from '@/modules/base_locale/sub_modules/tiles/utils/geojson.utils';
 import { RedisService } from '@/shared/modules/redis/redis.service';
-import { Point } from '@turf/turf';
 
 const gzip = promisify(zlib.gzip);
 
@@ -25,8 +32,46 @@ export class TilesService {
     private redisService: RedisService,
   ) {}
 
-  public getTileCacheKey(balId: string, tile: number[]): string {
+  private getTileCacheKey(balId: string, tile: number[]): string {
     return `tile:${balId}:${tile.join('/')}`;
+  }
+
+  private getRecurciveParentTile(tile: number[]): number[][] {
+    if (tile[2] > ZOOM.VOIE_ZOOM.minZoom) {
+      return [tile, ...this.getRecurciveParentTile(getParent(tile))];
+    }
+    return [tile];
+  }
+
+  private getRecurciveChildTile(tile: number[]): number[][] {
+    if (tile[2] < ZOOM.VOIE_ZOOM.maxZoom) {
+      const childTiles = getChildren(tile);
+      return [
+        tile,
+        ...this.getRecurciveChildTile(childTiles[0]),
+        ...this.getRecurciveChildTile(childTiles[1]),
+        ...this.getRecurciveChildTile(childTiles[2]),
+        ...this.getRecurciveChildTile(childTiles[3]),
+      ];
+    }
+    return [tile];
+  }
+
+  private async clearTiles(balId: string, tiles: number[][]) {
+    for (const tile of tiles) {
+      const key = this.getTileCacheKey(balId, tile);
+      await this.redisService.del(key);
+    }
+  }
+
+  public async removeTileCacheFromLineString(balId: string, line: LineString) {
+    const bbox = turf.bbox(line);
+    const tile = bboxToTile(bbox);
+    const tiles: number[][] = [
+      ...this.getRecurciveParentTile(getParent(tile)),
+      ...this.getRecurciveChildTile(tile),
+    ];
+    await this.clearTiles(balId, tiles);
   }
 
   public async removeTileCacheFromPoints(balId: string, points: Point[]) {
@@ -41,11 +86,7 @@ export class TilesService {
         tiles.add(pointToTile(long, lat, zoom));
       }
     }
-
-    for (const tile of Array.from(tiles)) {
-      const key = this.getTileCacheKey(balId, tile);
-      await this.redisService.del(key);
-    }
+    await this.clearTiles(balId, Array.from(tiles));
   }
 
   public async getGeoJsonByTile(

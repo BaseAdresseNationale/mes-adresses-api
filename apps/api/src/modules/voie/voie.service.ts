@@ -40,6 +40,7 @@ import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { FilaireVoieDTO } from './dto/filaire_voie.dto';
 import { Numero } from '@/shared/entities/numero.entity';
+import { TilesService } from '../base_locale/sub_modules/tiles/tiles.service';
 
 @Injectable()
 export class VoieService {
@@ -52,6 +53,7 @@ export class VoieService {
     private numeroService: NumeroService,
     @Inject(forwardRef(() => ToponymeService))
     private toponymeService: ToponymeService,
+    private tilesService: TilesService,
   ) {}
 
   async findOneOrFail(voieId: string): Promise<Voie> {
@@ -152,6 +154,8 @@ export class VoieService {
     // Calculer le centroid si la trace et le type de numerotation est metrique
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
       voie.centroid = turf.centroid(voie.trace)?.geometry;
+      // On clear le cache de tuile vectorielle
+      this.tilesService.removeTileCacheFromLineString(bal.id, voie.trace);
     }
     // Créer l'entité typeorm
     const entityToSave: Voie = this.voiesRepository.create(voie);
@@ -219,6 +223,11 @@ export class VoieService {
         voieUpdated.typeNumerotation === TypeNumerotationEnum.METRIQUE
       ) {
         await this.calcCentroidAndBboxWithTrace(voieUpdated);
+        // On clear le cache de tuile vectorielle
+        this.tilesService.removeTileCacheFromLineString(
+          voie.balId,
+          updateVoieDto.trace,
+        );
       }
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(
