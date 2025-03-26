@@ -19,7 +19,7 @@ import {
   Polygon,
 } from 'typeorm';
 import { v4 as uuid } from 'uuid';
-import { pick, chunk } from 'lodash';
+import { pick, chunk, flatMap, map } from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import { Numero } from '@/shared/entities/numero.entity';
@@ -36,6 +36,7 @@ import { VoieService } from '@/modules/voie/voie.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
+import { TilesService } from '../base_locale/sub_modules/tiles/tiles.service';
 
 @Injectable()
 export class NumeroService {
@@ -50,6 +51,8 @@ export class NumeroService {
     private toponymeService: ToponymeService,
     @Inject(forwardRef(() => BaseLocaleService))
     private baseLocaleService: BaseLocaleService,
+    @Inject(forwardRef(() => TilesService))
+    private tilesService: TilesService,
   ) {}
 
   async findOneOrFail(numeroId: string): Promise<Numero> {
@@ -375,6 +378,8 @@ export class NumeroService {
     if (affected > 0) {
       // On recalcule le centroid de la voie du numéro
       await this.voieService.calcCentroidAndBbox(numero.voieId);
+      // On clear le cache de tuile vectorielle
+      await this.removeTileCacheFromNumeros(numero.balId, [numero]);
       // On met a jour le updatedAt de la bal, la voie et le toponyme
       await this.touch(numero);
     }
@@ -588,6 +593,14 @@ export class NumeroService {
         centroid: JSON.parse(res.centroid),
         polygon: JSON.parse(res.polygon),
       }
+    );
+  }
+
+  async removeTileCacheFromNumeros(balId: string, numeros: Numero[]) {
+    const positions: Position[] = flatMap(numeros, 'positions');
+    await this.tilesService.removeTileCacheFromPoints(
+      balId,
+      positions.map(({ point }) => point),
     );
   }
 
