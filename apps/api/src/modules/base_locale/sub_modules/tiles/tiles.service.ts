@@ -64,14 +64,23 @@ export class TilesService {
     }
   }
 
-  public async removeTileCacheFromLineString(balId: string, line: LineString) {
+  private getTileLineString(line: LineString): number[][] {
     const bbox = turf.bbox(line);
-    const tile = bboxToTile(bbox);
-    const tiles: number[][] = [
+    const tile: number[] = bboxToTile(bbox);
+    return [
       ...this.getRecurciveParentTile(getParent(tile)),
       ...this.getRecurciveChildTile(tile),
     ];
-    await this.clearTiles(balId, tiles);
+  }
+
+  public async removeTileCacheFromLineStrings(
+    balId: string,
+    lines: LineString[],
+  ) {
+    const tiles = new Set<number[]>(
+      ...lines.map((line) => this.getTileLineString(line)),
+    );
+    await this.clearTiles(balId, Array.from(tiles));
   }
 
   public async removeTileCacheFromPoints(balId: string, points: Point[]) {

@@ -18,6 +18,7 @@ import {
 } from 'typeorm';
 import { keyBy } from 'lodash';
 import * as turf from '@turf/turf';
+import { Point } from '@turf/turf';
 import { v4 as uuid } from 'uuid';
 
 import {
@@ -155,7 +156,12 @@ export class VoieService {
     if (voie.trace && voie.typeNumerotation === TypeNumerotationEnum.METRIQUE) {
       voie.centroid = turf.centroid(voie.trace)?.geometry;
       // On clear le cache de tuile vectorielle
-      this.tilesService.removeTileCacheFromLineString(bal.id, voie.trace);
+      await this.tilesService.removeTileCacheFromPoints(voie.balId, [
+        voie.centroid,
+      ]);
+      await this.tilesService.removeTileCacheFromLineStrings(bal.id, [
+        voie.trace,
+      ]);
     }
     // Créer l'entité typeorm
     const entityToSave: Voie = this.voiesRepository.create(voie);
@@ -224,10 +230,13 @@ export class VoieService {
       ) {
         await this.calcCentroidAndBboxWithTrace(voieUpdated);
         // On clear le cache de tuile vectorielle
-        this.tilesService.removeTileCacheFromLineString(
-          voie.balId,
+        await this.tilesService.removeTileCacheFromPoints(voie.balId, [
+          voie.centroid,
+        ]);
+        await this.tilesService.removeTileCacheFromLineStrings(voie.balId, [
           updateVoieDto.trace,
-        );
+          voie.trace,
+        ]);
       }
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(
@@ -264,6 +273,13 @@ export class VoieService {
     await this.voiesRepository.softDelete({ id: voie.id });
     // On archive également tous le numéros de la voie
     await this.numeroService.softDeleteByVoie(voie.id);
+    // On clear le cache de tuile vectorielle
+    await this.tilesService.removeTileCacheFromPoints(voie.balId, [
+      voie.centroid,
+    ]);
+    await this.tilesService.removeTileCacheFromLineStrings(voie.balId, [
+      voie.trace,
+    ]);
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
   }
@@ -291,6 +307,13 @@ export class VoieService {
       const numeros = await this.numeroService.findMany(where);
       await this.numeroService.removeTileCacheFromNumeros(voie.balId, numeros);
     }
+    // On clear le cache de tuile vectorielle
+    await this.tilesService.removeTileCacheFromPoints(voie.balId, [
+      voie.centroid,
+    ]);
+    await this.tilesService.removeTileCacheFromLineStrings(voie.balId, [
+      voie.trace,
+    ]);
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
     // On retourne la voie restaurée
@@ -360,22 +383,35 @@ export class VoieService {
     const voie: Voie = await this.findOneOrFail(voieId);
     if (voie.typeNumerotation === TypeNumerotationEnum.NUMERIQUE) {
       // On calcule la voie avec les numero si la voie est numerique
-      await this.calcCentroidAndBboxWithNumeros(voieId);
+      const centroid = await this.calcCentroidAndBboxWithNumeros(voieId);
+      if (centroid) {
+        // On clear le cache de tuile vectorielle
+        await this.tilesService.removeTileCacheFromPoints(voie.balId, [
+          centroid,
+          voie.centroid,
+        ]);
+      }
     } else if (
       voie.trace &&
       voie.typeNumerotation === TypeNumerotationEnum.METRIQUE
     ) {
       // On calcul la voie avec la trace si la voie est metrique
-      await this.calcCentroidAndBboxWithTrace(voie);
+      const centroid = await this.calcCentroidAndBboxWithTrace(voie);
+      // On clear le cache de tuile vectorielle
+      await this.tilesService.removeTileCacheFromPoints(voie.balId, [
+        centroid,
+        voie.centroid,
+      ]);
     }
   }
 
-  private async calcCentroidAndBboxWithNumeros(voieId: string): Promise<void> {
+  private async calcCentroidAndBboxWithNumeros(voieId: string): Promise<Point> {
     const res = await this.numeroService.findCentroidAndBboxVoie(voieId);
     if (res) {
       const { centroid, polygon } = res;
       const bbox: number[] = turf.bbox(polygon);
       await this.voiesRepository.update({ id: voieId }, { centroid, bbox });
+      return centroid;
     } else {
       await this.voiesRepository.update(
         { id: voieId },
@@ -384,10 +420,11 @@ export class VoieService {
     }
   }
 
-  private async calcCentroidAndBboxWithTrace(voie: Voie): Promise<void> {
+  private async calcCentroidAndBboxWithTrace(voie: Voie): Promise<Point> {
     const centroid = turf.centroid(voie.trace)?.geometry;
     const bbox = turf.bbox(voie.trace);
     await this.voiesRepository.update({ id: voie.id }, { centroid, bbox });
+    return centroid;
   }
 
   async getFilairesVoies(): Promise<FilaireVoieDTO[]> {
