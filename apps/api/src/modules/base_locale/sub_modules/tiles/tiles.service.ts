@@ -12,6 +12,7 @@ import * as geojsonvt from 'geojson-vt';
 import * as vtpbf from 'vt-pbf';
 import * as zlib from 'zlib';
 import { promisify } from 'util';
+import { flatten } from 'lodash';
 
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
@@ -77,10 +78,11 @@ export class TilesService {
     balId: string,
     lines: LineString[],
   ) {
-    const tiles = new Set<number[]>(
-      ...lines.map((line) => this.getTileLineString(line)),
+    const tiles: number[][] = flatten(
+      lines.map((line) => this.getTileLineString(line)),
     );
-    await this.clearTiles(balId, Array.from(tiles));
+    const tilesSet = new Set<number[]>(tiles);
+    await this.clearTiles(balId, Array.from(tilesSet));
   }
 
   public async removeTileCacheFromPoints(balId: string, points: Point[]) {
