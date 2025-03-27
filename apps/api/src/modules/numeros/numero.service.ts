@@ -37,6 +37,7 @@ import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
 import { TilesService } from '../base_locale/sub_modules/tiles/tiles.service';
+import { NumeroInBbox } from '@/lib/types/numero.type';
 
 @Injectable()
 export class NumeroService {
@@ -150,12 +151,21 @@ export class NumeroService {
   async findManyWherePositionInBBox(
     balId: string,
     bbox: number[],
-  ): Promise<Numero[]> {
-    // Requète postgis qui permet de récupèré les voie dont le centroid est dans la bbox
+  ): Promise<NumeroInBbox[]> {
+    // Requète postgis qui permet de récupèré les numeros dont le centroid est dans la bbox
     const query = this.numerosRepository
       .createQueryBuilder('numeros')
-      .leftJoinAndSelect('numeros.positions', 'positions')
-      .where('numeros.balId = :balId', { balId })
+      .distinctOn(['numeros.id'])
+      .select('numeros.id', 'id')
+      .addSelect('numeros.numero', 'numero')
+      .addSelect('numeros.suffixe', 'suffixe')
+      .addSelect('numeros.parcelles', 'parcelles')
+      .addSelect('numeros.certifie', 'certifie')
+      .addSelect('numeros.voie_id', 'voieId')
+      .addSelect('numeros.toponyme_id', 'toponymeId')
+      .addSelect('positions.point', 'point')
+      .leftJoin('numeros.positions', 'positions')
+      .where('numeros.bal_id = :balId', { balId })
       .andWhere(
         'positions.point @ ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326)',
         {
@@ -165,7 +175,8 @@ export class NumeroService {
           ymax: bbox[3],
         },
       );
-    return query.getMany();
+
+    return query.getRawMany();
   }
 
   async findManyWherePositionInPolygon(
