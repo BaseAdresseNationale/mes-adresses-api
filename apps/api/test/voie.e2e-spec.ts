@@ -2,6 +2,7 @@ import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
+import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -34,6 +35,7 @@ describe('VOIE MODULE', () => {
   let voieRepository: Repository<Voie>;
   let balRepository: Repository<BaseLocale>;
   let toponymeRepository: Repository<Toponyme>;
+  let redisContainer: StartedRedisContainer;
   // VAR
   const token = 'xxxx';
   const createdAt = new Date('2000-01-01');
@@ -52,6 +54,8 @@ describe('VOIE MODULE', () => {
       password: postgresContainer.getPassword(),
     });
     await postgresClient.connect();
+    redisContainer = await new RedisContainer().start();
+    process.env.REDIS_URL = redisContainer.getConnectionUrl();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
@@ -83,6 +87,7 @@ describe('VOIE MODULE', () => {
   afterAll(async () => {
     await postgresClient.end();
     await postgresContainer.stop();
+    await redisContainer.stop();
     await app.close();
   });
 
@@ -125,14 +130,26 @@ describe('VOIE MODULE', () => {
     voieId: string,
     props: Partial<Numero> = {},
   ) {
+    const positions: Position[] = [
+      {
+        type: PositionTypeEnum.ENTREE,
+        source: 'ban',
+        point: {
+          type: 'Point',
+          coordinates: [8, 42],
+        },
+      },
+    ];
     const payload: Partial<Numero> = {
       balId,
       banId: uuid(),
       voieId,
       createdAt,
       updatedAt,
+      positions,
       ...props,
     };
+
     const entityToInsert = numeroRepository.create(payload);
     const result = await numeroRepository.save(entityToInsert);
     return result.id;
@@ -221,6 +238,7 @@ describe('VOIE MODULE', () => {
         .send(createdNumero)
         .set('authorization', `Bearer ${token}`)
         .expect(201);
+
       expect(response.body.numero).toEqual(1);
       expect(response.body.balId).toEqual(balId);
       expect(response.body.voieId).toEqual(voieId.toString());
