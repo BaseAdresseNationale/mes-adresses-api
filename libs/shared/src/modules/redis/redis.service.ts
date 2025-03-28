@@ -4,11 +4,10 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService {
-  redis = new Redis();
+  redis: Redis;
 
   constructor(private configService: ConfigService) {
-    this.redis = new Redis();
-    // this.redis = new Redis(this.configService.get('REDIS_URL'));
+    this.redis = new Redis(this.configService.get('REDIS_URL'));
   }
 
   async setFile(key: string, buffer: Buffer): Promise<Buffer> {
