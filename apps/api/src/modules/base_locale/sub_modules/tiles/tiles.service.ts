@@ -85,16 +85,21 @@ export class TilesService {
     await this.clearTiles(balId, Array.from(tilesSet));
   }
 
-  public async removeTileCacheFromPoints(balId: string, points: Point[]) {
+  public async removeTileCacheFromPoints(
+    balId: string,
+    points: Point[] | null,
+  ) {
     const tiles = new Set<number[]>();
     for (const point of points) {
-      const [long, lat] = point.coordinates;
-      for (
-        let zoom = ZOOM.VOIE_ZOOM.minZoom;
-        zoom <= ZOOM.VOIE_ZOOM.maxZoom;
-        zoom++
-      ) {
-        tiles.add(pointToTile(long, lat, zoom));
+      if (point) {
+        const [long, lat] = point?.coordinates;
+        for (
+          let zoom = ZOOM.VOIE_ZOOM.minZoom;
+          zoom <= ZOOM.VOIE_ZOOM.maxZoom;
+          zoom++
+        ) {
+          tiles.add(pointToTile(long, lat, zoom));
+        }
       }
     }
     await this.clearTiles(balId, Array.from(tiles));

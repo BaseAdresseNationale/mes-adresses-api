@@ -125,14 +125,26 @@ describe('VOIE MODULE', () => {
     voieId: string,
     props: Partial<Numero> = {},
   ) {
+    const positions: Position[] = [
+      {
+        type: PositionTypeEnum.ENTREE,
+        source: 'ban',
+        point: {
+          type: 'Point',
+          coordinates: [8, 42],
+        },
+      },
+    ];
     const payload: Partial<Numero> = {
       balId,
       banId: uuid(),
       voieId,
       createdAt,
       updatedAt,
+      positions,
       ...props,
     };
+
     const entityToInsert = numeroRepository.create(payload);
     const result = await numeroRepository.save(entityToInsert);
     return result.id;
@@ -221,6 +233,7 @@ describe('VOIE MODULE', () => {
         .send(createdNumero)
         .set('authorization', `Bearer ${token}`)
         .expect(201);
+
       expect(response.body.numero).toEqual(1);
       expect(response.body.balId).toEqual(balId);
       expect(response.body.voieId).toEqual(voieId.toString());
