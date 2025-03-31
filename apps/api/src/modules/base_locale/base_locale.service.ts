@@ -410,16 +410,19 @@ export class BaseLocaleService {
   async populate(
     baseLocale: BaseLocale,
     { voies, toponymes, numeros, communeNomsAlt }: FromCsvType,
+    deleteExisting: boolean = true,
   ): Promise<BaseLocale> {
     if (communeNomsAlt) {
       this.basesLocalesRepository.update(baseLocale.id, {
         communeNomsAlt,
       });
     }
-    // On supprime les numeros, vois et toponymes si il y en a
-    await this.numeroService.deleteMany({ balId: baseLocale.id });
-    await this.voieService.deleteMany({ balId: baseLocale.id });
-    await this.toponymeService.deleteMany({ balId: baseLocale.id });
+    if (deleteExisting) {
+      // On supprime les numeros, vois et toponymes si il y en a
+      await this.numeroService.deleteMany({ balId: baseLocale.id });
+      await this.voieService.deleteMany({ balId: baseLocale.id });
+      await this.toponymeService.deleteMany({ balId: baseLocale.id });
+    }
     // On import les voies, toponymes et numeros du fichier
     await this.voieService.importMany(baseLocale, voies);
     await this.toponymeService.importMany(baseLocale, toponymes);

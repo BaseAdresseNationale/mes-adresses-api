@@ -1,4 +1,12 @@
-import { Controller, Get, HttpStatus, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 
 import { Response } from 'express';
 import * as csvWriter from 'csv-write-stream';
@@ -9,16 +17,28 @@ import { BaseLocaleService } from '../base_locale/base_locale.service';
 import { SuperAdminGuard } from '@/lib/guards/admin.guard';
 import { VoieService } from '../voie/voie.service';
 import { FilaireVoieDTO } from '../voie/dto/filaire_voie.dto';
-import { ApiExcludeController } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiExcludeEndpoint,
+  ApiTags,
+} from '@nestjs/swagger';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import { FusionCommunesDTO } from './dto/fusion_bases_locales.dto';
+import { AdminService } from './admin.service';
 
+@ApiTags('admin')
 @Controller('admin')
-@ApiExcludeController()
 export class AdminController {
   constructor(
     private baseLocaleService: BaseLocaleService,
     private voieService: VoieService,
+    private adminService: AdminService,
   ) {}
 
+  @ApiExcludeEndpoint()
   @Get('/emails.csv')
   @UseGuards(SuperAdminGuard)
   async downloadEmailCsv(@Res() res: Response) {
@@ -44,6 +64,7 @@ export class AdminController {
       .send(csvFile);
   }
 
+  @ApiExcludeEndpoint()
   @Get('filaires-voies')
   @UseGuards(SuperAdminGuard)
   async getFilairesVoies(@Res() res: Response) {
@@ -51,5 +72,24 @@ export class AdminController {
       await this.voieService.getFilairesVoies();
 
     res.status(HttpStatus.OK).json(filaires);
+  }
+
+  @Post('/fusion-communes')
+  @ApiOperation({
+    summary: 'Fusion communes',
+    operationId: 'fusionCommunes',
+  })
+  @ApiBody({ type: FusionCommunesDTO, required: true })
+  @ApiResponse({ status: HttpStatus.OK, type: BaseLocale, isArray: true })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(SuperAdminGuard)
+  async fusionCommunes(
+    @Body() fusionCommunesDTO: FusionCommunesDTO,
+    @Res() res: Response,
+  ) {
+    const result: BaseLocale =
+      await this.adminService.fusionCommunes(fusionCommunesDTO);
+
+    res.status(HttpStatus.OK).json(result);
   }
 }
