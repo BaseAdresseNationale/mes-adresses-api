@@ -33,12 +33,13 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "typeorm:migration:run": "yarn typeorm migration:run -- -d ./typeorm.config.ts",
     "typeorm:migration:down": "yarn typeorm migration:revert -- -d ./typeorm.config.ts",
-    "generate:openapi:signalement": "openapi --input http://localhost:5005/api-json --output ./libs/shared/src/openapi-signalement"
+    "generate:openapi:signalement": "openapi --input http://localhost:5005/api-json --output ./libs/shared/src/openapi-signalement",
+    "generate:openapi:validateur": "openapi --exportCore false --exportServices false --input http://localhost:4000/api-json --output  ./libs/shared/src/modules/validateur_api/type"
   },
   "dependencies": {
     "@ban-team/adresses-util": "^0.9.0",
     "@ban-team/shared-data": "^1.4.1",
-    "@ban-team/validateur-bal": "^3.0.6",
+    "@ban-team/validateur-bal": "^3.0.7",
     "@etalab/decoupage-administratif": "^4.0.0",
     "@etalab/project-legal": "^0.6.0",
     "@mapbox/tilebelt": "^1.0.2",
@@ -69,6 +70,7 @@
     "csv-write-stream": "^2.0.0",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",
+    "form-data": "^4.0.2",
     "geojson-vt": "^3.2.0",
     "get-stream": "^6.0.1",
     "got": "11.8.5",
