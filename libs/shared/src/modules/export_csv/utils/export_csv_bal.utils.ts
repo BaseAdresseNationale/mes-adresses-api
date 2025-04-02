@@ -127,7 +127,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
     commune_nom: getCommune(obj.codeCommune).nom,
     commune_deleguee_insee: obj.communeDeleguee || null,
     commune_deleguee_nom: obj.communeDeleguee
-      ? getOldCommune(obj.communeDeleguee).nom
+      ? getOldCommune(obj.communeDeleguee)?.nom
       : null,
     position: '',
     long: '',
