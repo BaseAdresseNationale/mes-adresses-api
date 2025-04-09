@@ -79,7 +79,27 @@ export class AdminController {
     summary: 'Fusion communes',
     operationId: 'fusionCommunes',
   })
-  @ApiBody({ type: FusionCommunesDTO, required: true })
+  @ApiBody({
+    type: FusionCommunesDTO,
+    required: true,
+    description: `
+    {
+      "codeCommune": "08439",
+      "nom": "BAL Tannay-le-Mont-Dieu (08439)",
+      "emails": [
+        "adresse@data.gouv.fr"
+      ],
+      "communes": [
+        {
+          "codeCommune": "08300"
+        },
+        {
+          "codeCommune": "08439",
+          "balId": "679bac11cba48267afdca26b"
+        }
+      ]
+    }`,
+  })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale, isArray: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(SuperAdminGuard)
