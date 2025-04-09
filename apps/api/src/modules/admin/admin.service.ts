@@ -62,6 +62,15 @@ export class AdminService {
     }
   }
 
+  private setNumeroCommuneDeleguee(
+    codeCommune: string,
+    numeros: Partial<Numero>[],
+  ) {
+    for (const numero of numeros) {
+      numero.communeDeleguee = codeCommune;
+    }
+  }
+
   public async fusionCommunes({
     codeCommune,
     nom,
@@ -97,6 +106,7 @@ export class AdminService {
       } else {
         const { numeros, voies, toponymes } =
           await this.populateService.extract(codeCommune);
+        this.setNumeroCommuneDeleguee(codeCommune, numeros);
         await this.baseLocaleService.populate(
           newbaseLocale,
           {
