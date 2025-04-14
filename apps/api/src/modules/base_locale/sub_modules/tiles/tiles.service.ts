@@ -107,11 +107,10 @@ export class TilesService {
 
   public async getGeoJsonByTile(
     balId: string,
-    tile: number[],
+    { x, y, z }: { [key: string]: number },
     colorblindMode: boolean,
   ): Promise<GeoJsonCollectionType> {
-    const z: number = tile[2];
-    const bbox: number[] = tileToBBOX(tile);
+    const bbox: number[] = tileToBBOX([x, y, z]);
 
     const voies =
       z >= ZOOM.VOIE_ZOOM.minZoom && z <= ZOOM.VOIE_ZOOM.maxZoom
@@ -131,12 +130,12 @@ export class TilesService {
     return getGeoJson(voies, traces, numeros, colorblindMode);
   }
 
-  public async getPdfTile(
+  public async getPbfTile(
     balId: string,
-    tile: number[],
+    { x, y, z }: { [key: string]: number },
     colorblindMode: boolean,
   ): Promise<Buffer | undefined> {
-    const key = this.getTileCacheKey(balId, tile);
+    const key = this.getTileCacheKey(balId, [x, y, z]);
     const isCaching = await this.redisService.exists(key);
 
     if (isCaching === 0) {
@@ -146,40 +145,28 @@ export class TilesService {
         voieLineStrings,
       }: GeoJsonCollectionType = await this.getGeoJsonByTile(
         balId,
-        tile,
+        { x, y, z },
         colorblindMode,
       );
       const options = { maxZoom: 20 };
-      const numerosTiles = geojsonvt(numeroPoints, options).getTile(
-        tile[2],
-        tile[0],
-        tile[1],
-      );
-      const voieTiles = geojsonvt(voiePoints, options).getTile(
-        tile[2],
-        tile[0],
-        tile[1],
-      );
-      const voieTraceTiles = geojsonvt(voieLineStrings, options).getTile(
-        tile[2],
-        tile[0],
-        tile[1],
-      );
+      const numerosTiles = geojsonvt(numeroPoints, options).getTile(z, x, y);
+      const voieTiles = geojsonvt(voiePoints, options).getTile(z, x, y);
+      const traceTiles = geojsonvt(voieLineStrings, options).getTile(z, x, y);
 
-      if (!numerosTiles && !voieTiles && !voieTraceTiles) {
+      if (!numerosTiles && !voieTiles && !traceTiles) {
         return undefined;
       }
 
       const sourcesLayers = {
         ...(numerosTiles && { 'numeros-points': numerosTiles }),
         ...(voieTiles && { 'voies-points': voieTiles }),
-        ...(voieTraceTiles && { 'voies-linestrings': voieTraceTiles }),
+        ...(traceTiles && { 'voies-linestrings': traceTiles }),
       };
 
       const pbf = vtpbf.fromGeojsonVt(sourcesLayers);
 
       const compressedPbf = await gzip(Buffer.from(pbf));
-      this.redisService.setFile(key, compressedPbf);
+      await this.redisService.setFile(key, compressedPbf);
       return compressedPbf;
     } else {
       return await this.redisService.getFile(key);

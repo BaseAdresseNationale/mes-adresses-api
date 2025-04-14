@@ -40,9 +40,9 @@ export class TilesController {
     @Query('colorblindMode') colorblindMode: boolean,
     @Res() res: Response,
   ) {
-    const compressedPbf = await this.tilesService.getPdfTile(
+    const compressedPbf = await this.tilesService.getPbfTile(
       req.baseLocale.id,
-      [parseInt(x), parseInt(y), parseInt(z)],
+      { x: parseInt(x), y: parseInt(y), z: parseInt(z) },
       colorblindMode,
     );
 
