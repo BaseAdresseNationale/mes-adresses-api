@@ -27,6 +27,11 @@ const oldCommunes: CommuneCOG[] = (communes as Array<any>).filter((c) =>
 
 const oldCommunesIndex: Record<string, CommuneCOG> = keyBy(oldCommunes, 'code');
 
+const oldCommunesByChefLieu: Record<string, CommuneCOG[]> = groupBy(
+  oldCommunes,
+  'chefLieu',
+);
+
 const departementsIndex = keyBy(departements, 'code');
 
 const communesByDepartementIndex = groupBy(communes, 'departement');
@@ -37,6 +42,10 @@ export function getCommunesByDepartement(codeDepartement) {
 
 export function getOldCommune(codeCommune) {
   return oldCommunesIndex[codeCommune];
+}
+
+export function getOldCommuneByChefLieu(codeCommune: string): CommuneCOG[] {
+  return oldCommunesByChefLieu[codeCommune];
 }
 
 export function getCommune(codeCommune) {

@@ -16,6 +16,7 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
+import * as turf from '@turf/turf';
 import { uniq, difference, groupBy } from 'lodash';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -441,12 +442,13 @@ export class BaseLocaleService {
   async extendWithNumeros(
     baseLocale: BaseLocale,
   ): Promise<ExtendedBaseLocaleDTO> {
-    const { nbNumeros, nbNumerosCertifies } =
+    const { nbNumeros, nbNumerosCertifies, extent } =
       await this.numeroService.countBalNumeroAndCertifie(baseLocale.id);
     const balExtended: ExtendedBaseLocaleDTO = {
       ...baseLocale,
       nbNumeros: Number(nbNumeros),
       nbNumerosCertifies: Number(nbNumerosCertifies),
+      bbox: turf.bbox(JSON.parse(extent)),
       isAllCertified:
         Number(nbNumeros) > 0
           ? Number(nbNumeros) === Number(nbNumerosCertifies)
