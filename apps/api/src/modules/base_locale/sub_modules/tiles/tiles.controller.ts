@@ -12,15 +12,11 @@ import { ApiParam, ApiTags, ApiQuery, ApiOperation } from '@nestjs/swagger';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
-import { RedisService } from '@/shared/modules/redis/redis.service';
 
 @ApiTags('tiles')
 @Controller()
 export class TilesController {
-  constructor(
-    private tilesService: TilesService,
-    private redisService: RedisService,
-  ) {}
+  constructor(private tilesService: TilesService) {}
 
   @Get('/bases-locales/:baseLocaleId/tiles/:z/:x/:y.pbf')
   @ApiOperation({
