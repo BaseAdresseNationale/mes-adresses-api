@@ -235,6 +235,7 @@ export async function exportBalToCsv(
       t.positions.forEach((p) => {
         rows.push({
           codeCommune: baseLocale.commune,
+          communeDeleguee: t.communeDeleguee,
           banIds: {
             commune: baseLocale.banId,
             toponyme: t.banId,
@@ -256,6 +257,7 @@ export async function exportBalToCsv(
           toponyme: t.banId,
         },
         codeCommune: baseLocale.commune,
+        communeDeleguee: t.communeDeleguee,
         communeNomsAlt: baseLocale.communeNomsAlt,
         codeVoie: DEFAULT_CODE_VOIE,
         numero: DEFAULT_NUMERO_TOPONYME,

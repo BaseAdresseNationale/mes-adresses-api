@@ -49,6 +49,7 @@ export class AdminService {
       const newId = new ObjectId().toHexString();
       idToponymes[toponyme.id] = newId;
       toponyme.id = newId;
+      toponyme.communeDeleguee = codeCommune;
     }
 
     for (const numero of numeros) {
@@ -62,12 +63,16 @@ export class AdminService {
     }
   }
 
-  private setNumeroCommuneDeleguee(
+  private setBalCommuneDeleguee(
     codeCommune: string,
     numeros: Partial<Numero>[],
+    toponymes: Partial<Toponyme>[],
   ) {
     for (const numero of numeros) {
       numero.communeDeleguee = codeCommune;
+    }
+    for (const toponyme of toponymes) {
+      toponyme.communeDeleguee = codeCommune;
     }
   }
 
@@ -106,7 +111,7 @@ export class AdminService {
       } else {
         const { numeros, voies, toponymes } =
           await this.populateService.extract(codeCommune);
-        this.setNumeroCommuneDeleguee(codeCommune, numeros);
+        this.setBalCommuneDeleguee(codeCommune, numeros, toponymes);
         await this.baseLocaleService.populate(
           newbaseLocale,
           {

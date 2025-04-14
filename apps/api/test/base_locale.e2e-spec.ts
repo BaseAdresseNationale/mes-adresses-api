@@ -551,6 +551,7 @@ describe('BASE LOCAL MODULE', () => {
       });
       const toponymeId1 = await createToponyme(balId, {
         nom: 'allée',
+        communeDeleguee: '08294',
       });
       const { banId: toponymeUuid1 } = await toponymeRepository.findOneBy({
         id: toponymeId1,
@@ -594,7 +595,7 @@ describe('BASE LOCAL MODULE', () => {
       const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
     08053_xxxx_00001_bis;${communeUuid};${voieUuid1};${numeroUuid1};rue de la paix;allée;1;bis;1;08053;Bazeilles;08053;Bazeilles;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-02
     08053_xxxx_00001_ter;${communeUuid};${voieUuid2};${numeroUuid2};rue de paris;allée;1;ter;0;08053;Bazeilles;08294;La Moncelle;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-02
-    08053_xxxx_99999;${communeUuid};${toponymeUuid1};;allée;;99999;;;08053;Bazeilles;;;;;;;;;commune;2000-01-02`;
+    08053_xxxx_99999;${communeUuid};${toponymeUuid1};;allée;;99999;;;08053;Bazeilles;08294;La Moncelle;;;;;;;commune;2000-01-02`;
       expect(response.text.replace(/\s/g, '')).toEqual(
         csvFile.replace(/\s/g, ''),
       );
