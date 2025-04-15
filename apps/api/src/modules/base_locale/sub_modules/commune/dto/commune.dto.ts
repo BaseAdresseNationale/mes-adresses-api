@@ -1,46 +1,12 @@
-import { CommuneCOG } from '@/shared/types/cog.type';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
-export class CommuneCogDTO implements CommuneCOG {
+export class CommuneDTO {
   @ApiProperty()
   code: string;
 
   @ApiProperty()
   nom: string;
 
-  @ApiProperty()
-  typeLiaison: number;
-
-  @ApiProperty()
-  zone: string;
-
-  @ApiProperty()
-  arrondissement: string;
-
-  @ApiProperty()
-  departement: string;
-
-  @ApiProperty()
-  region: string;
-
-  @ApiProperty()
-  type: string;
-
-  @ApiProperty()
-  rangChefLieu: number;
-
-  @ApiProperty()
-  siren: string;
-
-  @ApiProperty()
-  codesPostaux: string[];
-
-  @ApiProperty()
-  population: number;
-}
-
-export class CommuneDTO extends CommuneCogDTO {
   @ApiProperty()
   isCOM: boolean;
 
@@ -56,7 +22,6 @@ export class CommuneDTO extends CommuneCogDTO {
   @ApiProperty()
   hasPlanIGN: boolean;
 
-  @ApiProperty({ isArray: true })
-  @Type(() => CommuneCogDTO)
-  communesDeleguees: CommuneCogDTO;
+  @ApiProperty({ isArray: true, type: String })
+  communesDeleguees: string[];
 }

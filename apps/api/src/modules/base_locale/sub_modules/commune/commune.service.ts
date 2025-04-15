@@ -1,4 +1,7 @@
-import { getCommune, getOldCommuneByChefLieu } from '@/shared/utils/cog.utils';
+import {
+  getCommune,
+  getCommuneAcienneByChefLieu,
+} from '@/shared/utils/cog.utils';
 import {
   checkHasCadastre,
   checkHasMapsStyles,
@@ -17,7 +20,7 @@ export class CommuneService {
     hasOpenMapTiles: boolean;
     hasOrtho: boolean;
     hasPlanIGN: boolean;
-    communesDeleguees: CommuneCOG[];
+    communesDeleguees: string[];
   } {
     const commune = getCommune(codeCommune);
     if (!commune) {
@@ -30,10 +33,11 @@ export class CommuneService {
     const hasCadastre = checkHasCadastre(codeCommune);
     const isCOM = checkIsCommuneOutreMer(codeCommune);
     const hasMapsStyles = checkHasMapsStyles(codeCommune, isCOM);
-    const communesDeleguees = getOldCommuneByChefLieu(codeCommune);
+    const communesDeleguees = getCommuneAcienneByChefLieu(codeCommune);
 
     return {
-      ...commune,
+      code: commune.code,
+      nom: commune.nom,
       communesDeleguees,
       hasCadastre,
       isCOM,

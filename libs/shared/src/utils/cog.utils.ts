@@ -1,19 +1,14 @@
-import { keyBy, groupBy } from 'lodash';
+import { keyBy, flatten } from 'lodash';
 import * as communes from '@etalab/decoupage-administratif/data/communes.json';
-import * as departements from '@etalab/decoupage-administratif/data/departements.json';
-import { CommuneCOG } from '../types/cog.type';
+import { CommuneCOG, CommuneTypeEnum } from '../types/cog.type';
 
-export enum CommuneTypeEnum {
-  COMMUNE_ACTUELLE = 'commune-actuelle',
-  ARRONDISSEMENT_MUNICIPAL = 'arrondissement-municipal',
-  COMMUNE_DELEGUEE = 'commune-deleguee',
-}
-
-const filteredCommunes: CommuneCOG[] = (communes as Array<any>).filter((c) =>
-  [
-    CommuneTypeEnum.COMMUNE_ACTUELLE,
-    CommuneTypeEnum.ARRONDISSEMENT_MUNICIPAL,
-  ].includes(c.type),
+// CREATE INDEX COMMUNES
+const filteredCommunes: CommuneCOG[] = (communes as Array<CommuneCOG>).filter(
+  (c) =>
+    [
+      CommuneTypeEnum.COMMUNE_ACTUELLE,
+      CommuneTypeEnum.ARRONDISSEMENT_MUNICIPAL,
+    ].includes(c.type),
 );
 
 const communesIndex: Record<string, CommuneCOG> = keyBy(
@@ -21,41 +16,35 @@ const communesIndex: Record<string, CommuneCOG> = keyBy(
   'code',
 );
 
-const oldCommunes: CommuneCOG[] = (communes as Array<any>).filter((c) =>
-  [CommuneTypeEnum.COMMUNE_DELEGUEE].includes(c.type),
-);
-
-const oldCommunesIndex: Record<string, CommuneCOG> = keyBy(oldCommunes, 'code');
-
-const oldCommunesByChefLieu: Record<string, CommuneCOG[]> = groupBy(
-  oldCommunes,
-  'chefLieu',
-);
-
-const departementsIndex = keyBy(departements, 'code');
-
-const communesByDepartementIndex = groupBy(communes, 'departement');
-
-export function getCommunesByDepartement(codeDepartement) {
-  return communesByDepartementIndex[codeDepartement] || [];
-}
-
-export function getOldCommune(codeCommune) {
-  return oldCommunesIndex[codeCommune];
-}
-
-export function getOldCommuneByChefLieu(codeCommune: string): CommuneCOG[] {
-  return oldCommunesByChefLieu[codeCommune];
-}
-
-export function getCommune(codeCommune) {
+export function getCommune(codeCommune): CommuneCOG {
   return communesIndex[codeCommune];
 }
 
-export function getCodesCommunes() {
-  return (communes as CommuneCOG[]).map((c) => c.code);
+export function getCommuneAcienneByChefLieu(codeCommune: string): string[] {
+  const commune = communesIndex[codeCommune];
+  const codeSet = new Set([commune.code, ...(commune.anciensCodes || [])]);
+  return [...codeSet];
 }
 
-export function getDepartement(codeDepartement) {
-  return departementsIndex[codeDepartement];
+// CREATE INDEX COMMUNES DELEGUEE
+const filteredCommunesDeleguee: CommuneCOG[] = (
+  communes as Array<CommuneCOG>
+).filter((c) => [CommuneTypeEnum.COMMUNE_DELEGUEE].includes(c.type));
+
+const CommunesDelegueeIndex: Record<string, CommuneCOG> = keyBy(
+  filteredCommunesDeleguee,
+  'code',
+);
+
+export function getCommuneDeleguee(codeCommune: string): CommuneCOG {
+  return CommunesDelegueeIndex[codeCommune];
+}
+
+// CREATE LIST COMMUNES ANCIENNE
+const filteredCommunesAncienne: string[] = flatten(
+  filteredCommunes.map((c) => c.anciensCodes || []),
+);
+
+export function isCommuneAncienne(codeCommune: string): boolean {
+  return filteredCommunesAncienne.includes(codeCommune);
 }

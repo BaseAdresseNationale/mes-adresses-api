@@ -3,7 +3,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
-import { getCommune, getOldCommune } from '../utils/cog.utils';
+import { getCommune, isCommuneAncienne } from '../utils/cog.utils';
 
 @ValidatorConstraint({ name: 'validatorCogCommune' })
 export class ValidatorCogCommune implements ValidatorConstraintInterface {
@@ -14,7 +14,7 @@ export class ValidatorCogCommune implements ValidatorConstraintInterface {
     if (field === 'commune') {
       return Boolean(getCommune(commune));
     } else if (field === 'commune_deleguee') {
-      return commune ? Boolean(getOldCommune(commune)) : true;
+      return commune ? isCommuneAncienne(commune) : true;
     }
   }
 
