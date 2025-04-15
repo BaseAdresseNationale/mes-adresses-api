@@ -111,7 +111,6 @@ export class NumeroService {
         'count(CASE WHEN numeros.certifie THEN true END)',
         'nbNumerosCertifies',
       )
-      .addSelect('ST_AsGeoJSON(ST_Extent(positions.point))', 'extent')
       .leftJoin('numeros.positions', 'positions')
       .where('numeros.bal_id = :balId', { balId });
     return query.getRawOne();

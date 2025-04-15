@@ -442,13 +442,12 @@ export class BaseLocaleService {
   async extendWithNumeros(
     baseLocale: BaseLocale,
   ): Promise<ExtendedBaseLocaleDTO> {
-    const { nbNumeros, nbNumerosCertifies, extent } =
+    const { nbNumeros, nbNumerosCertifies } =
       await this.numeroService.countBalNumeroAndCertifie(baseLocale.id);
     const balExtended: ExtendedBaseLocaleDTO = {
       ...baseLocale,
       nbNumeros: Number(nbNumeros),
       nbNumerosCertifies: Number(nbNumerosCertifies),
-      bbox: turf.bbox(JSON.parse(extent)),
       isAllCertified:
         Number(nbNumeros) > 0
           ? Number(nbNumeros) === Number(nbNumerosCertifies)
