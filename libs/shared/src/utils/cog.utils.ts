@@ -1,5 +1,6 @@
 import { keyBy, flatten } from 'lodash';
 import * as communes from '@etalab/decoupage-administratif/data/communes.json';
+import * as indexCommune from '../../../../index-communes.json';
 import { CommuneCOG, CommuneTypeEnum } from '../types/cog.type';
 
 // CREATE INDEX COMMUNES
@@ -20,10 +21,18 @@ export function getCommune(codeCommune): CommuneCOG {
   return communesIndex[codeCommune];
 }
 
-export function getCommuneAcienneByChefLieu(codeCommune: string): string[] {
+export function getCommuneAcienneByChefLieu(codeCommune: string): {
+  code: string;
+  nom: string;
+}[] {
   const commune = communesIndex[codeCommune];
-  const codeSet = new Set([commune.code, ...(commune.anciensCodes || [])]);
-  return [...codeSet];
+  const codeCommunes = [
+    ...new Set([commune.code, ...(commune.anciensCodes || [])]),
+  ];
+  return codeCommunes.map((code) => ({
+    code,
+    nom: indexCommune[code],
+  }));
 }
 
 // CREATE INDEX COMMUNES DELEGUEE

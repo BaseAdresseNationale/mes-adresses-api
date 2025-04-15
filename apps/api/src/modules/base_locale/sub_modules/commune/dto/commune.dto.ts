@@ -1,4 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+
+export class CommuneAncienneDTO {
+  @ApiProperty()
+  code: string;
+
+  @ApiProperty()
+  nom: string;
+}
 
 export class CommuneDTO {
   @ApiProperty()
@@ -22,6 +31,10 @@ export class CommuneDTO {
   @ApiProperty()
   hasPlanIGN: boolean;
 
-  @ApiProperty({ isArray: true, type: String })
-  communesDeleguees: string[];
+  @Type(() => CommuneAncienneDTO)
+  @ApiProperty({
+    type: () => CommuneAncienneDTO,
+    isArray: true,
+  })
+  communesDeleguees: CommuneAncienneDTO[];
 }

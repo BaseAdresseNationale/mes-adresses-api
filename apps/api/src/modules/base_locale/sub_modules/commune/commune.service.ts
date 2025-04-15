@@ -8,20 +8,13 @@ import {
   checkIsCommuneOutreMer,
 } from '@/lib/utils/commune.utils';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CommuneCOG } from '@/shared/types/cog.type';
+import { CommuneDTO } from './dto/commune.dto';
 
 @Injectable()
 export class CommuneService {
   constructor() {}
 
-  getCommuneExtraData(codeCommune: string): CommuneCOG & {
-    isCOM: boolean;
-    hasCadastre: boolean;
-    hasOpenMapTiles: boolean;
-    hasOrtho: boolean;
-    hasPlanIGN: boolean;
-    communesDeleguees: string[];
-  } {
+  getCommuneExtraData(codeCommune: string): CommuneDTO {
     const commune = getCommune(codeCommune);
     if (!commune) {
       throw new HttpException(
