@@ -48,6 +48,7 @@ const baseLocalePublicProperties = [
   'createdAt',
   'deletedAt',
   'habilitationId',
+  'bbox',
   'sync',
 ];
 

@@ -15,18 +15,17 @@ function parseCsv(file) {
   });
 }
 
-function selectCommune(communes, currentYear) {
+function selectCommune(communes) {
+  if (communes.length === 1) {
+    return communes[0];
+  }
   const communesSorted = communes.sort((a, b) => {
-    const yearDebutA = Number(a?.DATE_DEBUT?.split('-')[0]);
-    const yearDebutB = Number(b?.DATE_DEBUT?.split('-')[0]);
-    if (yearDebutA === currentYear) {
-      return 1;
-    } else if (yearDebutB === currentYear) {
-      return -1;
-    }
-    return yearDebutB - yearDebutA;
+    return (
+      Number(b?.DATE_DEBUT?.split('-')[0]) -
+      Number(a?.DATE_DEBUT?.split('-')[0])
+    );
   });
-  return communesSorted[0];
+  return communesSorted[1];
 }
 
 async function main() {
@@ -37,10 +36,9 @@ async function main() {
   const csv = await parseCsv(response.body);
 
   const group = groupBy(csv.data, 'COM');
-  const currentYear = new Date().getFullYear();
   const index = {};
   for (const [cog, communes] of Object.entries(group)) {
-    index[cog] = selectCommune(communes, currentYear)?.LIBELLE;
+    index[cog] = selectCommune(communes)?.LIBELLE;
   }
 
   await writeFile(

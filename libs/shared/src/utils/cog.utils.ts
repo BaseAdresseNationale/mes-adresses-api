@@ -21,7 +21,7 @@ export function getCommune(codeCommune): CommuneCOG {
   return communesIndex[codeCommune];
 }
 
-export function getCommuneAcienneByChefLieu(codeCommune: string): {
+export function getCommunesAcienneByChefLieu(codeCommune: string): {
   code: string;
   nom: string;
 }[] {
@@ -35,23 +35,15 @@ export function getCommuneAcienneByChefLieu(codeCommune: string): {
   }));
 }
 
-// CREATE INDEX COMMUNES DELEGUEE
-const filteredCommunesDeleguee: CommuneCOG[] = (
-  communes as Array<CommuneCOG>
-).filter((c) => [CommuneTypeEnum.COMMUNE_DELEGUEE].includes(c.type));
-
-const CommunesDelegueeIndex: Record<string, CommuneCOG> = keyBy(
-  filteredCommunesDeleguee,
-  'code',
-);
-
-export function getCommuneDeleguee(codeCommune: string): CommuneCOG {
-  return CommunesDelegueeIndex[codeCommune];
+export function getCommuneAncienneNom(codeCommune: string): string {
+  return indexCommune[codeCommune];
 }
 
 // CREATE LIST COMMUNES ANCIENNE
 const filteredCommunesAncienne: string[] = flatten(
-  filteredCommunes.map((c) => c.anciensCodes || []),
+  filteredCommunes.map((c) =>
+    c.anciensCodes ? [...c.anciensCodes, c.code] : [],
+  ),
 );
 
 export function isCommuneAncienne(codeCommune: string): boolean {
