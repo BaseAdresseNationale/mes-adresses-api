@@ -16,7 +16,6 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import * as turf from '@turf/turf';
 import { uniq, difference, groupBy } from 'lodash';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
