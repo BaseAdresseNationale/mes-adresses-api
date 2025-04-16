@@ -9,7 +9,6 @@ import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import {
-  getCommune,
   getCommuneActuelle,
   getCommuneAncienne,
 } from '@/shared/utils/cog.utils';
