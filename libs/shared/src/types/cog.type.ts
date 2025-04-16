@@ -1,3 +1,9 @@
+export enum CommuneTypeEnum {
+  COMMUNE_ACTUELLE = 'commune-actuelle',
+  ARRONDISSEMENT_MUNICIPAL = 'arrondissement-municipal',
+  COMMUNE_DELEGUEE = 'commune-deleguee',
+}
+
 export type CommuneCOG = {
   code: string;
   nom: string;
@@ -6,11 +12,12 @@ export type CommuneCOG = {
   arrondissement: string;
   departement: string;
   region: string;
-  type: string;
+  type: CommuneTypeEnum;
   rangChefLieu: number;
   siren: string;
   codesPostaux: string[];
   population: number;
+  anciensCodes: string[];
 };
 
 export type DepartementCOG = {

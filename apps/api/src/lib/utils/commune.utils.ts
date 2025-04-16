@@ -34,7 +34,7 @@ function computeHasMapsStyle(codeCommune: string, mapStyle) {
 export function checkHasMapsStyles(
   codeCommune: string,
   isCommuneOutreMer: boolean,
-) {
+): any {
   const mapsStyles = ['hasOpenMapTiles', 'hasOrtho', 'hasPlanIGN'];
   const hasMapsStyles = {};
 

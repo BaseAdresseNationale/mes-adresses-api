@@ -1,6 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
-export class CommuneExtraDTO {
+export class CommuneAncienneDTO {
+  @ApiProperty()
+  code: string;
+
+  @ApiProperty()
+  nom: string;
+}
+
+export class CommuneDTO {
+  @ApiProperty()
+  code: string;
+
+  @ApiProperty()
+  nom: string;
+
   @ApiProperty()
   isCOM: boolean;
 
@@ -15,4 +30,11 @@ export class CommuneExtraDTO {
 
   @ApiProperty()
   hasPlanIGN: boolean;
+
+  @Type(() => CommuneAncienneDTO)
+  @ApiProperty({
+    type: () => CommuneAncienneDTO,
+    isArray: true,
+  })
+  communesDeleguees: CommuneAncienneDTO[];
 }
