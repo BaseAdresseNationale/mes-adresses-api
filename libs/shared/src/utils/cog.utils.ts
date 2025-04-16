@@ -46,6 +46,13 @@ export function getCommune(code: string): { code: string; nom: string } {
   }
 }
 
+export function getCommuneAncienne(code: string): {
+  code: string;
+  nom: string;
+} {
+  return { code, nom: indexCommune[code] };
+}
+
 // CREATE LIST COMMUNES ANCIENNE
 const filteredCommunesAncienne: string[] = flatten(
   filteredCommunes.map((c) =>
