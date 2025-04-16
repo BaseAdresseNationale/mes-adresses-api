@@ -1,7 +1,7 @@
 import {
   validate,
-  ValidateProfile,
-  ValidateRowType,
+  ValidateType,
+  ValidateRowFullType,
 } from '@ban-team/validateur-bal';
 import { normalize } from '@ban-team/adresses-util/lib/voies';
 import { chain, compact, keyBy, min, max } from 'lodash';
@@ -30,7 +30,7 @@ export type FromCsvType = {
 export function extractIdBanAdresse({
   parsedValues,
   additionalValues,
-}: ValidateRowType): string | null {
+}: ValidateRowFullType): string | null {
   return (
     parsedValues?.id_ban_adresse ||
     additionalValues?.uid_adresse?.idBanAdresse ||
@@ -41,7 +41,7 @@ export function extractIdBanAdresse({
 export function extractIdBanToponyme({
   parsedValues,
   additionalValues,
-}: ValidateRowType): string | null {
+}: ValidateRowFullType): string | null {
   return (
     parsedValues?.id_ban_toponyme ||
     additionalValues?.uid_adresse?.idBanToponyme ||
@@ -52,7 +52,7 @@ export function extractIdBanToponyme({
 export function extractCodeCommune({
   parsedValues,
   additionalValues,
-}: ValidateRowType): string | null {
+}: ValidateRowFullType): string | null {
   return (
     parsedValues.commune_insee || additionalValues?.cle_interop?.codeCommune
   );
@@ -81,7 +81,7 @@ function extractDate(row: any) {
   }
 }
 
-function extractData(rows: ValidateRowType[]): {
+function extractData(rows: ValidateRowFullType[]): {
   voies: Partial<Voie>[];
   numeros: Partial<Numero>[];
   toponymes: Partial<Toponyme>[];
@@ -132,12 +132,12 @@ function extractData(rows: ValidateRowType[]): {
   const numeros: Partial<Numero>[] = chain(rows)
     .filter((r) => r.parsedValues.numero !== 99999)
     .groupBy(
-      (r: ValidateRowType) =>
+      (r: ValidateRowFullType) =>
         `${r.parsedValues.numero}@@@${r.parsedValues.suffixe}@@@${normalize(
           r.parsedValues.voie_nom,
         )}`,
     )
-    .map((numeroRows: ValidateRowType[]) => {
+    .map((numeroRows: ValidateRowFullType[]) => {
       const date = extractDate(numeroRows[0]) || new Date();
 
       const voieString = normalize(numeroRows[0].parsedValues.voie_nom);
@@ -193,15 +193,19 @@ export async function extractFromCsv(
   codeCommune: string,
 ): Promise<FromCsvType> {
   try {
-    const { rows, parseOk }: ValidateProfile = (await validate(file, {
+    const { rows, parseOk } = (await validate(file, {
       profile: '1.3-relax',
-    })) as ValidateProfile;
+    })) as ValidateType;
     if (!parseOk) {
       return { isValid: false };
     }
 
-    const accepted: ValidateRowType[] = rows.filter(({ isValid }) => isValid);
-    const rejected: ValidateRowType[] = rows.filter(({ isValid }) => !isValid);
+    const accepted: ValidateRowFullType[] = rows.filter(
+      ({ isValid }) => isValid,
+    );
+    const rejected: ValidateRowFullType[] = rows.filter(
+      ({ isValid }) => !isValid,
+    );
     const communesData = extractData(
       accepted.filter((r) => extractCodeCommune(r) === codeCommune),
     );
