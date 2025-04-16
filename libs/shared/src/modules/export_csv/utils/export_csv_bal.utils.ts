@@ -8,7 +8,7 @@ import * as proj from '@etalab/project-legal';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
-import { getCommune, getCommuneAncienneNom } from '@/shared/utils/cog.utils';
+import { getCommune, getCommuneActuelle } from '@/shared/utils/cog.utils';
 import { roundCoordinate } from '@/shared/utils/coor.utils';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
@@ -124,10 +124,10 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
     suffixe: obj.suffixe || '',
     certification_commune: toCsvBoolean(obj.certifie),
     commune_insee: obj.codeCommune,
-    commune_nom: getCommune(obj.codeCommune).nom,
+    commune_nom: getCommuneActuelle(obj.codeCommune)?.nom,
     commune_deleguee_insee: obj.communeDeleguee || null,
     commune_deleguee_nom:
-      obj.communeDeleguee && getCommuneAncienneNom(obj.communeDeleguee),
+      obj.communeDeleguee && getCommune(obj.communeDeleguee)?.nom,
     position: '',
     long: '',
     lat: '',

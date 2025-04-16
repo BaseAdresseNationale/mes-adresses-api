@@ -46,7 +46,7 @@ import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_local
 import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
-import { getCommune } from '@/shared/utils/cog.utils';
+import { getCommuneActuelle } from '@/shared/utils/cog.utils';
 import { PopulateService } from './sub_modules/populate/populate.service';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
@@ -182,7 +182,7 @@ export class BaseLocaleService {
       banId,
       token: generateBase62String(20),
       commune,
-      nom: `Adresses de ${getCommune(commune).nom} [démo]`,
+      nom: `Adresses de ${getCommuneActuelle(commune)?.nom} [démo]`,
       status: StatusBaseLocalEnum.DEMO,
     });
     // On insert l'object dans postgres
