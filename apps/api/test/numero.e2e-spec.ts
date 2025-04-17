@@ -2,7 +2,6 @@ import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
-import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -34,7 +33,6 @@ describe('NUMERO', () => {
   let voieRepository: Repository<Voie>;
   let balRepository: Repository<BaseLocale>;
   let toponymeRepository: Repository<Toponyme>;
-  let redisContainer: StartedRedisContainer;
   // VAR
   const token = 'xxxx';
   const createdAt = new Date('2000-01-01');
@@ -53,8 +51,6 @@ describe('NUMERO', () => {
       password: postgresContainer.getPassword(),
     });
     await postgresClient.connect();
-    redisContainer = await new RedisContainer().start();
-    process.env.REDIS_URL = redisContainer.getConnectionUrl();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
@@ -87,7 +83,6 @@ describe('NUMERO', () => {
   afterAll(async () => {
     await postgresClient.end();
     await postgresContainer.stop();
-    await redisContainer.stop();
     await app.close();
   });
 

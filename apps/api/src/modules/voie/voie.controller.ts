@@ -158,13 +158,12 @@ export class VoieController {
       {
         voieId: req.voie.id,
       },
+      null,
       {
-        order: {
-          numero: 1,
-          suffixe: {
-            direction: 'ASC',
-            nulls: 'FIRST',
-          },
+        numero: 1,
+        suffixe: {
+          direction: 'ASC',
+          nulls: 'FIRST',
         },
       },
     );

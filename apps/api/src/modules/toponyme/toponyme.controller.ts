@@ -129,7 +129,9 @@ export class ToponymeController {
       {
         toponymeId: req.toponyme.id,
       },
-      { relations: { voie: true } },
+      null,
+      null,
+      { voie: true },
     );
     const result = numeros.map((n) => filterComments(n, !req.isAdmin));
     res.status(HttpStatus.OK).json(result);

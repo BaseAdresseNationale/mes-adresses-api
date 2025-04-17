@@ -5,11 +5,9 @@ import { TilesService } from './tiles.service';
 import { VoieModule } from '@/modules/voie/voie.module';
 import { NumeroModule } from '@/modules/numeros/numero.module';
 import { BaseLocaleModule } from '../../base_locale.module';
-import { RedisModule } from '@/shared/modules/redis/redis.module';
 
 @Module({
   imports: [
-    RedisModule,
     forwardRef(() => BaseLocaleModule),
     forwardRef(() => VoieModule),
     forwardRef(() => NumeroModule),
