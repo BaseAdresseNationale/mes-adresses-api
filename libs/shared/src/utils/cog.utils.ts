@@ -50,6 +50,17 @@ export function getCommuneAncienne(code: string): {
   code: string;
   nom: string;
 } {
+  if (code === '01187') {
+    return { code, nom: 'Haut Valromey' };
+  } else if (code === '16238') {
+    return { code, nom: 'Aunac-sur-Charente' };
+  } else if (code === '33008') {
+    return { code, nom: 'Porte-de-Benauge' };
+  } else if (code === '39576') {
+    return { code, nom: 'Val-Sonnette' };
+  } else if (code === '59006') {
+    return { code, nom: 'Val-Sonnette' };
+  }
   return { code, nom: indexCommune[code] };
 }
 
