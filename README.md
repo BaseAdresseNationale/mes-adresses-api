@@ -124,6 +124,13 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `SMTP_SECURE`                   | Indique si le serveur SMTP nécessite une connexion sécurisée (`YES`)        |
 | `SMTP_FROM`                     | Adresse à utiliser en tant qu'expéditeur des emails                         |
 | `SMTP_BCC`                      | Adresse(s) en copie cachée à utiliser pour tous les envois de notifications |
+| ---                             | ---                                                                         |
+| `S3_ENDPOINT`                   | URL de base du serveur S3                                                   |
+| `S3_REGION`                     | région du S3                                                                |
+| `S3_CONTAINER_ID`               | Id du container S3                                                          |
+| `S3_USER`                       | User S3                                                                     |
+| `S3_ACCESS_KEY`                 | Clef d'accès S3                                                             |
+| `S3_SECRET_KEY`                 | Clef secrete S3                                                             |
 
 Toutes ces variables ont des valeurs par défaut que vous trouverez dans le fichier `.env.sample`.
 

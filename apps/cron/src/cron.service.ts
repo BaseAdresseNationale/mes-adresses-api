@@ -7,6 +7,7 @@ import { SyncOutdatedTask } from './tasks/sync_outdated.task';
 import { TaskQueue } from './task_queue.class';
 import { RemoveSoftDeleteBalTask } from './tasks/remove_soft_delete_bal.task';
 import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
+import { UploadTracesTask } from './tasks/upload_traces.task';
 
 @Injectable()
 export class CronService {
@@ -18,6 +19,7 @@ export class CronService {
     private readonly syncOutdatedTask: SyncOutdatedTask,
     private readonly removeSoftDeleteBalTask: RemoveSoftDeleteBalTask,
     private readonly removeDemoBalTask: RemoveDemoBalTask,
+    private readonly uploadTracesTask: UploadTracesTask,
   ) {}
 
   // Every 30 seconds
@@ -50,5 +52,11 @@ export class CronService {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async removeDemoBALsOlderThanAMonth() {
     this.queue.pushTask(this.removeDemoBalTask);
+  }
+
+  // Sunday at 3am
+  @Cron('0 3 * * 0')
+  async uploadTraces() {
+    this.queue.pushTask(this.uploadTracesTask);
   }
 }
