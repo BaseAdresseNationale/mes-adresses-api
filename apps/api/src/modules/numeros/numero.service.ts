@@ -101,7 +101,6 @@ export class NumeroService {
         'count(CASE WHEN numeros.certifie THEN true END)',
         'nbNumerosCertifies',
       )
-      .leftJoin('numeros.positions', 'positions')
       .where('numeros.bal_id = :balId', { balId });
     return query.getRawOne();
   }
