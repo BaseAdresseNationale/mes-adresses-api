@@ -52,7 +52,7 @@ export function getCommuneAncienne(code: string): {
 } {
   if (code === '01187') {
     return { code, nom: 'Haut Valromey' };
-  } else if (code === '16238') {
+  } else if (code === '16023') {
     return { code, nom: 'Aunac-sur-Charente' };
   } else if (code === '33008') {
     return { code, nom: 'Porte-de-Benauge' };
