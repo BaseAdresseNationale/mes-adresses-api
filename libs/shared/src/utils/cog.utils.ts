@@ -58,8 +58,6 @@ export function getCommuneAncienne(code: string): {
     return { code, nom: 'Porte-de-Benauge' };
   } else if (code === '39576') {
     return { code, nom: 'Val-Sonnette' };
-  } else if (code === '59006') {
-    return { code, nom: 'Val-Sonnette' };
   }
   return { code, nom: indexCommune[code] };
 }
