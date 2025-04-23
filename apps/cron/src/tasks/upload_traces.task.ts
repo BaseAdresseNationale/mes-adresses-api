@@ -5,6 +5,7 @@ import { StatusBaseLocalEnum } from '@/shared/entities/base_locale.entity';
 import { Task } from '../task_queue.class';
 import { TypeNumerotationEnum, Voie } from '@/shared/entities/voie.entity';
 import { S3Service } from '@/shared/modules/s3/s3.service';
+import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 
 @Injectable()
 export class UploadTracesTask implements Task {
@@ -42,15 +43,44 @@ export class UploadTracesTask implements Task {
       UploadTracesTask.name,
     );
 
+    const filaireGeoJSON = {
+      type: 'FeatureCollection',
+      features: rawFilaires.map((raw) =>
+        createGeoJSONFeature(
+          {
+            type: 'LineString',
+            coordinates: JSON.parse(raw.trace).coordinates,
+          },
+          {
+            commune: raw.commune,
+            nom: raw.nom,
+            updatedAt: raw.updatedat,
+            createdAt: raw.createdat,
+          },
+        ),
+      ),
+    };
+
+    const fileName = process.env.EXPORT_FILAIRES_DE_VOIE_FILE_NAME;
+
+    if (!fileName) {
+      throw new Error(
+        'The environment variable EXPORT_FILAIRES_DE_VOIE_FILE_NAME is not set',
+      );
+    }
+
     const uploadResponse = await this.s3Service.uploadPublicFile(
-      'export_filaires-de-voie.json',
-      Buffer.from(JSON.stringify(rawFilaires), 'utf-8'),
+      fileName,
+      Buffer.from(JSON.stringify(filaireGeoJSON), 'utf-8'),
       {
         ContentType: 'application/json',
         ContentEncoding: 'utf-8',
       },
     );
 
-    this.logger.log(`Upload response : ${JSON.stringify(uploadResponse)}`);
+    this.logger.log(
+      `Upload response : ${JSON.stringify(uploadResponse)}`,
+      UploadTracesTask.name,
+    );
   }
 }

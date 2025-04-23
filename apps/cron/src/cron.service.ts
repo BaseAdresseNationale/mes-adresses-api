@@ -54,8 +54,7 @@ export class CronService {
     this.queue.pushTask(this.removeDemoBalTask);
   }
 
-  // Sunday at 3am
-  @Cron('0 3 * * 0')
+  @Cron(CronExpression.EVERY_DAY_AT_4AM)
   async uploadTraces() {
     this.queue.pushTask(this.uploadTracesTask);
   }
