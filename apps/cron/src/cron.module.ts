@@ -21,6 +21,8 @@ import { RemoveSoftDeleteBalTask } from './tasks/remove_soft_delete_bal.task';
 import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
 import { CronService } from './cron.service';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
+import { S3Module } from '@/shared/modules/s3/s3.module';
+import { UploadTracesTask } from './tasks/upload_traces.task';
 
 @Module({
   imports: [
@@ -38,11 +40,13 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     }),
 
     TypeOrmModule.forFeature([BaseLocale]),
+    TypeOrmModule.forFeature([Voie]),
     MailerModule.forRootAsync(MailerParams),
     ScheduleModule.forRoot(),
     ApiDepotModule,
     PublicationModule,
     CacheModule,
+    S3Module,
   ],
   providers: [
     CronService,
@@ -51,6 +55,7 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     DetectConflictTask,
     RemoveSoftDeleteBalTask,
     RemoveDemoBalTask,
+    UploadTracesTask,
     Logger,
   ],
 })
