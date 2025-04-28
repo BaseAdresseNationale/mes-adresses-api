@@ -57,7 +57,7 @@ export class Voie extends GlobalEntity {
   })
   trace: LineString | null;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, isArray: true })
   @Column('float', { nullable: true, array: true })
   bbox: number[] | null;
 
