@@ -16,7 +16,6 @@ import * as pumpify from 'pumpify';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
 import { SuperAdminGuard } from '@/lib/guards/admin.guard';
 import { VoieService } from '../voie/voie.service';
-import { FilaireVoieDTO } from '../voie/dto/filaire_voie.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -62,16 +61,6 @@ export class AdminController {
       .attachment('emails.csv')
       .type('csv')
       .send(csvFile);
-  }
-
-  @ApiExcludeEndpoint()
-  @Get('filaires-voies')
-  @UseGuards(SuperAdminGuard)
-  async getFilairesVoies(@Res() res: Response) {
-    const filaires: Partial<FilaireVoieDTO>[] =
-      await this.voieService.getFilairesVoies();
-
-    res.status(HttpStatus.OK).json(filaires);
   }
 
   @Post('/fusion-communes')
