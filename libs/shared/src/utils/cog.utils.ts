@@ -26,7 +26,7 @@ export function getCommunesAcienneByChefLieu(codeCommune: string): {
   nom: string;
 }[] {
   const commune = indexCommunesActuelle[codeCommune];
-  if (commune) {
+  if (commune && commune.anciensCodes) {
     const codeCommunes = [
       ...new Set([commune.code, ...(commune.anciensCodes || [])]),
     ];
