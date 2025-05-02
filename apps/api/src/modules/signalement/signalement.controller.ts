@@ -24,7 +24,10 @@ import { Response } from 'express';
 import { AdminGuard } from '@/lib/guards/admin.guard';
 import { CustomRequest } from '@/lib/types/request.type';
 import { SignalementService } from './signalement.service';
-import { UpdateSignalementDTO } from './dto/update-signalement-dto';
+import {
+  UpdateOneSignalementDTO,
+  UpdateManySignalementDTO,
+} from './dto/update-signalement-dto';
 
 @ApiTags('signalements')
 @Controller('signalements')
@@ -34,22 +37,49 @@ export class SignalementController {
     private signalementService: SignalementService,
   ) {}
 
-  @Put(':baseLocaleId')
+  @Put(':baseLocaleId/:signalementId')
   @ApiOperation({
-    summary: 'Update signalements',
-    operationId: 'updateSignalements',
+    summary: 'Update one signalement',
+    operationId: 'updateSignalement',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: UpdateSignalementDTO, required: true })
+  @ApiParam({ name: 'signalementId', required: true, type: String })
+  @ApiBody({ type: UpdateOneSignalementDTO, required: true })
   @ApiResponse({
     status: HttpStatus.OK,
     type: Boolean,
   })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async update(
+  async updateOne(
     @Req() req: CustomRequest,
-    @Body() updateSignalementDTO: UpdateSignalementDTO,
+    @Body() updateSignalementDTO: UpdateOneSignalementDTO,
+    @Res() res: Response,
+  ) {
+    await this.signalementService.updateOne(
+      req.baseLocale,
+      req.params.signalementId,
+      updateSignalementDTO,
+    );
+    res.status(HttpStatus.OK).json(true);
+  }
+
+  @Put(':baseLocaleId')
+  @ApiOperation({
+    summary: 'Update many signalements',
+    operationId: 'updateSignalements',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: UpdateManySignalementDTO, required: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Boolean,
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async updateMany(
+    @Req() req: CustomRequest,
+    @Body() updateSignalementDTO: UpdateManySignalementDTO,
     @Res() res: Response,
   ) {
     await this.signalementService.updateMany(

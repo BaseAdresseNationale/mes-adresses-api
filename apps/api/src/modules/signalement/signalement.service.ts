@@ -3,7 +3,10 @@ import {
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UpdateSignalementDTO } from './dto/update-signalement-dto';
+import {
+  UpdateManySignalementDTO,
+  UpdateOneSignalementDTO,
+} from './dto/update-signalement-dto';
 import { OpenAPISignalementService } from './openAPI-signalement.service';
 
 @Injectable()
@@ -26,7 +29,7 @@ export class SignalementService {
 
   async updateMany(
     baseLocale: BaseLocale,
-    updateSignalementDTO: UpdateSignalementDTO,
+    updateSignalementDTO: UpdateManySignalementDTO,
   ) {
     const { ids, status } = updateSignalementDTO;
 
@@ -51,6 +54,37 @@ export class SignalementService {
         status,
       });
     }
+
+    return true;
+  }
+
+  async updateOne(
+    baseLocale: BaseLocale,
+    signalementId: string,
+    updateSignalementDTO: UpdateOneSignalementDTO,
+  ) {
+    const { status, rejectionReason } = updateSignalementDTO;
+
+    if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
+      throw new HttpException(
+        'BaseLocale is not published',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    const fetchedSignalement = await this.findOneOrFail(signalementId);
+
+    if (baseLocale.commune !== fetchedSignalement.codeCommune) {
+      throw new HttpException(
+        `Communes do not match for signalement ${signalementId}`,
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    await this.openAPISignalementService.updateSignalement(signalementId, {
+      status,
+      rejectionReason,
+    });
 
     return true;
   }
