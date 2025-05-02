@@ -18,6 +18,7 @@ export type Signalement = {
     updatedAt: string;
     deletedAt?: string | null;
     codeCommune: string;
+    nomCommune?: string | null;
     type: Signalement.type;
     author?: Author | null;
     existingLocation?: (ExistingNumero | ExistingVoie | ExistingToponyme) | null;
@@ -25,6 +26,8 @@ export type Signalement = {
     status?: Signalement.status | null;
     source: Source;
     processedBy?: Client | null;
+    rejectionReason?: string;
+    point: Record<string, any>;
 };
 export namespace Signalement {
     export enum type {

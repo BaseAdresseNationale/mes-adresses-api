@@ -4,6 +4,7 @@
 /* eslint-disable */
 export type UpdateSignalementDTO = {
     status: UpdateSignalementDTO.status;
+    rejectionReason?: string;
 };
 export namespace UpdateSignalementDTO {
     export enum status {
