@@ -129,11 +129,13 @@ describe('STATS MODULE', () => {
         {
           id: balId1,
           commune: '37003',
+          communeNom: 'Amboise',
           status: StatusBaseLocalEnum.DRAFT,
         },
         {
           id: balId2,
           commune: '37003',
+          communeNom: 'Amboise',
           status: StatusBaseLocalEnum.PUBLISHED,
         },
       ];
