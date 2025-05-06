@@ -1,9 +1,10 @@
 import { GlobalEntity } from './global.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { AfterLoad, Column, Entity, OneToMany } from 'typeorm';
 import { Voie } from './voie.entity';
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
+import { getCommune } from '../utils/cog.utils';
 
 export enum StatusBaseLocalEnum {
   DRAFT = 'draft',
@@ -37,6 +38,9 @@ export class BaseLocale extends GlobalEntity {
   @ApiProperty()
   @Column('text', { nullable: false })
   nom: string;
+
+  @ApiProperty({ required: false, type: String })
+  communeNom?: string;
 
   @ApiProperty()
   @Column('json', { name: 'commune_noms_alt', nullable: true })
@@ -77,4 +81,9 @@ export class BaseLocale extends GlobalEntity {
   @ApiProperty({ type: () => Numero, isArray: true })
   @OneToMany(() => Numero, (numero) => numero.baseLocale)
   numeros?: Numero[];
+
+  @AfterLoad()
+  getCommuneNom?(): void {
+    this.communeNom = getCommune(this.commune)?.nom;
+  }
 }
