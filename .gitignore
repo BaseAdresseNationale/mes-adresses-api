@@ -36,3 +36,5 @@ lerna-debug.log*
 
 .env
 contours-communes.json
+
+.cursorrules
