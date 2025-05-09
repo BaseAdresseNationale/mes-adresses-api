@@ -1,6 +1,6 @@
 import {
   getCommune,
-  getCommunesAcienneByChefLieu,
+  getCommunesAnciennesByNouvelle,
 } from '@/shared/utils/cog.utils';
 import {
   checkHasCadastre,
@@ -26,7 +26,7 @@ export class CommuneService {
     const hasCadastre = checkHasCadastre(codeCommune);
     const isCOM = checkIsCommuneOutreMer(codeCommune);
     const hasMapsStyles = checkHasMapsStyles(codeCommune, isCOM);
-    const communesDeleguees = getCommunesAcienneByChefLieu(codeCommune);
+    const communesDeleguees = getCommunesAnciennesByNouvelle(codeCommune);
 
     return {
       code: commune.code,

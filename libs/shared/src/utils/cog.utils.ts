@@ -1,7 +1,47 @@
 import { keyBy, flatten } from 'lodash';
-import * as communes from '@etalab/decoupage-administratif/data/communes.json';
-import * as indexCommune from '../../../../index-communes.json';
+import * as allCommunes from '@etalab/decoupage-administratif/data/communes.json';
+import * as allCommunesNouvelles from '../../../../communes-nouvelles.json';
 import { CommuneCOG, CommuneTypeEnum } from '../types/cog.type';
+
+const communes = (allCommunes as CommuneCOG[]).filter((c) =>
+  [
+    CommuneTypeEnum.COMMUNE_ACTUELLE,
+    CommuneTypeEnum.ARRONDISSEMENT_MUNICIPAL,
+  ].includes(c.type),
+);
+
+const communesNouvellesIndex = keyBy(allCommunesNouvelles, 'code');
+
+const communesIndex: Record<string, CommuneCOG> = keyBy(communes, 'code');
+
+const codesCommunesActuelles = new Set(communes.map((c) => c.code));
+
+const codesCommunes = new Set();
+for (const commune of communes) {
+  codesCommunes.add(commune.code);
+  const anciensCodes = commune.anciensCodes || [];
+  for (const ancienCode of anciensCodes) {
+    codesCommunes.add(ancienCode);
+  }
+}
+
+export function isCommune(codeCommune: string): boolean {
+  return codesCommunes.has(codeCommune);
+}
+
+export function isCommuneActuelle(codeCommune: string): boolean {
+  return codesCommunesActuelles.has(codeCommune);
+}
+
+export function getCommune(codeCommune: string): CommuneCOG {
+  return communesIndex[codeCommune];
+}
+
+export function getCommunesAnciennesByNouvelle(
+  codeCommune: string,
+): CommuneCOG[] {
+  return communesNouvellesIndex[codeCommune].anciennesCommunes;
+}
 
 // CREATE INDEX COMMUNES
 const filteredCommunes: CommuneCOG[] = (communes as Array<CommuneCOG>).filter(
@@ -19,47 +59,6 @@ const indexCommunesActuelle: Record<string, CommuneCOG> = keyBy(
 
 export function getCommuneActuelle(codeCommune): CommuneCOG {
   return indexCommunesActuelle[codeCommune];
-}
-
-export function getCommunesAcienneByChefLieu(codeCommune: string): {
-  code: string;
-  nom: string;
-}[] {
-  const commune = indexCommunesActuelle[codeCommune];
-  if (commune && commune.anciensCodes) {
-    const codeCommunes = [
-      ...new Set([commune.code, ...(commune.anciensCodes || [])]),
-    ];
-    return codeCommunes.map((code) => ({
-      code,
-      nom: indexCommune[code],
-    }));
-  }
-  return [];
-}
-
-export function getCommune(code: string): { code: string; nom: string } {
-  if (indexCommunesActuelle[code]) {
-    return indexCommunesActuelle[code];
-  } else if (indexCommune[code]) {
-    return { code, nom: indexCommune[code] };
-  }
-}
-
-export function getCommuneAncienne(code: string): {
-  code: string;
-  nom: string;
-} {
-  if (code === '01187') {
-    return { code, nom: 'Haut Valromey' };
-  } else if (code === '16023') {
-    return { code, nom: 'Aunac-sur-Charente' };
-  } else if (code === '33008') {
-    return { code, nom: 'Porte-de-Benauge' };
-  } else if (code === '39576') {
-    return { code, nom: 'Val-Sonnette' };
-  }
-  return { code, nom: indexCommune[code] };
 }
 
 // CREATE LIST COMMUNES ANCIENNE
