@@ -27,44 +27,11 @@ export class SignalementService {
     return fetchedSignalement;
   }
 
-  async updateMany(
-    baseLocale: BaseLocale,
-    updateSignalementDTO: UpdateManySignalementDTO,
-  ) {
-    const { ids, status } = updateSignalementDTO;
-
-    if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
-      throw new HttpException(
-        'BaseLocale is not published',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
-    for (const signalementId of ids) {
-      const fetchedSignalement = await this.findOneOrFail(signalementId);
-
-      if (baseLocale.commune !== fetchedSignalement.codeCommune) {
-        throw new HttpException(
-          `Communes do not match for signalement ${signalementId}`,
-          HttpStatus.PRECONDITION_FAILED,
-        );
-      }
-
-      await this.openAPISignalementService.updateSignalement(signalementId, {
-        status,
-      });
-    }
-
-    return true;
-  }
-
   async updateOne(
     baseLocale: BaseLocale,
     signalementId: string,
     updateSignalementDTO: UpdateOneSignalementDTO,
   ) {
-    const { status, rejectionReason } = updateSignalementDTO;
-
     if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
       throw new HttpException(
         'BaseLocale is not published',
@@ -81,10 +48,25 @@ export class SignalementService {
       );
     }
 
-    await this.openAPISignalementService.updateSignalement(signalementId, {
-      status,
-      rejectionReason,
-    });
+    await this.openAPISignalementService.updateSignalement(
+      signalementId,
+      updateSignalementDTO,
+    );
+
+    return true;
+  }
+
+  async updateMany(
+    baseLocale: BaseLocale,
+    updateSignalementDTO: UpdateManySignalementDTO,
+  ) {
+    const { ids, status } = updateSignalementDTO;
+
+    for (const signalementId of ids) {
+      await this.updateOne(baseLocale, signalementId, {
+        status,
+      });
+    }
 
     return true;
   }
