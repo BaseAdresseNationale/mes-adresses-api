@@ -3,7 +3,10 @@ import {
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UpdateSignalementDTO } from './dto/update-signalement-dto';
+import {
+  UpdateManySignalementDTO,
+  UpdateOneSignalementDTO,
+} from './dto/update-signalement-dto';
 import { OpenAPISignalementService } from './openAPI-signalement.service';
 
 @Injectable()
@@ -24,12 +27,11 @@ export class SignalementService {
     return fetchedSignalement;
   }
 
-  async updateMany(
+  async updateOne(
     baseLocale: BaseLocale,
-    updateSignalementDTO: UpdateSignalementDTO,
+    signalementId: string,
+    updateSignalementDTO: UpdateOneSignalementDTO,
   ) {
-    const { ids, status } = updateSignalementDTO;
-
     if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
       throw new HttpException(
         'BaseLocale is not published',
@@ -37,17 +39,31 @@ export class SignalementService {
       );
     }
 
+    const fetchedSignalement = await this.findOneOrFail(signalementId);
+
+    if (baseLocale.commune !== fetchedSignalement.codeCommune) {
+      throw new HttpException(
+        `Communes do not match for signalement ${signalementId}`,
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    await this.openAPISignalementService.updateSignalement(
+      signalementId,
+      updateSignalementDTO,
+    );
+
+    return true;
+  }
+
+  async updateMany(
+    baseLocale: BaseLocale,
+    updateSignalementDTO: UpdateManySignalementDTO,
+  ) {
+    const { ids, status } = updateSignalementDTO;
+
     for (const signalementId of ids) {
-      const fetchedSignalement = await this.findOneOrFail(signalementId);
-
-      if (baseLocale.commune !== fetchedSignalement.codeCommune) {
-        throw new HttpException(
-          `Communes do not match for signalement ${signalementId}`,
-          HttpStatus.PRECONDITION_FAILED,
-        );
-      }
-
-      await this.openAPISignalementService.updateSignalement(signalementId, {
+      await this.updateOne(baseLocale, signalementId, {
         status,
       });
     }
