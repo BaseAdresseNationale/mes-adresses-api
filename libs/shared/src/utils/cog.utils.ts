@@ -40,7 +40,7 @@ export function getCommune(codeCommune: string): CommuneCOG {
 export function getCommunesAnciennesByNouvelle(
   codeCommune: string,
 ): CommuneCOG[] {
-  return communesNouvellesIndex[codeCommune].anciennesCommunes;
+  return communesNouvellesIndex[codeCommune]?.anciennesCommunes || [];
 }
 
 // CREATE INDEX COMMUNES
