@@ -1,8 +1,20 @@
 import { keyBy, flatten } from 'lodash';
 import * as allCommunes from '@etalab/decoupage-administratif/data/communes.json';
-import * as allCommunesNouvelles from '../../../../communes-nouvelles.json';
+import * as communesPrecedentesByChefLieu from '../../../../communes-precedentes-by-chef-lieu.json';
 import { CommuneCOG, CommuneTypeEnum } from '../types/cog.type';
 
+// Commune actuelle => commune qui existe toujours de nos jour
+// Commune precedente => commune qui n'existe plus de nos jour
+// Commune ancienne => commune precedente qui n'existe plus dans le COG
+// Commune déléguée => commune precedente qui existe encore dans le COG
+// Commune chef lieu => commune actuelle qui a des communes précentes
+
+type CommunePrecedente = {
+  code: string;
+  nom: string;
+};
+
+// liste des communes actuelles
 const communes = (allCommunes as CommuneCOG[]).filter((c) =>
   [
     CommuneTypeEnum.COMMUNE_ACTUELLE,
@@ -10,64 +22,75 @@ const communes = (allCommunes as CommuneCOG[]).filter((c) =>
   ].includes(c.type),
 );
 
-const communesNouvellesIndex = keyBy(allCommunesNouvelles, 'code');
-
-const communesIndex: Record<string, CommuneCOG> = keyBy(communes, 'code');
-
-const codesCommunesActuelles = new Set(communes.map((c) => c.code));
-
-const codesCommunes = new Set();
-for (const commune of communes) {
-  codesCommunes.add(commune.code);
-  const anciensCodes = commune.anciensCodes || [];
-  for (const ancienCode of anciensCodes) {
-    codesCommunes.add(ancienCode);
-  }
-}
-
-export function isCommune(codeCommune: string): boolean {
-  return codesCommunes.has(codeCommune);
-}
-
-export function isCommuneActuelle(codeCommune: string): boolean {
-  return codesCommunesActuelles.has(codeCommune);
-}
-
-export function getCommune(codeCommune: string): CommuneCOG {
-  return communesIndex[codeCommune];
-}
-
-export function getCommunesAnciennesByNouvelle(
-  codeCommune: string,
-): CommuneCOG[] {
-  return communesNouvellesIndex[codeCommune]?.anciennesCommunes || [];
-}
-
-// CREATE INDEX COMMUNES
-const filteredCommunes: CommuneCOG[] = (communes as Array<CommuneCOG>).filter(
-  (c) =>
-    [
-      CommuneTypeEnum.COMMUNE_ACTUELLE,
-      CommuneTypeEnum.ARRONDISSEMENT_MUNICIPAL,
-    ].includes(c.type),
-);
-
-const indexCommunesActuelle: Record<string, CommuneCOG> = keyBy(
-  filteredCommunes,
+// index des communes actuelles
+const IndexCommunesActuelles: Record<string, CommuneCOG> = keyBy(
+  communes,
   'code',
 );
 
-export function getCommuneActuelle(codeCommune): CommuneCOG {
-  return indexCommunesActuelle[codeCommune];
+// CREATE LIST COMMUNES ANCIENNE
+const IndexCommunesPrecedentes: Record<string, CommunePrecedente> = keyBy(
+  communesPrecedentesByChefLieu.reduce(
+    (acc, cur) => [...acc, ...cur.anciennesCommunes],
+    [],
+  ),
+  'code',
+);
+
+export function getCommuneActuelle(codeCommune: string): CommuneCOG {
+  return IndexCommunesActuelles[codeCommune];
 }
 
+export function getCommunePrecedente(codeCommune: string): CommunePrecedente {
+  return IndexCommunesPrecedentes[codeCommune];
+}
+
+export function getCommune(
+  codeCommune: string,
+): CommuneCOG | CommunePrecedente {
+  return getCommuneActuelle(codeCommune) || getCommunePrecedente(codeCommune);
+}
+
+// codes des communes actuelles
+const SetCodeCommunesActuelles = new Set(communes.map((c) => c.code));
+
 // CREATE LIST COMMUNES ANCIENNE
-const filteredCommunesAncienne: string[] = flatten(
-  filteredCommunes.map((c) =>
-    c.anciensCodes ? [...c.anciensCodes, c.code] : [],
+const SetCodeCommunesPrecedentes = new Set(
+  flatten(
+    communes.map((c) => (c.anciensCodes ? [...c.anciensCodes, c.code] : [])),
   ),
 );
 
-export function isCommuneAncienne(codeCommune: string): boolean {
-  return filteredCommunesAncienne.includes(codeCommune);
+/**
+ * Vérifie si une commune est actuelle
+ */
+export function isCommuneActuelle(codeCommune: string): boolean {
+  return SetCodeCommunesActuelles.has(codeCommune);
+}
+
+/**
+ * Vérifie si une commune a existé
+ */
+export function isCommunePrecendente(codeCommune: string): boolean {
+  return SetCodeCommunesPrecedentes.has(codeCommune);
+}
+
+/**
+ * Vérifie si une commune existe (precedente ou actuelle)
+ */
+export function isCommune(codeCommune: string): boolean {
+  return isCommuneActuelle(codeCommune) || isCommunePrecendente(codeCommune);
+}
+
+const IndexCommunesPrecedentsByChefLieu = keyBy(
+  communesPrecedentesByChefLieu,
+  'code',
+);
+
+export function getCommunesPrecedentesByChefLieu(
+  codeCommune: string,
+): CommuneCOG[] {
+  return (
+    IndexCommunesPrecedentsByChefLieu[codeCommune]?.anciennesCommunes || []
+  );
 }

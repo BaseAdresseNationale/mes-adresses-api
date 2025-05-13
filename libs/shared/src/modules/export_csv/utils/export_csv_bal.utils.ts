@@ -10,7 +10,7 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import {
   getCommune,
-  getCommunesAnciennesByNouvelle,
+  getCommunesPrecedentesByChefLieu,
 } from '@/shared/utils/cog.utils';
 import { roundCoordinate } from '@/shared/utils/coor.utils';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
@@ -113,7 +113,7 @@ function getCommuneDelegueeNom(
   codeCommune: string,
   codeCommuneDeleguee?: string,
 ): string {
-  const anciennesCommunes = getCommunesAnciennesByNouvelle(codeCommune);
+  const anciennesCommunes = getCommunesPrecedentesByChefLieu(codeCommune);
   const communeDeleguee = anciennesCommunes.find(
     (c) => c.code === codeCommuneDeleguee,
   );

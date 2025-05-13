@@ -52,7 +52,7 @@ async function main() {
   }
 
   await writeFile(
-    path.join(__dirname, '..', 'communes-nouvelles.json'),
+    path.join(__dirname, '..', 'communes-precedentes-by-chef-lieu.json'),
     JSON.stringify(communesJson, null, 2),
   );
 
