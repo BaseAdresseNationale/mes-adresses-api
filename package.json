@@ -29,7 +29,7 @@
     "test:api": "jest --config ./apps/api/test/jest-e2e.json",
     "test:cron": "jest --config ./apps/cron/test/jest-e2e.json",
     "update-cadastre": "node ./scripts/update-communes-cadastre.js",
-    "update-communes": "node ./scripts/update-index-communes.js",
+    "update-cog": "node ./scripts/update-communes-precedentes-by-chef-lieu.js",
     "push-staging": "./scripts/push-staging.sh",
     "typeorm": "typeorm-ts-node-commonjs",
     "typeorm:migration:run": "yarn typeorm migration:run -- -d ./typeorm.config.ts",

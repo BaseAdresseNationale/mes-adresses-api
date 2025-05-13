@@ -3,7 +3,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
-import { getCommuneActuelle, isCommuneAncienne } from '../utils/cog.utils';
+import { isCommuneActuelle, isCommunePrecendente } from '../utils/cog.utils';
 
 @ValidatorConstraint({ name: 'validatorCogCommune' })
 export class ValidatorCogCommune implements ValidatorConstraintInterface {
@@ -12,9 +12,9 @@ export class ValidatorCogCommune implements ValidatorConstraintInterface {
   validate(commune: string, args: ValidationArguments) {
     const field = args.constraints[0];
     if (field === 'commune') {
-      return Boolean(getCommuneActuelle(commune));
+      return isCommuneActuelle(commune);
     } else if (field === 'commune_deleguee') {
-      return commune ? isCommuneAncienne(commune) : true;
+      return commune ? isCommunePrecendente(commune) : true;
     }
   }
 

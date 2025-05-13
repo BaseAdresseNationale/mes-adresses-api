@@ -10,7 +10,7 @@ import {
   BaseLocale,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
-import { getCommune } from '@/shared/utils/cog.utils';
+import { isCommune } from '@/shared/utils/cog.utils';
 
 import { checkValidEmail } from '@/modules/base_locale/utils/base_locale.utils';
 import { SearchBaseLocalQuery } from '../dto/search_base_locale.query';
@@ -57,7 +57,7 @@ export class SearchQueryPipe implements PipeTransform {
     }
 
     if (query.commune) {
-      if (typeof query.commune === 'string' && getCommune(query.commune)) {
+      if (typeof query.commune === 'string' && isCommune(query.commune)) {
         res.filters.commune = query.commune;
       } else {
         throw new HttpException(

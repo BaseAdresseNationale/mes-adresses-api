@@ -9,8 +9,8 @@ import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import {
-  getCommuneActuelle,
-  getCommuneAncienne,
+  getCommune,
+  getCommunesPrecedentesByChefLieu,
 } from '@/shared/utils/cog.utils';
 import { roundCoordinate } from '@/shared/utils/coor.utils';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
@@ -109,6 +109,17 @@ function extractHeaders(csvRows: CsvRowType[]): string[] {
   return [...headers];
 }
 
+function getCommuneDelegueeNom(
+  codeCommune: string,
+  codeCommuneDeleguee?: string,
+): string {
+  const anciennesCommunes = getCommunesPrecedentesByChefLieu(codeCommune);
+  const communeDeleguee = anciennesCommunes.find(
+    (c) => c.code === codeCommuneDeleguee,
+  );
+  return communeDeleguee?.nom;
+}
+
 /* eslint camelcase: off */
 function createRow(obj: RowType, withComment: boolean): CsvRowType {
   const row: CsvRowType = {
@@ -127,10 +138,11 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
     suffixe: obj.suffixe || '',
     certification_commune: toCsvBoolean(obj.certifie),
     commune_insee: obj.codeCommune,
-    commune_nom: getCommuneActuelle(obj.codeCommune)?.nom,
+    commune_nom: getCommune(obj.codeCommune)?.nom,
     commune_deleguee_insee: obj.communeDeleguee || null,
     commune_deleguee_nom:
-      obj.communeDeleguee && getCommuneAncienne(obj.communeDeleguee)?.nom,
+      obj.communeDeleguee &&
+      getCommuneDelegueeNom(obj.codeCommune, obj.communeDeleguee),
     position: '',
     long: '',
     lat: '',

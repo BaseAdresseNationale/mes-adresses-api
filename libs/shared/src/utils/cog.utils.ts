@@ -1,74 +1,96 @@
 import { keyBy, flatten } from 'lodash';
-import * as communes from '@etalab/decoupage-administratif/data/communes.json';
-import * as indexCommune from '../../../../index-communes.json';
+import * as allCommunes from '@etalab/decoupage-administratif/data/communes.json';
+import * as communesPrecedentesByChefLieu from '../../../../communes-precedentes-by-chef-lieu.json';
 import { CommuneCOG, CommuneTypeEnum } from '../types/cog.type';
 
-// CREATE INDEX COMMUNES
-const filteredCommunes: CommuneCOG[] = (communes as Array<CommuneCOG>).filter(
-  (c) =>
-    [
-      CommuneTypeEnum.COMMUNE_ACTUELLE,
-      CommuneTypeEnum.ARRONDISSEMENT_MUNICIPAL,
-    ].includes(c.type),
+// Commune actuelle => commune qui existe toujours de nos jour
+// Commune precedente => commune qui n'existe plus de nos jour
+// Commune ancienne => commune precedente qui n'existe plus dans le COG
+// Commune déléguée => commune precedente qui existe encore dans le COG
+// Commune chef lieu => commune actuelle qui a des communes précentes
+
+type CommunePrecedente = {
+  code: string;
+  nom: string;
+};
+
+// liste des communes actuelles
+const communes = (allCommunes as CommuneCOG[]).filter((c) =>
+  [
+    CommuneTypeEnum.COMMUNE_ACTUELLE,
+    CommuneTypeEnum.ARRONDISSEMENT_MUNICIPAL,
+  ].includes(c.type),
 );
 
-const indexCommunesActuelle: Record<string, CommuneCOG> = keyBy(
-  filteredCommunes,
+// index des communes actuelles
+const IndexCommunesActuelles: Record<string, CommuneCOG> = keyBy(
+  communes,
   'code',
 );
 
-export function getCommuneActuelle(codeCommune): CommuneCOG {
-  return indexCommunesActuelle[codeCommune];
+// CREATE LIST COMMUNES ANCIENNE
+const IndexCommunesPrecedentes: Record<string, CommunePrecedente> = keyBy(
+  communesPrecedentesByChefLieu.reduce(
+    (acc, cur) => [...acc, ...cur.anciennesCommunes],
+    [],
+  ),
+  'code',
+);
+
+export function getCommuneActuelle(codeCommune: string): CommuneCOG {
+  return IndexCommunesActuelles[codeCommune];
 }
 
-export function getCommunesAcienneByChefLieu(codeCommune: string): {
-  code: string;
-  nom: string;
-}[] {
-  const commune = indexCommunesActuelle[codeCommune];
-  if (commune && commune.anciensCodes) {
-    const codeCommunes = [
-      ...new Set([commune.code, ...(commune.anciensCodes || [])]),
-    ];
-    return codeCommunes.map((code) => ({
-      code,
-      nom: indexCommune[code],
-    }));
-  }
-  return [];
+export function getCommunePrecedente(codeCommune: string): CommunePrecedente {
+  return IndexCommunesPrecedentes[codeCommune];
 }
 
-export function getCommune(code: string): { code: string; nom: string } {
-  if (indexCommunesActuelle[code]) {
-    return indexCommunesActuelle[code];
-  } else if (indexCommune[code]) {
-    return { code, nom: indexCommune[code] };
-  }
+export function getCommune(
+  codeCommune: string,
+): CommuneCOG | CommunePrecedente {
+  return getCommuneActuelle(codeCommune) || getCommunePrecedente(codeCommune);
 }
 
-export function getCommuneAncienne(code: string): {
-  code: string;
-  nom: string;
-} {
-  if (code === '01187') {
-    return { code, nom: 'Haut Valromey' };
-  } else if (code === '16023') {
-    return { code, nom: 'Aunac-sur-Charente' };
-  } else if (code === '33008') {
-    return { code, nom: 'Porte-de-Benauge' };
-  } else if (code === '39576') {
-    return { code, nom: 'Val-Sonnette' };
-  }
-  return { code, nom: indexCommune[code] };
-}
+// codes des communes actuelles
+const SetCodeCommunesActuelles = new Set(communes.map((c) => c.code));
 
 // CREATE LIST COMMUNES ANCIENNE
-const filteredCommunesAncienne: string[] = flatten(
-  filteredCommunes.map((c) =>
-    c.anciensCodes ? [...c.anciensCodes, c.code] : [],
+const SetCodeCommunesPrecedentes = new Set(
+  flatten(
+    communes.map((c) => (c.anciensCodes ? [...c.anciensCodes, c.code] : [])),
   ),
 );
 
-export function isCommuneAncienne(codeCommune: string): boolean {
-  return filteredCommunesAncienne.includes(codeCommune);
+/**
+ * Vérifie si une commune est actuelle
+ */
+export function isCommuneActuelle(codeCommune: string): boolean {
+  return SetCodeCommunesActuelles.has(codeCommune);
+}
+
+/**
+ * Vérifie si une commune a existé
+ */
+export function isCommunePrecendente(codeCommune: string): boolean {
+  return SetCodeCommunesPrecedentes.has(codeCommune);
+}
+
+/**
+ * Vérifie si une commune existe (precedente ou actuelle)
+ */
+export function isCommune(codeCommune: string): boolean {
+  return isCommuneActuelle(codeCommune) || isCommunePrecendente(codeCommune);
+}
+
+const IndexCommunesPrecedentsByChefLieu = keyBy(
+  communesPrecedentesByChefLieu,
+  'code',
+);
+
+export function getCommunesPrecedentesByChefLieu(
+  codeCommune: string,
+): CommuneCOG[] {
+  return (
+    IndexCommunesPrecedentsByChefLieu[codeCommune]?.anciennesCommunes || []
+  );
 }

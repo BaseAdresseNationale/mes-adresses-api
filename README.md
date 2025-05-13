@@ -83,6 +83,12 @@ Mettre a jour les liste des communes (code insee) qui ont un cadastre
 yarn update-cadastre
 ```
 
+Mettre a jour les liste des communes nouvelles avec leurs communes anciennes
+
+```
+yarn update-communes
+```
+
 ### Test
 
 Rapport des tests (jest) :
