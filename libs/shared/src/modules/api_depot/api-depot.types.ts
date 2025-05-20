@@ -36,7 +36,6 @@ export type Habilitation = {
   clientId?: string;
   codeCommune: string;
   emailCommune: string;
-  franceconnectAuthenticationUrl?: string;
   status: StatusHabilitationEnum;
   strategy?: Strategy | null;
   expiresAt?: Date;
