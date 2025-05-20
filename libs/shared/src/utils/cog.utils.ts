@@ -89,7 +89,7 @@ const IndexCommunesPrecedentsByChefLieu = keyBy(
 
 export function getCommunesPrecedentesByChefLieu(
   codeCommune: string,
-): CommuneCOG[] {
+): CommunePrecedente[] {
   return (
     IndexCommunesPrecedentsByChefLieu[codeCommune]?.anciennesCommunes || []
   );
