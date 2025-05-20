@@ -9,6 +9,7 @@ export enum StatusHabilitationEnum {
 export enum TypeStrategyEnum {
   EMAIL = 'email',
   FRANCECONNECT = 'franceconnect',
+  PROCONNECT = 'proconnect',
   INTERNAL = 'internal',
 }
 
