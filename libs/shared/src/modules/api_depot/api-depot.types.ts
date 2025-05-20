@@ -9,6 +9,7 @@ export enum StatusHabilitationEnum {
 export enum TypeStrategyEnum {
   EMAIL = 'email',
   FRANCECONNECT = 'franceconnect',
+  PROCONNECT = 'proconnect',
   INTERNAL = 'internal',
 }
 
@@ -35,7 +36,6 @@ export type Habilitation = {
   clientId?: string;
   codeCommune: string;
   emailCommune: string;
-  franceconnectAuthenticationUrl?: string;
   status: StatusHabilitationEnum;
   strategy?: Strategy | null;
   expiresAt?: Date;
