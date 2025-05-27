@@ -1024,11 +1024,12 @@
   resolved "https://registry.yarnpkg.com/@ban-team/shared-data/-/shared-data-1.4.1.tgz#befd80777dd8a5f80262d65730f92c3a1c8a0116"
   integrity sha512-dcbwb+6xUE3O/5e7Gz5XrMw6rkI7XvTAXqfSzpFPkf5yteuy8nkLZc8EK4hX3G2nSvOx/hh8mVVCpo+OAZuOwA==
 
-"@ban-team/validateur-bal@^3.0.8":
-  version "3.0.8"
-  resolved "https://registry.yarnpkg.com/@ban-team/validateur-bal/-/validateur-bal-3.0.8.tgz#389829e1df9a1cfdd64f163b7d78c43bb2c68ab9"
-  integrity sha512-RzcJhaekPMrTZ7hOl5oUb6DKOiXDPi4NO/XUEOCcVlMrM0le8eqSCfealX2gqtEi7ozDYOap+89hoVHn4/setQ==
+"@ban-team/validateur-bal@^3.1.5":
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/@ban-team/validateur-bal/-/validateur-bal-3.1.5.tgz#790ba12cb91170bc0c69abaa9acfa1e6c329584c"
+  integrity sha512-Ryilgu7pOm7Dpkd06utlLaN2MkEKz2wCGTEw/jLAk2GtJrPSelqYA03GLdzNXrc4CXGVZB2s2W72nqPPbDNK3g==
   dependencies:
+    "@ban-team/adresses-util" "^0.9.0"
     "@ban-team/shared-data" "^1.4.1"
     "@etalab/project-legal" "^0.6.0"
     blob-to-buffer "^1.2.9"
