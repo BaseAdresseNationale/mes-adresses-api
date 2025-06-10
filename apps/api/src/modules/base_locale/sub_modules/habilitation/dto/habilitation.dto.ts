@@ -33,9 +33,6 @@ export class HabilitationDTO implements Habilitation {
   @ApiProperty()
   emailCommune: string;
 
-  @ApiProperty()
-  franceconnectAuthenticationUrl?: string;
-
   @ApiProperty({ type: () => StrategyDTO })
   strategy?: Strategy;
 
