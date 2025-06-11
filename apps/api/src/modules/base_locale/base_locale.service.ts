@@ -52,6 +52,7 @@ import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
+import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
@@ -588,6 +589,32 @@ export class BaseLocaleService {
       .getRawMany();
 
     return distinctValues.map((value) => value[field]);
+  }
+
+  async getGeoJSONFilairesDeVoie(
+    baseLocale: BaseLocale,
+  ): Promise<GeoJSON.FeatureCollection> {
+    const rawFilaires = await this.voieService.findVoiesTraces(baseLocale.id);
+
+    const filaireGeoJSON: GeoJSON.FeatureCollection = {
+      type: 'FeatureCollection',
+      features: rawFilaires.map((raw) =>
+        createGeoJSONFeature(
+          {
+            type: 'LineString',
+            coordinates: JSON.parse(raw.trace).coordinates,
+          },
+          {
+            nom: raw.nom,
+            commune: baseLocale.commune,
+            updatedAt: raw.updatedat,
+            createdAt: raw.createdat,
+          },
+        ),
+      ),
+    };
+
+    return filaireGeoJSON;
   }
 
   touch(balId: string, updatedAt: Date = new Date()) {

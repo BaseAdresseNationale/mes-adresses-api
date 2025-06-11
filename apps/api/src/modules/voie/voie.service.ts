@@ -403,4 +403,27 @@ export class VoieService {
     });
     return query.getRawMany();
   }
+
+  async findVoiesTraces(
+    balId: string,
+  ): Promise<
+    { nom: string; trace: string; updatedat: Date; createdat: Date }[]
+  > {
+    return this.voiesRepository
+      .createQueryBuilder('voies')
+      .select([
+        'voies.nom as nom',
+        'ST_AsGeoJSON(voies.trace) as trace',
+        'voies.updatedAt as updatedat',
+        'voies.createdAt as createdat',
+      ])
+      .where('voies.type_numerotation = :typeNumerotation', {
+        typeNumerotation: TypeNumerotationEnum.METRIQUE,
+      })
+      .andWhere('voies.trace IS NOT NULL')
+      .andWhere('voies.bal_id = :balId', {
+        balId,
+      })
+      .getRawMany();
+  }
 }
