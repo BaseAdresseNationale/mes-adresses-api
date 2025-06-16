@@ -387,6 +387,10 @@ export class VoieService {
       `array_remove(array_agg(CASE WHEN numeros.comment IS NOT NULL THEN concat(numeros.numero, numeros.suffixe, ' - ', numeros.comment) END), NULL)`,
       'commentedNumeros',
     )
+    .addSelect(
+      "(SELECT array_agg(DISTINCT elem) FROM unnest(array_agg(numeros.parcelles) filter(where numeros.parcelles <> '{}')) AS elem)",
+      'parcelles',
+    )
     .leftJoin('voies.numeros', 'numeros')
     .groupBy('voies.id, voies.comment');
 
