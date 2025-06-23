@@ -624,6 +624,29 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(voiesFiltered);
   }
 
+  @Get(':baseLocaleId/voies/geojson')
+  @ApiOperation({
+    summary: 'get geojson of filaires voies',
+    operationId: 'findFilairesVoiesGeoJSON',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK })
+  async findFilairesVoiesGeoJSON(
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+  ) {
+    const filaireGeoJSON: GeoJSON.FeatureCollection =
+      await this.baseLocaleService.getGeoJSONFilairesDeVoie(req.baseLocale);
+
+    const file = Buffer.from(JSON.stringify(filaireGeoJSON), 'utf-8');
+
+    res
+      .status(HttpStatus.OK)
+      .attachment(`voies_${req.baseLocale.commune}.geojson`)
+      .type('application/json')
+      .send(file);
+  }
+
   @Get(':baseLocaleId/voies/metas')
   @ApiOperation({
     summary: 'Find all Metas Voie in Bal',

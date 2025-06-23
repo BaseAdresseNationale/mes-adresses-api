@@ -9,9 +9,15 @@ import { CommuneCOG, CommuneTypeEnum } from '../types/cog.type';
 // Commune déléguée => commune precedente qui existe encore dans le COG
 // Commune chef lieu => commune actuelle qui a des communes précentes
 
-type CommunePrecedente = {
+export type CommunePrecedente = {
   code: string;
   nom: string;
+};
+
+export type CommuneChefLieu = {
+  code: string;
+  nom: string;
+  anciennesCommunes: CommunePrecedente[];
 };
 
 // liste des communes actuelles
@@ -82,10 +88,8 @@ export function isCommune(codeCommune: string): boolean {
   return isCommuneActuelle(codeCommune) || isCommunePrecendente(codeCommune);
 }
 
-const IndexCommunesPrecedentsByChefLieu = keyBy(
-  communesPrecedentesByChefLieu,
-  'code',
-);
+const IndexCommunesPrecedentsByChefLieu: Record<string, CommuneChefLieu> =
+  keyBy(communesPrecedentesByChefLieu, 'code');
 
 export function getCommunesPrecedentesByChefLieu(
   codeCommune: string,

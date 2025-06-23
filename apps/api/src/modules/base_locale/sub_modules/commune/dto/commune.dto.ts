@@ -1,6 +1,7 @@
+import { CommunePrecedente } from '@/shared/utils/cog.utils';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CommunePrecedenteDTO {
+export class CommunePrecedenteDTO implements CommunePrecedente {
   @ApiProperty()
   code: string;
 
