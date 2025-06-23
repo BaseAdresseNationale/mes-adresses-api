@@ -31,6 +31,6 @@ export class CommuneDTO {
   @ApiProperty()
   hasPlanIGN: boolean;
 
-  @ApiProperty({ type: [CommunePrecedenteDTO] })
+  @ApiProperty({ type: () => CommunePrecedenteDTO, isArray: true })
   communesDeleguees: CommunePrecedenteDTO[];
 }
