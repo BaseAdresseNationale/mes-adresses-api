@@ -1,4 +1,13 @@
+import { CommunePrecedente } from '@/shared/utils/cog.utils';
 import { ApiProperty } from '@nestjs/swagger';
+
+export class CommunePrecedenteDTO implements CommunePrecedente {
+  @ApiProperty()
+  code: string;
+
+  @ApiProperty()
+  nom: string;
+}
 
 export class CommuneDTO {
   @ApiProperty()
@@ -21,4 +30,7 @@ export class CommuneDTO {
 
   @ApiProperty()
   hasPlanIGN: boolean;
+
+  @ApiProperty({ type: () => CommunePrecedenteDTO, isArray: true })
+  communesDeleguees: CommunePrecedenteDTO[];
 }
