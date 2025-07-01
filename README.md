@@ -5,9 +5,9 @@ Mes adresses api est un dispositif logiciel composé de deux application
 - API: permettant la gestion de bases d’adresses à l’échelon local coupler avec [Mes adresses](https://github.com/BaseAdresseNationale/mes-adresses)
 - CRON: permettant le deploiement continue des BALs de mes-adresses-api vers [Api de depot](https://github.com/BaseAdresseNationale/api-depot)
 
-## Documentation
+## 📚 Documentation
 
-https://adresse-data-gouv-fr.gitbook.io/bal/mes-adresses
+Une documentation plus complète et des guides d’utilisation sont disponibles dans le [Wiki](https://github.com/BaseAdresseNationale/mes-adresses-api/wiki).
 
 ## Pré-requis
 
