@@ -20,6 +20,9 @@ export class VoieMetas {
 
   @ApiProperty()
   commentedNumeros?: string[];
+
+  @ApiProperty()
+  parcelles?: string[];
 }
 
 export class ExtendedVoieDTO extends IntersectionType(Voie, VoieMetas) {}
