@@ -635,9 +635,9 @@ describe('BASE LOCAL MODULE', () => {
       expect(response.headers['content-type']).toEqual(
         'text/csv; charset=utf-8',
       );
-      const csvFile = `type;nom;nombre_de_numeros;numeros
-    voie;rue de la paix;1;1bis
-    voie;rue de paris;1;1ter`;
+      const csvFile = `type;nom;nombre_de_numeros;nombre_de_numeros_certifies;numeros
+    voie;rue de la paix;1;1;1bis
+    voie;rue de paris;1;0;1ter`;
       expect(response.text.replace(/\s/g, '')).toEqual(
         csvFile.replace(/\s/g, ''),
       );
