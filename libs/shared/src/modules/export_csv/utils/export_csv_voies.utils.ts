@@ -11,6 +11,7 @@ type CsvRow = {
   type: string;
   nom: string;
   nombre_de_numeros?: number;
+  nombre_de_numeros_certifies?: number;
   numeros?: string;
 };
 
@@ -56,6 +57,9 @@ function modelToRow(
   };
 
   row.nombre_de_numeros = numerosVoie.length; // eslint-disable-line camelcase
+  row.nombre_de_numeros_certifies = numerosVoie.filter(
+    (n) => n.certifie,
+  ).length; // eslint-disable-line camelcase
   row.numeros =
     numerosVoie.length > 0
       ? numerosVoie.map((n) => String(n.numero) + (n.suffixe || '')).join(' ')
