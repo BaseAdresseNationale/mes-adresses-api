@@ -175,11 +175,23 @@
     "anciennesCommunes": [
       {
         "code": "01187",
-        "nom": "Haut Valromey"
+        "nom": "Hotonnes"
       },
       {
         "code": "01330",
         "nom": "Ruffieu"
+      },
+      {
+        "code": "01176",
+        "nom": "Le Grand-Abergement"
+      },
+      {
+        "code": "01292",
+        "nom": "Le Petit-Abergement"
+      },
+      {
+        "code": "01409",
+        "nom": "Songieu"
       }
     ]
   },
@@ -738,6 +750,14 @@
       {
         "code": "08294",
         "nom": "La Moncelle"
+      },
+      {
+        "code": "08371",
+        "nom": "Rubécourt-et-Lamécourt"
+      },
+      {
+        "code": "08475",
+        "nom": "Villers-Cernay"
       }
     ]
   },
@@ -1140,16 +1160,6 @@
       {
         "code": "12177",
         "nom": "Palmas"
-      }
-    ]
-  },
-  {
-    "code": "12218",
-    "nom": "Conques-en-Rouergue",
-    "anciennesCommunes": [
-      {
-        "code": "12076",
-        "nom": "Conques-en-Rouergue"
       }
     ]
   },
@@ -1912,8 +1922,12 @@
         "nom": "Le Locheur"
       },
       {
+        "code": "14432",
+        "nom": "Missy"
+      },
+      {
         "code": "14475",
-        "nom": "Noyers-Missy"
+        "nom": "Noyers-Bocage"
       },
       {
         "code": "14702",
@@ -2056,18 +2070,12 @@
         "nom": "La Bigne"
       },
       {
-        "code": "14579",
-        "nom": "Seulline"
-      }
-    ]
-  },
-  {
-    "code": "14581",
-    "nom": "Aurseulles",
-    "anciennesCommunes": [
+        "code": "14188",
+        "nom": "Coulvain"
+      },
       {
-        "code": "14011",
-        "nom": "Aurseulles"
+        "code": "14579",
+        "nom": "Saint-Georges-d'Aunay"
       }
     ]
   },
@@ -2226,8 +2234,24 @@
     "nom": "Thury-Harcourt-le-Hom",
     "anciennesCommunes": [
       {
+        "code": "14144",
+        "nom": "Caumont-sur-Orne"
+      },
+      {
+        "code": "14213",
+        "nom": "Curcy-sur-Orne"
+      },
+      {
+        "code": "14324",
+        "nom": "Hamars"
+      },
+      {
+        "code": "14628",
+        "nom": "Saint-Martin-de-Sallen"
+      },
+      {
         "code": "14689",
-        "nom": "Le Hom"
+        "nom": "Thury-Harcourt"
       }
     ]
   },
@@ -2236,8 +2260,12 @@
     "nom": "Troarn",
     "anciennesCommunes": [
       {
+        "code": "14666",
+        "nom": "Sannerville"
+      },
+      {
         "code": "14712",
-        "nom": "Saline"
+        "nom": "Troarn"
       }
     ]
   },
@@ -2503,7 +2531,15 @@
     "anciennesCommunes": [
       {
         "code": "16023",
-        "nom": "Aunac-sur-Charente"
+        "nom": "Aunac"
+      },
+      {
+        "code": "16033",
+        "nom": "Bayers"
+      },
+      {
+        "code": "16094",
+        "nom": "Chenommet"
       },
       {
         "code": "16238",
@@ -2517,7 +2553,11 @@
     "anciennesCommunes": [
       {
         "code": "16046",
-        "nom": "Côteaux du Blanzacais"
+        "nom": "Blanzac-Porcheresse"
+      },
+      {
+        "code": "16115",
+        "nom": "Cressac-Saint-Genis"
       },
       {
         "code": "16332",
@@ -2820,8 +2860,16 @@
         "nom": "Gourville"
       },
       {
+        "code": "16262",
+        "nom": "Plaizac"
+      },
+      {
         "code": "16286",
         "nom": "Rouillac"
+      },
+      {
+        "code": "16371",
+        "nom": "Sonneville"
       }
     ]
   },
@@ -3364,8 +3412,12 @@
     "nom": "Jugon-les-Lacs",
     "anciennesCommunes": [
       {
+        "code": "22051",
+        "nom": "Dolo"
+      },
+      {
         "code": "22084",
-        "nom": "Jugon-les-Lacs - Commune nouvelle"
+        "nom": "Jugon-les-Lacs"
       }
     ]
   },
@@ -3376,6 +3428,10 @@
       {
         "code": "22093",
         "nom": "Lamballe"
+      },
+      {
+        "code": "22151",
+        "nom": "Meslin"
       },
       {
         "code": "22154",
@@ -3448,8 +3504,12 @@
     "nom": "Plémet",
     "anciennesCommunes": [
       {
+        "code": "22058",
+        "nom": "La Ferrière"
+      },
+      {
         "code": "22183",
-        "nom": "Les Moulins"
+        "nom": "Plémet"
       }
     ]
   },
@@ -3615,7 +3675,11 @@
       },
       {
         "code": "23149",
-        "nom": "Parsac-Rimondeix"
+        "nom": "Parsac"
+      },
+      {
+        "code": "23161",
+        "nom": "Rimondeix"
       }
     ]
   },
@@ -3718,8 +3782,16 @@
     "nom": "Boulazac Isle Manoire",
     "anciennesCommunes": [
       {
+        "code": "24013",
+        "nom": "Atur"
+      },
+      {
         "code": "24053",
-        "nom": "Boulazac Isle Manoire"
+        "nom": "Boulazac"
+      },
+      {
+        "code": "24439",
+        "nom": "Saint-Laurent-sur-Manoire"
       },
       {
         "code": "24447",
@@ -3733,7 +3805,7 @@
     "anciennesCommunes": [
       {
         "code": "24064",
-        "nom": "Brantôme en Périgord"
+        "nom": "Brantôme"
       },
       {
         "code": "24079",
@@ -3750,6 +3822,10 @@
       {
         "code": "24391",
         "nom": "Saint-Crépin-de-Richemont"
+      },
+      {
+        "code": "24430",
+        "nom": "Saint-Julien-de-Bourdeilles"
       },
       {
         "code": "24530",
@@ -3987,7 +4063,11 @@
       },
       {
         "code": "24362",
-        "nom": "Sainte-Alvère-Saint-Laurent Les Bâtons"
+        "nom": "Sainte-Alvère"
+      },
+      {
+        "code": "24435",
+        "nom": "Saint-Laurent-des-Bâtons"
       }
     ]
   },
@@ -4177,7 +4257,11 @@
       },
       {
         "code": "25156",
-        "nom": "Pays de Clerval"
+        "nom": "Clerval"
+      },
+      {
+        "code": "25531",
+        "nom": "Santoche"
       }
     ]
   },
@@ -4715,7 +4799,11 @@
     "anciennesCommunes": [
       {
         "code": "27089",
-        "nom": "Thénouville"
+        "nom": "Bosc-Renoult-en-Roumois"
+      },
+      {
+        "code": "27626",
+        "nom": "Theillement"
       },
       {
         "code": "27657",
@@ -4832,12 +4920,28 @@
     "nom": "Mesnils-sur-Iton",
     "anciennesCommunes": [
       {
+        "code": "27024",
+        "nom": "Le Roncenay-Authenay"
+      },
+      {
+        "code": "27166",
+        "nom": "Condé-sur-Iton"
+      },
+      {
         "code": "27198",
-        "nom": "Mesnils-sur-Iton"
+        "nom": "Damville"
+      },
+      {
+        "code": "27293",
+        "nom": "Gouville"
       },
       {
         "code": "27297",
         "nom": "Grandvilliers"
+      },
+      {
+        "code": "27387",
+        "nom": "Manthelon"
       },
       {
         "code": "27416",
@@ -4846,6 +4950,10 @@
       {
         "code": "27491",
         "nom": "Roman"
+      },
+      {
+        "code": "27503",
+        "nom": "Le Sacq"
       }
     ]
   },
@@ -5182,16 +5290,6 @@
     ]
   },
   {
-    "code": "27676",
-    "nom": "Les Trois Lacs",
-    "anciennesCommunes": [
-      {
-        "code": "27058",
-        "nom": "Les Trois Lacs"
-      }
-    ]
-  },
-  {
     "code": "27679",
     "nom": "Verneuil d'Avre et d'Iton",
     "anciennesCommunes": [
@@ -5239,7 +5337,27 @@
     "anciennesCommunes": [
       {
         "code": "28012",
-        "nom": "Commune nouvelle d'Arrou"
+        "nom": "Arrou"
+      },
+      {
+        "code": "28044",
+        "nom": "Boisgasson"
+      },
+      {
+        "code": "28093",
+        "nom": "Châtillon-en-Dunois"
+      },
+      {
+        "code": "28115",
+        "nom": "Courtalain"
+      },
+      {
+        "code": "28204",
+        "nom": "Langey"
+      },
+      {
+        "code": "28356",
+        "nom": "Saint-Pellerin"
       }
     ]
   },
@@ -5496,8 +5614,20 @@
     "nom": "Éole-en-Beauce",
     "anciennesCommunes": [
       {
+        "code": "28020",
+        "nom": "Baignolet"
+      },
+      {
+        "code": "28145",
+        "nom": "Fains-la-Folie"
+      },
+      {
+        "code": "28179",
+        "nom": "Germignonville"
+      },
+      {
         "code": "28406",
-        "nom": "Eole-en-Beauce"
+        "nom": "Viabon"
       },
       {
         "code": "28412",
@@ -5751,7 +5881,11 @@
     "anciennesCommunes": [
       {
         "code": "33008",
-        "nom": "Porte-de-Benauge"
+        "nom": "Arbis"
+      },
+      {
+        "code": "33092",
+        "nom": "Cantois"
       },
       {
         "code": "33409",
@@ -6112,6 +6246,10 @@
       {
         "code": "36093",
         "nom": "Levroux"
+      },
+      {
+        "code": "36201",
+        "nom": "Saint-Martin-de-Lamps"
       },
       {
         "code": "36206",
@@ -6583,11 +6721,15 @@
     "anciennesCommunes": [
       {
         "code": "39130",
-        "nom": "Nanchez"
+        "nom": "Chaux-des-Prés"
       },
       {
         "code": "39417",
         "nom": "Les Piards"
+      },
+      {
+        "code": "39442",
+        "nom": "Prénovel"
       },
       {
         "code": "39562",
@@ -6687,7 +6829,19 @@
       },
       {
         "code": "39209",
-        "nom": "Val-d'Épy"
+        "nom": "Val d'Épy"
+      },
+      {
+        "code": "39226",
+        "nom": "Florentia"
+      },
+      {
+        "code": "39382",
+        "nom": "Nantey"
+      },
+      {
+        "code": "39509",
+        "nom": "Senaud"
       }
     ]
   },
@@ -6730,6 +6884,10 @@
       {
         "code": "39286",
         "nom": "Lavans-lès-Saint-Claude"
+      },
+      {
+        "code": "39438",
+        "nom": "Ponthoux"
       },
       {
         "code": "39440",
@@ -6828,8 +6986,16 @@
     "nom": "Les Trois-Châteaux",
     "anciennesCommunes": [
       {
+        "code": "39023",
+        "nom": "L'Aubépin"
+      },
+      {
+        "code": "39135",
+        "nom": "Chazelles"
+      },
+      {
         "code": "39378",
-        "nom": "Les Trois Châteaux"
+        "nom": "Nanc-lès-Saint-Amour"
       },
       {
         "code": "39484",
@@ -6944,12 +7110,24 @@
     "nom": "Val-Sonnette",
     "anciennesCommunes": [
       {
+        "code": "39064",
+        "nom": "Bonnaud"
+      },
+      {
+        "code": "39264",
+        "nom": "Grusse"
+      },
+      {
         "code": "39474",
         "nom": "Sainte-Agnès"
       },
       {
+        "code": "39549",
+        "nom": "Vercia"
+      },
+      {
         "code": "39576",
-        "nom": "Val-Sonnette"
+        "nom": "Vincelles"
       }
     ]
   },
@@ -7085,7 +7263,11 @@
       },
       {
         "code": "41142",
-        "nom": "Valencisse"
+        "nom": "Molineuf"
+      },
+      {
+        "code": "41169",
+        "nom": "Orchaise"
       }
     ]
   },
@@ -7579,7 +7761,11 @@
     "anciennesCommunes": [
       {
         "code": "46063",
-        "nom": "Castelnau Montratier-Sainte Alauzie"
+        "nom": "Castelnau-Montratier"
+      },
+      {
+        "code": "46248",
+        "nom": "Sainte-Alauzie"
       }
     ]
   },
@@ -8125,7 +8311,7 @@
     "anciennesCommunes": [
       {
         "code": "49018",
-        "nom": "Baugé-en-Anjou"
+        "nom": "Baugé"
       },
       {
         "code": "49031",
@@ -8160,8 +8346,24 @@
         "nom": "Le Guédeniau"
       },
       {
+        "code": "49213",
+        "nom": "Montpollin"
+      },
+      {
+        "code": "49245",
+        "nom": "Pontigné"
+      },
+      {
+        "code": "49303",
+        "nom": "Saint-Martin-d'Arcé"
+      },
+      {
         "code": "49315",
         "nom": "Saint-Quentin-lès-Beaurepaire"
+      },
+      {
+        "code": "49372",
+        "nom": "Le Vieil-Baugé"
       }
     ]
   },
@@ -8363,7 +8565,7 @@
       },
       {
         "code": "49092",
-        "nom": "Chemillé-Melay"
+        "nom": "Chemillé"
       },
       {
         "code": "49111",
@@ -8376,6 +8578,10 @@
       {
         "code": "49169",
         "nom": "La Jumellière"
+      },
+      {
+        "code": "49199",
+        "nom": "Melay"
       },
       {
         "code": "49225",
@@ -8442,16 +8648,6 @@
     ]
   },
   {
-    "code": "49126",
-    "nom": "Orée d'Anjou",
-    "anciennesCommunes": [
-      {
-        "code": "49069",
-        "nom": "Orée d'Anjou"
-      }
-    ]
-  },
-  {
     "code": "49138",
     "nom": "Les Bois d'Anjou",
     "anciennesCommunes": [
@@ -8475,11 +8671,15 @@
     "anciennesCommunes": [
       {
         "code": "49160",
-        "nom": "Ingrandes-Le Fresne sur Loire"
+        "nom": "Ingrandes"
       },
       {
         "code": "49321",
         "nom": "Saint-Sigismond"
+      },
+      {
+        "code": "49382",
+        "nom": "Le Fresne-sur-Loire"
       }
     ]
   },
@@ -8656,12 +8856,16 @@
     "nom": "Morannes sur Sarthe-Daumeray",
     "anciennesCommunes": [
       {
+        "code": "49093",
+        "nom": "Chemiré-sur-Sarthe"
+      },
+      {
         "code": "49119",
         "nom": "Daumeray"
       },
       {
         "code": "49220",
-        "nom": "Morannes-sur-Sarthe"
+        "nom": "Morannes"
       }
     ]
   },
@@ -9132,6 +9336,10 @@
       {
         "code": "50025",
         "nom": "Avranches"
+      },
+      {
+        "code": "50516",
+        "nom": "Saint-Martin-des-Champs"
       }
     ]
   },
@@ -9280,8 +9488,52 @@
     "nom": "Carentan-les-Marais",
     "anciennesCommunes": [
       {
+        "code": "50010",
+        "nom": "Angoville-au-Plain"
+      },
+      {
+        "code": "50080",
+        "nom": "Brévands"
+      },
+      {
+        "code": "50089",
+        "nom": "Brucheville"
+      },
+      {
         "code": "50099",
-        "nom": "Carentan-les-Marais"
+        "nom": "Carentan"
+      },
+      {
+        "code": "50107",
+        "nom": "Catz"
+      },
+      {
+        "code": "50249",
+        "nom": "Houesville"
+      },
+      {
+        "code": "50348",
+        "nom": "Montmartin-en-Graignes"
+      },
+      {
+        "code": "50458",
+        "nom": "Saint-Côme-du-Mont"
+      },
+      {
+        "code": "50485",
+        "nom": "Saint-Hilaire-Petitville"
+      },
+      {
+        "code": "50534",
+        "nom": "Saint-Pellerin"
+      },
+      {
+        "code": "50631",
+        "nom": "Les Veys"
+      },
+      {
+        "code": "50636",
+        "nom": "Vierville"
       }
     ]
   },
@@ -9332,6 +9584,10 @@
       {
         "code": "50139",
         "nom": "Condé-sur-Vire"
+      },
+      {
+        "code": "50319",
+        "nom": "Le Mesnil-Raoult"
       },
       {
         "code": "50608",
@@ -9420,8 +9676,12 @@
         "nom": "Anneville-sur-Mer"
       },
       {
+        "code": "50061",
+        "nom": "Boisroger"
+      },
+      {
         "code": "50215",
-        "nom": "Gouville sur Mer"
+        "nom": "Gouville-sur-Mer"
       },
       {
         "code": "50354",
@@ -9618,12 +9878,20 @@
     "nom": "Moyon Villages",
     "anciennesCommunes": [
       {
+        "code": "50134",
+        "nom": "Chevry"
+      },
+      {
         "code": "50313",
         "nom": "Le Mesnil-Herman"
       },
       {
+        "code": "50316",
+        "nom": "Le Mesnil-Opac"
+      },
+      {
         "code": "50363",
-        "nom": "Moyon Villages"
+        "nom": "Moyon"
       }
     ]
   },
@@ -9682,12 +9950,32 @@
     "nom": "Picauville",
     "anciennesCommunes": [
       {
+        "code": "50005",
+        "nom": "Amfreville"
+      },
+      {
+        "code": "50153",
+        "nom": "Cretteville"
+      },
+      {
+        "code": "50212",
+        "nom": "Gourbesville"
+      },
+      {
+        "code": "50250",
+        "nom": "Houtteville"
+      },
+      {
         "code": "50333",
         "nom": "Les Moitiers-en-Bauptois"
       },
       {
         "code": "50400",
         "nom": "Picauville"
+      },
+      {
+        "code": "50642",
+        "nom": "Vindefontaine"
       }
     ]
   },
@@ -9770,6 +10058,10 @@
       {
         "code": "50244",
         "nom": "Hérenguerville"
+      },
+      {
+        "code": "50255",
+        "nom": "Hyenville"
       },
       {
         "code": "50419",
@@ -9910,8 +10202,24 @@
     "nom": "Sainte-Mère-Église",
     "anciennesCommunes": [
       {
+        "code": "50051",
+        "nom": "Beuzeville-au-Plain"
+      },
+      {
         "code": "50103",
         "nom": "Carquebut"
+      },
+      {
+        "code": "50127",
+        "nom": "Chef-du-Pont"
+      },
+      {
+        "code": "50170",
+        "nom": "Écoquenéauville"
+      },
+      {
+        "code": "50191",
+        "nom": "Foucarville"
       },
       {
         "code": "50427",
@@ -9946,12 +10254,24 @@
     "nom": "Bourgvallées",
     "anciennesCommunes": [
       {
+        "code": "50213",
+        "nom": "Gourfaleur"
+      },
+      {
+        "code": "50287",
+        "nom": "La Mancellière-sur-Vire"
+      },
+      {
         "code": "50313",
         "nom": "Le Mesnil-Herman"
       },
       {
+        "code": "50545",
+        "nom": "Saint-Romphaire"
+      },
+      {
         "code": "50546",
-        "nom": "Bourgvallées"
+        "nom": "Saint-Samson-de-Bonfossé"
       },
       {
         "code": "50581",
@@ -10078,8 +10398,12 @@
     "nom": "Tessy-Bocage",
     "anciennesCommunes": [
       {
+        "code": "50180",
+        "nom": "Fervaches"
+      },
+      {
         "code": "50592",
-        "nom": "Tessy Bocage"
+        "nom": "Tessy-sur-Vire"
       },
       {
         "code": "50649",
@@ -10267,11 +10591,15 @@
     "anciennesCommunes": [
       {
         "code": "52064",
-        "nom": "Bourmont-entre-Meuse-et-Mouzon"
+        "nom": "Bourmont"
       },
       {
         "code": "52225",
         "nom": "Goncourt"
+      },
+      {
+        "code": "52351",
+        "nom": "Nijon"
       }
     ]
   },
@@ -10577,7 +10905,11 @@
       },
       {
         "code": "53161",
-        "nom": "Montsûrs-Saint-Céneré"
+        "nom": "Montsûrs"
+      },
+      {
+        "code": "53205",
+        "nom": "Saint-Céneré"
       },
       {
         "code": "53244",
@@ -10982,6 +11314,16 @@
     ]
   },
   {
+    "code": "58086",
+    "nom": "Cosne-Cours-sur-Loire",
+    "anciennesCommunes": [
+      {
+        "code": "58086",
+        "nom": "Cosne-Cours-sur-Loire"
+      }
+    ]
+  },
+  {
     "code": "58204",
     "nom": "Vaux d'Amognes",
     "anciennesCommunes": [
@@ -11075,7 +11417,15 @@
     "anciennesCommunes": [
       {
         "code": "60054",
-        "nom": "Les Hauts-Talican"
+        "nom": "Beaumont-les-Nonains"
+      },
+      {
+        "code": "60455",
+        "nom": "La Neuville-Garnier"
+      },
+      {
+        "code": "60694",
+        "nom": "Villotran"
       }
     ]
   },
@@ -11354,12 +11704,32 @@
     "nom": "Écouché-les-Vallées",
     "anciennesCommunes": [
       {
+        "code": "61027",
+        "nom": "Batilly"
+      },
+      {
+        "code": "61127",
+        "nom": "La Courbe"
+      },
+      {
         "code": "61153",
-        "nom": "Écouché-les-Vallées"
+        "nom": "Écouché"
       },
       {
         "code": "61173",
         "nom": "Fontenai-sur-Orne"
+      },
+      {
+        "code": "61236",
+        "nom": "Loucé"
+      },
+      {
+        "code": "61441",
+        "nom": "Saint-Ouen-sur-Maire"
+      },
+      {
+        "code": "61470",
+        "nom": "Serans"
       }
     ]
   },
@@ -12363,11 +12733,19 @@
     "anciennesCommunes": [
       {
         "code": "67372",
-        "nom": "Val de Moder"
+        "nom": "Pfaffenhoffen"
       },
       {
         "code": "67402",
         "nom": "Ringeldorf"
+      },
+      {
+        "code": "67496",
+        "nom": "Uberach"
+      },
+      {
+        "code": "67512",
+        "nom": "La Walck"
       }
     ]
   },
@@ -12427,7 +12805,7 @@
     "anciennesCommunes": [
       {
         "code": "68006",
-        "nom": "Ammertzwiller"
+        "nom": "Ammerzwiller"
       },
       {
         "code": "68031",
@@ -12612,16 +12990,6 @@
       {
         "code": "69247",
         "nom": "Thel"
-      }
-    ]
-  },
-  {
-    "code": "69114",
-    "nom": "Porte des Pierres Dorées",
-    "anciennesCommunes": [
-      {
-        "code": "69159",
-        "nom": "Porte des Pierres Dorées"
       }
     ]
   },
@@ -13148,6 +13516,10 @@
         "nom": "Fresnay-sur-Sarthe"
       },
       {
+        "code": "72266",
+        "nom": "Saint-Aubin-de-Locquenay"
+      },
+      {
         "code": "72284",
         "nom": "Saint-Germain-sur-Sarthe"
       }
@@ -13499,7 +13871,11 @@
       },
       {
         "code": "73257",
-        "nom": "Les Belleville"
+        "nom": "Saint-Martin-de-Belleville"
+      },
+      {
+        "code": "73321",
+        "nom": "Villarlurin"
       }
     ]
   },
@@ -13992,8 +14368,20 @@
     "nom": "Moret-Loing-et-Orvanne",
     "anciennesCommunes": [
       {
+        "code": "77166",
+        "nom": "Écuelles"
+      },
+      {
+        "code": "77170",
+        "nom": "Épisy"
+      },
+      {
+        "code": "77299",
+        "nom": "Montarlot"
+      },
+      {
         "code": "77316",
-        "nom": "Moret Loing et Orvanne"
+        "nom": "Moret-sur-Loing"
       },
       {
         "code": "77491",
@@ -14373,11 +14761,15 @@
       },
       {
         "code": "79185",
-        "nom": "Mougon-Thorigné"
+        "nom": "Mougon"
       },
       {
         "code": "79240",
         "nom": "Sainte-Blandine"
+      },
+      {
+        "code": "79327",
+        "nom": "Thorigné"
       }
     ]
   },
@@ -14838,8 +15230,20 @@
     "nom": "Essarts-en-Bocage",
     "anciennesCommunes": [
       {
+        "code": "85030",
+        "nom": "Boulogne"
+      },
+      {
         "code": "85084",
-        "nom": "Essarts en Bocage"
+        "nom": "Les Essarts"
+      },
+      {
+        "code": "85165",
+        "nom": "L'Oie"
+      },
+      {
+        "code": "85212",
+        "nom": "Sainte-Florence"
       }
     ]
   },
@@ -15194,12 +15598,24 @@
     "nom": "Saint-Martin-la-Pallu",
     "anciennesCommunes": [
       {
+        "code": "86030",
+        "nom": "Blaslay"
+      },
+      {
+        "code": "86060",
+        "nom": "Charrais"
+      },
+      {
+        "code": "86071",
+        "nom": "Cheneché"
+      },
+      {
         "code": "86277",
         "nom": "Varennes"
       },
       {
         "code": "86281",
-        "nom": "Saint Martin la Pallu"
+        "nom": "Vendeuvre-du-Poitou"
       }
     ]
   },
@@ -15346,8 +15762,16 @@
     "nom": "Thaon-les-Vosges",
     "anciennesCommunes": [
       {
+        "code": "88204",
+        "nom": "Girmont"
+      },
+      {
+        "code": "88337",
+        "nom": "Oncourt"
+      },
+      {
         "code": "88465",
-        "nom": "Capavenir Vosges"
+        "nom": "Thaon-les-Vosges"
       }
     ]
   },
