@@ -18,7 +18,6 @@ const getCommunesPrecedents = async (codeCommune, date) => {
   const url = `https://api.insee.fr/metadonnees/geo/commune/${codeCommune}/precedents${
     date ? `?date=${date}` : ''
   }`;
-  console.log(url);
   const response = await got(url, {
     headers: {
       accept: 'application/json',
