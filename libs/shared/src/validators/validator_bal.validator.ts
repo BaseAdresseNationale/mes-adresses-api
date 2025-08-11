@@ -18,27 +18,49 @@ async function validateurBAL(value, label) {
 
 @ValidatorConstraint({ name: 'validatorBal', async: true })
 export class ValidatorBal implements ValidatorConstraintInterface {
+  private lastErrors: {
+    numero: string[];
+    suffixe: string[];
+    position: string[];
+    cad_parcelles: string[];
+    voie_nom: string[];
+    lang_alt: string[];
+  } = {
+    numero: [],
+    suffixe: [],
+    position: [],
+    cad_parcelles: [],
+    voie_nom: [],
+    lang_alt: [],
+  };
+
+  async validateField(value: any, label: any) {
+    const { errors } = await validateurBAL(value, label);
+    this.lastErrors[label] = errors;
+    return errors.length === 0;
+  }
+
   async validate(value: any, args: ValidationArguments) {
     try {
       const field = args.constraints[0];
-      if (['numero', 'suffixe', 'position', 'source'].includes(field)) {
-        const { errors } = await validateurBAL(value.toString(), field);
-        return errors.length === 0;
+      this.lastErrors[field] = [];
+      if (['numero', 'suffixe', 'position', 'voie_nom'].includes(field)) {
+        return this.validateField(value.toString(), field);
       } else if (field === 'cad_parcelles') {
-        const { errors } = await validateurBAL(value.join('|'), field);
-        return errors.length === 0;
-      } else if (field === 'nom') {
-        const { errors } = await validateurBAL(value.toString(), 'voie_nom');
-        return errors.length === 0;
-      } else if (field === 'langAlt') {
+        return this.validateField(value.join('|'), field);
+      } else if (field === 'lang_alt') {
         for (const codeISO of Object.keys(value)) {
           if (supportedNomAlt.has(codeISO)) {
             const nomVoie = value[codeISO];
             const { errors } = await validateurBAL(nomVoie, 'voie_nom');
             if (errors.length > 0) {
+              this.lastErrors['lang_alt'] = errors;
               return false;
             }
           } else {
+            this.lastErrors['lang_alt'] = [
+              `Code de langue non supporté: ${codeISO}`,
+            ];
             return false;
           }
         }
@@ -53,8 +75,11 @@ export class ValidatorBal implements ValidatorConstraintInterface {
 
   defaultMessage(args: ValidationArguments) {
     const field = args.constraints[0];
-    return field === 'langAlt'
-      ? "Le champ de langue régionale n'est pas valide"
-      : `Le champ ${field} : ${args.value} n'est pas valide`;
+    if (this.lastErrors[field].length > 0) {
+      return this.lastErrors[field]
+        .map((error) => `${field}:${error}`)
+        .join(', ');
+    }
+    return 'Erreur de validation inattendue';
   }
 }
