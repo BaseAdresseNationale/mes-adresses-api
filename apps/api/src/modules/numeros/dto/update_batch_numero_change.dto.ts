@@ -25,9 +25,7 @@ export class UpdateBatchNumeroChangeDTO {
   toponymeId?: string;
 
   @IsMongoId()
-  @ValidateIf((object, value) => {
-    return value !== undefined;
-  })
+  @ValidateIf((object, value) => value !== undefined)
   @ApiProperty({ type: String, required: false, nullable: false })
   voieId?: string;
 

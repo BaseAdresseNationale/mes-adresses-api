@@ -41,6 +41,7 @@ export class ValidatorBal implements ValidatorConstraintInterface {
   }
 
   async validate(value: any, args: ValidationArguments) {
+    if (value === undefined || value === null) return true;
     try {
       const field = args.constraints[0];
       this.lastErrors[field] = [];

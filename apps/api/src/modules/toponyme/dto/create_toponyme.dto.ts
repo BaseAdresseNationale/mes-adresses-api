@@ -5,6 +5,7 @@ import {
   IsOptional,
   ValidateNested,
   IsNotEmptyObject,
+  IsNotEmpty,
 } from 'class-validator';
 
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
@@ -12,6 +13,7 @@ import { Position } from '@/shared/entities/position.entity';
 import { ValidatorCogCommune } from '@/shared/validators/cog.validator';
 
 export class CreateToponymeDTO {
+  @IsNotEmpty({ message: 'voie_nom:Le champ nom est obligatoire' })
   @Validate(ValidatorBal, ['voie_nom'])
   @ApiProperty({ required: true, nullable: false })
   nom: string;
