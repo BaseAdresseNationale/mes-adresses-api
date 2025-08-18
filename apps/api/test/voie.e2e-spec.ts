@@ -412,6 +412,7 @@ describe('VOIE MODULE', () => {
         nom: 'rue de la paix',
       });
       const createdNumero: CreateNumeroDTO = {
+        numero: undefined,
         positions: [
           {
             type: PositionTypeEnum.ENTREE,
@@ -432,7 +433,7 @@ describe('VOIE MODULE', () => {
 
       expect(response.text).toEqual(
         JSON.stringify({
-          message: ["Le champ numero : undefined n'est pas valide"],
+          message: ['numero:Le champ numero est obligatoire'],
           error: 'Bad Request',
           statusCode: 400,
         }),

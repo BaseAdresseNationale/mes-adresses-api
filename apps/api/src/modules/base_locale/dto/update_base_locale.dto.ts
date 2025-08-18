@@ -18,7 +18,7 @@ export class UpdateBaseLocaleDTO {
 
   @IsOptional()
   @IsNotEmptyObject()
-  @Validate(ValidatorBal, ['langAlt'])
+  @Validate(ValidatorBal, ['lang_alt'])
   @ApiProperty({ required: false, nullable: true })
   communeNomsAlt: Record<string, string>;
 

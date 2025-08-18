@@ -15,13 +15,13 @@ import { LineString } from './line_string';
 
 export class UpdateVoieDTO {
   @IsOptional()
-  @Validate(ValidatorBal, ['nom'])
+  @Validate(ValidatorBal, ['voie_nom'])
   @ApiProperty({ required: false, nullable: false })
   nom: string;
 
   @IsOptional()
   @IsNotEmptyObject()
-  @Validate(ValidatorBal, ['langAlt'])
+  @Validate(ValidatorBal, ['lang_alt'])
   @ApiProperty({ required: false, nullable: true })
   nomAlt: Record<string, string>;
 

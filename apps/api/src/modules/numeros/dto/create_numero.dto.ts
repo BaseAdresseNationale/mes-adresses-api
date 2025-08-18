@@ -7,6 +7,7 @@ import {
   ArrayNotEmpty,
   ValidateNested,
   IsMongoId,
+  IsNotEmpty,
 } from 'class-validator';
 
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
@@ -14,9 +15,10 @@ import { Position } from '@/shared/entities/position.entity';
 import { ValidatorCogCommune } from '@/shared/validators/cog.validator';
 
 export class CreateNumeroDTO {
+  @IsNotEmpty({ message: 'numero:Le champ numero est obligatoire' })
   @Validate(ValidatorBal, ['numero'])
   @ApiProperty({ required: true, nullable: false })
-  numero?: number;
+  numero: number;
 
   @IsOptional()
   @Validate(ValidatorBal, ['suffixe'])
