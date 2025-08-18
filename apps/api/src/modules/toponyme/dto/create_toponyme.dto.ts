@@ -34,7 +34,10 @@ export class CreateToponymeDTO {
   parcelles?: string[];
 
   @IsOptional()
-  @ValidateNested({ each: true, message: 'positions must be an array' })
+  @ValidateNested({
+    each: true,
+    message: 'positions:Doit être un tableau de position',
+  })
   @Type(() => Position)
   @ApiProperty({
     type: () => Position,

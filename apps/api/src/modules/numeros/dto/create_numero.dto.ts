@@ -26,7 +26,9 @@ export class CreateNumeroDTO {
   suffixe?: string;
 
   @IsOptional()
-  @MaxLength(5000)
+  @MaxLength(5000, {
+    message: 'comment:Le champ ne peut pas dépasser 5000 caractères',
+  })
   @ApiProperty({ required: false, nullable: true })
   comment?: string;
 

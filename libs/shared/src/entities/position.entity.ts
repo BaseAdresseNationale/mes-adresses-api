@@ -49,7 +49,9 @@ export class Position {
   numeroId?: string;
 
   @ApiProperty({ enum: PositionTypeEnum })
-  @Validate(ValidatorBal, ['position'])
+  @Validate(ValidatorBal, ['position'], {
+    message: ':Le type de position n’est pas valide',
+  })
   @Column('enum', {
     enum: PositionTypeEnum,
     default: PositionTypeEnum.ENTREE,
@@ -67,7 +69,9 @@ export class Position {
 
   @Index('IDX_positions_point', { spatial: true })
   @ApiProperty()
-  @Validate(PointValidator)
+  @Validate(PointValidator, {
+    message: ':Les coordonnées du point ne sont pas valides',
+  })
   @Column('geometry', {
     nullable: false,
     spatialFeatureType: 'Point',

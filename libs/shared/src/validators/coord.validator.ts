@@ -40,10 +40,6 @@ export class PointValidator implements ValidatorConstraintInterface {
 
     return true;
   }
-
-  defaultMessage() {
-    return " Les coordonnées du point ne sont pas valides. Contactez nous sur adresse@data.gouv.fr avec l'objet 'Mauvaise positions' pour nous aider à corriger le bug";
-  }
 }
 
 @ValidatorConstraint({ name: 'lineStringCoord', async: true })
