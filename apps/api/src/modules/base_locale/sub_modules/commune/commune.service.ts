@@ -10,6 +10,11 @@ import {
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CommuneDTO } from './dto/commune.dto';
 
+// Certain codeCommune ne sont pas le même du cadastre au COG (ex: Saint-Barth)
+const CogTocadastre = {
+  97701: '97123',
+};
+
 @Injectable()
 export class CommuneService {
   constructor() {}
@@ -23,13 +28,18 @@ export class CommuneService {
       );
     }
 
-    const hasCadastre = checkHasCadastre(codeCommune);
+    const hasCadastre = checkHasCadastre(
+      CogTocadastre[codeCommune] || codeCommune,
+    );
     const isCOM = checkIsCommuneOutreMer(codeCommune);
     const hasMapsStyles = checkHasMapsStyles(codeCommune, isCOM);
     const communesDeleguees = getCommunesPrecedentesByChefLieu(codeCommune);
 
     return {
       code: commune.code,
+      ...(CogTocadastre[codeCommune] && {
+        codeCommuneCadastre: CogTocadastre[codeCommune],
+      }),
       nom: commune.nom,
       communesDeleguees,
       hasCadastre,
