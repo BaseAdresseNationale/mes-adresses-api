@@ -1,8 +1,10 @@
 import * as cadastreCommune from '../../../../../cadastre-communes.json';
 import * as communeOutreMerMapStyles from '../../../../../com-maps-styles.json';
 
-export function checkHasCadastre(communeCode: string) {
-  return cadastreCommune.includes(communeCode);
+const setCadastreCommune = new Set(cadastreCommune);
+
+export function checkHasCadastre(communeCode: string): boolean {
+  return setCadastreCommune.has(communeCode);
 }
 
 export function checkIsCommuneOutreMer(communeCode: string) {
