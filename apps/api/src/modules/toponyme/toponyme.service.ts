@@ -33,6 +33,7 @@ import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ObjectId } from 'mongodb';
+import { ToponymeInBox } from '@/lib/types/toponyme.type';
 
 @Injectable()
 export class ToponymeService {
@@ -270,6 +271,32 @@ export class ToponymeService {
       .into(Position)
       .values(positions)
       .execute();
+  }
+
+  async findManyWherePositionInBBox(
+    balId: string,
+    bbox: number[],
+  ): Promise<ToponymeInBox[]> {
+    // TODO : Get centroid instead of first position
+    const query = this.toponymesRepository
+      .createQueryBuilder('toponymes')
+      .distinctOn(['toponymes.id'])
+      .select('toponymes.id', 'id')
+      .addSelect('toponymes.nom', 'nom')
+      .addSelect('positions.point', 'point')
+      .leftJoin('toponymes.positions', 'positions')
+      .where('toponymes.bal_id = :balId', { balId })
+      .andWhere(
+        'positions.point @ ST_MakeEnvelope(:xmin, :ymin, :xmax, :ymax, 4326)',
+        {
+          xmin: bbox[0],
+          ymin: bbox[1],
+          xmax: bbox[2],
+          ymax: bbox[3],
+        },
+      );
+
+    return query.getRawMany();
   }
 
   public async isToponymeExist(
