@@ -9,13 +9,7 @@ import {
 } from '@/lib/utils/commune.utils';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CommuneDTO } from './dto/commune.dto';
-
-// Certain codeCommune ne sont pas le même du cadastre au COG
-const CogTocadastre = {
-  97701: '97123', // Saint-Barthélemy
-  49126: '49069', // Orée d'Anjou
-  97801: '97127', // Saint-Martin
-};
+import { CogTocadastre } from '@/lib/utils/cog_to_cadastre.util';
 
 @Injectable()
 export class CommuneService {
