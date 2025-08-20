@@ -6,6 +6,7 @@ import { NumeroService } from '@/modules/numeros/numero.service';
 import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
 import { ZOOM } from '@/modules/base_locale/sub_modules/tiles/const/zoom.const';
 import { getGeoJson } from '@/modules/base_locale/sub_modules/tiles/utils/geojson.utils';
+import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 
 @Injectable()
 export class TilesService {
@@ -14,6 +15,8 @@ export class TilesService {
     private voieService: VoieService,
     @Inject(forwardRef(() => NumeroService))
     private numeroService: NumeroService,
+    @Inject(forwardRef(() => ToponymeService))
+    private toponymeService: ToponymeService,
   ) {}
 
   public async getGeoJsonByTile(
@@ -39,6 +42,11 @@ export class TilesService {
         ? await this.numeroService.findManyWherePositionInBBox(balId, bbox)
         : [];
 
-    return getGeoJson(voies, traces, numeros, colorblindMode);
+    const toponymes =
+      z >= ZOOM.TOPONYME_ZOOM.minZoom && z <= ZOOM.TOPONYME_ZOOM.maxZoom
+        ? await this.toponymeService.findManyWherePositionInBBox(balId, bbox)
+        : [];
+
+    return getGeoJson(voies, traces, numeros, toponymes, colorblindMode);
   }
 }
