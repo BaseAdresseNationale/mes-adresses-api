@@ -277,7 +277,6 @@ export class ToponymeService {
     balId: string,
     bbox: number[],
   ): Promise<ToponymeInBox[]> {
-    // TODO : Get centroid instead of first position
     const query = this.toponymesRepository
       .createQueryBuilder('toponymes')
       .distinctOn(['toponymes.id'])
