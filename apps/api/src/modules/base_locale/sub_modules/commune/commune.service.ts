@@ -52,7 +52,7 @@ export class CommuneService {
 
     return {
       code: commune.code,
-      ...(codeCommunesCadastre && { codeCommunesCadastre }),
+      ...(codeCommunesCadastre.length > 0 && { codeCommunesCadastre }),
       nom: commune.nom,
       communesDeleguees,
       hasCadastre,
