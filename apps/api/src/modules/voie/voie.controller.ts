@@ -206,4 +206,18 @@ export class VoieController {
     const result: Toponyme = await this.voieService.convertToToponyme(req.voie);
     res.status(HttpStatus.OK).json(result);
   }
+
+  @Put(':voieId/numeros/certify-all')
+  @ApiOperation({
+    summary: 'Certify Voie numeros in Bal',
+    operationId: 'certifyVoieNumeros',
+  })
+  @ApiParam({ name: 'voieId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async certifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
+    await this.numeroService.certifyVoieNumeros(req.voie);
+    res.sendStatus(HttpStatus.OK);
+  }
 }

@@ -402,17 +402,12 @@ export class NumeroService {
     await this.numerosRepository.restore(where);
   }
 
-  public async toggleCertifieNumeros(
-    baseLocale: BaseLocale,
-    certifie: boolean,
-  ): Promise<void> {
-    const numeros = await this.findMany({
-      balId: baseLocale.id,
-      certifie: !certifie,
-    });
-    const numerosIds = numeros.map((n) => n.id);
-    await this.numerosRepository.update({ id: In(numerosIds) }, { certifie });
-    await this.baseLocaleService.touch(baseLocale.id);
+  public async certifyVoieNumeros(voie: Voie): Promise<void> {
+    await this.numerosRepository.update(
+      { voieId: voie.id },
+      { certifie: true },
+    );
+    await this.baseLocaleService.touch(voie.balId);
   }
 
   public async updateBatch(

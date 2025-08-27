@@ -295,26 +295,6 @@ describe('BASE LOCAL MODULE', () => {
       expect(balAfter.updatedAt).not.toEqual(updatedAt.toISOString());
     });
 
-    it('PUT /bases-locales/numeros/certify-all', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
-      const numeroId = await createNumero(balId, voieId, {
-        numero: 99,
-        positions: [createPositions()],
-        certifie: false,
-      });
-
-      await request(app.getHttpServer())
-        .put(`/bases-locales/${balId}/numeros/certify-all`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
-
-      const numeroAfter: Numero = await numeroRepository.findOneBy({
-        id: numeroId,
-      });
-      expect(numeroAfter.certifie).toBeTruthy();
-    });
-
     it('Batch 400 without changes', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, { nom: 'rue de la paix' });

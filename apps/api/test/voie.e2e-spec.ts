@@ -753,4 +753,24 @@ describe('VOIE MODULE', () => {
       expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
   });
+
+  it('PUT /voies/numeros/certify-all', async () => {
+    const balId = await createBal({ nom: 'bal', commune: '91400' });
+    const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+    const numeroId = await createNumero(balId, voieId, {
+      numero: 99,
+      voieId,
+      certifie: false,
+    });
+
+    await request(app.getHttpServer())
+      .put(`/voies/${voieId}/numeros/certify-all`)
+      .set('authorization', `Bearer ${token}`)
+      .expect(200);
+
+    const numeroAfter: Numero = await numeroRepository.findOneBy({
+      id: numeroId,
+    });
+    expect(numeroAfter.certifie).toBeTruthy();
+  });
 });
