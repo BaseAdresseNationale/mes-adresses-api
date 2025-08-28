@@ -4,4 +4,5 @@ export type GeoJsonCollectionType = {
   numeroPoints: FeatureCollection;
   voiePoints: FeatureCollection;
   voieLineStrings: FeatureCollection;
+  toponymePoints: FeatureCollection;
 };

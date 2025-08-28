@@ -6,6 +6,7 @@ import { Voie } from '@/shared/entities/voie.entity';
 
 import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
 import { NumeroInBbox } from '@/lib/types/numero.type';
+import { ToponymeInBox } from '@/lib/types/toponyme.type';
 
 // Paul Tol's vibrant palette for accessibility
 const colorblindFriendlyPalette = [
@@ -28,7 +29,13 @@ const colorPalette = [
   '#D1127A',
 ];
 
-function getFeatureColor(id: string, colorblindMode: boolean = false): string {
+const neutralColor = '#c1c4d6';
+
+function getFeatureColor(id?: string, colorblindMode: boolean = false): string {
+  if (!id) {
+    return neutralColor;
+  }
+
   const slicedId = id.slice(16).replace(/-/g, '');
   if (colorblindMode) {
     return colorblindFriendlyPalette[
@@ -51,6 +58,7 @@ function numeroToPointFeature(
     idVoie: n.voieId,
     idToponyme: n.toponymeId,
     color: getFeatureColor(n.voieId, colorblindMode),
+    colorToponyme: getFeatureColor(n.toponymeId, colorblindMode),
   });
 }
 
@@ -83,6 +91,26 @@ export function voiesPointsToGeoJSON(
   ) as FeatureCollection;
 }
 
+function toponymeToPointFeature(
+  t: ToponymeInBox,
+  colorblindMode: boolean,
+): FeatureTurf {
+  return turf.feature(t.point, {
+    id: t.id,
+    nom: t.nom,
+    color: getFeatureColor(t.id, colorblindMode),
+  });
+}
+
+export function toponymesPointsToGeoJSON(
+  toponymes: ToponymeInBox[],
+  colorblindMode: boolean,
+): FeatureCollection {
+  return turf.featureCollection(
+    toponymes.map((n) => toponymeToPointFeature(n, colorblindMode)),
+  ) as FeatureCollection;
+}
+
 export function voiesLineStringsToGeoJSON(
   voies: Voie[],
   colorblindMode: boolean,
@@ -105,11 +133,13 @@ export function getGeoJson(
   voies: Voie[],
   traces: Voie[],
   numeros: NumeroInBbox[],
+  toponymes: ToponymeInBox[],
   colorblindMode: boolean,
 ): GeoJsonCollectionType {
   return {
     numeroPoints: numerosPointsToGeoJSON(numeros, colorblindMode),
     voiePoints: voiesPointsToGeoJSON(voies, colorblindMode),
     voieLineStrings: voiesLineStringsToGeoJSON(traces, colorblindMode),
+    toponymePoints: toponymesPointsToGeoJSON(toponymes, colorblindMode),
   };
 }
