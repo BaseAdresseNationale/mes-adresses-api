@@ -14,7 +14,7 @@ export class CommuneDTO {
   code: string;
 
   @ApiProperty()
-  codeCommuneCadastre?: string[];
+  codeCommunesCadastre?: string[];
 
   @ApiProperty()
   nom: string;
