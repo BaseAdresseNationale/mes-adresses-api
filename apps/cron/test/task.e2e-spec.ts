@@ -38,7 +38,7 @@ import {
   StatusHabilitationEnum,
   TypeFileEnum,
 } from '@/shared/modules/api_depot/api-depot.types';
-import { add, sub } from 'date-fns';
+import { sub } from 'date-fns';
 import { SyncOutdatedTask } from '../src/tasks/sync_outdated.task';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
