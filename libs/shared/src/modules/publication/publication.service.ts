@@ -85,18 +85,6 @@ export class PublicationService {
       );
     }
 
-    // On verifie que l'habilitation n'est pas expirée
-    if (
-      !habilitation.expiresAt ||
-      new Date(habilitation.expiresAt) < new Date()
-    ) {
-      await this.pause(balId);
-      throw new HttpException(
-        'L’habilitation rattachée a expiré',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
     // On récupère le nombre de numeros de la BAL
     const numeroCount = await this.numerosRepository.countBy({
       balId,

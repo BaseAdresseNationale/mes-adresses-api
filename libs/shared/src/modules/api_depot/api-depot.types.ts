@@ -38,7 +38,6 @@ export type Habilitation = {
   emailCommune: string;
   status: StatusHabilitationEnum;
   strategy?: Strategy | null;
-  expiresAt?: Date;
   acceptedAt?: Date;
   rejectedAt?: Date;
   createdAt?: Date;

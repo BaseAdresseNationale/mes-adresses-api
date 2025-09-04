@@ -38,7 +38,7 @@ import {
   StatusHabilitationEnum,
   TypeFileEnum,
 } from '@/shared/modules/api_depot/api-depot.types';
-import { add, sub } from 'date-fns';
+import { sub } from 'date-fns';
 import { SyncOutdatedTask } from '../src/tasks/sync_outdated.task';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
@@ -359,7 +359,6 @@ describe('TASK MODULE', () => {
     const habilitation: Habilitation = {
       id: habilitationId.toString(),
       status: StatusHabilitationEnum.ACCEPTED,
-      expiresAt: add(new Date(), { months: 1 }),
       codeCommune: commune,
       emailCommune: 'test@test.fr',
     };
@@ -465,7 +464,6 @@ describe('TASK MODULE', () => {
     const habilitation: Habilitation = {
       id: habilitationId.toString(),
       status: StatusHabilitationEnum.ACCEPTED,
-      expiresAt: add(new Date(), { months: 1 }),
       codeCommune: commune,
       emailCommune: 'test@test.fr',
     };
@@ -574,66 +572,6 @@ describe('TASK MODULE', () => {
     const habilitation: Habilitation = {
       id: habilitationId.toString(),
       status: StatusHabilitationEnum.PENDING,
-      expiresAt: add(new Date(), { months: 1 }),
-      codeCommune: commune,
-      emailCommune: 'test@test.fr',
-    };
-    axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
-
-    await syncOutdatedTask.run();
-
-    const resultBal = await balRepository.findOneBy({ id: balId });
-    expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
-    expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
-  });
-
-  it('syncOutdated 412 habilitation expired', async () => {
-    const commune = '91534';
-    // REVSION
-    const revisionId = new ObjectId().toHexString();
-    const revision: Revision = {
-      id: revisionId.toString(),
-      codeCommune: commune,
-      status: StatusRevisionEnum.PENDING,
-      isReady: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isCurrent: false,
-      validation: {
-        valid: true,
-      },
-      files: [
-        {
-          type: TypeFileEnum.BAL,
-          hash: '',
-        },
-      ],
-    };
-
-    const habilitationId = new ObjectId().toHexString();
-    // BAL
-    const balId = await createBal({
-      nom: 'bal',
-      banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
-      commune,
-      habilitationId,
-      status: StatusBaseLocalEnum.PUBLISHED,
-      emails: ['test@test.fr'],
-      sync: {
-        status: StatusSyncEnum.OUTDATED,
-        lastUploadedRevisionId: revisionId,
-      },
-    });
-
-    // MOCK AXIOS
-    axiosMock
-      .onGet(`/communes/${commune}/current-revision`)
-      .reply(200, revision);
-
-    const habilitation: Habilitation = {
-      id: habilitationId.toString(),
-      status: StatusHabilitationEnum.ACCEPTED,
-      expiresAt: sub(new Date(), { months: 1 }),
       codeCommune: commune,
       emailCommune: 'test@test.fr',
     };
@@ -692,7 +630,6 @@ describe('TASK MODULE', () => {
     const habilitation: Habilitation = {
       id: habilitationId.toString(),
       status: StatusHabilitationEnum.ACCEPTED,
-      expiresAt: add(new Date(), { months: 1 }),
       codeCommune: commune,
       emailCommune: 'test@test.fr',
     };

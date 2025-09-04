@@ -69,13 +69,6 @@ export class HabilitationService {
     if (habilitation.status !== StatusHabilitationEnum.ACCEPTED) {
       return false;
     }
-    // On verifie que l'habilitation n'est pas expirée
-    if (
-      !habilitation.expiresAt ||
-      new Date(habilitation.expiresAt) < new Date()
-    ) {
-      return false;
-    }
     return true;
   }
 
@@ -83,13 +76,7 @@ export class HabilitationService {
     if (baseLocale.habilitationId) {
       const habilitation = await this.findOne(baseLocale.habilitationId);
 
-      const now = new Date();
-      const { status, expiresAt } = habilitation;
-
-      if (
-        status === StatusHabilitationEnum.ACCEPTED &&
-        new Date(expiresAt) > now
-      ) {
+      if (habilitation.status === StatusHabilitationEnum.ACCEPTED) {
         throw new HttpException(
           'Cette Base Adresse Locale possède déjà une habilitation',
           HttpStatus.PRECONDITION_FAILED,

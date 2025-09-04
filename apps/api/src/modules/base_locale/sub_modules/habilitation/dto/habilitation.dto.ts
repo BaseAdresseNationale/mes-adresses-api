@@ -47,7 +47,4 @@ export class HabilitationDTO implements Habilitation {
 
   @ApiProperty()
   updatedAt?: Date;
-
-  @ApiProperty()
-  expiresAt?: Date;
 }

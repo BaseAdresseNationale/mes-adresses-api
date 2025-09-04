@@ -25,7 +25,6 @@ import {
   Habilitation,
   StatusHabilitationEnum,
 } from '@/shared/modules/api_depot/api-depot.types';
-import { add } from 'date-fns';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { Repository } from 'typeorm';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
@@ -130,7 +129,6 @@ describe('HABILITATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -163,7 +161,6 @@ describe('HABILITATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -224,7 +221,6 @@ describe('HABILITATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -260,7 +256,6 @@ describe('HABILITATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -297,7 +292,6 @@ describe('HABILITATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.PENDING,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: null,
       };
@@ -337,7 +331,6 @@ describe('HABILITATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: null,
       };
@@ -375,7 +368,6 @@ describe('HABILITATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.PENDING,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -412,7 +404,6 @@ describe('HABILITATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.PENDING,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -459,7 +450,6 @@ describe('HABILITATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.REJECTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
