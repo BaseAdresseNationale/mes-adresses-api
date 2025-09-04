@@ -44,12 +44,16 @@ export class TilesController {
     @Res() res: Response,
   ) {
     const tile: number[] = [parseInt(x), parseInt(y), parseInt(z)];
-    const { numeroPoints, voiePoints, voieLineStrings }: GeoJsonCollectionType =
-      await this.tilesService.getGeoJsonByTile(
-        req.baseLocale.id,
-        tile,
-        colorblindMode,
-      );
+    const {
+      numeroPoints,
+      voiePoints,
+      voieLineStrings,
+      toponymePoints,
+    }: GeoJsonCollectionType = await this.tilesService.getGeoJsonByTile(
+      req.baseLocale.id,
+      tile,
+      colorblindMode,
+    );
     const options = { maxZoom: 20 };
     const numerosTiles = geojsonvt(numeroPoints, options).getTile(
       tile[2],
@@ -66,8 +70,13 @@ export class TilesController {
       tile[0],
       tile[1],
     );
+    const toponymeTiles = geojsonvt(toponymePoints, options).getTile(
+      tile[2],
+      tile[0],
+      tile[1],
+    );
 
-    if (!numerosTiles && !voieTiles && !voieTraceTiles) {
+    if (!numerosTiles && !voieTiles && !voieTraceTiles && !toponymeTiles) {
       return res.status(HttpStatus.NO_CONTENT).send();
     }
 
@@ -75,6 +84,7 @@ export class TilesController {
       ...(numerosTiles && { 'numeros-points': numerosTiles }),
       ...(voieTiles && { 'voies-points': voieTiles }),
       ...(voieTraceTiles && { 'voies-linestrings': voieTraceTiles }),
+      ...(toponymeTiles && { 'toponymes-points': toponymeTiles }),
     };
 
     const pbf = vtpbf.fromGeojsonVt(sourcesLayers);
