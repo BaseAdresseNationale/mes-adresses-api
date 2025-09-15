@@ -23,10 +23,6 @@ export class TaskProcessor extends WorkerHost {
   ) {
     super();
   }
-  wait(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
   async process(job: Job) {
     Logger.info(
       `[${TaskProcessor.name}] Start task ${job.name}`,
@@ -40,7 +36,6 @@ export class TaskProcessor extends WorkerHost {
       } else if (job.name === TaskTitle.SYNC_OUTDATED) {
         await this.syncOutdatedTask.run();
       } else if (job.name === TaskTitle.FORCE_PUBLISH) {
-        await this.wait(4000);
         await this.forcePublishTask.run(job.data.balId);
       } else if (job.name === TaskTitle.REMOVE_SOFT_DELETE_BAL) {
         await this.removeSoftDeleteBalTask.run();

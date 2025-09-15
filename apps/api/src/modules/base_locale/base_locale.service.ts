@@ -624,6 +624,10 @@ export class BaseLocaleService {
 
   async forcePublish(balId: string) {
     return new Promise(async (resolve, reject) => {
+      setTimeout(() => {
+        reject("La tache n'a pas une de réponse après 60 secondes");
+      }, 60000);
+
       const queueEvents = new QueueEvents('task');
       queueEvents.on('completed', async ({ jobId }: { jobId: string }) => {
         if (jobId === job.id) {
