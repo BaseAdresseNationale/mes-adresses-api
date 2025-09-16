@@ -29,4 +29,19 @@ export class CacheService {
 
     return this.cacheRepository.save({ key, value });
   }
+
+  async wait(key: string, repetition: number = 0) {
+    // timeout of 60 seconde
+    if (repetition >= 60) {
+      this.del(key);
+    }
+    const lock = await this.get(key);
+    if (lock) {
+      return new Promise((resolve) => {
+        setTimeout(async () => {
+          resolve(this.wait(key, repetition + 1));
+        }, 1000);
+      });
+    }
+  }
 }

@@ -1,3 +1,5 @@
+import { CacheService } from '@/shared/modules/cache/cache.service';
+import { KEY_LOCK_CRON } from '@/shared/modules/cache/cache.const';
 import { Logger } from '@/shared/utils/logger.utils';
 
 export type Task = {
@@ -8,6 +10,10 @@ export type Task = {
 export class TaskQueue {
   private queue: Task[] = [];
   private isTaskRunning: boolean = false;
+
+  constructor(private cacheService: CacheService) {
+    this.cacheService.del(KEY_LOCK_CRON);
+  }
 
   public pushTask(task: Task) {
     this.queue.push(task);
@@ -21,6 +27,8 @@ export class TaskQueue {
 
     while (this.queue.length > 0) {
       const task = this.queue.shift();
+      await this.cacheService.wait(KEY_LOCK_CRON);
+      await this.cacheService.set(KEY_LOCK_CRON, '');
       Logger.info(
         `[${TaskQueue.name}] TASK START ${task.title}`,
         TaskQueue.name,
@@ -34,6 +42,7 @@ export class TaskQueue {
           TaskQueue.name,
         );
       }
+      await this.cacheService.del(KEY_LOCK_CRON);
       Logger.info(`[${TaskQueue.name}] TASK END ${task.title}`, TaskQueue.name);
     }
 

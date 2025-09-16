@@ -8,10 +8,11 @@ import { TaskQueue } from './task_queue.class';
 import { RemoveSoftDeleteBalTask } from './tasks/remove_soft_delete_bal.task';
 import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
 import { UploadTracesTask } from './tasks/upload_traces.task';
+import { CacheService } from '@/shared/modules/cache/cache.service';
 
 @Injectable()
 export class CronService {
-  private queue: TaskQueue = new TaskQueue();
+  private queue: TaskQueue;
 
   constructor(
     private readonly detectOutdatedTask: DetectOutdatedTask,
@@ -20,7 +21,10 @@ export class CronService {
     private readonly removeSoftDeleteBalTask: RemoveSoftDeleteBalTask,
     private readonly removeDemoBalTask: RemoveDemoBalTask,
     private readonly uploadTracesTask: UploadTracesTask,
-  ) {}
+    private cacheService: CacheService,
+  ) {
+    this.queue = new TaskQueue(this.cacheService);
+  }
 
   // Every 30 seconds
   @Interval(30000)
