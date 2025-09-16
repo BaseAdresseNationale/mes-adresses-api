@@ -33,6 +33,7 @@ import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
+import { Cache } from '@/shared/entities/cache.entity';
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
@@ -74,7 +75,7 @@ describe('PUBLICATION MODULE', () => {
           password: postgresContainer.getPassword(),
           database: postgresContainer.getDatabase(),
           synchronize: true,
-          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
+          entities: [BaseLocale, Voie, Numero, Toponyme, Position, Cache],
         }),
         BaseLocaleModule,
         MailerModule,
