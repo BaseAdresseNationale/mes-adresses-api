@@ -53,6 +53,8 @@ import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
+import { PublicationService } from '@/shared/modules/publication/publication.service';
+import { KEY_LOCK_CRON } from '@/shared/modules/cache/cache.const';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
@@ -74,6 +76,7 @@ export class BaseLocaleService {
     private banPlateformService: BanPlateformService,
     private configService: ConfigService,
     private cacheService: CacheService,
+    private publicationService: PublicationService,
   ) {}
 
   public async findOneOrFail(balId: string): Promise<BaseLocale> {
@@ -615,6 +618,21 @@ export class BaseLocaleService {
     };
 
     return filaireGeoJSON;
+  }
+
+  async publishBal(baseLocale: BaseLocale): Promise<BaseLocale> {
+    await this.cacheService.wait(KEY_LOCK_CRON);
+    await this.cacheService.set(KEY_LOCK_CRON, '');
+    try {
+      const res = await this.publicationService.exec(baseLocale.id, {
+        force: true,
+      });
+      await this.cacheService.del(KEY_LOCK_CRON);
+      return res;
+    } catch (error) {
+      await this.cacheService.del(KEY_LOCK_CRON);
+      throw error;
+    }
   }
 
   touch(balId: string, updatedAt: Date = new Date()) {
