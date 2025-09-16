@@ -8,7 +8,6 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { ObjectId } from 'mongodb';
 import axios from 'axios';
-import { add, sub } from 'date-fns';
 import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuid } from 'uuid';
 
@@ -199,7 +198,6 @@ describe('PUBLICATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -333,7 +331,6 @@ describe('PUBLICATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -448,7 +445,6 @@ describe('PUBLICATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -538,7 +534,6 @@ describe('PUBLICATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.PENDING,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
@@ -560,43 +555,6 @@ describe('PUBLICATION MODULE', () => {
       );
     });
 
-    it('Publish 412 habilitation expired', async () => {
-      const commune = '91534';
-      const habilitationId = new ObjectId().toHexString();
-      const balId = await createBal({
-        nom: 'bal',
-        commune,
-        habilitationId,
-        status: StatusBaseLocalEnum.DRAFT,
-        emails: ['test@test.fr'],
-      });
-
-      // MOCK AXIOS
-      const habilitation: Habilitation = {
-        id: habilitationId,
-        status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: sub(new Date(), { months: 1 }),
-        codeCommune: commune,
-        emailCommune: 'test@test.fr',
-      };
-      axiosMock
-        .onGet(`habilitations/${habilitationId}`)
-        .reply(200, habilitation);
-
-      // SEND REQUEST
-      const response = await request(app.getHttpServer())
-        .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(412);
-
-      expect(response.text).toEqual(
-        JSON.stringify({
-          statusCode: 412,
-          message: 'L’habilitation rattachée a expiré',
-        }),
-      );
-    });
-
     it('Publish 412 no numero', async () => {
       const commune = '91534';
       const habilitationId = new ObjectId().toHexString();
@@ -612,7 +570,6 @@ describe('PUBLICATION MODULE', () => {
       const habilitation: Habilitation = {
         id: habilitationId,
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt: add(new Date(), { months: 1 }),
         codeCommune: commune,
         emailCommune: 'test@test.fr',
       };
