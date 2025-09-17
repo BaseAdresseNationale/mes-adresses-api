@@ -417,13 +417,17 @@ export class BaseLocaleController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
+  // @ApiBearerAuth('admin-token')
+  // @UseGuards(AdminGuard)
   async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    const baseLocale = await this.publicationService.exec(req.baseLocale.id, {
-      force: true,
-    });
-    res.status(HttpStatus.OK).json(baseLocale);
+    try {
+      const baseLocale = await this.baseLocaleService.forcePublish(
+        req.baseLocale.id,
+      );
+      res.status(HttpStatus.OK).json(baseLocale);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.PRECONDITION_FAILED);
+    }
   }
 
   @Post(':baseLocaleId/sync/pause')

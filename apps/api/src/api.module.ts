@@ -20,6 +20,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { MailerParams } from '@/shared/params/mailer.params';
 import { AdminModule } from './modules/admin/admin.module';
 import { SignalementModule } from './modules/signalement/signalement.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -36,6 +37,15 @@ import { SignalementModule } from './modules/signalement/signalement.module';
         keepConnectionAlive: true,
         schema: 'public',
         entities: [BaseLocale, Voie, Numero, Toponyme, Position, Cache],
+      }),
+      inject: [ConfigService],
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => ({
+        connection: {
+          url: config.get('REDIS_URL'),
+        },
       }),
       inject: [ConfigService],
     }),

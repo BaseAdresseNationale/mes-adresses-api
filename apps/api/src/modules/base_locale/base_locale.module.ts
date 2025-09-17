@@ -5,6 +5,7 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bullmq';
 
 import { BaseLocaleController } from '@/modules/base_locale/base_locale.controller';
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
@@ -31,6 +32,9 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     TypeOrmModule.forFeature([BaseLocale]),
     PublicationModule,
     CacheModule,
+    BullModule.registerQueue({
+      name: 'task',
+    }),
     forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),
     forwardRef(() => ExportCsvModule),
