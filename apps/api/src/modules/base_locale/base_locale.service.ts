@@ -22,7 +22,7 @@ import { fr } from 'date-fns/locale';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Job, Queue, QueueEvents, QueueEventsListener } from 'bullmq';
+import { Job, Queue, QueueEvents } from 'bullmq';
 import { PriorityEnum } from '@/shared/types/task.type';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
