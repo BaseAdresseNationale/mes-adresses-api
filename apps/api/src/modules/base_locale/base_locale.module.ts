@@ -34,6 +34,10 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     CacheModule,
     BullModule.registerQueue({
       name: 'task',
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
     }),
     forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),

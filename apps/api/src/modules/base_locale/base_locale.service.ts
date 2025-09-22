@@ -22,7 +22,8 @@ import { fr } from 'date-fns/locale';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Job, Queue, QueueEvents } from 'bullmq';
+import { Job, Queue, QueueEvents, QueueEventsListener } from 'bullmq';
+import { PriorityEnum } from '@/shared/types/task.type';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Voie } from '@/shared/entities/voie.entity';
@@ -63,7 +64,6 @@ const KEY_POPULATE_BAL_ID = 'populateBalID';
 export class BaseLocaleService {
   constructor(
     @InjectQueue('task') private taskQueue: Queue,
-
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
     private readonly mailerService: MailerService,
@@ -624,12 +624,10 @@ export class BaseLocaleService {
 
   async forcePublish(balId: string) {
     return new Promise(async (resolve, reject) => {
-      setTimeout(() => {
-        reject("La tache n'a pas une de réponse après 60 secondes");
-      }, 60000);
-
       const queueEvents = new QueueEvents('task');
-      queueEvents.on('completed', async ({ jobId }: { jobId: string }) => {
+
+      // Définir le listener comme une fonction nommée pour pouvoir le supprimer
+      const completedListener = async ({ jobId }: { jobId: string }) => {
         if (jobId === job.id) {
           const resultJob = await Job.fromId(this.taskQueue, jobId);
           if (resultJob.returnvalue.success) {
@@ -638,11 +636,21 @@ export class BaseLocaleService {
             reject(resultJob.returnvalue.error);
           }
         }
-      });
+      };
 
-      const job: Job = await this.taskQueue.add(TaskTitle.FORCE_PUBLISH, {
-        balId,
-      });
+      queueEvents.on('completed', completedListener);
+      setTimeout(async () => {
+        queueEvents.off('completed', completedListener);
+        reject("La tache n'a pas une de réponse après 60 secondes");
+      }, 5000);
+
+      const job: Job = await this.taskQueue.add(
+        TaskTitle.FORCE_PUBLISH,
+        {
+          balId,
+        },
+        { priority: PriorityEnum.HIGH },
+      );
     });
   }
 

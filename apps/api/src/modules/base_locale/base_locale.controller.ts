@@ -417,8 +417,8 @@ export class BaseLocaleController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
-  // @ApiBearerAuth('admin-token')
-  // @UseGuards(AdminGuard)
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
   async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     try {
       const baseLocale = await this.baseLocaleService.forcePublish(

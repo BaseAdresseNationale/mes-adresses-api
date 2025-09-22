@@ -23,6 +23,7 @@ export class TaskProcessor extends WorkerHost {
   ) {
     super();
   }
+
   async process(job: Job) {
     Logger.info(
       `[${TaskProcessor.name}] Start task ${job.name}`,

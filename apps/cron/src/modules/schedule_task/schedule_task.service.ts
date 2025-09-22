@@ -3,7 +3,7 @@ import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Priority, TaskTitle } from '@/shared/types/task.type';
+import { PriorityEnum, TaskTitle } from '@/shared/types/task.type';
 
 @Injectable()
 export class ScheduleTaskService {
@@ -16,7 +16,7 @@ export class ScheduleTaskService {
     await this.taskQueue.add(
       TaskTitle.DETECT_OUTDATED,
       {},
-      { priority: Priority.LOW },
+      { priority: PriorityEnum.LOW },
     );
   }
 
@@ -28,7 +28,7 @@ export class ScheduleTaskService {
     await this.taskQueue.add(
       TaskTitle.DETECT_CONFLICT,
       {},
-      { priority: Priority.LOW },
+      { priority: PriorityEnum.LOW },
     );
   }
 
@@ -39,7 +39,7 @@ export class ScheduleTaskService {
     await this.taskQueue.add(
       TaskTitle.SYNC_OUTDATED,
       {},
-      { priority: Priority.LOW },
+      { priority: PriorityEnum.LOW },
     );
   }
 
@@ -48,7 +48,7 @@ export class ScheduleTaskService {
     await this.taskQueue.add(
       TaskTitle.REMOVE_SOFT_DELETE_BAL,
       {},
-      { priority: Priority.LOW },
+      { priority: PriorityEnum.LOW },
     );
   }
 
@@ -57,7 +57,7 @@ export class ScheduleTaskService {
     await this.taskQueue.add(
       TaskTitle.REMOVE_DEMO_BAL,
       {},
-      { priority: Priority.LOW },
+      { priority: PriorityEnum.LOW },
     );
   }
 
@@ -66,7 +66,7 @@ export class ScheduleTaskService {
     await this.taskQueue.add(
       TaskTitle.UPLOAD_TRACES,
       {},
-      { priority: Priority.LOW },
+      { priority: PriorityEnum.LOW },
     );
   }
 }

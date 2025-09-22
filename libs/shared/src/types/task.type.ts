@@ -12,7 +12,7 @@ export enum TaskTitle {
   UPLOAD_TRACES = 'uploadTraces',
 }
 
-export enum Priority {
-  HIGHT = 1,
+export enum PriorityEnum {
+  HIGH = 1,
   LOW = 2,
 }
