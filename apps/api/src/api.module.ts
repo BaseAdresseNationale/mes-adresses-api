@@ -20,6 +20,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { MailerParams } from '@/shared/params/mailer.params';
 import { AdminModule } from './modules/admin/admin.module';
 import { SignalementModule } from './modules/signalement/signalement.module';
+import { PdfModule } from './modules/pdf/pdf.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { SignalementModule } from './modules/signalement/signalement.module';
     StatsModule,
     AdminModule,
     SignalementModule,
+    PdfModule,
   ],
   controllers: [],
   providers: [],

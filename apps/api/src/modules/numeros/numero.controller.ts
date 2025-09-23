@@ -8,6 +8,7 @@ import {
   Req,
   HttpStatus,
   Body,
+  StreamableFile,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -18,7 +19,6 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-
 import { Numero } from '@/shared/entities/numero.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
@@ -26,6 +26,7 @@ import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 import { filterComments } from '@/shared/utils/filter.utils';
+import { Readable } from 'stream';
 
 @ApiTags('numeros')
 @Controller('numeros')
@@ -43,6 +44,43 @@ export class NumeroController {
   find(@Req() req: CustomRequest, @Res() res: Response) {
     const numero: Numero = filterComments(req.numero, !req.isAdmin);
     res.status(HttpStatus.OK).json(numero);
+  }
+
+  @Get('/download-certificat/:numeroId')
+  @ApiOperation({
+    summary: 'Download the certificat of the numero by id',
+    operationId: 'downloadCertificat',
+  })
+  @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'PDF certificate file',
+    content: {
+      'application/pdf': {
+        schema: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiBearerAuth('admin-token')
+  async downloadCertificat(@Req() req: CustomRequest, @Res() res: Response) {
+    try {
+      const pdfBlob = await this.numeroService.generateCertificat(req.numero);
+      console.log('pdfBlob', pdfBlob);
+      const stream = Readable.from(Buffer.from(pdfBlob));
+
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="generated.pdf"',
+      });
+
+      return new StreamableFile(stream);
+    } catch (err) {
+      console.log('Error generating PDF:', err);
+      throw err;
+    }
   }
 
   @Put(':numeroId')
