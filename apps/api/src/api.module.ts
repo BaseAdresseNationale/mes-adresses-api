@@ -21,6 +21,7 @@ import { MailerParams } from '@/shared/params/mailer.params';
 import { AdminModule } from './modules/admin/admin.module';
 import { SignalementModule } from './modules/signalement/signalement.module';
 import { BullModule } from '@nestjs/bullmq';
+import { PdfModule } from './modules/pdf/pdf.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { BullModule } from '@nestjs/bullmq';
     StatsModule,
     AdminModule,
     SignalementModule,
+    PdfModule,
   ],
   controllers: [],
   providers: [],

@@ -11,6 +11,7 @@ import { VoieModule } from '@/modules/voie/voie.module';
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.module';
+import { PdfModule } from '../pdf/pdf.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.modul
     forwardRef(() => ToponymeModule),
     forwardRef(() => BaseLocaleModule),
     forwardRef(() => TilesModule),
+    forwardRef(() => PdfModule),
   ],
   providers: [NumeroService, NumeroMiddleware],
   controllers: [NumeroController],
