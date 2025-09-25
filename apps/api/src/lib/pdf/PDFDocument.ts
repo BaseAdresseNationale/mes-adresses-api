@@ -1,13 +1,12 @@
-import { Injectable } from '@nestjs/common';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { TableOptions, TextOptions, PDFIndex } from './pdf.types';
 
-@Injectable()
-export class PdfService {
+export const xMargin = 20;
+export const yMargin = 30;
+
+export class PdfDocument {
   private doc: jsPDF;
-  private readonly xMargin = 20;
-  private readonly yMargin = 30;
   private indexData: PDFIndex[] = [];
   private x: number;
   private y: number;
@@ -21,42 +20,51 @@ export class PdfService {
   constructor() {
     this.doc = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
     this.resetXandY();
-    this.updatePointer();
+
+    return this;
   }
 
   private resetXandY() {
-    this.x = this.xMargin;
-    this.y = this.yMargin;
+    this.x = xMargin;
+    this.y = yMargin;
   }
 
   private updatePointer() {
     this.doc.moveTo(this.x, this.y);
   }
 
-  async addNewPage() {
+  addNewPage() {
     this.doc.addPage();
     this.resetXandY();
     this.updatePointer();
+
+    return this;
   }
 
   // Adds image at position (x, y) with width and height
-  async addImage(imageData: Uint8Array, options?: any) {
+  addImage(
+    imageData: string,
+    format: 'png' | 'jpeg' | 'jpg',
+    options: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    },
+  ) {
     this.doc.addImage(
       imageData,
-      'JPEG',
-      options?.x || this.x,
-      options?.y || this.y,
-      options?.width || this.doc.internal.pageSize.getWidth(),
-      options?.height || this.doc.internal.pageSize.getHeight(),
+      format,
+      options.x,
+      options.y,
+      options.width,
+      options.height,
     );
 
-    this.y =
-      options?.height ||
-      this.doc.internal.pageSize.getHeight() + this.doc.getLineHeight();
-    this.updatePointer();
+    return this;
   }
 
-  async addGenericTable<T>(dataArr: T[], options: TableOptions) {
+  addGenericTable<T>(dataArr: T[], options: TableOptions) {
     if (dataArr.length === 0) {
       console.error('Data array is empty');
       return;
@@ -93,42 +101,68 @@ export class PdfService {
       didDrawCell: () => {},
       ...mergedOptions,
     });
-    this.y = (this.doc as any).lastAutoTable.finalY + this.doc.getLineHeight();
+    this.y += (this.doc as any).lastAutoTable.finalY + this.doc.getLineHeight();
     this.updatePointer();
+
+    return this;
   }
 
-  async addText(text: string, options?: TextOptions) {
+  addText(text: string, options?: TextOptions) {
     const lines = this.doc.splitTextToSize(
       text,
-      this.doc.internal.pageSize.width - this.xMargin * 2,
+      this.doc.internal.pageSize.width - xMargin * 2,
     );
 
-    if (options?.addToIndex) {
+    const { x, y, addToIndex, ...restOptions } = options || {};
+
+    if (addToIndex) {
       this.indexData.push({
         Index: text,
         Page: this.doc.getCurrentPageInfo().pageNumber,
       });
     }
 
-    this.doc.text(lines, options?.x || this.x, options?.y || this.y);
-    this.y = this.doc.getTextDimensions(lines).h + this.doc.getLineHeight();
+    this.doc.text(lines, x || this.x, y || this.y, restOptions);
+    this.y += this.doc.getTextDimensions(lines).h + this.doc.getLineHeight();
     this.updatePointer();
+
+    return this;
   }
 
-  async addNewLine() {
+  changeFontSize(size: number) {
+    this.doc.setFontSize(size);
+
+    return this;
+  }
+
+  changeFont(fontName: string, fontData: string, fontStyle: string = 'normal') {
+    this.doc.addFileToVFS(`${fontName}.ttf`, fontData);
+    this.doc.addFont(`${fontName}.ttf`, fontName, fontStyle);
+    this.doc.setFont(fontName);
+
+    return this;
+  }
+
+  addNewLine() {
     this.y += this.doc.getLineHeight();
-    this.x = this.xMargin;
+    this.x = xMargin;
     this.updatePointer();
+
+    return this;
   }
 
-  async render(): Promise<ArrayBuffer> {
-    await this.addPageNumbers();
-    await this.index();
+  render({ withIndex = false, withPageNumber = false }): ArrayBuffer {
+    if (withPageNumber) {
+      this.addPageNumbers();
+    }
+    if (withIndex) {
+      this.addIndex();
+    }
 
     return this.doc.output('arraybuffer');
   }
 
-  private async addPageNumbers() {
+  private addPageNumbers() {
     const pageCount = (this.doc as any).internal.getNumberOfPages(); //Total Page Number
     for (let i = 0; i < pageCount; i++) {
       this.doc.setPage(i);
@@ -137,17 +171,17 @@ export class PdfService {
       this.doc.setFontSize(12);
       this.doc.text(
         'page: ' + pageCurrent + '/' + pageCount,
-        this.xMargin,
-        this.doc.internal.pageSize.height - this.yMargin / 2,
+        xMargin,
+        this.doc.internal.pageSize.height - yMargin / 2,
       );
     }
   }
 
-  private async index() {
+  private addIndex() {
     this.doc.setPage(2);
     this.resetXandY();
     this.updatePointer();
-    await this.addGenericTable(this.indexData, {
+    this.addGenericTable(this.indexData, {
       tableName: `Table of Contents`,
       theme: 'grid',
     });
