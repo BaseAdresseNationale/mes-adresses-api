@@ -4,6 +4,8 @@ import { PDFAssetsManager } from '../PDFAssetsManager';
 
 interface CertificatAdressageParams {
   numero: Numero;
+  destinataire: string;
+  emetteur: string;
 }
 
 export async function generateCertificatAdressage(
