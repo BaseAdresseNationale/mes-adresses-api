@@ -8,7 +8,6 @@ import {
   Req,
   HttpStatus,
   Body,
-  StreamableFile,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -26,8 +25,9 @@ import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 import { filterComments } from '@/shared/utils/filter.utils';
-import { Readable } from 'stream';
-
+import { PassThrough } from 'stream';
+import { generateCertificatAdressage } from '@/lib/pdf/templates/certificat-adressage';
+import * as fs from 'fs';
 @ApiTags('numeros')
 @Controller('numeros')
 export class NumeroController {
@@ -65,18 +65,26 @@ export class NumeroController {
     },
   })
   @ApiBearerAuth('admin-token')
-  async downloadCertificat(@Req() req: CustomRequest, @Res() res: Response) {
+  async downloadCertificat(
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+  ): Promise<void> {
     try {
-      const pdfBlob = await this.numeroService.generateCertificat(req.numero);
-      console.log('pdfBlob', pdfBlob);
-      const stream = Readable.from(Buffer.from(pdfBlob));
+      const pdfArrayBuffer = await generateCertificatAdressage({
+        numero: req.numero,
+      });
+      const uint8Array = new Uint8Array(pdfArrayBuffer);
+      fs.writeFileSync('test.pdf', uint8Array);
+      const readStream = new PassThrough();
+      readStream.end(uint8Array);
 
       res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="generated.pdf"',
+        'Content-Type': 'application/pdf;',
+        'Content-Disposition':
+          'attachment; filename="certificat-adressage.pdf"',
       });
 
-      return new StreamableFile(stream);
+      readStream.pipe(res);
     } catch (err) {
       console.log('Error generating PDF:', err);
       throw err;

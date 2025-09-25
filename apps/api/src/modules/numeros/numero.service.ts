@@ -37,7 +37,6 @@ import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
 import { NumeroInBbox } from '@/lib/types/numero.type';
-import { PdfService } from '../pdf/pdf.service';
 
 @Injectable()
 export class NumeroService {
@@ -52,8 +51,6 @@ export class NumeroService {
     private toponymeService: ToponymeService,
     @Inject(forwardRef(() => BaseLocaleService))
     private baseLocaleService: BaseLocaleService,
-    @Inject(forwardRef(() => PdfService))
-    private pdfService: PdfService,
   ) {}
 
   async findOneOrFail(numeroId: string): Promise<Numero> {
@@ -599,17 +596,6 @@ export class NumeroService {
         polygon: JSON.parse(res.polygon),
       }
     );
-  }
-
-  async generateCertificat(numero: Numero): Promise<ArrayBuffer> {
-    await this.pdfService.addText(`Certificat d'adresse ${numero.numero}`, {
-      align: 'center',
-    });
-    await this.pdfService.addNewLine(); // Leave an empty Line
-    await this.pdfService.addText(`SubHeading`);
-    await this.pdfService.addNewLine();
-
-    return this.pdfService.render();
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {
