@@ -8,6 +8,8 @@ import {
   Req,
   HttpStatus,
   Body,
+  StreamableFile,
+  Post,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -25,9 +27,9 @@ import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 import { filterComments } from '@/shared/utils/filter.utils';
-import { PassThrough } from 'stream';
 import { generateCertificatAdressage } from '@/lib/pdf/templates/certificat-adressage';
-import * as fs from 'fs';
+import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
+
 @ApiTags('numeros')
 @Controller('numeros')
 export class NumeroController {
@@ -46,10 +48,10 @@ export class NumeroController {
     res.status(HttpStatus.OK).json(numero);
   }
 
-  @Get('/download-certificat/:numeroId')
+  @Post('/generate-certificat/:numeroId')
   @ApiOperation({
-    summary: 'Download the certificat of the numero by id',
-    operationId: 'downloadCertificat',
+    summary: 'Generate the certificat of the numero by id',
+    operationId: 'generateCertificat',
   })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({
@@ -67,16 +69,15 @@ export class NumeroController {
   @ApiBearerAuth('admin-token')
   async downloadCertificat(
     @Req() req: CustomRequest,
-    @Res() res: Response,
-  ): Promise<void> {
+    @Body() generateCertificatDto: GenerateCertificatDTO,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
     try {
       const pdfArrayBuffer = await generateCertificatAdressage({
         numero: req.numero,
+        ...generateCertificatDto,
       });
       const uint8Array = new Uint8Array(pdfArrayBuffer);
-      fs.writeFileSync('test.pdf', uint8Array);
-      const readStream = new PassThrough();
-      readStream.end(uint8Array);
 
       res.set({
         'Content-Type': 'application/pdf;',
@@ -84,7 +85,7 @@ export class NumeroController {
           'attachment; filename="certificat-adressage.pdf"',
       });
 
-      readStream.pipe(res);
+      return new StreamableFile(uint8Array);
     } catch (err) {
       console.log('Error generating PDF:', err);
       throw err;
