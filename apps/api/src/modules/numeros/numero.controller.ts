@@ -57,7 +57,7 @@ export class NumeroController {
   })
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
     type: String,
     description: 'URL of the generated PDF certificat',
   })
@@ -85,7 +85,7 @@ export class NumeroController {
 
       const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_CONTAINER_ID}/${fileName}`;
 
-      return res.status(HttpStatus.OK).json(fileUrl);
+      return res.status(HttpStatus.CREATED).json(fileUrl);
     } catch (err) {
       console.log('Error generating PDF:', err);
       throw err;
