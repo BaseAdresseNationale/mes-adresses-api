@@ -37,6 +37,8 @@ import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
 import { NumeroInBbox } from '@/lib/types/numero.type';
+import { generateCertificatAdressage } from '@/lib/pdf/templates/certificat-adressage';
+import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
 
 @Injectable()
 export class NumeroService {
@@ -596,6 +598,26 @@ export class NumeroService {
         polygon: JSON.parse(res.polygon),
       }
     );
+  }
+
+  async generateCertificatAdressage(
+    params: GenerateCertificatDTO & { numero: Numero },
+  ): Promise<string> {
+    const bal = await this.baseLocaleService.findOneOrFail(params.numero.balId);
+    const voie = await this.voieService.findOneOrFail(params.numero.voieId);
+    let toponyme = null;
+    if (params.numero.toponymeId) {
+      toponyme = await this.toponymeService.findOneOrFail(
+        params.numero.toponymeId,
+      );
+    }
+    return generateCertificatAdressage({
+      numero: params.numero,
+      baseLocale: bal,
+      voie,
+      toponyme,
+      ...params,
+    });
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {

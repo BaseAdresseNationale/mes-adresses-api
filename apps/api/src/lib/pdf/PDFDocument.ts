@@ -41,6 +41,26 @@ export class PdfDocument {
     return this;
   }
 
+  addSVG(
+    imageData: string,
+    options: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    },
+  ) {
+    this.doc.addSvgAsImage(
+      imageData,
+      options.x,
+      options.y,
+      options.width,
+      options.height,
+    );
+
+    return this;
+  }
+
   // Adds image at position (x, y) with width and height
   addImage(
     imageData: string,
@@ -76,7 +96,9 @@ export class PdfDocument {
       startY: this.y + this.doc.getLineHeight(),
     };
 
-    this.addText(`${mergedOptions.tableName}`);
+    if (mergedOptions.tableName) {
+      this.addText(`${mergedOptions.tableName}`);
+    }
 
     if (mergedOptions.addToIndex) {
       this.indexData.push({
@@ -151,7 +173,7 @@ export class PdfDocument {
     return this;
   }
 
-  render({ withIndex = false, withPageNumber = false }): ArrayBuffer {
+  render({ withIndex = false, withPageNumber = false }): string {
     if (withPageNumber) {
       this.addPageNumbers();
     }
@@ -159,7 +181,7 @@ export class PdfDocument {
       this.addIndex();
     }
 
-    return this.doc.output('arraybuffer');
+    return this.doc.output();
   }
 
   private addPageNumbers() {

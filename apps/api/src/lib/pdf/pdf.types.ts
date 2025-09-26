@@ -8,7 +8,7 @@ export interface PDFIndex {
 
 export interface TableOptions extends UserOptions {
   ignoreFields?: string[];
-  tableName: string;
+  tableName?: string;
   addToIndex?: boolean;
 }
 

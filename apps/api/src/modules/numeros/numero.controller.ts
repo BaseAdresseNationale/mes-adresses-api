@@ -8,7 +8,6 @@ import {
   Req,
   HttpStatus,
   Body,
-  StreamableFile,
   Post,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -27,13 +26,16 @@ import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 import { filterComments } from '@/shared/utils/filter.utils';
-import { generateCertificatAdressage } from '@/lib/pdf/templates/certificat-adressage';
 import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
+import { S3Service } from '@/shared/modules/s3/s3.service';
 
 @ApiTags('numeros')
 @Controller('numeros')
 export class NumeroController {
-  constructor(private numeroService: NumeroService) {}
+  constructor(
+    private numeroService: NumeroService,
+    private s3service: S3Service,
+  ) {}
 
   @Get(':numeroId')
   @ApiOperation({
@@ -56,36 +58,34 @@ export class NumeroController {
   @ApiParam({ name: 'numeroId', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'PDF certificate file',
-    content: {
-      'application/pdf': {
-        schema: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
+    type: String,
+    description: 'URL of the generated PDF certificat',
   })
   @ApiBearerAuth('admin-token')
   async downloadCertificat(
     @Req() req: CustomRequest,
     @Body() generateCertificatDto: GenerateCertificatDTO,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<StreamableFile> {
+    @Res() res: Response,
+  ) {
     try {
-      const pdfArrayBuffer = await generateCertificatAdressage({
+      const pdfString = await this.numeroService.generateCertificatAdressage({
         numero: req.numero,
         ...generateCertificatDto,
       });
-      const uint8Array = new Uint8Array(pdfArrayBuffer);
+      const fileName = `certificat_adressage_${req.numero.id}.pdf`;
 
-      res.set({
-        'Content-Type': 'application/pdf;',
-        'Content-Disposition':
-          'attachment; filename="certificat-adressage.pdf"',
-      });
+      await this.s3service.uploadPublicFile(
+        fileName,
+        Buffer.from(pdfString, 'ascii'),
+        {
+          ContentType: 'application/pdf',
+          ContentEncoding: 'ascii',
+        },
+      );
 
-      return new StreamableFile(uint8Array);
+      const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_CONTAINER_ID}/${fileName}`;
+
+      return res.status(HttpStatus.OK).json(fileUrl);
     } catch (err) {
       console.log('Error generating PDF:', err);
       throw err;
