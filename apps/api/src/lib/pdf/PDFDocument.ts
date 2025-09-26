@@ -37,7 +37,6 @@ export class PdfDocument {
     return this;
   }
 
-  // Adds image at position (x, y) with width and height
   addImage(
     imageData: string,
     format: 'png' | 'jpeg' | 'jpg',

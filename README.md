@@ -122,6 +122,7 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `BAN_API_URL`                       | URL de ban-plateform                                                        |
 | `API_SIGNALEMENT_URL`               | URL de l'API Signalement                                                    |
 | `API_SIGNALEMENT_CLIENT_SECRET`     | Secret du client de l'API Signalement                                       |
+| `API_ETABLISSEMENTS_PUBLIC`         | API Annuaire établissements publics                                         |
 | ---                                 | ---                                                                         |
 | `SMTP_HOST`                         | Nom d'hôte du serveur SMTP                                                  |
 | `SMTP_PORT`                         | Port du serveur SMTP                                                        |
@@ -133,7 +134,8 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | ---                                 | ---                                                                         |
 | `S3_ENDPOINT`                       | URL de base du serveur S3                                                   |
 | `S3_REGION`                         | région du S3                                                                |
-| `S3_CONTAINER_ID`                   | Id du container S3                                                          |
+| `S3_CONTAINER_FILAIRES_DE_VOIE`     | Container d'upload des filares de voie                                      |
+| `S3_CONTAINER_GENERATED_FILES`      | Des fichiers générés                                                        |
 | `S3_USER`                           | User S3                                                                     |
 | `S3_ACCESS_KEY`                     | Clef d'accès S3                                                             |
 | `S3_SECRET_KEY`                     | Clef secrete S3                                                             |

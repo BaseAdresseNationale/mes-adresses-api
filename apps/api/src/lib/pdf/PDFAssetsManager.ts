@@ -3,7 +3,6 @@ import * as fs from 'node:fs/promises';
 
 export class PDFAssetsManager {
   private static arialFontBase64: string;
-  private static balLogoBase64: string;
   private static rfLogoBase64: string;
   public static isInitialized = false;
 
@@ -19,16 +18,7 @@ export class PDFAssetsManager {
       const logoRF = await fs.readFile(logoRFPath);
       this.rfLogoBase64 = logoRF.toString('base64');
 
-      // Load BAL logo
-      const logoBALPath = path.join(
-        process.cwd(),
-        'public/images/logo-bal.png',
-      );
-      const logoBAL = await fs.readFile(logoBALPath);
-      this.balLogoBase64 = logoBAL.toString('base64');
-
       this.isInitialized = true;
-      console.log('PDFAssetsManager initialized successfully');
     } catch (error) {
       console.error('Error initializing PDFAssetsManager:', error);
       throw error;
@@ -41,9 +31,5 @@ export class PDFAssetsManager {
 
   static getRFLogo(): string {
     return `data:image/png;base64,${this.rfLogoBase64}`;
-  }
-
-  static getBALLogo(): string {
-    return `data:image/png;base64,${this.balLogoBase64}`;
   }
 }
