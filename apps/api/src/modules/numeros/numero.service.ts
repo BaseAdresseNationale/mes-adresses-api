@@ -24,7 +24,10 @@ import { ObjectId } from 'mongodb';
 
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { normalizeSuffixe } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/entities/position.entity';
 
@@ -39,6 +42,7 @@ import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
 import { NumeroInBbox } from '@/lib/types/numero.type';
 import { generateCertificatAdressage } from '@/lib/pdf/templates/certificat-adressage';
 import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
+import { S3Service } from '@/shared/modules/s3/s3.service';
 
 @Injectable()
 export class NumeroService {
@@ -53,6 +57,8 @@ export class NumeroService {
     private toponymeService: ToponymeService,
     @Inject(forwardRef(() => BaseLocaleService))
     private baseLocaleService: BaseLocaleService,
+    @Inject(forwardRef(() => S3Service))
+    private s3service: S3Service,
   ) {}
 
   async findOneOrFail(numeroId: string): Promise<Numero> {
@@ -603,21 +609,44 @@ export class NumeroService {
   async generateCertificatAdressage(
     params: GenerateCertificatDTO & { numero: Numero },
   ): Promise<string> {
-    const bal = await this.baseLocaleService.findOneOrFail(params.numero.balId);
-    const voie = await this.voieService.findOneOrFail(params.numero.voieId);
-    let toponyme = null;
-    if (params.numero.toponymeId) {
-      toponyme = await this.toponymeService.findOneOrFail(
-        params.numero.toponymeId,
+    const { numero } = params;
+    const baseLocale = await this.baseLocaleService.findOneOrFail(numero.balId);
+    if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
+      throw new HttpException(
+        "La Base Adresse Locale doit être publiée pour pouvoir générer un certificat d'adressage",
+        HttpStatus.UNAUTHORIZED,
       );
     }
-    return generateCertificatAdressage({
-      numero: params.numero,
-      baseLocale: bal,
+
+    const voie = await this.voieService.findOneOrFail(numero.voieId);
+    let toponyme = null;
+    if (numero.toponymeId) {
+      toponyme = await this.toponymeService.findOneOrFail(numero.toponymeId);
+    }
+
+    const fileName = `certificat_adressage_${numero.id}.pdf`;
+
+    const pdfFileData = await generateCertificatAdressage({
+      numero,
+      baseLocale,
       voie,
       toponyme,
       ...params,
     });
+
+    await this.s3service.uploadPublicFile(
+      fileName,
+      process.env.S3_CONTAINER_GENERATED_FILES,
+      Buffer.from(pdfFileData, 'ascii'),
+      {
+        ContentType: 'application/pdf',
+        ContentEncoding: 'ascii',
+      },
+    );
+
+    const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_CONTAINER_GENERATED_FILES}/${fileName}`;
+
+    return fileUrl;
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {

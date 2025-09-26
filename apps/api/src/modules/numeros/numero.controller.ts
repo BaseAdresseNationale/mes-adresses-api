@@ -27,15 +27,11 @@ import { NumeroService } from '@/modules/numeros/numero.service';
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 import { filterComments } from '@/shared/utils/filter.utils';
 import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
-import { S3Service } from '@/shared/modules/s3/s3.service';
 
 @ApiTags('numeros')
 @Controller('numeros')
 export class NumeroController {
-  constructor(
-    private numeroService: NumeroService,
-    private s3service: S3Service,
-  ) {}
+  constructor(private numeroService: NumeroService) {}
 
   @Get(':numeroId')
   @ApiOperation({
@@ -68,24 +64,12 @@ export class NumeroController {
     @Res() res: Response,
   ) {
     try {
-      const pdfString = await this.numeroService.generateCertificatAdressage({
+      const pdfUrl = await this.numeroService.generateCertificatAdressage({
         numero: req.numero,
         ...generateCertificatDto,
       });
-      const fileName = `certificat_adressage_${req.numero.id}.pdf`;
 
-      await this.s3service.uploadPublicFile(
-        fileName,
-        Buffer.from(pdfString, 'ascii'),
-        {
-          ContentType: 'application/pdf',
-          ContentEncoding: 'ascii',
-        },
-      );
-
-      const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_CONTAINER_ID}/${fileName}`;
-
-      return res.status(HttpStatus.CREATED).json(fileUrl);
+      return res.status(HttpStatus.CREATED).json(pdfUrl);
     } catch (err) {
       console.log('Error generating PDF:', err);
       throw err;
