@@ -90,6 +90,7 @@
     "pumpify": "^2.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "sharp": "^0.34.4",
     "ts-loader": "^9.4.3",
     "typeorm": "^0.3.20",
     "uuid": "^9.0.1",

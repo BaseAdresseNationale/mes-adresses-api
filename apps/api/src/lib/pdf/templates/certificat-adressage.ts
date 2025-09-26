@@ -4,6 +4,7 @@ import { PDFAssetsManager } from '../PDFAssetsManager';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
+import * as sharp from 'sharp';
 
 interface CertificatAdressageParams {
   baseLocale: BaseLocale;
@@ -27,77 +28,118 @@ export const getCommuneFlag = async (codeCommune: string): Promise<string> => {
   return response.text();
 };
 
+export async function getAdresseMairie(
+  codeCommune: string,
+): Promise<string | null> {
+  const route =
+    'https://api-lannuaire.service-public.fr/api/explore/v2.1/catalog/datasets/api-lannuaire-administration/records';
+  const query = `select=nom,adresse&where=code_insee_commune="${codeCommune}" and pivot LIKE "mairie"`;
+  const url = `${route}?${query}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+  if (!data?.results || data.results.length === 0) {
+    return null;
+  }
+
+  const mainMarie = data.results.find(
+    (result) => !result.nom.toLowerCase().includes('mairie déléguée'),
+  );
+  const mairieData = mainMarie || data.results[0];
+  const adresseMairie = JSON.parse(mairieData.adresse)[0];
+  return `${mairieData.nom}\n${adresseMairie.numero_voie}\n${adresseMairie.code_postal} ${adresseMairie.nom_commune}`;
+}
+
 export async function generateCertificatAdressage(
   params: CertificatAdressageParams,
 ): Promise<string> {
   const { numero, baseLocale, voie, toponyme, emetteur, destinataire } = params;
 
-  const communeLogo = await getCommuneFlag(baseLocale.commune);
+  const adresseMairie = await getAdresseMairie(baseLocale.commune);
 
-  console.log('communeLogo', communeLogo);
+  const communeLogoSvgString = await getCommuneFlag(baseLocale.commune);
+  const svgBuffer = Buffer.from(communeLogoSvgString, 'utf-8');
+  const pngBuffer = await sharp(svgBuffer).png().toBuffer();
+  const communeLogo = `data:image/png;base64,${pngBuffer.toString('base64')}`;
 
   if (!PDFAssetsManager.isInitialized) {
     await PDFAssetsManager.init();
   }
 
-  return (
-    new PdfDocument()
-      .changeFont('Arial', PDFAssetsManager.getArialFont())
-      .addImage(PDFAssetsManager.getRFLogo(), 'png', {
-        width: 100,
-        height: 100,
-        x: xMargin,
-        y: yMargin,
-      })
-      /*     .addSVG(communeLogo, {
+  const doc = new PdfDocument();
+
+  return doc
+    .changeFont('Arial', PDFAssetsManager.getArialFont())
+    .addImage(PDFAssetsManager.getRFLogo(), 'png', {
       width: 100,
       height: 100,
-      x: 190 - xMargin - 100,
+      x: xMargin,
       y: yMargin,
-    }) */
-      .addNewLine()
-      .addNewLine()
-      .addNewLine()
-      .addNewLine()
-      .addNewLine()
-      .addNewLine()
-      .addText(`Marie de ${baseLocale.communeNom}`, {
+    })
+    .addImage(communeLogo, 'png', {
+      width: 50,
+      height: 50,
+      x: doc.getDocumentInstance().internal.pageSize.width - xMargin * 2 - 50,
+      y: yMargin + 25,
+    })
+    .addNewLine()
+    .addNewLine()
+    .addNewLine()
+    .addNewLine()
+    .addNewLine()
+    .addNewLine()
+    .addNewLine()
+    .addNewLine()
+    .changeFontSize(12)
+    .addText(adresseMairie, {
+      align: 'right',
+    })
+    .addNewLine()
+    .addText(
+      `${baseLocale.communeNom}, le ${new Date().toLocaleDateString('fr-Fr', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      })}`,
+      {
         align: 'right',
-      })
-      .changeFontSize(18)
-      .addText("Certificat d'adressage", {
-        align: 'center',
-      })
-      .addNewLine()
-      .addNewLine()
-      .changeFontSize(12)
-      .addText(
-        `Je soussigné(e) ${emetteur}, certifie que l'adresse suivante est certifiée dans la Base Adresse Locale à la date du ${new Date().toLocaleDateString(
-          'fr-FR',
-        )}:`,
-        { align: 'left' },
-      )
-      .addNewLine()
-      .addNewLine()
-      .addGenericTable(
+      },
+    )
+    .addNewLine()
+    .addNewLine()
+    .addNewLine()
+    .addNewLine()
+    .changeFontSize(20)
+    .addText("Certificat d'adressage", {
+      align: 'center',
+    })
+    .addNewLine()
+    .changeFontSize(12)
+    .addText(
+      `Je, soussigné(e) ${emetteur}, certifie que la propriété appartenant à ${destinataire} est certifiée dans la Base Adresse Locale de ${baseLocale.communeNom}.`,
+      { align: 'left' },
+    )
+    .addGenericTable(
+      [
+        'N° de voirie et désignation de la voie',
+        'N° parcelle(s) cadastrale(s)',
+      ],
+      [
         [
-          {
-            'N° de voirie et désignation de la voie': `${numero.numero} ${
-              voie.nom
-            }${toponyme ? `\n${toponyme.nom}` : ''}\n${baseLocale.communeNom}`,
-          },
-          {
-            'N° parcelle(s) cadastrale(s)': numero.parcelles.join(', '),
-          },
+          `${numero.numero} ${voie.nom}${
+            toponyme ? `\n${toponyme.nom}` : ''
+          }\n${baseLocale.communeNom}`,
+          numero.parcelles.join(', '),
         ],
-        {},
-      )
-      .addNewLine()
-      .addNewLine()
-      .addText(
-        'En foi de quoi, le présent certificat est délivré au demandeur pour servir et valoir ce que de droit.',
-        { align: 'left' },
-      )
-      .render({ withPageNumber: false, withIndex: false })
-  );
+      ],
+
+      {},
+    )
+    .addNewLine()
+    .addNewLine()
+    .addText(
+      'En foi de quoi, le présent certificat est délivré au demandeur pour servir et valoir ce que de droit.',
+      { align: 'left' },
+    )
+    .render();
 }
