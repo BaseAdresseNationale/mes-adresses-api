@@ -151,6 +151,7 @@ export class VoieService {
     // On insert l'object dans postgres
     const voieCreated: Voie = await this.voiesRepository.save(entityToSave);
     // Mettre a jour le updatedAt de la BAL
+    this.baseLocaleService.updateSettingsLanguageGoalAccepted(bal.id);
     await this.baseLocaleService.touch(bal.id, voieCreated.updatedAt);
     // On retourne la voie créé
     return voieCreated;
@@ -213,6 +214,10 @@ export class VoieService {
       ) {
         await this.calcCentroidAndBboxWithTrace(voieUpdated);
       }
+      // On met a jour le objectif multi language de la BAL
+      await this.baseLocaleService.updateSettingsLanguageGoalAccepted(
+        voieUpdated.balId,
+      );
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(
         voieUpdated.balId,
@@ -233,6 +238,10 @@ export class VoieService {
     if (affected >= 1) {
       // On supprime egalement les numeros de la voie
       await this.numeroService.deleteMany({ voieId: voie.id });
+      // On met a jour le objectif multi language de la BAL
+      await this.baseLocaleService.updateSettingsLanguageGoalAccepted(
+        voie.balId,
+      );
       // Si une voie a bien été supprimé on met a jour le updatedAt de la Bal
       await this.baseLocaleService.touch(voie.balId);
     }
@@ -248,6 +257,8 @@ export class VoieService {
     await this.voiesRepository.softDelete({ id: voie.id });
     // On archive également tous le numéros de la voie
     await this.numeroService.softDeleteByVoie(voie.id);
+    // On met a jour le objectif multi language de la BAL
+    await this.baseLocaleService.updateSettingsLanguageGoalAccepted(voie.balId);
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
   }
@@ -271,6 +282,8 @@ export class VoieService {
       // On met a jour le centroid de la voie
       this.calcCentroidAndBbox(voie.id);
     }
+    // On met a jour le objectif multi language de la BAL
+    await this.baseLocaleService.updateSettingsLanguageGoalAccepted(voie.balId);
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
     // On retourne la voie restaurée
