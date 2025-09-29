@@ -417,18 +417,6 @@ export class BaseLocaleService {
     };
   }
 
-  async hasLangRegional(
-    baseLocale: BaseLocale,
-    voies: Voie[],
-    toponymes: Toponyme[],
-  ): Promise<boolean> {
-    return (
-      Boolean(baseLocale.communeNomsAlt) ||
-      voies.some((voie) => voie.nomAlt) ||
-      toponymes.some((toponyme) => toponyme.nomAlt)
-    );
-  }
-
   async populate(
     baseLocale: BaseLocale,
     { voies, toponymes, numeros, communeNomsAlt }: FromCsvType,

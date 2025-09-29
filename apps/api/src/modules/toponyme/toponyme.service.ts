@@ -139,6 +139,7 @@ export class ToponymeService {
     // On insert l'object dans postgres
     const toponymeCreated: Toponyme =
       await this.toponymesRepository.save(entityToSave);
+    // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(bal.id, toponymeCreated.updatedAt);
     // On retourne le toponyme créé
     return toponymeCreated;
