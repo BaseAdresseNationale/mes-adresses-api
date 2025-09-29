@@ -150,6 +150,10 @@ export class BaseLocaleService {
       ...createInput,
       token: generateBase62String(20),
       status: StatusBaseLocalEnum.DRAFT,
+      settings: {
+        languageGoalIgnored: false,
+        toponymeGoalIgnored: false,
+      },
     });
     // On insert l'object dans postgres
     const newBaseLocale: BaseLocale =
@@ -186,6 +190,10 @@ export class BaseLocaleService {
       commune,
       nom: `Adresses de ${getCommuneActuelle(commune)?.nom} [démo]`,
       status: StatusBaseLocalEnum.DEMO,
+      settings: {
+        languageGoalIgnored: false,
+        toponymeGoalIgnored: false,
+      },
     });
     // On insert l'object dans postgres
     const newDemoBaseLocale: BaseLocale =
@@ -421,66 +429,6 @@ export class BaseLocaleService {
     );
   }
 
-  async updateSettingsToponymeGoalAccepted(balId: string) {
-    await this.basesLocalesRepository
-      .createQueryBuilder('bases_locales')
-      .update(BaseLocale)
-      .set({
-        settings: () => `CASE 
-          WHEN EXISTS (
-            SELECT 1 FROM "toponymes" 
-            WHERE "toponymes"."bal_id" = "bases_locales"."id" 
-            AND "toponymes"."deleted_at" IS NULL
-          ) THEN jsonb_set(
-            COALESCE("settings", '{}'::jsonb),
-            '{toponymeGoalAccepted}',
-            'true'::jsonb
-          )
-          ELSE jsonb_set(
-            COALESCE("settings", '{}'::jsonb),
-            '{toponymeGoalAccepted}',
-            'null'::jsonb
-          )
-        END`,
-      })
-      .where(
-        `id = :id  AND ("settings"->>'toponymeGoalAccepted')::boolean IS NOT false`,
-        { id: balId },
-      )
-      .execute();
-  }
-
-  async updateSettingsLanguageGoalAccepted(balId: string) {
-    await this.basesLocalesRepository
-      .createQueryBuilder('bases_locales')
-      .update(BaseLocale)
-      .set({
-        settings: () => `CASE 
-          WHEN (
-            "commune_noms_alt" IS NOT NULL 
-            OR EXISTS (SELECT 1 FROM "voies" WHERE "voies"."bal_id" = "bases_locales"."id" AND "voies"."nom_alt" IS NOT NULL AND "voies"."deleted_at" IS NULL) 
-            OR EXISTS (SELECT 1 FROM "toponymes" WHERE "toponymes"."bal_id" = "bases_locales"."id" AND "toponymes"."nom_alt" IS NOT NULL AND "toponymes"."deleted_at" IS NULL)
-          ) THEN jsonb_set(
-            COALESCE("settings", '{}'::jsonb),
-            '{languageGoalAccepted}',
-            'true'::jsonb
-          )
-          ELSE jsonb_set(
-            COALESCE("settings", '{}'::jsonb),
-            '{languageGoalAccepted}',
-            'null'::jsonb
-          )
-        END`,
-      })
-      .where(
-        `id = :id AND ("settings"->>'languageGoalAccepted')::boolean IS NOT false`,
-        {
-          id: balId,
-        },
-      )
-      .execute();
-  }
-
   async populate(
     baseLocale: BaseLocale,
     { voies, toponymes, numeros, communeNomsAlt }: FromCsvType,
@@ -509,8 +457,6 @@ export class BaseLocaleService {
     await Promise.all(
       voiesCreated.map(({ id }) => this.voieService.calcCentroidAndBbox(id)),
     );
-    await this.updateSettingsToponymeGoalAccepted(baseLocale.id);
-    await this.updateSettingsLanguageGoalAccepted(baseLocale.id);
     // On retourne la Bal
     return baseLocale;
   }

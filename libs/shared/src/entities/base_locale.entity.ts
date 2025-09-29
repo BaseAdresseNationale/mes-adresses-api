@@ -21,10 +21,10 @@ export enum StatusSyncEnum {
 
 export class BaseLocaleSetting {
   @ApiProperty()
-  languageGoalAccepted: boolean | null;
+  languageGoalIgnored: boolean;
 
   @ApiProperty()
-  toponymeGoalAccepted: boolean | null;
+  toponymeGoalIgnored: boolean;
 }
 
 export class BaseLocaleSync {
