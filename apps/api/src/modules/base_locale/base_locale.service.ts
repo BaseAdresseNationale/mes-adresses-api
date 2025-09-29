@@ -26,7 +26,6 @@ import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import {
   BaseLocale,
-  BaseLocaleSetting,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 import { Habilitation } from '@/shared/modules/api_depot/api-depot.types';
