@@ -140,6 +140,8 @@ export class ToponymeService {
     const toponymeCreated: Toponyme =
       await this.toponymesRepository.save(entityToSave);
     // On met a jour le updatedAt de la BAL
+    await this.baseLocaleService.updateSettingsToponymeGoalAccepted(bal.id);
+    await this.baseLocaleService.updateSettingsLanguageGoalAccepted(bal.id);
     await this.baseLocaleService.touch(bal.id, toponymeCreated.updatedAt);
     // On retourne le toponyme créé
     return toponymeCreated;
@@ -161,6 +163,12 @@ export class ToponymeService {
     const toponymeUpdated: Toponyme =
       await this.toponymesRepository.save(toponyme);
 
+    await this.baseLocaleService.updateSettingsToponymeGoalAccepted(
+      toponyme.balId,
+    );
+    await this.baseLocaleService.updateSettingsLanguageGoalAccepted(
+      toponyme.balId,
+    );
     await this.baseLocaleService.touch(toponyme.balId);
     // On retourne le toponyme mis a jour
     return toponymeUpdated;
@@ -181,6 +189,12 @@ export class ToponymeService {
           toponymeId: null,
         },
       );
+      await this.baseLocaleService.updateSettingsToponymeGoalAccepted(
+        toponyme.balId,
+      );
+      await this.baseLocaleService.updateSettingsLanguageGoalAccepted(
+        toponyme.balId,
+      );
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(toponyme.balId);
     }
@@ -193,6 +207,12 @@ export class ToponymeService {
     });
     // Si le toponyme a été rétabli on met a jour le updateAt de la BAL
     if (affected) {
+      await this.baseLocaleService.updateSettingsToponymeGoalAccepted(
+        toponyme.balId,
+      );
+      await this.baseLocaleService.updateSettingsLanguageGoalAccepted(
+        toponyme.balId,
+      );
       await this.baseLocaleService.touch(toponyme.balId);
     }
     // On retourne le toponyme rétabli
@@ -208,6 +228,12 @@ export class ToponymeService {
     });
     // Si le toponyme a été supprimer on met a jour le updateAt de la BAL
     if (affected > 0) {
+      await this.baseLocaleService.updateSettingsToponymeGoalAccepted(
+        toponyme.balId,
+      );
+      await this.baseLocaleService.updateSettingsLanguageGoalAccepted(
+        toponyme.balId,
+      );
       await this.baseLocaleService.touch(toponyme.balId);
     }
   }

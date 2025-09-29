@@ -26,6 +26,7 @@ import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import {
   BaseLocale,
+  BaseLocaleSetting,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 import { Habilitation } from '@/shared/modules/api_depot/api-depot.types';
@@ -408,15 +409,88 @@ export class BaseLocaleService {
     };
   }
 
+  async hasLangRegional(
+    baseLocale: BaseLocale,
+    voies: Voie[],
+    toponymes: Toponyme[],
+  ): Promise<boolean> {
+    return (
+      Boolean(baseLocale.communeNomsAlt) ||
+      voies.some((voie) => voie.nomAlt) ||
+      toponymes.some((toponyme) => toponyme.nomAlt)
+    );
+  }
+
+  async updateSettingsToponymeGoalAccepted(balId: string) {
+    await this.basesLocalesRepository
+      .createQueryBuilder('bases_locales')
+      .update(BaseLocale)
+      .set({
+        settings: () => `CASE 
+          WHEN EXISTS (
+            SELECT 1 FROM "toponymes" 
+            WHERE "toponymes"."bal_id" = "bases_locales"."id" 
+            AND "toponymes"."deleted_at" IS NULL
+          ) THEN jsonb_set(
+            COALESCE("settings", '{}'::jsonb),
+            '{toponymeGoalAccepted}',
+            'true'::jsonb
+          )
+          ELSE jsonb_set(
+            COALESCE("settings", '{}'::jsonb),
+            '{toponymeGoalAccepted}',
+            'null'::jsonb
+          )
+        END`,
+      })
+      .where(
+        `id = :id  AND ("settings"->>'toponymeGoalAccepted')::boolean IS NOT false`,
+        { id: balId },
+      )
+      .execute();
+  }
+
+  async updateSettingsLanguageGoalAccepted(balId: string) {
+    await this.basesLocalesRepository
+      .createQueryBuilder('bases_locales')
+      .update(BaseLocale)
+      .set({
+        settings: () => `CASE 
+          WHEN (
+            "commune_noms_alt" IS NOT NULL 
+            OR EXISTS (SELECT 1 FROM "voies" WHERE "voies"."bal_id" = "bases_locales"."id" AND "voies"."nom_alt" IS NOT NULL AND "voies"."deleted_at" IS NULL) 
+            OR EXISTS (SELECT 1 FROM "toponymes" WHERE "toponymes"."bal_id" = "bases_locales"."id" AND "toponymes"."nom_alt" IS NOT NULL AND "toponymes"."deleted_at" IS NULL)
+          ) THEN jsonb_set(
+            COALESCE("settings", '{}'::jsonb),
+            '{languageGoalAccepted}',
+            'true'::jsonb
+          )
+          ELSE jsonb_set(
+            COALESCE("settings", '{}'::jsonb),
+            '{languageGoalAccepted}',
+            'null'::jsonb
+          )
+        END`,
+      })
+      .where(
+        `id = :id AND ("settings"->>'languageGoalAccepted')::boolean IS NOT false`,
+        {
+          id: balId,
+        },
+      )
+      .execute();
+  }
+
   async populate(
     baseLocale: BaseLocale,
     { voies, toponymes, numeros, communeNomsAlt }: FromCsvType,
     deleteExisting: boolean = true,
   ): Promise<BaseLocale> {
     if (communeNomsAlt) {
-      this.basesLocalesRepository.update(baseLocale.id, {
+      await this.basesLocalesRepository.update(baseLocale.id, {
         communeNomsAlt,
       });
+      baseLocale.communeNomsAlt = communeNomsAlt;
     }
     if (deleteExisting) {
       // On supprime les numeros, vois et toponymes si il y en a
@@ -435,6 +509,8 @@ export class BaseLocaleService {
     await Promise.all(
       voiesCreated.map(({ id }) => this.voieService.calcCentroidAndBbox(id)),
     );
+    await this.updateSettingsToponymeGoalAccepted(baseLocale.id);
+    await this.updateSettingsLanguageGoalAccepted(baseLocale.id);
     // On retourne la Bal
     return baseLocale;
   }

@@ -19,6 +19,14 @@ export enum StatusSyncEnum {
   CONFLICT = 'conflict',
 }
 
+export class BaseLocaleSetting {
+  @ApiProperty()
+  languageGoalAccepted: boolean | null;
+
+  @ApiProperty()
+  toponymeGoalAccepted: boolean | null;
+}
+
 export class BaseLocaleSync {
   @ApiProperty({ enum: StatusSyncEnum })
   status: StatusSyncEnum;
@@ -69,6 +77,10 @@ export class BaseLocale extends GlobalEntity {
   @ApiProperty({ type: () => BaseLocaleSync })
   @Column('jsonb', { nullable: true })
   sync: BaseLocaleSync | null;
+
+  @ApiProperty({ type: () => BaseLocaleSetting })
+  @Column('jsonb', { nullable: true })
+  settings: BaseLocaleSetting | null;
 
   @ApiProperty({ type: () => Voie, isArray: true })
   @OneToMany(() => Voie, (voie) => voie.baseLocale)
