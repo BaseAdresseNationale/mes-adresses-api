@@ -5,6 +5,7 @@ import { Voie } from './libs/shared/src/entities/voie.entity';
 import { Numero } from './libs/shared/src/entities/numero.entity';
 import { Toponyme } from './libs/shared/src/entities/toponyme.entity';
 import { Position } from './libs/shared/src/entities/position.entity';
+import { Alert } from './libs/shared/src/entities/alert.entity';
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ export const AppDataSource = new DataSource({
   url: process.env.POSTGRES_URL,
   synchronize: false,
   logging: true,
-  entities: [BaseLocale, Voie, Toponyme, Numero, Position],
+  entities: [BaseLocale, Voie, Toponyme, Numero, Position, Alert],
   migrationsRun: false,
   migrations: ['**/migrations/*.ts'],
 });

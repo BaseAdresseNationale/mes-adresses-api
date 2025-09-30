@@ -1,5 +1,5 @@
 import {
-  validate,
+  validateFile,
   ValidateType,
   ValidateRowFullType,
 } from '@ban-team/validateur-bal';
@@ -193,7 +193,7 @@ export async function extractFromCsv(
   codeCommune: string,
 ): Promise<FromCsvType> {
   try {
-    const { rows, parseOk } = (await validate(file, {
+    const { rows, parseOk } = (await validateFile(file, {
       profile: '1.3-relax',
     })) as ValidateType;
     if (!parseOk) {

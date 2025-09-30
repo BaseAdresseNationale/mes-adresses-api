@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { BaseLocale } from './base_locale.entity';
 import { Numero } from './numero.entity';
+import { Alert } from './alert.entity';
 
 export enum TypeNumerotationEnum {
   NUMERIQUE = 'numerique',
@@ -75,4 +76,8 @@ export class Voie extends GlobalEntity {
   @ApiProperty({ type: () => Numero, isArray: true })
   @OneToMany(() => Numero, (numero) => numero.voie)
   numeros?: Numero[];
+
+  @ApiProperty({ type: () => Alert, isArray: true })
+  @OneToMany(() => Alert, (alert) => alert.voie)
+  alerts?: Alert[];
 }
