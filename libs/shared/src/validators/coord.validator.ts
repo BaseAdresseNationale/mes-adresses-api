@@ -4,7 +4,7 @@ import {
 } from 'class-validator';
 import * as proj from '@etalab/project-legal';
 import { getLabel, readValue } from '@ban-team/validateur-bal';
-import { Point } from '@turf/turf';
+import { Point } from 'geojson';
 
 async function validateurBAL(value, label) {
   const { errors } = await readValue(label, value);

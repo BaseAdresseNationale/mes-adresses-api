@@ -2,11 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Equals, Validate } from 'class-validator';
 import { LineStringValidator } from '@/shared/validators/coord.validator';
 import {
-  LineString as LineStringTurf,
-  Position as PositionTurf,
-} from '@turf/helpers';
+  LineString as LineStringGeoJSON,
+  Position as PositionGeoJSON,
+} from 'geojson';
 
-export class LineString implements LineStringTurf {
+export class LineString implements LineStringGeoJSON {
   @Equals('LineString')
   @ApiProperty({
     enum: ['LineString'],
@@ -24,5 +24,5 @@ export class LineString implements LineStringTurf {
       },
     },
   })
-  coordinates: PositionTurf[];
+  coordinates: PositionGeoJSON[];
 }

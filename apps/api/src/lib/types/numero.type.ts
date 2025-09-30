@@ -1,3 +1,5 @@
+import { Point } from 'geojson';
+
 export type NumeroInBbox = {
   id: string;
   numero: number;
@@ -6,5 +8,5 @@ export type NumeroInBbox = {
   certifie: string;
   voieId: string;
   toponymeId: string;
-  point: { type: string; coordinates: number[][] };
+  point: Point;
 };

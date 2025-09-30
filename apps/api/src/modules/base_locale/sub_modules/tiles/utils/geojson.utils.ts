@@ -1,6 +1,5 @@
 import * as turf from '@turf/turf';
-import { Feature as FeatureTurf } from '@turf/helpers';
-import { FeatureCollection } from 'geojson';
+import { Feature, LineString, Point, FeatureCollection } from 'geojson';
 
 import { Voie } from '@/shared/entities/voie.entity';
 
@@ -48,8 +47,8 @@ function getFeatureColor(id?: string, colorblindMode: boolean = false): string {
 function numeroToPointFeature(
   n: NumeroInBbox,
   colorblindMode: boolean,
-): FeatureTurf {
-  return turf.feature(n.point, {
+): Feature<Point> {
+  return turf.feature<Point>(n.point, {
     id: n.id,
     numero: n.numero,
     suffixe: n.suffixe,
@@ -65,7 +64,7 @@ function numeroToPointFeature(
 function voieToLineStringFeature(
   v: Voie,
   colorblindMode: boolean,
-): FeatureTurf {
+): Feature<LineString> {
   return turf.feature(v.trace, {
     id: v.id,
     nom: v.nom,
@@ -74,7 +73,7 @@ function voieToLineStringFeature(
   });
 }
 
-function voieToPointFeature(v: Voie, colorblindMode: boolean): FeatureTurf {
+function voieToPointFeature(v: Voie, colorblindMode: boolean): Feature<Point> {
   return turf.feature(v.centroid, {
     id: v.id,
     nom: v.nom,
@@ -94,7 +93,7 @@ export function voiesPointsToGeoJSON(
 function toponymeToPointFeature(
   t: ToponymeInBox,
   colorblindMode: boolean,
-): FeatureTurf {
+): Feature<Point> {
   return turf.feature(t.point, {
     id: t.id,
     nom: t.nom,

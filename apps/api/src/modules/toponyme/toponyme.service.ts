@@ -16,8 +16,7 @@ import {
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as turf from '@turf/turf';
-import bbox from '@turf/bbox';
-import { Feature as FeatureTurf, BBox as BboxTurf } from '@turf/helpers';
+import { Feature, Point, BBox } from 'geojson';
 import { v4 as uuid } from 'uuid';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
@@ -310,7 +309,7 @@ export class ToponymeService {
     return this.toponymesRepository.exists({ where });
   }
 
-  getBBOX(toponyme: Toponyme, numeros: Numero[]): BboxTurf {
+  getBBOX(toponyme: Toponyme, numeros: Numero[]): BBox {
     // On concat toutes les positions de tous les numeros
     const allPositions: Position[] = numeros
       .filter((n) => n.positions && n.positions.length > 0)
@@ -318,20 +317,20 @@ export class ToponymeService {
 
     if (allPositions.length > 0) {
       // On créer une feature collection avec toutes les positions des numeros
-      const features: FeatureTurf[] = allPositions.map(({ point }) =>
+      const features: Feature<Point>[] = allPositions.map(({ point }) =>
         turf.feature(point),
       );
       const featuresCollection = turf.featureCollection(features);
       // On renvoie la bbox de la feature collection
-      return bbox(featuresCollection);
+      return turf.bbox(featuresCollection);
     } else if (toponyme.positions && toponyme.positions.length > 0) {
       // On créer une feature collection avec toutes les positions du toponyme
-      const features: FeatureTurf[] = toponyme.positions.map(({ point }) =>
+      const features: Feature<Point>[] = toponyme.positions.map(({ point }) =>
         turf.feature(point),
       );
       const featuresCollection = turf.featureCollection(features);
       // On renvoie la bbox de la feature collection
-      return bbox(featuresCollection);
+      return turf.bbox(featuresCollection);
     }
   }
 
