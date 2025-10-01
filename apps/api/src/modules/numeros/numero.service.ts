@@ -617,6 +617,18 @@ export class NumeroService {
         HttpStatus.UNAUTHORIZED,
       );
     }
+    if (!numero.certifie) {
+      throw new HttpException(
+        "Le numéro doit être certifié pour pouvoir générer un certificat d'adressage",
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    if (numero.parcelles.length === 0) {
+      throw new HttpException(
+        "Le numéro doit être rattaché à au moins une parcelle cadastrale pour pouvoir générer un certificat d'adressage",
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
 
     const voie = await this.voieService.findOneOrFail(numero.voieId);
     let toponyme = null;
