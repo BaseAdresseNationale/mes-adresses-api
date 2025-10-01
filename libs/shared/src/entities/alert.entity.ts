@@ -20,11 +20,9 @@ export enum TypeNumerotationEnum {
 }
 
 @Entity({ name: 'alerts' })
-@Check(`
-  ((voie_id IS NOT NULL)::int
- + (toponyme_id IS NOT NULL)::int
- + (numero_id IS NOT NULL)::int) = 1
-`)
+@Check(
+  `((voie_id IS NOT NULL)::int + (toponyme_id IS NOT NULL)::int + (numero_id IS NOT NULL)::int) = 1`,
+)
 export class Alert {
   @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
