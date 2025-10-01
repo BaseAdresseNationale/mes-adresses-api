@@ -21,6 +21,9 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Job, Queue, QueueEvents } from 'bullmq';
+import { PriorityEnum } from '@/shared/types/task.type';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Voie } from '@/shared/entities/voie.entity';
@@ -53,12 +56,14 @@ import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
+import { TaskTitle } from '@/shared/types/task.type';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
 @Injectable()
 export class BaseLocaleService {
   constructor(
+    @InjectQueue('task') private taskQueue: Queue,
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
     private readonly mailerService: MailerService,
@@ -615,6 +620,21 @@ export class BaseLocaleService {
     };
 
     return filaireGeoJSON;
+  }
+
+  async forcePublish(balId: string) {
+    const job: Job = await this.taskQueue.add(
+      TaskTitle.FORCE_PUBLISH,
+      { balId },
+      { priority: PriorityEnum.HIGH },
+    );
+
+    try {
+      return await job.waitUntilFinished(new QueueEvents('task'), 30000);
+    } catch (error) {
+      this.taskQueue.remove(job.id);
+      throw error;
+    }
   }
 
   touch(balId: string, updatedAt: Date = new Date()) {
