@@ -48,10 +48,10 @@ export class TaskProcessor extends WorkerHost {
     } catch (error) {
       Logger.error(
         `[${TaskProcessor.name}] Error task ${job.name}`,
-        error,
+        error.message || error.response?.data,
         TaskProcessor.name,
       );
-      return { success: false, error: error.message };
+      return { success: false, error: error.message || error.response?.data };
     }
     Logger.info(
       `[${TaskProcessor.name}] End task ${job.name}`,

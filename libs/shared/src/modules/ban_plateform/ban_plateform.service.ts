@@ -21,11 +21,7 @@ export class BanPlateformService {
             if (error.response && error.response.status === 404) {
               return of({ data: null });
             }
-            throw new HttpException(
-              (error.response?.data as any).message ||
-                'No ban-plateform response',
-              HttpStatus.BAD_GATEWAY,
-            );
+            throw error;
           }),
         ),
     );
@@ -38,12 +34,11 @@ export class BanPlateformService {
         catchError((error: AxiosError) => {
           this.logger.error(
             `Impossible de récupérer le code distict pour la commune ${codeCommune}`,
-            error.response?.data || 'No ban-plateform response',
+            error.response?.data || 'No server response',
             BanPlateformService.name,
           );
           throw new HttpException(
-            (error.response?.data as any).message ||
-              'No ban-plateform response',
+            (error.response?.data as any).message || 'No server response',
             HttpStatus.BAD_GATEWAY,
           );
         }),
