@@ -15,6 +15,7 @@ import { BaseLocale } from './base_locale.entity';
 import { Voie } from './voie.entity';
 import { Toponyme } from './toponyme.entity';
 import { Position } from './position.entity';
+import { Alert } from './alert.entity';
 
 export function displaySuffix(numero: Numero): string {
   if (numero.suffixe) {
@@ -115,6 +116,10 @@ export class Numero extends GlobalEntity {
   @ManyToOne(() => Toponyme, (toponyme) => toponyme.numeros)
   @JoinColumn({ name: 'toponyme_id' })
   toponyme?: Toponyme;
+
+  @ApiProperty({ type: () => Alert, isArray: true })
+  @OneToMany(() => Alert, (alert) => alert.numero)
+  alerts?: Alert[];
 
   @AfterLoad()
   getNumeroComplet?() {

@@ -3,13 +3,13 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
-import { getLabel, readValue } from '@ban-team/validateur-bal';
+import { getLabel, validateValue } from '@ban-team/validateur-bal';
 import * as languesRegionales from '@ban-team/shared-data/langues-regionales.json';
 
 const supportedNomAlt = new Set(languesRegionales.map((l) => l.code));
 
 async function validateurBAL(value, label) {
-  const { errors } = await readValue(label, value);
+  const { errors } = await validateValue(label, value);
 
   return {
     errors: errors.map((error) => getLabel(`${label}.${error}`)),

@@ -57,13 +57,12 @@ export class ExportCsvService {
 
   async exportToCsv(
     baseLocale: BaseLocale,
-    withComment: boolean = false,
+    params: { withComment?: boolean; withId?: boolean } = {},
   ): Promise<string> {
     const { voies, toponymes, numeros } = await this.getAllFromBal(
       baseLocale.id,
     );
-
-    return exportBalToCsv(baseLocale, voies, toponymes, numeros, withComment);
+    return exportBalToCsv(baseLocale, voies, toponymes, numeros, params);
   }
 
   async exportVoiesToCsv(baseLocale: BaseLocale): Promise<string> {
