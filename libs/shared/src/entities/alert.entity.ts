@@ -12,12 +12,7 @@ import { Numero } from './numero.entity';
 import { Voie } from './voie.entity';
 import { Toponyme } from './toponyme.entity';
 import { BaseLocale } from './base_locale.entity';
-
-export enum TypeNumerotationEnum {
-  ERROR = 'error',
-  WARNINGS = 'warnings',
-  INFO = 'info',
-}
+import { ErrorLevelEnum } from '@ban-team/validateur-bal';
 
 @Entity({ name: 'alerts' })
 @Check(
@@ -30,38 +25,57 @@ export class Alert {
 
   @Index('IDX_alerts_bal_id')
   @ApiProperty()
-  @Column('varchar', { length: 24, name: 'bal_id', nullable: true })
+  @Column('varchar', { length: 24, name: 'bal_id', nullable: false })
   balId: string;
 
   @Index('IDX_alerts_voie_id')
   @ApiProperty()
-  @Column('varchar', { length: 24, name: 'voie_id', nullable: true })
+  @Column('varchar', {
+    length: 24,
+    name: 'voie_id',
+    nullable: true,
+    default: null,
+  })
   voieId: string;
 
   @Index('IDX_alerts_toponyme_id')
   @ApiProperty()
-  @Column('varchar', { length: 24, name: 'toponyme_id', nullable: true })
+  @Column('varchar', {
+    length: 24,
+    name: 'toponyme_id',
+    nullable: true,
+    default: null,
+  })
   toponymeId: string;
 
   @Index('IDX_alerts_numeros_id')
   @ApiProperty()
-  @Column('varchar', { length: 24, name: 'numero_id', nullable: true })
+  @Column('varchar', {
+    length: 24,
+    name: 'numero_id',
+    nullable: true,
+    default: null,
+  })
   numeroId?: string;
 
   @ApiProperty()
   @Column('text', { nullable: false })
-  error: string;
+  field: string;
 
   @ApiProperty()
   @Column('text', { nullable: false })
   value: string;
 
-  @ApiProperty({ enum: TypeNumerotationEnum })
-  @Column('enum', { enum: TypeNumerotationEnum, nullable: false })
-  severity: TypeNumerotationEnum;
-
   @ApiProperty()
   @Column('text', { nullable: false })
+  error: string;
+
+  @ApiProperty({ enum: ErrorLevelEnum })
+  @Column('enum', { enum: ErrorLevelEnum, nullable: false })
+  severity: ErrorLevelEnum;
+
+  @ApiProperty()
+  @Column('text', { nullable: false, default: false })
   isIgnored: boolean;
 
   @ApiProperty({ type: () => BaseLocale })

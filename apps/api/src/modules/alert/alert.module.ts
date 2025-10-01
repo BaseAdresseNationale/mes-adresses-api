@@ -1,7 +1,8 @@
 import { MiddlewareConsumer, Module, forwardRef } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ExportCsvModule } from '@/shared/modules/export_csv/export_csv.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Alert } from '@/shared/entities/alert.entity';
 
 import { AlertService } from '@/modules/alert/alert.service';
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';

@@ -29,7 +29,9 @@ export class ExportCsvController {
   ) {
     const csvFile: string = await this.exportCsvService.exportToCsv(
       req.baseLocale,
-      withComment === 'true' && isAdmin(req, req.baseLocale),
+      {
+        withComment: withComment === 'true' && isAdmin(req, req.baseLocale),
+      },
     );
     res.status(HttpStatus.OK).attachment('bal.csv').type('csv').send(csvFile);
   }
