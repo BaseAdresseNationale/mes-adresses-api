@@ -46,6 +46,10 @@ import { BullModule } from '@nestjs/bullmq';
         connection: {
           url: config.get('REDIS_URL'),
         },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true,
+        },
       }),
       inject: [ConfigService],
     }),

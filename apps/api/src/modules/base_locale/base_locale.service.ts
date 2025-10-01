@@ -623,35 +623,18 @@ export class BaseLocaleService {
   }
 
   async forcePublish(balId: string) {
-    return new Promise(async (resolve, reject) => {
-      const queueEvents = new QueueEvents('task');
+    const job: Job = await this.taskQueue.add(
+      TaskTitle.FORCE_PUBLISH,
+      { balId },
+      { priority: PriorityEnum.HIGH },
+    );
 
-      // Définir le listener comme une fonction nommée pour pouvoir le supprimer
-      const completedListener = async ({ jobId }: { jobId: string }) => {
-        if (jobId === job.id) {
-          const resultJob = await Job.fromId(this.taskQueue, jobId);
-          if (resultJob.returnvalue.success) {
-            resolve(resultJob.returnvalue);
-          } else {
-            reject(resultJob.returnvalue.error);
-          }
-        }
-      };
-
-      queueEvents.on('completed', completedListener);
-      setTimeout(async () => {
-        queueEvents.off('completed', completedListener);
-        reject("La tache n'a pas une de réponse après 60 secondes");
-      }, 5000);
-
-      const job: Job = await this.taskQueue.add(
-        TaskTitle.FORCE_PUBLISH,
-        {
-          balId,
-        },
-        { priority: PriorityEnum.HIGH },
-      );
-    });
+    try {
+      return await job.waitUntilFinished(new QueueEvents('task'), 30000);
+    } catch (error) {
+      this.taskQueue.remove(job.id);
+      throw error;
+    }
   }
 
   touch(balId: string, updatedAt: Date = new Date()) {

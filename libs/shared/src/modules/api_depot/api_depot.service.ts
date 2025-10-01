@@ -22,7 +22,10 @@ export class ApiDepotService {
         .get<Habilitation>(`habilitations/${habilitationId}`)
         .pipe(
           catchError((error: AxiosError) => {
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );
@@ -36,7 +39,10 @@ export class ApiDepotService {
         .post<Habilitation>(`communes/${baseLocale.commune}/habilitations`)
         .pipe(
           catchError((error: AxiosError) => {
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );
@@ -56,7 +62,10 @@ export class ApiDepotService {
         )
         .pipe(
           catchError((error: AxiosError) => {
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );
@@ -74,7 +83,10 @@ export class ApiDepotService {
         )
         .pipe(
           catchError((error: AxiosError) => {
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );
@@ -91,7 +103,10 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );
@@ -109,7 +124,10 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );
@@ -121,7 +139,10 @@ export class ApiDepotService {
         .post<Revision>(`/revisions/${revisionId}/compute`)
         .pipe(
           catchError((error: AxiosError) => {
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );
@@ -139,7 +160,10 @@ export class ApiDepotService {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );
@@ -182,7 +206,10 @@ export class ApiDepotService {
             if (error.response && error.response.status === 404) {
               return of({ data: null });
             }
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );
@@ -203,7 +230,10 @@ export class ApiDepotService {
             if (error.response && error.response.status === 404) {
               return of({ data: null });
             }
-            throw error;
+            throw new HttpException(
+              error.response?.data || 'No api-depot response',
+              HttpStatus.BAD_GATEWAY,
+            );
           }),
         ),
     );

@@ -421,12 +421,18 @@ export class BaseLocaleController {
   @UseGuards(AdminGuard)
   async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     try {
-      const baseLocale = await this.baseLocaleService.forcePublish(
+      const result = await this.baseLocaleService.forcePublish(
+        req.baseLocale.id,
+      );
+      if (!result.success) {
+        throw new HttpException(result.error, HttpStatus.PRECONDITION_FAILED);
+      }
+      const baseLocale = await this.baseLocaleService.findOneOrFail(
         req.baseLocale.id,
       );
       res.status(HttpStatus.OK).json(baseLocale);
     } catch (error) {
-      throw new HttpException(error, HttpStatus.PRECONDITION_FAILED);
+      throw new HttpException(error.message, HttpStatus.PRECONDITION_FAILED);
     }
   }
 
