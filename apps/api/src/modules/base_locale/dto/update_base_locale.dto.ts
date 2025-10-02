@@ -1,3 +1,7 @@
+import {
+  BaseLocale,
+  BaseLocaleSetting,
+} from '@/shared/entities/base_locale.entity';
 import { ValidatorBal } from '@/shared/validators/validator_bal.validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -10,7 +14,7 @@ import {
   Validate,
 } from 'class-validator';
 
-export class UpdateBaseLocaleDTO {
+export class UpdateBaseLocaleDTO implements Partial<BaseLocale> {
   @IsOptional()
   @ApiProperty({ required: false, nullable: false })
   @IsNotEmpty()
@@ -20,7 +24,7 @@ export class UpdateBaseLocaleDTO {
   @IsNotEmptyObject()
   @Validate(ValidatorBal, ['lang_alt'])
   @ApiProperty({ required: false, nullable: true })
-  communeNomsAlt: Record<string, string>;
+  communeNomsAlt?: Record<string, string>;
 
   @IsOptional()
   @ApiProperty({ required: false, nullable: false })
@@ -28,4 +32,8 @@ export class UpdateBaseLocaleDTO {
   @ArrayMaxSize(100)
   @IsEmail({}, { each: true })
   emails?: Array<string>;
+
+  @IsOptional()
+  @ApiProperty({ required: false, nullable: true })
+  settings: BaseLocaleSetting | null;
 }
