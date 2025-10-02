@@ -8,6 +8,7 @@ import {
   Req,
   HttpStatus,
   Body,
+  Post,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -18,7 +19,6 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-
 import { Numero } from '@/shared/entities/numero.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
@@ -26,6 +26,7 @@ import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 import { filterComments } from '@/shared/utils/filter.utils';
+import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
 
 @ApiTags('numeros')
 @Controller('numeros')
@@ -43,6 +44,35 @@ export class NumeroController {
   find(@Req() req: CustomRequest, @Res() res: Response) {
     const numero: Numero = filterComments(req.numero, !req.isAdmin);
     res.status(HttpStatus.OK).json(numero);
+  }
+
+  @Post('/generate-certificat/:numeroId')
+  @ApiOperation({
+    summary: 'Generate the certificat of the numero by id',
+    operationId: 'generateCertificat',
+  })
+  @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: String,
+    description: 'URL of the generated PDF certificat',
+  })
+  @ApiBearerAuth('admin-token')
+  async downloadCertificat(
+    @Req() req: CustomRequest,
+    @Body() generateCertificatDto: GenerateCertificatDTO,
+    @Res() res: Response,
+  ) {
+    try {
+      const pdfUrl = await this.numeroService.generateCertificatAdressage({
+        numero: req.numero,
+        ...generateCertificatDto,
+      });
+
+      return res.status(HttpStatus.CREATED).json(pdfUrl);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+    }
   }
 
   @Put(':numeroId')
