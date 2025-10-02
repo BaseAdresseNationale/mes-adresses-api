@@ -17,9 +17,17 @@ export async function getAdresseMairie(
     );
     const mairieData = mainMarie || data.results[0];
     const adresseMairie = JSON.parse(mairieData.adresse)[0];
+    if (!adresseMairie) {
+      return null;
+    }
+
     return `${mairieData.nom}\n${adresseMairie.numero_voie}\n${adresseMairie.code_postal} ${adresseMairie.nom_commune}`;
   } catch (error) {
-    // Optionally log the error here
+    console.log(
+      'Could not fetch mairie address for commune : ',
+      codeCommune,
+      error,
+    );
     return null;
   }
 }

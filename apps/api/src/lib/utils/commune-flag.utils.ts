@@ -10,20 +10,24 @@ export const getCommuneFlagSVG = async (
       method: 'GET',
     });
     if (!response.ok) {
-      // Could return a placeholder SVG or empty string if not found
       return '';
     }
+
     return await response.text();
   } catch (error) {
-    // Network error or other fetch failure
     return '';
   }
 };
 
 export const getCommuneFlagBase64PNG = async (
   codeCommune: string,
-): Promise<string> => {
+): Promise<string | null> => {
   const communeLogoSvgString = await getCommuneFlagSVG(codeCommune);
+  if (!communeLogoSvgString) {
+    return null;
+  }
+
+  // Convert SVG string to PNG buffer using sharp
   const svgBuffer = Buffer.from(communeLogoSvgString, 'utf-8');
   const pngBuffer = await sharp(svgBuffer).png().toBuffer();
   const communeLogo = `data:image/png;base64,${pngBuffer.toString('base64')}`;
