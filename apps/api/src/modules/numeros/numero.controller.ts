@@ -71,8 +71,7 @@ export class NumeroController {
 
       return res.status(HttpStatus.CREATED).json(pdfUrl);
     } catch (err) {
-      console.log('Error generating PDF:', err);
-      throw err;
+      console.error('Error generating PDF:', err);
     }
   }
 

@@ -1,5 +1,8 @@
 import { jsPDF, TextOptionsLight } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
+import { getAdresseMairie } from '../utils/annuaire-service-public';
+import { getCommuneFlagBase64PNG } from '../utils/commune-flag.utils';
+import { PDFAssetsManager } from './PDFAssetsManager';
 
 export const xMargin = 20;
 export const yMargin = 30;
@@ -25,8 +28,67 @@ export class PdfDocument {
     this.doc.moveTo(this.x, this.y);
   }
 
-  getDocumentInstance() {
-    return this.doc;
+  async initDocument(docTitle: string, commune: { nom: string; code: string }) {
+    if (!PDFAssetsManager.isInitialized) {
+      await PDFAssetsManager.init();
+    }
+
+    this.changeFont('Arial', PDFAssetsManager.getArialFont());
+    this.addImage(PDFAssetsManager.getRFLogo(), 'png', {
+      width: 100,
+      height: 100,
+      x: xMargin,
+      y: yMargin,
+    });
+
+    const communeLogo = await getCommuneFlagBase64PNG(commune.code);
+
+    if (communeLogo) {
+      this.addImage(communeLogo, 'png', {
+        width: 50,
+        height: 50,
+        x: this.doc.internal.pageSize.width - xMargin * 2 - 50,
+        y: yMargin + 25,
+      });
+    }
+
+    const adresseMairie = await getAdresseMairie(commune.code);
+
+    if (adresseMairie) {
+      this.addNewLine()
+        .addNewLine()
+        .addNewLine()
+        .addNewLine()
+        .addNewLine()
+        .addNewLine()
+        .changeFontSize(12)
+        .addText(adresseMairie, {
+          align: 'right',
+        });
+    }
+
+    return this.addNewLine()
+      .addNewLine()
+      .addText(
+        `${commune.nom}, le ${new Date().toLocaleDateString('fr-Fr', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+        })}`,
+        {
+          align: 'right',
+        },
+      )
+      .addNewLine()
+      .addNewLine()
+      .addNewLine()
+      .addNewLine()
+      .changeFontSize(20)
+      .addText(docTitle, {
+        align: 'center',
+      })
+      .addNewLine()
+      .changeFontSize(12);
   }
 
   addNewPage() {
@@ -77,7 +139,7 @@ export class PdfDocument {
     return this;
   }
 
-  addText(text: string, options?: TextOptionsLight) {
+  addText(text: string, options: TextOptionsLight) {
     const lines = this.doc.splitTextToSize(
       text,
       this.doc.internal.pageSize.width - xMargin * 2,
