@@ -43,6 +43,7 @@ import { NumeroInBbox } from '@/lib/types/numero.type';
 import { generateCertificatAdressage } from '@/lib/pdf/templates/certificat-adressage';
 import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
 import { S3Service } from '@/shared/modules/s3/s3.service';
+import { generateArreteDeNumerotation } from '@/lib/pdf/templates/arrete-de-numerotation';
 
 @Injectable()
 export class NumeroService {
@@ -606,10 +607,7 @@ export class NumeroService {
     );
   }
 
-  async generateCertificatAdressage(
-    params: GenerateCertificatDTO & { numero: Numero },
-  ): Promise<string> {
-    const { numero } = params;
+  async getGenerateDocumentForNumeroParams(numero: Numero) {
     const baseLocale = await this.baseLocaleService.findOneOrFail(numero.balId);
     if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
       throw new HttpException(
@@ -636,9 +634,54 @@ export class NumeroService {
       toponyme = await this.toponymeService.findOneOrFail(numero.toponymeId);
     }
 
+    return { baseLocale, voie, toponyme };
+  }
+
+  async generateCertificatAdressage(
+    params: GenerateCertificatDTO & { numero: Numero },
+  ): Promise<string> {
+    const { numero } = params;
+    const { baseLocale, voie, toponyme } =
+      await this.getGenerateDocumentForNumeroParams(numero);
+
     const fileName = `certificat_adressage_${numero.id}.pdf`;
 
     const pdfFileData = await generateCertificatAdressage({
+      numero,
+      baseLocale,
+      voie,
+      toponyme,
+      ...params,
+    });
+
+    await this.s3service.uploadPublicFile(
+      fileName,
+      process.env.S3_CONTAINER_GENERATED_FILES,
+      Buffer.from(pdfFileData, 'ascii'),
+      {
+        ContentType: 'application/pdf',
+        ContentEncoding: 'ascii',
+      },
+    );
+
+    const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_CONTAINER_GENERATED_FILES}/${fileName}`;
+
+    return fileUrl;
+  }
+
+  async generateArreteDeNumerotation(
+    params: { numero: Numero; planDeSituation: Express.Multer.File } & Omit<
+      GenerateCertificatDTO,
+      'emetteur' | 'destinataire'
+    >,
+  ): Promise<string> {
+    const { numero } = params;
+    const { baseLocale, voie, toponyme } =
+      await this.getGenerateDocumentForNumeroParams(numero);
+
+    const fileName = `arrete_de_numerotation_${numero.id}.pdf`;
+
+    const pdfFileData = await generateArreteDeNumerotation({
       numero,
       baseLocale,
       voie,

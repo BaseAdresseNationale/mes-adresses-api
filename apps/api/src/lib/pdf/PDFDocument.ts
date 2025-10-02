@@ -91,6 +91,10 @@ export class PdfDocument {
       .changeFontSize(12);
   }
 
+  getDocInstance() {
+    return this.doc;
+  }
+
   addNewPage() {
     this.doc.addPage();
     this.resetXandY();
@@ -103,8 +107,8 @@ export class PdfDocument {
     imageData: string,
     format: 'png' | 'jpeg' | 'jpg',
     options: {
-      x: number;
-      y: number;
+      x?: number;
+      y?: number;
       width: number;
       height: number;
     },
@@ -112,8 +116,8 @@ export class PdfDocument {
     this.doc.addImage(
       imageData,
       format,
-      options.x,
-      options.y,
+      options.x || this.x,
+      options.y || this.y,
       options.width,
       options.height,
     );
