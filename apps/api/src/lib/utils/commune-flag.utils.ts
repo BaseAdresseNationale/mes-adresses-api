@@ -5,11 +5,19 @@ export const getCommuneFlagSVG = async (
 ): Promise<string> => {
   const url = `https://base-adresse-locale-prod-blasons-communes.s3.fr-par.scw.cloud/${codeCommune}.svg`;
 
-  const response = await fetch(url, {
-    method: 'GET',
-  });
-
-  return response.text();
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+    });
+    if (!response.ok) {
+      // Could return a placeholder SVG or empty string if not found
+      return '';
+    }
+    return await response.text();
+  } catch (error) {
+    // Network error or other fetch failure
+    return '';
+  }
 };
 
 export const getCommuneFlagBase64PNG = async (
