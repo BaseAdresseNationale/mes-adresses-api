@@ -31,7 +31,7 @@ import { BullModule } from '@nestjs/bullmq';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         type: 'postgres',
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
@@ -42,7 +42,7 @@ import { BullModule } from '@nestjs/bullmq';
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         connection: {
           url: config.get('REDIS_URL'),
         },

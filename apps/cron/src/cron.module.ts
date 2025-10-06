@@ -18,7 +18,7 @@ import { TaskModule } from './modules/task/task.module';
     ConfigModule.forRoot(),
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         connection: {
           url: config.get('REDIS_URL'),
         },
@@ -27,7 +27,7 @@ import { TaskModule } from './modules/task/task.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         type: 'postgres',
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
