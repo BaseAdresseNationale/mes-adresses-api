@@ -5,6 +5,7 @@ import { Voie } from './voie.entity';
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
 import { getCommune } from '../utils/cog.utils';
+import { Alert } from './alert.entity';
 
 export enum StatusBaseLocalEnum {
   DRAFT = 'draft',
@@ -81,6 +82,10 @@ export class BaseLocale extends GlobalEntity {
   @ApiProperty({ type: () => Numero, isArray: true })
   @OneToMany(() => Numero, (numero) => numero.baseLocale)
   numeros?: Numero[];
+
+  @ApiProperty({ type: () => Alert, isArray: true })
+  @OneToMany(() => Alert, (alert) => alert.baseLocale)
+  alerts?: Alert[];
 
   @AfterLoad()
   getCommuneNom?(): void {
