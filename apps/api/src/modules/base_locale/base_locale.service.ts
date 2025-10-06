@@ -57,13 +57,14 @@ import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 import { TaskTitle } from '@/shared/types/task.type';
+import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
 @Injectable()
 export class BaseLocaleService {
   constructor(
-    @InjectQueue('task') private taskQueue: Queue,
+    @InjectQueue(QUEUE_NAME) private taskQueue: Queue,
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
     private readonly mailerService: MailerService,
@@ -623,7 +624,7 @@ export class BaseLocaleService {
   }
 
   async forcePublish(balId: string) {
-    const queueEvents = new QueueEvents('task', {
+    const queueEvents = new QueueEvents(QUEUE_NAME, {
       connection: this.taskQueue.opts.connection,
     });
     await queueEvents.waitUntilReady();

@@ -2,6 +2,7 @@ import { Logger } from '@/shared/utils/logger.utils';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { TaskTitle } from '@/shared/types/task.type';
+import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 import { DetectOutdatedTask } from './tasks/detect_outdated.task';
 import { DetectConflictTask } from './tasks/detect_conflict.task';
 import { SyncOutdatedTask } from './tasks/sync_outdated.task';
@@ -10,7 +11,7 @@ import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
 import { UploadTracesTask } from './tasks/upload_traces.task';
 import { ForcePublishTask } from './tasks/force_publish.task';
 
-@Processor('task')
+@Processor(QUEUE_NAME)
 export class TaskProcessor extends WorkerHost {
   constructor(
     private readonly detectOutdatedTask: DetectOutdatedTask,

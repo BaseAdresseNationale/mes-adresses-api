@@ -17,14 +17,18 @@ import { DetectConflictTask } from './tasks/detect_conflict.task';
 import { RemoveSoftDeleteBalTask } from './tasks/remove_soft_delete_bal.task';
 import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
 import { UploadTracesTask } from './tasks/upload_traces.task';
-
+import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 import { ForcePublishTask } from './tasks/force_publish.task';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     BullModule.registerQueue({
-      name: 'task',
+      name: QUEUE_NAME,
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
     }),
     TypeOrmModule.forFeature([BaseLocale, Voie]),
     PublicationModule,

@@ -4,10 +4,11 @@ import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { PriorityEnum, TaskTitle } from '@/shared/types/task.type';
+import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 
 @Injectable()
 export class ScheduleTaskService {
-  constructor(@InjectQueue('task') private taskQueue: Queue) {}
+  constructor(@InjectQueue(QUEUE_NAME) private taskQueue: Queue) {}
 
   // Every 30 seconds
   @Interval(30000)

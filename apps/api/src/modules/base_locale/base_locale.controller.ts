@@ -432,7 +432,7 @@ export class BaseLocaleController {
       );
       res.status(HttpStatus.OK).json(baseLocale);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.PRECONDITION_FAILED);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
