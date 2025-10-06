@@ -69,6 +69,8 @@ import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
+import { Alert } from '@/shared/entities/alert.entity';
+import { AlertService } from '../alert/alert.service';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -82,6 +84,8 @@ export class BaseLocaleController {
     private voieService: VoieService,
     @Inject(forwardRef(() => ToponymeService))
     private toponymeService: ToponymeService,
+    @Inject(forwardRef(() => AlertService))
+    private alertService: AlertService,
   ) {}
 
   @Post('')
@@ -700,5 +704,24 @@ export class BaseLocaleController {
       createToponymeDto,
     );
     res.status(HttpStatus.CREATED).json(toponyme);
+  }
+
+  @Get(':baseLocaleId/alerts')
+  @ApiOperation({
+    summary: 'Find all Alerts from Bal',
+    operationId: 'findBaseLocaleAlerts',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Alert,
+    isArray: true,
+  })
+  @ApiBearerAuth('admin-token')
+  async findAlertByBal(@Req() req: CustomRequest, @Res() res: Response) {
+    const alerts: Alert[] = await this.alertService.findAlertsByBal(
+      req.baseLocale.id,
+    );
+    res.status(HttpStatus.OK).json(alerts);
   }
 }

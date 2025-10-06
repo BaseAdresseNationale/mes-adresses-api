@@ -37,12 +37,7 @@ export class AlertService {
     throw new Error('Validator failed to parse file');
   }
 
-  public async createAlert(alert: Partial<Alert>) {
-    const entityToSave: Alert = this.alertsRepository.create(alert);
-    return await this.alertsRepository.save(entityToSave);
-  }
-
-  public extractRelationIdFromRawValues(
+  private extractRelationIdFromRawValues(
     schemaName: string,
     rawValues: Record<string, string>,
   ): Record<string, string> {
@@ -59,7 +54,7 @@ export class AlertService {
     return {};
   }
 
-  public transformErrorInAlert(
+  private transformErrorInAlert(
     balId: string,
     row: ValidateRowFullType,
     { code, schemaName, level }: ErrorLevelType,
@@ -74,29 +69,72 @@ export class AlertService {
     };
   }
 
+  private async isSameAlert(
+    alert1: Partial<Alert>,
+    alert2: Partial<Alert>,
+  ): Promise<boolean> {
+    return (
+      alert1.voieId === alert2.voieId &&
+      alert1.toponymeId === alert2.toponymeId &&
+      alert1.numeroId === alert2.numeroId &&
+      alert1.field === alert2.field &&
+      alert1.value === alert2.value &&
+      alert1.error === alert2.error
+    );
+  }
+
+  private async saveAlertsIfNotExists(
+    balId: string,
+    alertsDetected: Partial<Alert>[],
+  ): Promise<Partial<Alert>[]> {
+    const currentAlerts = await this.findAlertsByBal(balId);
+    const alertsToSave: Partial<Alert>[] = alertsDetected.filter(
+      (alertDetected) =>
+        !currentAlerts.some((a) => this.isSameAlert(a, alertDetected)),
+    );
+
+    await this.alertsRepository
+      .createQueryBuilder()
+      .insert()
+      .into(Alert)
+      .values(alertsToSave)
+      .execute();
+
+    return [...alertsToSave, ...currentAlerts];
+  }
+
   public async computeAlertsOnBal(baseLocale: BaseLocale) {
     const csvFile: string = await this.exportCsvService.exportToCsv(
       baseLocale,
       { withId: true },
     );
     const { rows } = await this.getReport(Buffer.from(csvFile));
-
+    const alertsDetected: Partial<Alert>[] = [];
     for (const row of rows) {
       for (const error of row.errors) {
+        // On vérifie que les champs touché par les erreurs nous interesse
         if (this.fieldsAuthorized.includes(error.schemaName)) {
           try {
-            const newAlert = this.transformErrorInAlert(
+            // On transforme l'erreur en alert
+            const alertDetected = this.transformErrorInAlert(
               baseLocale.id,
               row,
               error,
             );
-            console.log(newAlert);
-            await this.createAlert(newAlert);
+            // On ajoute l'alert à la liste des alerts détectés
+            alertsDetected.push(alertDetected);
           } catch (error) {
             console.error(error);
           }
         }
       }
     }
+    return this.saveAlertsIfNotExists(baseLocale.id, alertsDetected);
+  }
+
+  public async findAlertsByBal(balId: string): Promise<Alert[]> {
+    return this.alertsRepository.find({
+      where: { balId },
+    });
   }
 }

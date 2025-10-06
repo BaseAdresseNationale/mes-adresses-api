@@ -24,6 +24,7 @@ import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
+import { AlertModule } from '../alert/alert.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     forwardRef(() => ToponymeModule),
     forwardRef(() => CommuneModule),
     forwardRef(() => PopulateModule),
+    forwardRef(() => AlertModule),
   ],
   providers: [BaseLocaleMiddleware, BaseLocaleService, SearchQueryPipe],
   controllers: [BaseLocaleController],

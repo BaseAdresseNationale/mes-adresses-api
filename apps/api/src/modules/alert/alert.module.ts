@@ -17,6 +17,7 @@ import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middlewa
   ],
   providers: [AlertService, BaseLocaleMiddleware],
   controllers: [AlertController],
+  exports: [AlertService],
 })
 export class AlertModule {
   configure(consumer: MiddlewareConsumer) {
