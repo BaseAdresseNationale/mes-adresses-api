@@ -45,8 +45,6 @@ import { BullModule } from '@nestjs/bullmq';
       useFactory: (config: ConfigService) => ({
         connection: {
           url: config.get('REDIS_URL'),
-          maxRetriesPerRequest: null,
-          enableReadyCheck: false,
         },
         defaultJobOptions: {
           removeOnComplete: true,

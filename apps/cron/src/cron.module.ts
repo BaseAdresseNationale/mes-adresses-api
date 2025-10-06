@@ -21,8 +21,6 @@ import { TaskModule } from './modules/task/task.module';
       useFactory: (config: ConfigService) => ({
         connection: {
           url: config.get('REDIS_URL'),
-          maxRetriesPerRequest: null,
-          enableReadyCheck: false,
         },
       }),
       inject: [ConfigService],
