@@ -22,6 +22,10 @@ import { TaskModule } from './modules/task/task.module';
         connection: {
           url: config.get('REDIS_URL'),
         },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true,
+        },
       }),
       inject: [ConfigService],
     }),

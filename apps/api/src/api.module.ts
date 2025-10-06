@@ -42,18 +42,15 @@ import { BullModule } from '@nestjs/bullmq';
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => {
-        console.log('REDIS_URL', config.get('REDIS_URL'));
-        return {
-          connection: {
-            url: config.get('REDIS_URL'),
-          },
-          defaultJobOptions: {
-            removeOnComplete: true,
-            removeOnFail: true,
-          },
-        };
-      },
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          url: config.get('REDIS_URL'),
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true,
+        },
+      }),
       inject: [ConfigService],
     }),
     MailerModule.forRootAsync(MailerParams),
