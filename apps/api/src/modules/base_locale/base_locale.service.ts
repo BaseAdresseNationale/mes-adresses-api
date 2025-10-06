@@ -623,6 +623,9 @@ export class BaseLocaleService {
   }
 
   async forcePublish(balId: string) {
+    const queueEvents = new QueueEvents('task');
+    await queueEvents.waitUntilReady();
+
     const job: Job = await this.taskQueue.add(
       TaskTitle.FORCE_PUBLISH,
       { balId },
@@ -630,7 +633,7 @@ export class BaseLocaleService {
     );
 
     try {
-      return await job.waitUntilFinished(new QueueEvents('task'), 30000);
+      return await job.waitUntilFinished(queueEvents, 30000);
     } catch (error) {
       this.taskQueue.remove(job.id);
       throw error;
