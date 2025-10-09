@@ -10,7 +10,7 @@ import {
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { Revision } from '@/shared/modules/api_depot/api-depot.types';
 
-import { Task } from '@/shared/types/task.type';
+import { Task } from '../task_queue.class';
 import { CacheService } from '@/shared/modules/cache/cache.service';
 
 export const KEY_DETECT_CONFLICT_PUBLISHED_SINCE =
@@ -18,6 +18,8 @@ export const KEY_DETECT_CONFLICT_PUBLISHED_SINCE =
 
 @Injectable()
 export class DetectConflictTask implements Task {
+  title: string = 'Detect conflict';
+
   constructor(
     private readonly apiDepotService: ApiDepotService,
     @InjectRepository(BaseLocale)

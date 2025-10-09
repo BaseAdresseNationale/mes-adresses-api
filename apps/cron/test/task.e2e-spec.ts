@@ -26,11 +26,11 @@ import {
 } from '@/shared/entities/base_locale.entity';
 import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
 
-import { DetectOutdatedTask } from '../src/modules/task/tasks/detect_outdated.task';
+import { DetectOutdatedTask } from '../src/tasks/detect_outdated.task';
 import {
   DetectConflictTask,
   KEY_DETECT_CONFLICT_PUBLISHED_SINCE,
-} from '../src/modules/task/tasks/detect_conflict.task';
+} from '../src/tasks/detect_conflict.task';
 import {
   Revision,
   StatusRevisionEnum,
@@ -39,7 +39,7 @@ import {
   TypeFileEnum,
 } from '@/shared/modules/api_depot/api-depot.types';
 import { sub } from 'date-fns';
-import { SyncOutdatedTask } from '../src/modules/task/tasks/sync_outdated.task';
+import { SyncOutdatedTask } from '../src/tasks/sync_outdated.task';
 import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { MailerService } from '@nestjs-modules/mailer';

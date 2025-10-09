@@ -420,20 +420,10 @@ export class BaseLocaleController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
-    try {
-      const result = await this.baseLocaleService.forcePublish(
-        req.baseLocale.id,
-      );
-      if (!result.success) {
-        throw new HttpException(result.error, HttpStatus.PRECONDITION_FAILED);
-      }
-      const baseLocale = await this.baseLocaleService.findOneOrFail(
-        req.baseLocale.id,
-      );
-      res.status(HttpStatus.OK).json(baseLocale);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const baseLocale = await this.publicationService.exec(req.baseLocale.id, {
+      force: true,
+    });
+    res.status(HttpStatus.OK).json(baseLocale);
   }
 
   @Post(':baseLocaleId/sync/pause')

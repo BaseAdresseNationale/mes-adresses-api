@@ -113,7 +113,6 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | Nom de la variable                  | Description                                                                 |
 | ----------------------------------- | --------------------------------------------------------------------------- |
 | `POSTGRES_URL`                      | Url de connection a la db postgres                                          |
-| `REDIS_URL`                         | Url de connection a redis                                                   |
 | `PORT`                              | Port à utiliser pour l'API                                                  |
 | `API_URL`                           | URL de base de l’API                                                        |
 | `API_DEPOT_URL`                     | URL de l'api-depot                                                          |
