@@ -40,10 +40,10 @@ import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
 import { NumeroInBbox } from '@/lib/types/numero.type';
-import { generateCertificatAdressage } from '@/lib/pdf/templates/certificat-adressage';
+import { generateCertificatAdressage } from '@/lib/pdf/templates/numero/certificat-adressage';
+import { generateArreteDeNumerotation } from '@/lib/pdf/templates/numero/arrete-de-numerotation';
 import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
 import { S3Service } from '@/shared/modules/s3/s3.service';
-import { generateArreteDeNumerotation } from '@/lib/pdf/templates/arrete-de-numerotation';
 
 @Injectable()
 export class NumeroService {
@@ -611,19 +611,19 @@ export class NumeroService {
     const baseLocale = await this.baseLocaleService.findOneOrFail(numero.balId);
     if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
       throw new HttpException(
-        "La Base Adresse Locale doit être publiée pour pouvoir générer un certificat d'adressage",
+        'La Base Adresse Locale doit être publiée pour pouvoir générer le document',
         HttpStatus.UNAUTHORIZED,
       );
     }
     if (!numero.certifie) {
       throw new HttpException(
-        "Le numéro doit être certifié pour pouvoir générer un certificat d'adressage",
+        'Le numéro doit être certifié pour pouvoir générer le document',
         HttpStatus.UNAUTHORIZED,
       );
     }
     if (numero.parcelles.length === 0) {
       throw new HttpException(
-        "Le numéro doit être rattaché à au moins une parcelle cadastrale pour pouvoir générer un certificat d'adressage",
+        'Le numéro doit être rattaché à au moins une parcelle cadastrale pour pouvoir générer le document',
         HttpStatus.UNAUTHORIZED,
       );
     }
@@ -669,12 +669,10 @@ export class NumeroService {
     return fileUrl;
   }
 
-  async generateArreteDeNumerotation(
-    params: { numero: Numero; planDeSituation: Express.Multer.File } & Omit<
-      GenerateCertificatDTO,
-      'emetteur' | 'destinataire'
-    >,
-  ): Promise<string> {
+  async generateArreteDeNumerotation(params: {
+    numero: Numero;
+    planDeSituation: Express.Multer.File;
+  }): Promise<string> {
     const { numero } = params;
     const { baseLocale, voie, toponyme } =
       await this.getGenerateDocumentForNumeroParams(numero);

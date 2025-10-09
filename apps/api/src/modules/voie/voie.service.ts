@@ -19,7 +19,10 @@ import {
 import { keyBy } from 'lodash';
 import * as turf from '@turf/turf';
 import { v4 as uuid } from 'uuid';
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
@@ -33,6 +36,8 @@ import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
+import { S3Service } from '@/shared/modules/s3/s3.service';
+import { generateArreteDeNumerotation } from '@/lib/pdf/templates/voie/arrete-de-numerotation';
 
 @Injectable()
 export class VoieService {
@@ -45,6 +50,8 @@ export class VoieService {
     private numeroService: NumeroService,
     @Inject(forwardRef(() => ToponymeService))
     private toponymeService: ToponymeService,
+    @Inject(forwardRef(() => S3Service))
+    private s3service: S3Service,
   ) {}
 
   async findOneOrFail(voieId: string): Promise<Voie> {
@@ -425,5 +432,47 @@ export class VoieService {
         balId,
       })
       .getRawMany();
+  }
+
+  async getGenerateDocumentForVoieParams(voie: Voie) {
+    const baseLocale = await this.baseLocaleService.findOneOrFail(voie.balId);
+    if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
+      throw new HttpException(
+        'La Base Adresse Locale doit être publiée pour pouvoir générer le document',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    return { baseLocale, voie };
+  }
+
+  async generateArreteDeNumerotation(params: {
+    voie: Voie;
+    planDeSituation: Express.Multer.File;
+  }): Promise<string> {
+    const { voie } = params;
+    const { baseLocale } = await this.getGenerateDocumentForVoieParams(voie);
+
+    const fileName = `arrete_de_numerotation_${voie.id}.pdf`;
+
+    const pdfFileData = await generateArreteDeNumerotation({
+      voie,
+      baseLocale,
+      ...params,
+    });
+
+    await this.s3service.uploadPublicFile(
+      fileName,
+      process.env.S3_CONTAINER_GENERATED_FILES,
+      Buffer.from(pdfFileData, 'ascii'),
+      {
+        ContentType: 'application/pdf',
+        ContentEncoding: 'ascii',
+      },
+    );
+
+    const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_CONTAINER_GENERATED_FILES}/${fileName}`;
+
+    return fileUrl;
   }
 }
