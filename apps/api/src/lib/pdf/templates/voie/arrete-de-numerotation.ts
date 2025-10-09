@@ -1,21 +1,17 @@
-import { PdfDocument, xMargin } from '../PDFDocument';
-import { Numero } from '@/shared/entities/numero.entity';
+import { PdfDocument, xMargin } from '../../PDFDocument';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
-import { Toponyme } from '@/shared/entities/toponyme.entity';
 
 type ArreteDeNumerotationParams = {
   baseLocale: BaseLocale;
-  numero: Numero;
   voie: Voie;
-  toponyme?: Toponyme;
   planDeSituation: Express.Multer.File;
 };
 
 export async function generateArreteDeNumerotation(
   params: ArreteDeNumerotationParams,
 ): Promise<string> {
-  const { numero, baseLocale, voie, toponyme, planDeSituation } = params;
+  const { baseLocale, voie, planDeSituation } = params;
 
   const base64PlanDeSituation = planDeSituation.buffer.toString('base64');
   const planDeSituationDataUrl = `data:image/png;base64,${base64PlanDeSituation}`;
@@ -73,19 +69,7 @@ export async function generateArreteDeNumerotation(
         align: 'justify',
       },
     )
-    .addGenericTable(
-      ['Adresse complète', 'N° parcelle(s) cadastrale(s)'],
-      [
-        [
-          `${numero.numero} ${voie.nom}${
-            toponyme ? `\n${toponyme.nom}` : ''
-          }\n${baseLocale.communeNom}`,
-          numero.parcelles.join(', '),
-        ],
-      ],
-
-      {},
-    )
+    .addText(`Voie : ${voie.nom}`, { align: 'left' })
     .addNewPage()
     .addNewLine()
     .addText('Plan de situation :', { align: 'left' })

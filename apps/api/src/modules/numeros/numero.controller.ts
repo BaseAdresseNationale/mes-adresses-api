@@ -78,7 +78,7 @@ export class NumeroController {
 
   @Post('/generate-arrete-de-numerotation/:numeroId')
   @ApiOperation({
-    summary: 'Generate the arrete de numerotation by id',
+    summary: 'Generate the arrete de numerotation by numero id',
     operationId: 'generateArreteDeNumerotation',
   })
   @ApiConsumes('multipart/form-data')
