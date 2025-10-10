@@ -5,7 +5,7 @@ import { Voie } from '@/shared/entities/voie.entity';
 type ArreteDeNumerotationParams = {
   baseLocale: BaseLocale;
   voie: Voie;
-  planDeSituation: Express.Multer.File;
+  planDeSituation?: Express.Multer.File;
 };
 
 export async function generateArreteDeNumerotation(
@@ -13,8 +13,16 @@ export async function generateArreteDeNumerotation(
 ): Promise<string> {
   const { baseLocale, voie, planDeSituation } = params;
 
-  const base64PlanDeSituation = planDeSituation.buffer.toString('base64');
-  const planDeSituationDataUrl = `data:image/png;base64,${base64PlanDeSituation}`;
+  let planDeSituationDataUrl = '';
+  let imageFormat = '';
+  if (planDeSituation) {
+    const base64PlanDeSituation = planDeSituation.buffer.toString('base64');
+    imageFormat = planDeSituation.mimetype.replace('image/', '');
+    if (!['png', 'jpeg', 'jpg'].includes(imageFormat)) {
+      throw new Error('Invalid file type. Only PNG and JPEG are allowed.');
+    }
+    planDeSituationDataUrl = `data:image/${imageFormat};base64,${base64PlanDeSituation}`;
+  }
 
   const doc = new PdfDocument();
   const maxWidth = doc.getDocInstance().internal.pageSize.width - 2 * xMargin;
@@ -24,7 +32,7 @@ export async function generateArreteDeNumerotation(
     code: baseLocale.commune,
   });
 
-  return doc
+  doc
     .addText(`Le Maire de la commune de ${baseLocale.communeNom},`, {
       align: 'left',
     })
@@ -69,13 +77,18 @@ export async function generateArreteDeNumerotation(
         align: 'justify',
       },
     )
-    .addText(`Voie : ${voie.nom}`, { align: 'left' })
-    .addNewPage()
-    .addNewLine()
-    .addText('Plan de situation :', { align: 'left' })
-    .addImage(planDeSituationDataUrl, 'png', {
-      width: maxWidth,
-      height: 400,
-    })
-    .render();
+    .addText(`Voie : ${voie.nom}`, { align: 'left' });
+
+  if (planDeSituation) {
+    doc
+      .addNewPage()
+      .addNewLine()
+      .addText('Plan de situation :', { align: 'left' })
+      .addImage(planDeSituationDataUrl, imageFormat as 'png' | 'jpeg' | 'jpg', {
+        width: maxWidth,
+        height: 400,
+      });
+  }
+
+  return doc.render();
 }

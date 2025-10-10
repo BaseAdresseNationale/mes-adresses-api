@@ -671,7 +671,7 @@ export class NumeroService {
 
   async generateArreteDeNumerotation(params: {
     numero: Numero;
-    planDeSituation: Express.Multer.File;
+    planDeSituation?: Express.Multer.File;
   }): Promise<string> {
     const { numero } = params;
     const { baseLocale, voie, toponyme } =

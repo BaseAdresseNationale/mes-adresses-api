@@ -18,7 +18,7 @@ export async function generateCertificatAdressage(
   const { numero, baseLocale, voie, toponyme, emetteur, destinataire } = params;
 
   const doc = new PdfDocument();
-  await doc.initDocument("Certificat d'adressage", {
+  await doc.initDocument('Certificat de numérotation', {
     nom: baseLocale.communeNom,
     code: baseLocale.commune,
   });

@@ -103,20 +103,21 @@ export class NumeroController {
   @ApiBearerAuth('admin-token')
   async downloadArreteDeNumerotation(
     @Req() req: CustomRequest,
+    @Res() res: Response,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
-          fileType: 'image/png',
+          fileType: /image\/(png|jpeg|jpg)/,
         })
         .addMaxSizeValidator({
           maxSize: 5000000, // 5 Mo
         })
         .build({
+          fileIsRequired: false,
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
         }),
     )
-    planDeSituation: Express.Multer.File,
-    @Res() res: Response,
+    planDeSituation?: Express.Multer.File,
   ) {
     const pdfUrl = await this.numeroService.generateArreteDeNumerotation({
       numero: req.numero,
