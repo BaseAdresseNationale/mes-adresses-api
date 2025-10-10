@@ -8,6 +8,10 @@ import {
   Req,
   HttpStatus,
   Body,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipeBuilder,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -17,8 +21,8 @@ import {
   ApiBody,
   ApiOperation,
   ApiBearerAuth,
+  ApiConsumes,
 } from '@nestjs/swagger';
-
 import { Numero } from '@/shared/entities/numero.entity';
 
 import { CustomRequest } from '@/lib/types/request.type';
@@ -26,6 +30,8 @@ import { AdminGuard } from '@/lib/guards/admin.guard';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 import { filterComments } from '@/shared/utils/filter.utils';
+import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('numeros')
 @Controller('numeros')
@@ -43,6 +49,82 @@ export class NumeroController {
   find(@Req() req: CustomRequest, @Res() res: Response) {
     const numero: Numero = filterComments(req.numero, !req.isAdmin);
     res.status(HttpStatus.OK).json(numero);
+  }
+
+  @Post('/generate-certificat/:numeroId')
+  @ApiOperation({
+    summary: 'Generate the certificat of the numero by id',
+    operationId: 'generateCertificat',
+  })
+  @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: String,
+    description: 'URL of the generated PDF certificat',
+  })
+  @ApiBearerAuth('admin-token')
+  async downloadCertificat(
+    @Req() req: CustomRequest,
+    @Body() generateCertificatDto: GenerateCertificatDTO,
+    @Res() res: Response,
+  ) {
+    const pdfUrl = await this.numeroService.generateCertificatAdressage({
+      numero: req.numero,
+      ...generateCertificatDto,
+    });
+
+    return res.status(HttpStatus.CREATED).json(pdfUrl);
+  }
+
+  @Post('/generate-arrete-de-numerotation/:numeroId')
+  @ApiOperation({
+    summary: 'Generate the arrete de numerotation by numero id',
+    operationId: 'generateArreteDeNumerotation',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: String,
+    description: 'URL of the generated PDF arrête de numérotation',
+  })
+  @ApiBearerAuth('admin-token')
+  async downloadArreteDeNumerotation(
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /image\/(png|jpeg|jpg)/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 5000000, // 5 Mo
+        })
+        .build({
+          fileIsRequired: false,
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    planDeSituation?: Express.Multer.File,
+  ) {
+    const pdfUrl = await this.numeroService.generateArreteDeNumerotation({
+      numero: req.numero,
+      planDeSituation,
+    });
+
+    return res.status(HttpStatus.CREATED).json(pdfUrl);
   }
 
   @Put(':numeroId')
