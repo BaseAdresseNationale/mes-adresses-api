@@ -448,17 +448,31 @@ export class VoieService {
 
   async generateArreteDeNumerotation(params: {
     voie: Voie;
-    planDeSituation: Express.Multer.File;
+    planDeSituation?: Express.Multer.File;
   }): Promise<string> {
     const { voie } = params;
     const { baseLocale } = await this.getGenerateDocumentForVoieParams(voie);
+    const voiesWithNumeros = await this.voiesRepository.findOne({
+      where: { id: voie.id },
+      relations: { numeros: true },
+    });
+    const numeroWithAssociatedParcelles = voiesWithNumeros.numeros.filter(
+      ({ parcelles }) => parcelles && parcelles.length > 0,
+    );
+
+    if (numeroWithAssociatedParcelles.length === 0) {
+      throw new HttpException(
+        'Au moins un numéro doit être associé à une ou plusieurs parcelles cadastrales pour pouvoir générer le document',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
 
     const fileName = `arrete_de_numerotation_${voie.id}.pdf`;
 
     const pdfFileData = await generateArreteDeNumerotation({
-      voie,
-      baseLocale,
       ...params,
+      baseLocale,
+      voie: voiesWithNumeros,
     });
 
     await this.s3service.uploadPublicFile(

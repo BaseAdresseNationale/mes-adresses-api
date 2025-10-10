@@ -64,7 +64,7 @@ export async function generateArreteDeNumerotation(
         maxWidth,
       },
     )
-    .addNewLine()
+    .addNewPage()
     .changeFontSize(20)
     .addText(`ARRÊTÉ :`, {
       align: 'center',
@@ -72,12 +72,38 @@ export async function generateArreteDeNumerotation(
     .changeFontSize(12)
     .addNewLine()
     .addText(
-      `Article 1 : Il est prescrit les numérotations suivantes (cf. plan ci-dessous) :`,
+      `Article 1 : L’accès aux locaux se fait par la voie ${voie.nom}. Le
+numérotage des parcelles cadastrées precrit suivant le tableau ci-dessous :`,
       {
         align: 'justify',
       },
     )
-    .addText(`Voie : ${voie.nom}`, { align: 'left' });
+    .addGenericTable(
+      ['Numéro', 'Parcelle(s) cadastrale(s) associée(s)'],
+      voie.numeros
+        .filter(({ parcelles }) => parcelles && parcelles.length > 0)
+        .map(({ numero, parcelles }) => [`${numero}`, parcelles.join(', ')]),
+      {},
+    )
+    .addNewLine()
+    .addNewLine()
+    .addText(
+      `Article 2 : Un plan de numérotage sera déposé aux services techniques et mis à la
+disposition du public.`,
+      {
+        align: 'justify',
+        maxWidth,
+      },
+    )
+    .addNewLine()
+    .addText(
+      `Article 3 : Les numéros seront fournis et fixés par la commune dont l’entretien
+incombera aux propriétaires riverains.`,
+      {
+        align: 'justify',
+        maxWidth,
+      },
+    );
 
   if (planDeSituation) {
     doc
