@@ -24,6 +24,7 @@ import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
+import { MapGeneratorService } from './sub_modules/services/map-generator.service';
 
 @Module({
   imports: [
@@ -41,7 +42,12 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     forwardRef(() => CommuneModule),
     forwardRef(() => PopulateModule),
   ],
-  providers: [BaseLocaleMiddleware, BaseLocaleService, SearchQueryPipe],
+  providers: [
+    BaseLocaleMiddleware,
+    BaseLocaleService,
+    SearchQueryPipe,
+    MapGeneratorService,
+  ],
   controllers: [BaseLocaleController],
   exports: [BaseLocaleService],
 })
