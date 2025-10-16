@@ -24,13 +24,14 @@ export class S3Service {
 
   public async uploadPublicFile(
     fileId: string,
+    bucket: string,
     data: Buffer,
     options: Partial<PutObjectCommandInput> = {},
   ): Promise<PutObjectCommandOutput> {
     return this.s3Client.send(
       new PutObjectCommand({
         ACL: 'public-read',
-        Bucket: this.configService.get<string>('S3_CONTAINER_ID'),
+        Bucket: bucket,
         Key: fileId,
         Body: data,
         ...options,
