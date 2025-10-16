@@ -644,7 +644,7 @@ export class NumeroService {
     const { baseLocale, voie, toponyme } =
       await this.getGenerateDocumentForNumeroParams(numero);
 
-    const fileName = `certificat_adressage_${numero.id}.pdf`;
+    const fileName = `certificat_numerotage_${numero.id}.pdf`;
 
     const pdfFileData = await generateCertificatAdressage({
       numero,
