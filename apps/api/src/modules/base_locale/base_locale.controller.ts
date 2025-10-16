@@ -69,6 +69,8 @@ import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
+import { MapGeneratorService } from './sub_modules/services/map-generator.service';
+import { writeFileSync } from 'fs';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -82,6 +84,8 @@ export class BaseLocaleController {
     private voieService: VoieService,
     @Inject(forwardRef(() => ToponymeService))
     private toponymeService: ToponymeService,
+    @Inject(forwardRef(() => MapGeneratorService))
+    private mapGeneratorService: MapGeneratorService,
   ) {}
 
   @Post('')
@@ -700,5 +704,107 @@ export class BaseLocaleController {
       createToponymeDto,
     );
     res.status(HttpStatus.CREATED).json(toponyme);
+  }
+
+  @Get(':baseLocaleId/printable-map')
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiOperation({
+    summary: 'Create commune map in PDF format',
+    operationId: 'createPrintableMap',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme })
+  async generatePrintableMap(
+    @Res() res: Response,
+    @Req() req: CustomRequest,
+  ): Promise<void> {
+    try {
+      const { baseLocale } = req;
+      // Récupérer toutes les données nécessaires
+      // const baseLocale = await this.baseLocaleService.findOne(baseLocaleId);
+      // const voies = await this.voieService.findByBaseLocale(baseLocaleId);
+      // const toponymes = await this.toponymeService.findByBaseLocale(baseLocaleId);
+      // const numeros = await this.numeroService.findByBaseLocale(baseLocaleId);
+
+      // Données de test (remplacer par les vraies données)
+      const mockData = {
+        baseLocale: {
+          id: baseLocale.id,
+          nom: 'Commune Test',
+          commune: '12345',
+        },
+        voies: [
+          {
+            id: '1',
+            nom: 'Rue de la Paix',
+            trace: {
+              type: 'LineString',
+              coordinates: [
+                [2.3522, 48.8566], // Paris - exemple
+                [2.3532, 48.8576],
+                [2.3542, 48.8586],
+              ],
+            },
+          },
+        ],
+        toponymes: [
+          {
+            id: '1',
+            nom: 'Le Bourg',
+            positions: [
+              {
+                point: {
+                  type: 'Point',
+                  coordinates: [2.3522, 48.8566],
+                },
+              },
+            ],
+          },
+        ],
+        numeros: [
+          {
+            id: '1',
+            numero: 1,
+            positions: [
+              {
+                point: {
+                  type: 'Point',
+                  coordinates: [2.3522, 48.8566],
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const pdfBuffer = await this.mapGeneratorService.generatePrintableMap(
+        mockData as any,
+      );
+
+      writeFileSync(`/tmp/carte-${baseLocale.id}.pdf`, pdfBuffer);
+
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="carte-${baseLocale.id}.pdf"`,
+        'Content-Length': pdfBuffer.length.toString(),
+      });
+
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('Erreur génération carte:', error);
+      res
+        .status(500)
+        .json({ error: 'Erreur lors de la génération de la carte' });
+    }
   }
 }
