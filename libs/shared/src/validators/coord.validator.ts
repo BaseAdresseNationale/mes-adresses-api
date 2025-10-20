@@ -3,11 +3,11 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import * as proj from '@etalab/project-legal';
-import { getLabel, readValue } from '@ban-team/validateur-bal';
+import { getLabel, validateValue } from '@ban-team/validateur-bal';
 import { Point } from '@turf/turf';
 
 async function validateurBAL(value, label) {
-  const { errors } = await readValue(label, value);
+  const { errors } = await validateValue(label, value);
 
   return {
     errors: errors.map((error) => getLabel(`${label}.${error}`)),

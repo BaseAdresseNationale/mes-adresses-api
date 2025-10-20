@@ -26,6 +26,9 @@ type BanIdsType = {
 };
 
 type RowType = {
+  numeroId: string;
+  toponymeId: string;
+  voieId: string;
   banIds: BanIdsType;
   codeCommune: string;
   communeDeleguee?: string;
@@ -46,6 +49,9 @@ type RowType = {
 };
 
 type CsvRowType = {
+  id_bal_adresse?: string;
+  id_bal_voie?: string;
+  id_bal_toponyme?: string;
   id_ban_commune: string;
   id_ban_toponyme: string;
   id_ban_adresse: string;
@@ -121,7 +127,10 @@ function getCommuneDelegueeNom(
 }
 
 /* eslint camelcase: off */
-function createRow(obj: RowType, withComment: boolean): CsvRowType {
+function createRow(
+  obj: RowType,
+  { withComment, withId }: { withComment?: boolean; withId?: boolean },
+): CsvRowType {
   const row: CsvRowType = {
     cle_interop: formatCleInterop(
       obj.codeCommune,
@@ -156,6 +165,12 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
   if (withComment) {
     row.commentaire_numero = obj.commentNumero;
     row.commentaire_voie = obj.commentVoie;
+  }
+
+  if (withId) {
+    row.id_bal_adresse = obj.numeroId;
+    row.id_bal_voie = obj.voieId;
+    row.id_bal_toponyme = obj.toponymeId;
   }
 
   if (obj.communeNomsAlt) {
@@ -196,7 +211,7 @@ export async function exportBalToCsv(
   voies: Voie[],
   toponymes: Toponyme[],
   numeros: Numero[],
-  withComment: boolean,
+  params: { withComment?: boolean; withId?: boolean },
 ): Promise<string> {
   const voiesIndex: Record<string, Voie> = keyBy(voies, 'id');
   const rows: RowType[] = [];
@@ -218,6 +233,9 @@ export async function exportBalToCsv(
     if (n.positions && n.positions.length > 0) {
       n.positions.forEach((p) => {
         rows.push({
+          numeroId: n.id,
+          voieId: v.id,
+          toponymeId: toponyme?.id || null,
           codeCommune: baseLocale.commune,
           communeDeleguee: n.communeDeleguee,
           banIds: {
@@ -248,6 +266,9 @@ export async function exportBalToCsv(
     if (t.positions.length > 0) {
       t.positions.forEach((p) => {
         rows.push({
+          toponymeId: t.id,
+          voieId: null,
+          numeroId: null,
           codeCommune: baseLocale.commune,
           communeDeleguee: t.communeDeleguee,
           banIds: {
@@ -266,6 +287,9 @@ export async function exportBalToCsv(
       });
     } else {
       rows.push({
+        toponymeId: t.id,
+        voieId: null,
+        numeroId: null,
         banIds: {
           commune: baseLocale.banId,
           toponyme: t.banId,
@@ -282,7 +306,7 @@ export async function exportBalToCsv(
       });
     }
   });
-  const csvRows: CsvRowType[] = rows.map((row) => createRow(row, withComment));
+  const csvRows: CsvRowType[] = rows.map((row) => createRow(row, params));
   const headers: string[] = extractHeaders(csvRows);
 
   return getStream(

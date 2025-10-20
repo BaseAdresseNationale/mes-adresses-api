@@ -14,6 +14,7 @@ import { GlobalEntity } from './global.entity';
 import { BaseLocale } from './base_locale.entity';
 import { Numero } from './numero.entity';
 import { Position } from './position.entity';
+import { Alert } from './alert.entity';
 
 @Entity({ name: 'toponymes' })
 export class Toponyme extends GlobalEntity {
@@ -75,4 +76,8 @@ export class Toponyme extends GlobalEntity {
   @ApiProperty({ type: () => Numero, isArray: true })
   @OneToMany(() => Numero, (numero) => numero.toponyme)
   numeros?: Numero[];
+
+  @ApiProperty({ type: () => Alert, isArray: true })
+  @OneToMany(() => Alert, (alert) => alert.toponyme)
+  alerts?: Alert[];
 }
