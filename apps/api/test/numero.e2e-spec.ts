@@ -40,9 +40,9 @@ describe('NUMERO', () => {
 
   beforeAll(async () => {
     // INIT DB
-    postgresContainer = await new PostgreSqlContainer(
-      'postgis/postgis:16-3.4',
-    ).start();
+    postgresContainer = await new PostgreSqlContainer('postgis/postgis:16-3.4')
+      .withStartupTimeout(240_000)
+      .start();
     const uri = postgresContainer.getConnectionUri();
     postgresClient = new Client({ connectionString: uri });
     await postgresClient.connect();
