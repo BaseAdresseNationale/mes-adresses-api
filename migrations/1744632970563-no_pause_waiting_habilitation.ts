@@ -1,3 +1,4 @@
+import { addYears } from 'date-fns';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddTopomyneCommuneDeleguee1744632970563
@@ -34,9 +35,9 @@ export class AddTopomyneCommuneDeleguee1744632970563
           );
           if (
             habilitation.status &&
-            habilitation.expireAt &&
+            habilitation.acceptedAt &&
             habilitation.status === 'accepted' &&
-            new Date(habilitation.expireAt) < date
+            addYears(new Date(habilitation.acceptedAt), 1) < date
           ) {
             balIdsToUpdate.push(baseLocale.id);
           }
@@ -57,11 +58,13 @@ export class AddTopomyneCommuneDeleguee1744632970563
 
     const balIdsToUpdate = await this.getBaseLocaleToUpdated(basesLocales);
 
-    await queryRunner.query(
-      `UPDATE bases_locales 
-      SET sync->>'isPaused' = 'false' 
-      WHERE id IN (${balIdsToUpdate.join(',')})`,
-    );
+    if (balIdsToUpdate.length > 0) {
+      await queryRunner.query(
+        `UPDATE bases_locales
+        SET sync = jsonb_set(sync, '{isPaused}', 'false'::jsonb)
+        WHERE id IN (${balIdsToUpdate.map((id) => `'${id}'`).join(',')})`,
+      );
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
