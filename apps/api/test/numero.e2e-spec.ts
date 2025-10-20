@@ -44,9 +44,7 @@ describe('NUMERO', () => {
       'postgis/postgis:16-3.4',
     ).start();
     const uri = postgresContainer.getConnectionUri();
-    postgresClient = new Client({
-      connectionString: uri,
-    });
+    postgresClient = new Client({ connectionString: uri });
     await postgresClient.connect();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({

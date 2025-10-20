@@ -52,26 +52,17 @@ describe('PUBLICATION MODULE', () => {
   beforeAll(async () => {
     // INIT DB
     postgresContainer = await new PostgreSqlContainer(
-      'postgis/postgis:12-3.0',
+      'postgis/postgis:16-3.4',
     ).start();
-    postgresClient = new Client({
-      host: postgresContainer.getHost(),
-      port: postgresContainer.getPort(),
-      database: postgresContainer.getDatabase(),
-      user: postgresContainer.getUsername(),
-      password: postgresContainer.getPassword(),
-    });
+    const uri = postgresContainer.getConnectionUri();
+    postgresClient = new Client({ connectionString: uri });
     await postgresClient.connect();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
           type: 'postgres',
-          host: postgresContainer.getHost(),
-          port: postgresContainer.getPort(),
-          username: postgresContainer.getUsername(),
-          password: postgresContainer.getPassword(),
-          database: postgresContainer.getDatabase(),
+          url: uri,
           synchronize: true,
           entities: [BaseLocale, Voie, Numero, Toponyme, Position],
         }),
