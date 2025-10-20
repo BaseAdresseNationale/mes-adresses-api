@@ -1,7 +1,4 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import * as turf from '@turf/turf';
-import { Numero } from '../libs/shared/src/entities/numero.entity';
-import { Voie } from '../libs/shared/src/entities/voie.entity';
 
 export class Bbox1726841060714 implements MigrationInterface {
   name = 'Bbox1726841060714';
