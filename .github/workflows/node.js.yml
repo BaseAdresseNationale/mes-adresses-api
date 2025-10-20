@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # <= au lieu de ubuntu-latest pour comptaibilité avec @testcontainers/postgresql
 
     strategy:
       matrix:
