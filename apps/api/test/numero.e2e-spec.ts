@@ -41,14 +41,11 @@ describe('NUMERO', () => {
   beforeAll(async () => {
     // INIT DB
     postgresContainer = await new PostgreSqlContainer(
-      'postgis/postgis:12-3.0',
+      'postgis/postgis:16-3.4',
     ).start();
+    const uri = postgresContainer.getConnectionUri();
     postgresClient = new Client({
-      host: postgresContainer.getHost(),
-      port: postgresContainer.getPort(),
-      database: postgresContainer.getDatabase(),
-      user: postgresContainer.getUsername(),
-      password: postgresContainer.getPassword(),
+      connectionString: uri,
     });
     await postgresClient.connect();
     // INIT MODULE
@@ -56,11 +53,7 @@ describe('NUMERO', () => {
       imports: [
         TypeOrmModule.forRoot({
           type: 'postgres',
-          host: postgresContainer.getHost(),
-          port: postgresContainer.getPort(),
-          username: postgresContainer.getUsername(),
-          password: postgresContainer.getPassword(),
-          database: postgresContainer.getDatabase(),
+          url: uri,
           synchronize: true,
           entities: [BaseLocale, Voie, Numero, Toponyme, Position],
         }),
@@ -80,17 +73,17 @@ describe('NUMERO', () => {
     toponymeRepository = app.get(getRepositoryToken(Toponyme));
   });
 
-  afterAll(async () => {
-    await postgresClient.end();
-    await postgresContainer.stop();
-    await app.close();
-  });
-
   afterEach(async () => {
     await numeroRepository.delete({});
     await voieRepository.delete({});
     await balRepository.delete({});
     await toponymeRepository.delete({});
+  });
+
+  afterAll(async () => {
+    await postgresClient.end();
+    await postgresContainer.stop();
+    await app.close();
   });
 
   async function createBal(props: Partial<BaseLocale> = {}) {
