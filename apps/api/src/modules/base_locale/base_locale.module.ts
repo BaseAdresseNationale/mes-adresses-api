@@ -5,6 +5,7 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bullmq';
 
 import { BaseLocaleController } from '@/modules/base_locale/base_locale.controller';
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
@@ -24,6 +25,7 @@ import { CommuneModule } from './sub_modules/commune/commune.module';
 import { PopulateModule } from './sub_modules/populate/populate.module';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
+import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 
 @Module({
   imports: [
@@ -31,6 +33,13 @@ import { CacheModule } from '@/shared/modules/cache/cache.module';
     TypeOrmModule.forFeature([BaseLocale]),
     PublicationModule,
     CacheModule,
+    BullModule.registerQueue({
+      name: QUEUE_NAME,
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
+    }),
     forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),
     forwardRef(() => ExportCsvModule),

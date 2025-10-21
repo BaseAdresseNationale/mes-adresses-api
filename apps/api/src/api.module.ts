@@ -20,6 +20,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { MailerParams } from '@/shared/params/mailer.params';
 import { AdminModule } from './modules/admin/admin.module';
 import { SignalementModule } from './modules/signalement/signalement.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -30,12 +31,25 @@ import { SignalementModule } from './modules/signalement/signalement.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         type: 'postgres',
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
         schema: 'public',
         entities: [BaseLocale, Voie, Numero, Toponyme, Position, Cache],
+      }),
+      inject: [ConfigService],
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          url: config.get('REDIS_URL'),
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true,
+        },
       }),
       inject: [ConfigService],
     }),

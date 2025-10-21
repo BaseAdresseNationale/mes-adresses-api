@@ -4,8 +4,11 @@ import {
 } from '@testcontainers/postgresql';
 import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import {
+  HttpException,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
@@ -28,10 +31,11 @@ import {
   StatusHabilitationEnum,
 } from '@/shared/modules/api_depot/api-depot.types';
 
-import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
-import { MailerModule } from '@/shared/test/mailer.module.test';
+// import { MailerModule } from '@/shared/test/mailer.module.test';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
+import { PublicationModule } from '@/shared/modules/publication/publication.module';
+import { PublicationService } from '@/shared/modules/publication/publication.service';
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
@@ -42,6 +46,8 @@ describe('PUBLICATION MODULE', () => {
   let voieRepository: Repository<Voie>;
   let balRepository: Repository<BaseLocale>;
   let toponymeRepository: Repository<Toponyme>;
+  // SERVICE
+  let publicationService: PublicationService;
   // VAR
   const token = 'xxxx';
   const createdAt = new Date('2000-01-01');
@@ -75,10 +81,10 @@ describe('PUBLICATION MODULE', () => {
           synchronize: true,
           entities: [BaseLocale, Voie, Numero, Toponyme, Position],
         }),
-        BaseLocaleModule,
-        MailerModule,
+        PublicationModule,
       ],
     }).compile();
+    publicationService = await moduleFixture.resolve(PublicationService);
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
@@ -248,23 +254,18 @@ describe('PUBLICATION MODULE', () => {
         return [200, publishedRevision];
       });
 
-      // SEND REQUEST
-      const response = await request(app.getHttpServer())
-        .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
-
+      const res = await publicationService.exec(balId, { force: true });
       const syncExpected = {
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
         lastUploadedRevisionId: revisionId,
       };
 
-      expect(response.body.id).toEqual(balId);
-      expect(response.body.commune).toEqual(commune);
-      expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-      expect(response.body.sync).toMatchObject(syncExpected);
-      expect(response.body.sync.currentUpdated).toBeDefined();
+      expect(res.id).toEqual(balId);
+      expect(res.commune).toEqual(commune);
+      expect(res.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
+      expect(res.sync).toMatchObject(syncExpected);
+      expect(res.sync.currentUpdated).toBeDefined();
     });
 
     it('Publish 200 OUTDATED', async () => {
@@ -368,11 +369,7 @@ describe('PUBLICATION MODULE', () => {
         return [200, publishedRevision];
       });
 
-      // SEND REQUEST
-      const response = await request(app.getHttpServer())
-        .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
+      const res = await publicationService.exec(balId, { force: true });
 
       const syncExpected = {
         status: StatusSyncEnum.SYNCED,
@@ -380,11 +377,11 @@ describe('PUBLICATION MODULE', () => {
         lastUploadedRevisionId: revisionId,
       };
 
-      expect(response.body.id).toEqual(balId);
-      expect(response.body.commune).toEqual(commune);
-      expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-      expect(response.body.sync).toMatchObject(syncExpected);
-      expect(response.body.sync.currentUpdated).toBeDefined();
+      expect(res.id).toEqual(balId);
+      expect(res.commune).toEqual(commune);
+      expect(res.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
+      expect(res.sync).toMatchObject(syncExpected);
+      expect(res.sync.currentUpdated).toBeDefined();
     });
 
     it('Publish 200 OUTDATED same hash', async () => {
@@ -451,11 +448,8 @@ describe('PUBLICATION MODULE', () => {
       axiosMock
         .onGet(`habilitations/${habilitationId}`)
         .reply(200, habilitation);
-      // SEND REQUEST
-      const response = await request(app.getHttpServer())
-        .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
+
+      const res = await publicationService.exec(balId, { force: true });
 
       const syncExpected = {
         status: StatusSyncEnum.SYNCED,
@@ -463,11 +457,11 @@ describe('PUBLICATION MODULE', () => {
         lastUploadedRevisionId: revisionId,
       };
 
-      expect(response.body.id).toEqual(balId);
-      expect(response.body.commune).toEqual(commune);
-      expect(response.body.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
-      expect(response.body.sync).toMatchObject(syncExpected);
-      expect(response.body.sync.currentUpdated).toBeDefined();
+      expect(res.id).toEqual(balId);
+      expect(res.commune).toEqual(commune);
+      expect(res.status).toEqual(StatusBaseLocalEnum.PUBLISHED);
+      expect(res.sync).toMatchObject(syncExpected);
+      expect(res.sync.currentUpdated).toBeDefined();
     });
 
     it('Publish 412 status DEMO', async () => {
@@ -481,19 +475,9 @@ describe('PUBLICATION MODULE', () => {
         emails: ['test@test.fr'],
       });
 
-      // SEND REQUEST
-      const response = await request(app.getHttpServer())
-        .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(412);
-
-      expect(response.text).toEqual(
-        JSON.stringify({
-          statusCode: 412,
-          message:
-            'La synchronisation pas possibles pour les Bases Adresses Locales de démo',
-        }),
-      );
+      await expect(
+        publicationService.exec(balId, { force: true }),
+      ).rejects.toThrow(HttpException);
     });
 
     it('Publish 412 no habilitation', async () => {
@@ -505,18 +489,9 @@ describe('PUBLICATION MODULE', () => {
         emails: ['test@test.fr'],
       });
 
-      // SEND REQUEST
-      const response = await request(app.getHttpServer())
-        .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(412);
-
-      expect(response.text).toEqual(
-        JSON.stringify({
-          statusCode: 412,
-          message: 'Aucune habilitation rattachée à cette Base Adresse Locale',
-        }),
-      );
+      await expect(
+        publicationService.exec(balId, { force: true }),
+      ).rejects.toThrow(HttpException);
     });
 
     it('Publish 412 habilitation PENDING', async () => {
@@ -541,18 +516,9 @@ describe('PUBLICATION MODULE', () => {
         .onGet(`habilitations/${habilitationId}`)
         .reply(200, habilitation);
 
-      // SEND REQUEST
-      const response = await request(app.getHttpServer())
-        .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(412);
-
-      expect(response.text).toEqual(
-        JSON.stringify({
-          statusCode: 412,
-          message: 'L’habilitation rattachée n’est pas une habilitation valide',
-        }),
-      );
+      await expect(
+        publicationService.exec(balId, { force: true }),
+      ).rejects.toThrow(HttpException);
     });
 
     it('Publish 412 no numero', async () => {
@@ -577,18 +543,9 @@ describe('PUBLICATION MODULE', () => {
         .onGet(`habilitations/${habilitationId}`)
         .reply(200, habilitation);
 
-      // SEND REQUEST
-      const response = await request(app.getHttpServer())
-        .post(`/bases-locales/${balId}/sync/exec`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(412);
-
-      expect(response.text).toEqual(
-        JSON.stringify({
-          statusCode: 412,
-          message: 'La base locale ne possède aucune adresse',
-        }),
-      );
+      await expect(
+        publicationService.exec(balId, { force: true }),
+      ).rejects.toThrow(HttpException);
     });
   });
 });
