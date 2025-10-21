@@ -12,10 +12,10 @@ export async function getAdresseMairie(
       return null;
     }
 
-    const mainMarie = data.results.find(
+    const mainMairie = data.results.find(
       (result) => !result.nom.toLowerCase().includes('mairie déléguée'),
     );
-    const mairieData = mainMarie || data.results[0];
+    const mairieData = mainMairie || data.results[0];
     const adresseMairie = JSON.parse(mairieData.adresse)[0];
     if (!adresseMairie) {
       return null;

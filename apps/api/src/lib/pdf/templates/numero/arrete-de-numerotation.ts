@@ -88,7 +88,7 @@ export async function generateArreteDeNumerotation(
           `${numero.numero} ${voie.nom}${
             toponyme ? `\n${toponyme.nom}` : ''
           }\n${baseLocale.communeNom}`,
-          numero.parcelles.join(', '),
+          numero.parcelles.join(', ') || '-',
         ],
       ],
 

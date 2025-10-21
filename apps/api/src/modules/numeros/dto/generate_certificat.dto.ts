@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
 export class GenerateCertificatDTO {
-  @ApiProperty({ required: true, nullable: false })
-  emetteur: string;
+  @ApiProperty({ required: false })
+  emetteur?: string;
 
-  @ApiProperty({ required: true, nullable: true })
+  @ApiProperty({ required: false })
   @IsOptional()
   destinataire?: string;
 }

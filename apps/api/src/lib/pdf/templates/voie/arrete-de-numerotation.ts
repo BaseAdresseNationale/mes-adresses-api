@@ -81,8 +81,11 @@ numérotage des parcelles cadastrées precrit suivant le tableau ci-dessous :`,
     .addGenericTable(
       ['Numéro', 'Parcelle(s) cadastrale(s) associée(s)'],
       voie.numeros
-        .filter(({ parcelles }) => parcelles && parcelles.length > 0)
-        .map(({ numero, parcelles }) => [`${numero}`, parcelles.join(', ')]),
+        .sort((a, b) => a.numero - b.numero)
+        .map(({ numero, parcelles }) => [
+          `${numero}`,
+          parcelles.join(', ') || '-',
+        ]),
       {},
     )
     .addNewLine()

@@ -25,7 +25,11 @@ export async function generateCertificatAdressage(
 
   return doc
     .addText(
-      `Je, soussigné(e) ${emetteur}, atteste que ${
+      `${
+        emetteur
+          ? `Je, soussigné(e) ${emetteur}, atteste que `
+          : `Le Maire de ${baseLocale.communeNom} atteste que `
+      }${
         destinataire
           ? `la propriété appartenant à ${destinataire} désignée ci-dessous `
           : `l'adresse désignée ci-dessous `

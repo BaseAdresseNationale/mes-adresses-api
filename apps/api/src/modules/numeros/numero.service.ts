@@ -621,12 +621,6 @@ export class NumeroService {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    if (numero.parcelles.length === 0) {
-      throw new HttpException(
-        'Le numéro doit être rattaché à au moins une parcelle cadastrale pour pouvoir générer le document',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
 
     const voie = await this.voieService.findOneOrFail(numero.voieId);
     let toponyme = null;
@@ -641,6 +635,14 @@ export class NumeroService {
     params: GenerateCertificatDTO & { numero: Numero },
   ): Promise<string> {
     const { numero } = params;
+
+    if (numero.parcelles.length === 0) {
+      throw new HttpException(
+        'Le numéro doit être rattaché à au moins une parcelle cadastrale pour pouvoir générer le document',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
     const { baseLocale, voie, toponyme } =
       await this.getGenerateDocumentForNumeroParams(numero);
 
