@@ -4,14 +4,12 @@ import {
   StatusSyncEnum,
 } from '@/shared/entities/base_locale.entity';
 
-import { Task } from '../task_queue.class';
+import { Task } from '@/shared/types/task.type';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class DetectOutdatedTask implements Task {
-  title: string = 'Detect outdated';
-
   constructor(
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
