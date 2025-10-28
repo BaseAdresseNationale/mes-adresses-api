@@ -35,5 +35,5 @@ export class UpdateBaseLocaleDTO implements Partial<BaseLocale> {
 
   @IsOptional()
   @ApiProperty({ required: false, nullable: true })
-  settings: BaseLocaleSetting | null;
+  settings?: BaseLocaleSetting;
 }
