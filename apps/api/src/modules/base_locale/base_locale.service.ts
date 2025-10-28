@@ -155,6 +155,10 @@ export class BaseLocaleService {
       ...createInput,
       token: generateBase62String(20),
       status: StatusBaseLocalEnum.DRAFT,
+      settings: {
+        languageGoalIgnored: false,
+        toponymeGoalIgnored: false,
+      },
     });
     // On insert l'object dans postgres
     const newBaseLocale: BaseLocale =
@@ -191,6 +195,10 @@ export class BaseLocaleService {
       commune,
       nom: `Adresses de ${getCommuneActuelle(commune)?.nom} [démo]`,
       status: StatusBaseLocalEnum.DEMO,
+      settings: {
+        languageGoalIgnored: false,
+        toponymeGoalIgnored: false,
+      },
     });
     // On insert l'object dans postgres
     const newDemoBaseLocale: BaseLocale =
@@ -420,9 +428,10 @@ export class BaseLocaleService {
     deleteExisting: boolean = true,
   ): Promise<BaseLocale> {
     if (communeNomsAlt) {
-      this.basesLocalesRepository.update(baseLocale.id, {
+      await this.basesLocalesRepository.update(baseLocale.id, {
         communeNomsAlt,
       });
+      baseLocale.communeNomsAlt = communeNomsAlt;
     }
     if (deleteExisting) {
       // On supprime les numeros, vois et toponymes si il y en a

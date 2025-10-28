@@ -43,6 +43,7 @@ const baseLocalePublicProperties = [
   'nbNumeros',
   'nbNumerosCertifies',
   'isAllCertified',
+  'settings',
   'status',
   'updatedAt',
   'createdAt',
