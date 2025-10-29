@@ -24,7 +24,10 @@ import { ObjectId } from 'mongodb';
 
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
-import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import {
+  BaseLocale,
+  StatusBaseLocalEnum,
+} from '@/shared/entities/base_locale.entity';
 import { normalizeSuffixe } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/entities/position.entity';
 
@@ -37,6 +40,10 @@ import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
 import { NumeroInBbox } from '@/lib/types/numero.type';
+import { generateCertificatAdressage } from '@/lib/pdf/templates/numero/certificat-adressage';
+import { generateArreteDeNumerotation } from '@/lib/pdf/templates/numero/arrete-de-numerotation';
+import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
+import { S3Service } from '@/shared/modules/s3/s3.service';
 
 @Injectable()
 export class NumeroService {
@@ -51,6 +58,8 @@ export class NumeroService {
     private toponymeService: ToponymeService,
     @Inject(forwardRef(() => BaseLocaleService))
     private baseLocaleService: BaseLocaleService,
+    @Inject(forwardRef(() => S3Service))
+    private s3service: S3Service,
   ) {}
 
   async findOneOrFail(numeroId: string): Promise<Numero> {
@@ -596,6 +605,103 @@ export class NumeroService {
         polygon: JSON.parse(res.polygon),
       }
     );
+  }
+
+  async getGenerateDocumentForNumeroParams(numero: Numero) {
+    const baseLocale = await this.baseLocaleService.findOneOrFail(numero.balId);
+    if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
+      throw new HttpException(
+        'La Base Adresse Locale doit être publiée pour pouvoir générer le document',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    if (!numero.certifie) {
+      throw new HttpException(
+        'Le numéro doit être certifié pour pouvoir générer le document',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const voie = await this.voieService.findOneOrFail(numero.voieId);
+    let toponyme = null;
+    if (numero.toponymeId) {
+      toponyme = await this.toponymeService.findOneOrFail(numero.toponymeId);
+    }
+
+    return { baseLocale, voie, toponyme };
+  }
+
+  async generateCertificatAdressage(
+    params: GenerateCertificatDTO & { numero: Numero },
+  ): Promise<string> {
+    const { numero } = params;
+
+    if (numero.parcelles.length === 0) {
+      throw new HttpException(
+        'Le numéro doit être rattaché à au moins une parcelle cadastrale pour pouvoir générer le document',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const { baseLocale, voie, toponyme } =
+      await this.getGenerateDocumentForNumeroParams(numero);
+
+    const fileName = `certificat_numerotage_${numero.id}.pdf`;
+
+    const pdfFileData = await generateCertificatAdressage({
+      numero,
+      baseLocale,
+      voie,
+      toponyme,
+      ...params,
+    });
+
+    await this.s3service.uploadPublicFile(
+      fileName,
+      process.env.S3_CONTAINER_GENERATED_FILES,
+      Buffer.from(pdfFileData, 'ascii'),
+      {
+        ContentType: 'application/pdf',
+        ContentEncoding: 'ascii',
+      },
+    );
+
+    const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_CONTAINER_GENERATED_FILES}/${fileName}`;
+
+    return fileUrl;
+  }
+
+  async generateArreteDeNumerotation(params: {
+    numero: Numero;
+    planDeSituation?: Express.Multer.File;
+  }): Promise<string> {
+    const { numero } = params;
+    const { baseLocale, voie, toponyme } =
+      await this.getGenerateDocumentForNumeroParams(numero);
+
+    const fileName = `arrete_de_numerotation_${numero.id}.pdf`;
+
+    const pdfFileData = await generateArreteDeNumerotation({
+      numero,
+      baseLocale,
+      voie,
+      toponyme,
+      ...params,
+    });
+
+    await this.s3service.uploadPublicFile(
+      fileName,
+      process.env.S3_CONTAINER_GENERATED_FILES,
+      Buffer.from(pdfFileData, 'ascii'),
+      {
+        ContentType: 'application/pdf',
+        ContentEncoding: 'ascii',
+      },
+    );
+
+    const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_CONTAINER_GENERATED_FILES}/${fileName}`;
+
+    return fileUrl;
   }
 
   async touch(numero: Numero, updatedAt: Date = new Date()) {

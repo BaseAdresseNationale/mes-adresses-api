@@ -11,6 +11,9 @@ import {
   Body,
   Inject,
   forwardRef,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipeBuilder,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -21,6 +24,7 @@ import {
   ApiOperation,
   ApiBearerAuth,
   ApiQuery,
+  ApiConsumes,
 } from '@nestjs/swagger';
 
 import { Voie } from '@/shared/entities/voie.entity';
@@ -39,6 +43,7 @@ import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { filterComments } from '@/shared/utils/filter.utils';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -219,5 +224,56 @@ export class VoieController {
   async certifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
     await this.numeroService.certifyVoieNumeros(req.voie);
     res.sendStatus(HttpStatus.OK);
+  }
+
+  @Post('/generate-arrete-de-numerotation/:voieId')
+  @ApiOperation({
+    summary: 'Generate the arrete de numerotation by voie id',
+    operationId: 'generateArreteDeNumerotation',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiParam({ name: 'voieId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: String,
+    description: 'URL of the generated PDF arrête de numérotation',
+  })
+  @ApiBearerAuth('admin-token')
+  async downloadArreteDeNumerotation(
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /image\/(png|jpeg|jpg)/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 5000000, // 5 Mo
+        })
+        .build({
+          fileIsRequired: false,
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    planDeSituation?: Express.Multer.File,
+  ) {
+    const pdfUrl = await this.voieService.generateArreteDeNumerotation({
+      voie: req.voie,
+      planDeSituation,
+    });
+
+    return res.status(HttpStatus.CREATED).json(pdfUrl);
   }
 }

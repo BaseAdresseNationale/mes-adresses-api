@@ -69,6 +69,7 @@ export class UploadTracesTask implements Task {
 
     const uploadResponse = await this.s3Service.uploadPublicFile(
       fileName,
+      process.env.S3_CONTAINER_FILAIRES_DE_VOIE,
       Buffer.from(JSON.stringify(filaireGeoJSON), 'utf-8'),
       {
         ContentType: 'application/json',
