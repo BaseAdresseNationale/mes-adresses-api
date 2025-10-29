@@ -443,7 +443,7 @@ export class VoieService {
       );
     }
 
-    return { baseLocale, voie };
+    return { baseLocale };
   }
 
   async generateArreteDeNumerotation(params: {
@@ -452,27 +452,17 @@ export class VoieService {
   }): Promise<string> {
     const { voie } = params;
     const { baseLocale } = await this.getGenerateDocumentForVoieParams(voie);
-    const voiesWithNumeros = await this.voiesRepository.findOne({
+    const voieWithNumeros = await this.voiesRepository.findOne({
       where: { id: voie.id },
       relations: { numeros: true },
     });
-    const numeroWithAssociatedParcelles = voiesWithNumeros.numeros.filter(
-      ({ parcelles }) => parcelles && parcelles.length > 0,
-    );
-
-    if (numeroWithAssociatedParcelles.length === 0) {
-      throw new HttpException(
-        'Au moins un numéro doit être associé à une ou plusieurs parcelles cadastrales pour pouvoir générer le document',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
 
     const fileName = `arrete_de_numerotation_${voie.id}.pdf`;
 
     const pdfFileData = await generateArreteDeNumerotation({
       ...params,
       baseLocale,
-      voie: voiesWithNumeros,
+      voie: voieWithNumeros,
     });
 
     await this.s3service.uploadPublicFile(

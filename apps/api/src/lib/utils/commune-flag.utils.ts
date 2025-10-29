@@ -1,9 +1,12 @@
 import * as sharp from 'sharp';
 
+const BLASON_BUCKET_URL =
+  'https://base-adresse-locale-prod-blasons-communes.s3.fr-par.scw.cloud';
+
 export const getCommuneFlagSVG = async (
   codeCommune: string,
 ): Promise<string> => {
-  const url = `https://base-adresse-locale-prod-blasons-communes.s3.fr-par.scw.cloud/${codeCommune}.svg`;
+  const url = `${BLASON_BUCKET_URL}/${codeCommune}.svg`;
 
   try {
     const response = await fetch(url, {

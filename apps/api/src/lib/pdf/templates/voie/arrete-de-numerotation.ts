@@ -1,3 +1,4 @@
+import { getImageDimensions } from '@/lib/utils/image.utils';
 import { PdfDocument, xMargin } from '../../PDFDocument';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
@@ -14,6 +15,8 @@ export async function generateArreteDeNumerotation(
   const { baseLocale, voie, planDeSituation } = params;
 
   let planDeSituationDataUrl = '';
+  let planDeSituationDimensions: { width: number; height: number } | null =
+    null;
   let imageFormat = '';
   if (planDeSituation) {
     const base64PlanDeSituation = planDeSituation.buffer.toString('base64');
@@ -22,6 +25,9 @@ export async function generateArreteDeNumerotation(
       throw new Error('Invalid file type. Only PNG and JPEG are allowed.');
     }
     planDeSituationDataUrl = `data:image/${imageFormat};base64,${base64PlanDeSituation}`;
+    planDeSituationDimensions = await getImageDimensions(
+      planDeSituationDataUrl,
+    );
   }
 
   const doc = new PdfDocument();
@@ -115,7 +121,9 @@ incombera aux propriétaires riverains.`,
       .addText('Plan de situation :', { align: 'left' })
       .addImage(planDeSituationDataUrl, imageFormat as 'png' | 'jpeg' | 'jpg', {
         width: maxWidth,
-        height: 400,
+        height:
+          planDeSituationDimensions.height *
+          (maxWidth / planDeSituationDimensions.width),
       });
   }
 

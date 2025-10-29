@@ -3,6 +3,7 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { getImageDimensions } from '@/lib/utils/image.utils';
 
 type ArreteDeNumerotationParams = {
   baseLocale: BaseLocale;
@@ -18,6 +19,8 @@ export async function generateArreteDeNumerotation(
   const { numero, baseLocale, voie, toponyme, planDeSituation } = params;
 
   let planDeSituationDataUrl = '';
+  let planDeSituationDimensions: { width: number; height: number } | null =
+    null;
   let imageFormat = '';
   if (planDeSituation) {
     const base64PlanDeSituation = planDeSituation.buffer.toString('base64');
@@ -26,6 +29,9 @@ export async function generateArreteDeNumerotation(
       throw new Error('Invalid file type. Only PNG and JPEG are allowed.');
     }
     planDeSituationDataUrl = `data:image/${imageFormat};base64,${base64PlanDeSituation}`;
+    planDeSituationDimensions = await getImageDimensions(
+      planDeSituationDataUrl,
+    );
   }
 
   const doc = new PdfDocument();
@@ -102,7 +108,9 @@ export async function generateArreteDeNumerotation(
       .addText('Plan de situation :', { align: 'left' })
       .addImage(planDeSituationDataUrl, imageFormat as 'png' | 'jpeg' | 'jpg', {
         width: maxWidth,
-        height: 400,
+        height:
+          planDeSituationDimensions.height *
+          (maxWidth / planDeSituationDimensions.width),
       });
   }
 

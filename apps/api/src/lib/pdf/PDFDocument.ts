@@ -34,12 +34,6 @@ export class PdfDocument {
     }
 
     this.changeFont('Arial', PDFAssetsManager.getArialFont());
-    /*     this.addImage(PDFAssetsManager.getRFLogo(), 'png', {
-      width: 100,
-      height: 100,
-      x: xMargin,
-      y: yMargin,
-    }); */
 
     const communeLogo = await getCommuneFlagBase64PNG(commune.code);
 
