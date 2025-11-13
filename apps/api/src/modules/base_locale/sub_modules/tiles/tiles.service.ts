@@ -22,7 +22,6 @@ export class TilesService {
   public async getGeoJsonByTile(
     balId: string,
     tile: number[],
-    colorblindMode: boolean,
   ): Promise<GeoJsonCollectionType> {
     const z: number = tile[2];
     const bbox: number[] = tileToBBOX(tile);
@@ -47,6 +46,6 @@ export class TilesService {
         ? await this.toponymeService.findManyWherePositionInBBox(balId, bbox)
         : [];
 
-    return getGeoJson(voies, traces, numeros, toponymes, colorblindMode);
+    return getGeoJson(voies, traces, numeros, toponymes);
   }
 }
