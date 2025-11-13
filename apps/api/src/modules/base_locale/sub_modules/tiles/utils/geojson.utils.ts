@@ -18,37 +18,20 @@ const colorblindFriendlyPalette = [
   '#009988',
 ];
 
-const colorPalette = [
-  '#8B1A1A',
-  '#1874CD',
-  '#00875A',
-  '#E6C200',
-  '#805BA5',
-  '#D47300',
-  '#36B3B3',
-  '#D1127A',
-];
-
 const neutralColor = '#c1c4d6';
 
-function getFeatureColor(id?: string, colorblindMode: boolean = false): string {
+function getFeatureColor(id?: string): string {
   if (!id) {
     return neutralColor;
   }
 
   const slicedId = id.slice(16).replace(/-/g, '');
-  if (colorblindMode) {
-    return colorblindFriendlyPalette[
-      Number.parseInt(slicedId, 16) % colorblindFriendlyPalette.length
-    ];
-  }
-  return colorPalette[Number.parseInt(slicedId, 16) % colorPalette.length];
+  return colorblindFriendlyPalette[
+    Number.parseInt(slicedId, 16) % colorblindFriendlyPalette.length
+  ];
 }
 
-function numeroToPointFeature(
-  n: NumeroInBbox,
-  colorblindMode: boolean,
-): FeatureTurf {
+function numeroToPointFeature(n: NumeroInBbox): FeatureTurf {
   return turf.feature(n.point, {
     id: n.id,
     numero: n.numero,
@@ -57,75 +40,61 @@ function numeroToPointFeature(
     certifie: n.certifie,
     idVoie: n.voieId,
     idToponyme: n.toponymeId,
-    color: getFeatureColor(n.voieId, colorblindMode),
-    colorToponyme: getFeatureColor(n.toponymeId, colorblindMode),
+    color: getFeatureColor(n.voieId),
+    colorToponyme: getFeatureColor(n.toponymeId),
   });
 }
 
-function voieToLineStringFeature(
-  v: Voie,
-  colorblindMode: boolean,
-): FeatureTurf {
+function voieToLineStringFeature(v: Voie): FeatureTurf {
   return turf.feature(v.trace, {
     id: v.id,
     nom: v.nom,
     originalGeometry: v.trace,
-    color: getFeatureColor(v.id, colorblindMode),
+    color: getFeatureColor(v.id),
   });
 }
 
-function voieToPointFeature(v: Voie, colorblindMode: boolean): FeatureTurf {
+function voieToPointFeature(v: Voie): FeatureTurf {
   return turf.feature(v.centroid, {
     id: v.id,
     nom: v.nom,
-    color: getFeatureColor(v.id, colorblindMode),
+    color: getFeatureColor(v.id),
   });
 }
 
-export function voiesPointsToGeoJSON(
-  voies: Voie[],
-  colorblindMode: boolean,
-): FeatureCollection {
+export function voiesPointsToGeoJSON(voies: Voie[]): FeatureCollection {
   return turf.featureCollection(
-    voies.map((n) => voieToPointFeature(n, colorblindMode)),
+    voies.map((n) => voieToPointFeature(n)),
   ) as FeatureCollection;
 }
 
-function toponymeToPointFeature(
-  t: ToponymeInBox,
-  colorblindMode: boolean,
-): FeatureTurf {
+function toponymeToPointFeature(t: ToponymeInBox): FeatureTurf {
   return turf.feature(t.point, {
     id: t.id,
     nom: t.nom,
-    color: getFeatureColor(t.id, colorblindMode),
+    color: getFeatureColor(t.id),
   });
 }
 
 export function toponymesPointsToGeoJSON(
   toponymes: ToponymeInBox[],
-  colorblindMode: boolean,
 ): FeatureCollection {
   return turf.featureCollection(
-    toponymes.map((n) => toponymeToPointFeature(n, colorblindMode)),
+    toponymes.map((n) => toponymeToPointFeature(n)),
   ) as FeatureCollection;
 }
 
-export function voiesLineStringsToGeoJSON(
-  voies: Voie[],
-  colorblindMode: boolean,
-): FeatureCollection {
+export function voiesLineStringsToGeoJSON(voies: Voie[]): FeatureCollection {
   return turf.featureCollection(
-    voies.map((n) => voieToLineStringFeature(n, colorblindMode)),
+    voies.map((n) => voieToLineStringFeature(n)),
   ) as FeatureCollection;
 }
 
 export function numerosPointsToGeoJSON(
   numeros: NumeroInBbox[],
-  colorblindMode: boolean,
 ): FeatureCollection {
   return turf.featureCollection(
-    numeros.map((n) => numeroToPointFeature(n, colorblindMode)),
+    numeros.map((n) => numeroToPointFeature(n)),
   ) as FeatureCollection;
 }
 
@@ -134,12 +103,11 @@ export function getGeoJson(
   traces: Voie[],
   numeros: NumeroInBbox[],
   toponymes: ToponymeInBox[],
-  colorblindMode: boolean,
 ): GeoJsonCollectionType {
   return {
-    numeroPoints: numerosPointsToGeoJSON(numeros, colorblindMode),
-    voiePoints: voiesPointsToGeoJSON(voies, colorblindMode),
-    voieLineStrings: voiesLineStringsToGeoJSON(traces, colorblindMode),
-    toponymePoints: toponymesPointsToGeoJSON(toponymes, colorblindMode),
+    numeroPoints: numerosPointsToGeoJSON(numeros),
+    voiePoints: voiesPointsToGeoJSON(voies),
+    voieLineStrings: voiesLineStringsToGeoJSON(traces),
+    toponymePoints: toponymesPointsToGeoJSON(toponymes),
   };
 }
