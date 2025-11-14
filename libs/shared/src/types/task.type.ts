@@ -10,6 +10,7 @@ export enum TaskTitle {
   REMOVE_SOFT_DELETE_BAL = 'removeSoftDeleteBal',
   REMOVE_DEMO_BAL = 'removeDemoBal',
   UPLOAD_TRACES = 'uploadTraces',
+  RESET_COMMUNE_FOR_WEBINAIRE = 'resetCommuneForWebinaire',
 }
 
 export enum PriorityEnum {
