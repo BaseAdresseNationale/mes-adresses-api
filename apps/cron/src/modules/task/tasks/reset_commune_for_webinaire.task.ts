@@ -17,6 +17,10 @@ export class ResetCommuneForWebinaireTask implements Task {
   ) {}
 
   public async run() {
+    if (!process.env.RESET_COMMUNE_FOR_WEBINAIRE) {
+      return;
+    }
+
     const where: FindOptionsWhere<BaseLocale> = {
       commune: process.env.RESET_COMMUNE_FOR_WEBINAIRE,
     };
