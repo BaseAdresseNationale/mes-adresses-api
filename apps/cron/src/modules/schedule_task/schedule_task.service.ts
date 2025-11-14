@@ -70,4 +70,15 @@ export class ScheduleTaskService {
       { priority: PriorityEnum.LOW },
     );
   }
+
+  @Cron(CronExpression.EVERY_WEEK)
+  async resetCommuneForWebinaire() {
+    if (process.env.RESET_COMMUNE_FOR_WEBINAIRE) {
+      await this.taskQueue.add(
+        TaskTitle.REMOVE_DEMO_BAL,
+        {},
+        { priority: PriorityEnum.LOW },
+      );
+    }
+  }
 }
