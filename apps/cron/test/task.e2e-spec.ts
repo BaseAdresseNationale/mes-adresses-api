@@ -717,7 +717,10 @@ describe('TASK MODULE', () => {
       });
       expect(resultBalPublished.deletedAt).toBeInstanceOf(Date);
 
-      const resultBalDraft = await balRepository.findOneBy({ id: balDraft });
+      const resultBalDraft = await balRepository.findOne({
+        where: { id: balDraft },
+        withDeleted: true,
+      });
       expect(resultBalDraft.deletedAt).toBeInstanceOf(Date);
 
       const resultBalDemo = await balRepository.findOneBy({ id: balDemo });
