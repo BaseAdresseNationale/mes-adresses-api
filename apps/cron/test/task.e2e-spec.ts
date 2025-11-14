@@ -712,8 +712,9 @@ describe('TASK MODULE', () => {
 
       await resetCommuneForWebinaireTask.run();
 
-      const resultBalPublished = await balRepository.findOneBy({
-        id: balPublished,
+      const resultBalPublished = await balRepository.findOne({
+        where: { id: balPublished },
+        withDeleted: true,
       });
       expect(resultBalPublished.deletedAt).toBeInstanceOf(Date);
 

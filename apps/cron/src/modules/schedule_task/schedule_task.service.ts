@@ -73,12 +73,10 @@ export class ScheduleTaskService {
 
   @Cron(CronExpression.EVERY_WEEK)
   async resetCommuneForWebinaire() {
-    if (process.env.RESET_COMMUNE_FOR_WEBINAIRE) {
-      await this.taskQueue.add(
-        TaskTitle.REMOVE_DEMO_BAL,
-        {},
-        { priority: PriorityEnum.LOW },
-      );
-    }
+    await this.taskQueue.add(
+      TaskTitle.RESET_COMMUNE_FOR_WEBINAIRE,
+      {},
+      { priority: PriorityEnum.LOW },
+    );
   }
 }
