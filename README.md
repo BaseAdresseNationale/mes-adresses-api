@@ -141,7 +141,7 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `S3_ACCESS_KEY`                     | Clef d'accès S3                                                                                            |
 | `S3_SECRET_KEY`                     | Clef secrete S3                                                                                            |
 | `EXPORT_FILAIRES_DE_VOIE_FILE_NAME` | Nom de l'export des filaires de voie                                                                       |
-| `RESET_COMMUNE_FOR_WEBINAIRE`       | Commune à réinitialiser toute les semaines pour les webinaires (à paramétrer uniquement sur l'env de démo) |
+| `RESET_COMMUNE_FOR_WEBINAIRE`       | Commune à réinitialiser toutes les semaines pour les webinaires (à paramétrer uniquement sur l'env de démo) |
 
 Toutes ces variables ont des valeurs par défaut que vous trouverez dans le fichier `.env.sample`.
 
