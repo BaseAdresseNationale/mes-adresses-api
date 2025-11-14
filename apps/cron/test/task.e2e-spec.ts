@@ -122,6 +122,7 @@ describe('TASK MODULE', () => {
         DetectOutdatedTask,
         DetectConflictTask,
         SyncOutdatedTask,
+        ResetCommuneForWebinaireTask,
         Logger,
       ],
     }).compile();
