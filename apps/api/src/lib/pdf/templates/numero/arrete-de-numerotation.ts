@@ -91,7 +91,7 @@ export async function generateArreteDeNumerotation(
       ['Adresse complète', 'N° parcelle(s) cadastrale(s)'],
       [
         [
-          `${numero.numero} ${voie.nom}${
+          `${numero.numeroComplet} ${voie.nom}${
             toponyme ? `\n${toponyme.nom}` : ''
           }\n${baseLocale.communeNom}`,
           numero.parcelles.join(', ') || '-',
