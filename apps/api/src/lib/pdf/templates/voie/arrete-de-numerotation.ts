@@ -88,9 +88,10 @@ numérotage des parcelles cadastrées precrit suivant le tableau ci-dessous :`,
       ['Numéro', 'Parcelle(s) cadastrale(s) associée(s)'],
       voie.numeros
         .sort((a, b) => {
-          if (a.numeroComplet < b.numeroComplet) return -1;
-          if (a.numeroComplet > b.numeroComplet) return 1;
-          return 0;
+          if (a.numero !== b.numero) return a.numero - b.numero;
+          const suffixA = a.suffixe || '';
+          const suffixB = b.suffixe || '';
+          return suffixA.localeCompare(suffixB);
         })
         .map(({ numeroComplet, parcelles }) => [
           `${numeroComplet}`,
