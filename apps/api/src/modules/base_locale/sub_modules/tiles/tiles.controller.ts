@@ -1,14 +1,6 @@
-import {
-  Controller,
-  Res,
-  Req,
-  Get,
-  Query,
-  Param,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Res, Req, Get, Param, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiParam, ApiTags, ApiQuery, ApiOperation } from '@nestjs/swagger';
+import { ApiParam, ApiTags, ApiOperation } from '@nestjs/swagger';
 import * as geojsonvt from 'geojson-vt';
 import * as vtpbf from 'vt-pbf';
 import * as zlib from 'zlib';
@@ -34,13 +26,11 @@ export class TilesController {
   @ApiParam({ name: 'z', required: true, type: String })
   @ApiParam({ name: 'x', required: true, type: String })
   @ApiParam({ name: 'y', required: true, type: String })
-  @ApiQuery({ name: 'colorblindMode', type: Boolean })
   async getTiles(
     @Req() req: CustomRequest,
     @Param('z') z: string,
     @Param('x') x: string,
     @Param('y') y: string,
-    @Query('colorblindMode') colorblindMode: boolean,
     @Res() res: Response,
   ) {
     const tile: number[] = [parseInt(x), parseInt(y), parseInt(z)];
@@ -52,7 +42,6 @@ export class TilesController {
     }: GeoJsonCollectionType = await this.tilesService.getGeoJsonByTile(
       req.baseLocale.id,
       tile,
-      colorblindMode,
     );
     const options = { maxZoom: 20 };
     const numerosTiles = geojsonvt(numeroPoints, options).getTile(
