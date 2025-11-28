@@ -10,7 +10,7 @@ import { RemoveSoftDeleteBalTask } from './tasks/remove_soft_delete_bal.task';
 import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
 import { UploadTracesTask } from './tasks/upload_traces.task';
 import { ForcePublishTask } from './tasks/force_publish.task';
-import { ResetCommuneForWebinaireTask } from './tasks/reset_commune_for_webinaire.task';
+import { ResetCommunesForWebinaireTask } from './tasks/reset_communes_for_webinaire.task';
 
 @Processor(QUEUE_NAME)
 export class TaskProcessor extends WorkerHost {
@@ -22,7 +22,7 @@ export class TaskProcessor extends WorkerHost {
     private readonly removeDemoBalTask: RemoveDemoBalTask,
     private readonly uploadTracesTask: UploadTracesTask,
     private readonly forcePublishTask: ForcePublishTask,
-    private readonly resetCommuneForWebinaireTask: ResetCommuneForWebinaireTask,
+    private readonly resetCommunesForWebinaireTask: ResetCommunesForWebinaireTask,
   ) {
     super();
   }
@@ -55,8 +55,8 @@ export class TaskProcessor extends WorkerHost {
         case TaskTitle.UPLOAD_TRACES:
           await this.uploadTracesTask.run();
           break;
-        case TaskTitle.RESET_COMMUNE_FOR_WEBINAIRE:
-          await this.resetCommuneForWebinaireTask.run();
+        case TaskTitle.RESET_COMMUNES_FOR_WEBINAIRE:
+          await this.resetCommunesForWebinaireTask.run();
           break;
         default:
           Logger.warn(

@@ -47,7 +47,7 @@ import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
 import { Cache } from '@/shared/entities/cache.entity';
-import { ResetCommuneForWebinaireTask } from '../src/modules/task/tasks/reset_commune_for_webinaire.task';
+import { ResetCommunesForWebinaireTask } from '../src/modules/task/tasks/reset_communes_for_webinaire.task';
 
 @Global()
 @Module({
@@ -77,7 +77,7 @@ describe('TASK MODULE', () => {
   let detectOutdated: DetectOutdatedTask;
   let detectConflict: DetectConflictTask;
   let syncOutdatedTask: SyncOutdatedTask;
-  let resetCommuneForWebinaireTask: ResetCommuneForWebinaireTask;
+  let resetCommuneForWebinaireTask: ResetCommunesForWebinaireTask;
   // VAR
   const token = 'xxxx';
   const createdAt = new Date('2000-01-01');
@@ -122,7 +122,7 @@ describe('TASK MODULE', () => {
         DetectOutdatedTask,
         DetectConflictTask,
         SyncOutdatedTask,
-        ResetCommuneForWebinaireTask,
+        ResetCommunesForWebinaireTask,
         Logger,
       ],
     }).compile();
@@ -141,8 +141,8 @@ describe('TASK MODULE', () => {
     detectOutdated = app.get<DetectOutdatedTask>(DetectOutdatedTask);
     detectConflict = app.get<DetectConflictTask>(DetectConflictTask);
     syncOutdatedTask = app.get<SyncOutdatedTask>(SyncOutdatedTask);
-    resetCommuneForWebinaireTask = app.get<ResetCommuneForWebinaireTask>(
-      ResetCommuneForWebinaireTask,
+    resetCommuneForWebinaireTask = app.get<ResetCommunesForWebinaireTask>(
+      ResetCommunesForWebinaireTask,
     );
   });
 
@@ -649,8 +649,8 @@ describe('TASK MODULE', () => {
   });
 
   describe('ResetCommuneForWebinaireTask', () => {
-    it('should do nothing if process.env.RESET_COMMUNE_FOR_WEBINAIRE is unset', async () => {
-      process.env.RESET_COMMUNE_FOR_WEBINAIRE = '';
+    it('should do nothing if process.env.RESET_COMMUNES_FOR_WEBINAIRE is unset', async () => {
+      process.env.RESET_COMMUNES_FOR_WEBINAIRE = '';
 
       await createBal({
         nom: 'bal',
@@ -684,13 +684,29 @@ describe('TASK MODULE', () => {
       expect(resultBal).toHaveLength(3);
     });
 
-    it('should delete and soft delete bals from given commune', async () => {
-      process.env.RESET_COMMUNE_FOR_WEBINAIRE = '27115';
+    it('should delete and soft delete bals from given communes', async () => {
+      process.env.RESET_COMMUNES_FOR_WEBINAIRE = '27115,37131';
 
-      const balPublished = await createBal({
+      const balPublished1 = await createBal({
         nom: 'bal',
         banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
         commune: '27115',
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+      });
+
+      const balPublished2 = await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '37131',
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+      });
+
+      const balPublished3 = await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '37003',
         status: StatusBaseLocalEnum.PUBLISHED,
         emails: ['test@test.fr'],
       });
@@ -713,17 +729,29 @@ describe('TASK MODULE', () => {
 
       await resetCommuneForWebinaireTask.run();
 
-      const resultBalPublished = await balRepository.findOne({
-        where: { id: balPublished },
+      const resultBalPublished1 = await balRepository.findOne({
+        where: { id: balPublished1 },
         withDeleted: true,
       });
-      expect(resultBalPublished.deletedAt).toBeInstanceOf(Date);
+      expect(resultBalPublished1).toBeNull();
+
+      const resultBalPublished2 = await balRepository.findOne({
+        where: { id: balPublished2 },
+        withDeleted: true,
+      });
+      expect(resultBalPublished2).toBeNull();
+
+      const resultBalPublished3 = await balRepository.findOne({
+        where: { id: balPublished3 },
+        withDeleted: true,
+      });
+      expect(resultBalPublished3).toBeTruthy();
 
       const resultBalDraft = await balRepository.findOne({
         where: { id: balDraft },
         withDeleted: true,
       });
-      expect(resultBalDraft.deletedAt).toBeInstanceOf(Date);
+      expect(resultBalDraft).toBeNull();
 
       const resultBalDemo = await balRepository.findOneBy({ id: balDemo });
       expect(resultBalDemo).toBeNull();

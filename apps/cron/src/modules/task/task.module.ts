@@ -19,7 +19,7 @@ import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
 import { UploadTracesTask } from './tasks/upload_traces.task';
 import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 import { ForcePublishTask } from './tasks/force_publish.task';
-import { ResetCommuneForWebinaireTask } from './tasks/reset_commune_for_webinaire.task';
+import { ResetCommunesForWebinaireTask } from './tasks/reset_communes_for_webinaire.task';
 
 @Module({
   imports: [
@@ -47,7 +47,7 @@ import { ResetCommuneForWebinaireTask } from './tasks/reset_commune_for_webinair
     RemoveDemoBalTask,
     UploadTracesTask,
     ForcePublishTask,
-    ResetCommuneForWebinaireTask,
+    ResetCommunesForWebinaireTask,
   ],
 })
 export class TaskModule {}
