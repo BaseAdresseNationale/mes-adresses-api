@@ -3,18 +3,10 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
-import { getLabel, readValue } from '@ban-team/validateur-bal';
 import * as languesRegionales from '@ban-team/shared-data/langues-regionales.json';
+import { getValidateurBalColumnErrors } from '../utils/validateur-bal.utils';
 
 const supportedNomAlt = new Set(languesRegionales.map((l) => l.code));
-
-async function validateurBAL(value, label) {
-  const { errors } = await readValue(label, value);
-
-  return {
-    errors: errors.map((error) => getLabel(`${label}.${error}`)),
-  };
-}
 
 @ValidatorConstraint({ name: 'validatorBal', async: true })
 export class ValidatorBal implements ValidatorConstraintInterface {
@@ -35,7 +27,7 @@ export class ValidatorBal implements ValidatorConstraintInterface {
   };
 
   async validateField(value: any, label: any) {
-    const { errors } = await validateurBAL(value, label);
+    const { errors } = await getValidateurBalColumnErrors(label, value);
     this.lastErrors[label] = errors;
     return errors.length === 0;
   }
@@ -45,7 +37,7 @@ export class ValidatorBal implements ValidatorConstraintInterface {
     try {
       const field = args.constraints[0];
       this.lastErrors[field] = [];
-      if (['numero', 'suffixe', 'position', 'voie_nom'].includes(field)) {
+      if (['suffixe', 'position', 'voie_nom'].includes(field)) {
         return this.validateField(value.toString(), field);
       } else if (field === 'cad_parcelles') {
         return this.validateField(value.join('|'), field);
@@ -53,7 +45,10 @@ export class ValidatorBal implements ValidatorConstraintInterface {
         for (const codeISO of Object.keys(value)) {
           if (supportedNomAlt.has(codeISO)) {
             const nomVoie = value[codeISO];
-            const { errors } = await validateurBAL(nomVoie, 'voie_nom');
+            const { errors } = await getValidateurBalColumnErrors(
+              'voie_nom',
+              nomVoie,
+            );
             if (errors.length > 0) {
               this.lastErrors['lang_alt'] = errors;
               return false;
