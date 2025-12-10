@@ -19,23 +19,12 @@ export enum StatusSyncEnum {
   CONFLICT = 'conflict',
 }
 
-export class BaseLocaleFondDeCarte {
-  @ApiProperty()
-  name: string;
-
-  @ApiProperty()
-  url: string;
-}
-
 export class BaseLocaleSetting {
   @ApiProperty()
   languageGoalIgnored: boolean;
 
   @ApiProperty()
   toponymeGoalIgnored: boolean;
-
-  @ApiProperty({ type: () => BaseLocaleFondDeCarte, isArray: true })
-  fondsDeCartes: BaseLocaleFondDeCarte[];
 }
 
 export class BaseLocaleSync {
