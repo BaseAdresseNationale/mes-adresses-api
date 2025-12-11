@@ -15,10 +15,10 @@ export class ResetCommunesForWebinaireTask implements Task {
 
   public async run() {
     // This should run only on demo or staging environments with specific communes to reset
-    if (
-      !process.env.RESET_COMMUNES_FOR_WEBINAIRE ||
-      process.env.NODE_ENV === 'production'
-    ) {
+    if (!process.env.RESET_COMMUNES_FOR_WEBINAIRE) {
+      this.logger.log(
+        `No communes configured for webinaire reset. Skipping task.`,
+      );
       return;
     }
 
