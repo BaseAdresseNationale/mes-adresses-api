@@ -7,6 +7,9 @@ import {
   ValidateNested,
   ArrayNotEmpty,
   IsMongoId,
+  Max,
+  Min,
+  IsInt,
 } from 'class-validator';
 
 import { Position } from '@/shared/entities/position.entity';
@@ -15,7 +18,9 @@ import { ValidatorCogCommune } from '@/shared/validators/cog.validator';
 
 export class UpdateNumeroDTO {
   @IsOptional()
-  @Validate(ValidatorBal, ['numero'])
+  @IsInt({ message: 'numero:Le champ numéro doit être un entier' })
+  @Min(0, { message: 'numero:Le champ numéro doit être 0 au minimum' })
+  @Max(99998, { message: 'numero:Le champ numéro doit être inférieur à 99998' })
   @ApiProperty({ required: false, nullable: false })
   numero?: number;
 
