@@ -47,6 +47,7 @@ import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
 import { CacheModule } from '@/shared/modules/cache/cache.module';
 import { Cache } from '@/shared/entities/cache.entity';
+import { ResetCommunesForWebinaireTask } from '../src/modules/task/tasks/reset_communes_for_webinaire.task';
 
 @Global()
 @Module({
@@ -76,6 +77,7 @@ describe('TASK MODULE', () => {
   let detectOutdated: DetectOutdatedTask;
   let detectConflict: DetectConflictTask;
   let syncOutdatedTask: SyncOutdatedTask;
+  let resetCommuneForWebinaireTask: ResetCommunesForWebinaireTask;
   // VAR
   const token = 'xxxx';
   const createdAt = new Date('2000-01-01');
@@ -120,6 +122,7 @@ describe('TASK MODULE', () => {
         DetectOutdatedTask,
         DetectConflictTask,
         SyncOutdatedTask,
+        ResetCommunesForWebinaireTask,
         Logger,
       ],
     }).compile();
@@ -138,6 +141,9 @@ describe('TASK MODULE', () => {
     detectOutdated = app.get<DetectOutdatedTask>(DetectOutdatedTask);
     detectConflict = app.get<DetectConflictTask>(DetectConflictTask);
     syncOutdatedTask = app.get<SyncOutdatedTask>(SyncOutdatedTask);
+    resetCommuneForWebinaireTask = app.get<ResetCommunesForWebinaireTask>(
+      ResetCommunesForWebinaireTask,
+    );
   });
 
   afterAll(async () => {
@@ -640,5 +646,115 @@ describe('TASK MODULE', () => {
     const resultBal = await balRepository.findOneBy({ id: balId });
     expect(resultBal.sync.status).toEqual(StatusSyncEnum.OUTDATED);
     expect(resultBal.sync.lastUploadedRevisionId).toEqual(revisionId);
+  });
+
+  describe('ResetCommuneForWebinaireTask', () => {
+    it('should do nothing if process.env.RESET_COMMUNES_FOR_WEBINAIRE is unset', async () => {
+      process.env.RESET_COMMUNES_FOR_WEBINAIRE = '';
+
+      await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '27115',
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+      });
+
+      await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '27115',
+        status: StatusBaseLocalEnum.DRAFT,
+        emails: ['test@test.fr'],
+      });
+
+      await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '27115',
+        status: StatusBaseLocalEnum.DEMO,
+        emails: ['test@test.fr'],
+      });
+
+      await resetCommuneForWebinaireTask.run();
+
+      const resultBal = await balRepository.find({
+        where: { commune: '27115' },
+      });
+      expect(resultBal).toHaveLength(3);
+    });
+
+    it('should delete and soft delete bals from given communes', async () => {
+      process.env.RESET_COMMUNES_FOR_WEBINAIRE = '27115,37131';
+
+      const balPublished1 = await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '27115',
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+      });
+
+      const balPublished2 = await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '37131',
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+      });
+
+      const balPublished3 = await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '37003',
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+      });
+
+      const balDraft = await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '27115',
+        status: StatusBaseLocalEnum.DRAFT,
+        emails: ['test@test.fr'],
+      });
+
+      const balDemo = await createBal({
+        nom: 'bal',
+        banId: '52c4de09-6b82-45eb-8ed7-b212607282f7',
+        commune: '27115',
+        status: StatusBaseLocalEnum.DEMO,
+        emails: ['test@test.fr'],
+      });
+
+      await resetCommuneForWebinaireTask.run();
+
+      const resultBalPublished1 = await balRepository.findOne({
+        where: { id: balPublished1 },
+        withDeleted: true,
+      });
+      expect(resultBalPublished1).toBeNull();
+
+      const resultBalPublished2 = await balRepository.findOne({
+        where: { id: balPublished2 },
+        withDeleted: true,
+      });
+      expect(resultBalPublished2).toBeNull();
+
+      const resultBalPublished3 = await balRepository.findOne({
+        where: { id: balPublished3 },
+        withDeleted: true,
+      });
+      expect(resultBalPublished3).toBeTruthy();
+
+      const resultBalDraft = await balRepository.findOne({
+        where: { id: balDraft },
+        withDeleted: true,
+      });
+      expect(resultBalDraft).toBeNull();
+
+      const resultBalDemo = await balRepository.findOneBy({ id: balDemo });
+      expect(resultBalDemo).toBeNull();
+    });
   });
 });
