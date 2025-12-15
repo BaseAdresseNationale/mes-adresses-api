@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  ParseArrayPipe,
   ParseBoolPipe,
   ParseFilePipeBuilder,
   Post,
@@ -491,6 +492,30 @@ export class BaseLocaleController {
     const allDeleted: AllDeletedInBalDTO =
       await this.baseLocaleService.findAllDeletedByBal(req.baseLocale);
     res.status(HttpStatus.OK).json(allDeleted);
+  }
+
+  @Get(':baseLocaleId/numeros')
+  @ApiOperation({
+    summary: 'Find all Voie in Bal',
+    operationId: 'findNumeros',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Numero,
+    isArray: true,
+  })
+  async findNumeros(
+    @Req() req: CustomRequest,
+    @Query('select', new ParseArrayPipe({ optional: true }))
+    select: Array<keyof Numero>,
+    @Res() res: Response,
+  ) {
+    const numeros: Numero[] = await this.numeroService.findManyByBal(
+      req.baseLocale.id,
+      select,
+    );
+    res.status(HttpStatus.OK).json(numeros);
   }
 
   @Put(':baseLocaleId/search/numeros')
