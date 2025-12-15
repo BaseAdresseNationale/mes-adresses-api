@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   ArrayContains,
+  FindOptionsRelations,
   FindOptionsSelect,
   FindOptionsWhere,
   In,
@@ -58,6 +59,13 @@ import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 import { TaskTitle } from '@/shared/types/task.type';
 import { QUEUE_NAME } from '@/shared/params/queue_name.const';
+import {
+  AlertCodeVoieEnum,
+  AlertFieldVoieEnum,
+  AlertModelEnum,
+  AlertVoie,
+} from '@/lib/types/alerts.type';
+import { computeVoieNomAlerts } from '@/lib/utils/voie-nom.utils';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
@@ -652,6 +660,57 @@ export class BaseLocaleService {
     } finally {
       await queueEvents.close();
     }
+  }
+
+  getVoieNomAlert = (voie: Voie): AlertVoie | undefined => {
+    const [codes, remediation] = computeVoieNomAlerts(voie.nom);
+    if (codes.length > 0) {
+      return {
+        model: AlertModelEnum.VOIE,
+        field: AlertFieldVoieEnum.VOIE_NOM,
+        codes,
+        value: voie.nom,
+        remediation,
+      };
+    }
+  };
+
+  getVoieEmptyAlert = (voie: Voie): AlertVoie | undefined => {
+    if (voie.numeros?.length === 0) {
+      return {
+        model: AlertModelEnum.VOIE,
+        codes: [AlertCodeVoieEnum.VOIE_EMPTY],
+      } as AlertVoie;
+    }
+  };
+
+  async computeVoiesAlerts(
+    baseLocale: BaseLocale,
+  ): Promise<Record<string, AlertVoie[]>> {
+    const voies = await this.voieService.findMany(
+      {
+        balId: baseLocale.id,
+      },
+      ['id', 'nom'] as FindOptionsSelect<Voie>,
+      { numeros: true } as FindOptionsRelations<Voie>,
+    );
+    const alertsRecord: Record<string, AlertVoie[]> = {};
+    for (const voie of voies) {
+      const alerts: AlertVoie[] = [
+        this.getVoieNomAlert(voie),
+        this.getVoieEmptyAlert(voie),
+      ]
+        .filter((alert) => alert !== undefined)
+        .filter((alert) =>
+          alert.codes.every(
+            (code) => !baseLocale.settings?.ignoredAlertCodes.includes(code),
+          ),
+        );
+      if (alerts.length > 0) {
+        alertsRecord[voie.id] = alerts;
+      }
+    }
+    return alertsRecord;
   }
 
   touch(balId: string, updatedAt: Date = new Date()) {

@@ -22,11 +22,13 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiExtraModels,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 
@@ -69,6 +71,13 @@ import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
+import {
+  AlertCodeVoieEnum,
+  AlertFieldVoieEnum,
+  AlertModelEnum,
+  AlertVoie,
+} from '@/lib/types/alerts.type';
+import { AlertVoieDTO } from './dto/alerts-voie.dto';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -710,5 +719,45 @@ export class BaseLocaleController {
       createToponymeDto,
     );
     res.status(HttpStatus.CREATED).json(toponyme);
+  }
+
+  @Get(':baseLocaleId/voies/alerts')
+  @ApiOperation({
+    summary: 'Compute alerts for voies',
+    operationId: 'findBaseLocaleVoiesAlerts',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiExtraModels(AlertVoieDTO)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    schema: {
+      type: 'object',
+      additionalProperties: {
+        type: 'array',
+        items: {
+          $ref: getSchemaPath(AlertVoieDTO),
+        },
+      },
+      example: {
+        '6051b659e5ccc4108c38f4ff': [
+          {
+            model: AlertModelEnum.VOIE,
+            codes: [AlertCodeVoieEnum.CARACTERE_INVALIDE],
+            field: AlertFieldVoieEnum.VOIE_NOM,
+            value: 'rue de la paix.',
+            remediation: 'Rue de la Paix',
+          },
+        ],
+      },
+    },
+  })
+  @ApiBearerAuth('admin-token')
+  async findBaseLocaleVoiesAlerts(
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+  ) {
+    const alerts: Record<string, AlertVoie[]> =
+      await this.baseLocaleService.computeVoiesAlerts(req.baseLocale);
+    res.status(HttpStatus.OK).json(alerts);
   }
 }
