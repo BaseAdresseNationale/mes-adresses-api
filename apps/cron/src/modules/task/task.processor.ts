@@ -10,6 +10,7 @@ import { RemoveSoftDeleteBalTask } from './tasks/remove_soft_delete_bal.task';
 import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
 import { UploadTracesTask } from './tasks/upload_traces.task';
 import { ForcePublishTask } from './tasks/force_publish.task';
+import { ResetCommunesForWebinaireTask } from './tasks/reset_communes_for_webinaire.task';
 
 @Processor(QUEUE_NAME)
 export class TaskProcessor extends WorkerHost {
@@ -21,6 +22,7 @@ export class TaskProcessor extends WorkerHost {
     private readonly removeDemoBalTask: RemoveDemoBalTask,
     private readonly uploadTracesTask: UploadTracesTask,
     private readonly forcePublishTask: ForcePublishTask,
+    private readonly resetCommunesForWebinaireTask: ResetCommunesForWebinaireTask,
   ) {
     super();
   }
@@ -31,20 +33,37 @@ export class TaskProcessor extends WorkerHost {
       TaskProcessor.name,
     );
     try {
-      if (job.name === TaskTitle.DETECT_OUTDATED) {
-        await this.detectOutdatedTask.run();
-      } else if (job.name === TaskTitle.DETECT_CONFLICT) {
-        await this.detectConflictTask.run();
-      } else if (job.name === TaskTitle.SYNC_OUTDATED) {
-        await this.syncOutdatedTask.run();
-      } else if (job.name === TaskTitle.FORCE_PUBLISH) {
-        await this.forcePublishTask.run(job.data.balId);
-      } else if (job.name === TaskTitle.REMOVE_SOFT_DELETE_BAL) {
-        await this.removeSoftDeleteBalTask.run();
-      } else if (job.name === TaskTitle.REMOVE_DEMO_BAL) {
-        await this.removeDemoBalTask.run();
-      } else if (job.name === TaskTitle.UPLOAD_TRACES) {
-        await this.uploadTracesTask.run();
+      switch (job.name) {
+        case TaskTitle.DETECT_OUTDATED:
+          await this.detectOutdatedTask.run();
+          break;
+        case TaskTitle.DETECT_CONFLICT:
+          await this.detectConflictTask.run();
+          break;
+        case TaskTitle.SYNC_OUTDATED:
+          await this.syncOutdatedTask.run();
+          break;
+        case TaskTitle.FORCE_PUBLISH:
+          await this.forcePublishTask.run(job.data.balId);
+          break;
+        case TaskTitle.REMOVE_SOFT_DELETE_BAL:
+          await this.removeSoftDeleteBalTask.run();
+          break;
+        case TaskTitle.REMOVE_DEMO_BAL:
+          await this.removeDemoBalTask.run();
+          break;
+        case TaskTitle.UPLOAD_TRACES:
+          await this.uploadTracesTask.run();
+          break;
+        case TaskTitle.RESET_COMMUNES_FOR_WEBINAIRE:
+          await this.resetCommunesForWebinaireTask.run();
+          break;
+        default:
+          Logger.warn(
+            `[${TaskProcessor.name}] Unknown task ${job.name}`,
+            TaskProcessor.name,
+          );
+          break;
       }
     } catch (error) {
       Logger.error(
