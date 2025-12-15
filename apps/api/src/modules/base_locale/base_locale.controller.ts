@@ -493,17 +493,17 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(allDeleted);
   }
 
-  @Put(':baseLocaleId/numeros')
+  @Put(':baseLocaleId/search/numeros')
   @ApiOperation({
     summary: 'Search numero',
-    operationId: 'searchNumeros',
+    operationId: 'searchNumerosInPolygon',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: SearchNumeroDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async searchNumeros(
+  async searchNumerosInPolygon(
     @Req() req: CustomRequest,
     @Body() searchNumeroDTO: SearchNumeroDTO,
     @Res() res: Response,
