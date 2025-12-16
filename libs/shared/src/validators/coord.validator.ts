@@ -3,16 +3,8 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import * as proj from '@etalab/project-legal';
-import { getLabel, readValue } from '@ban-team/validateur-bal';
 import { Point } from '@turf/turf';
-
-async function validateurBAL(value, label) {
-  const { errors } = await readValue(label, value);
-
-  return {
-    errors: errors.map((error) => getLabel(`${label}.${error}`)),
-  };
-}
+import { getValidateurBalColumnErrors } from '../utils/validateur-bal.utils';
 
 function harmlessProj(coordinates: number[]) {
   try {
@@ -53,12 +45,18 @@ export class LineStringValidator implements ValidatorConstraintInterface {
             return false;
           }
 
-          const latResults = await validateurBAL(lat.toString(), 'lat');
+          const latResults = await getValidateurBalColumnErrors(
+            'lat',
+            lat.toString(),
+          );
           if (latResults.errors.length > 0) {
             return false;
           }
 
-          const longResults = await validateurBAL(long.toString(), 'long');
+          const longResults = await getValidateurBalColumnErrors(
+            'long',
+            long.toString(),
+          );
           if (longResults.errors.length > 0) {
             return false;
           }

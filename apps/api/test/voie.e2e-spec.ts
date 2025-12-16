@@ -433,7 +433,12 @@ describe('VOIE MODULE', () => {
 
       expect(response.text).toEqual(
         JSON.stringify({
-          message: ['numero:Le champ numero est obligatoire'],
+          message: [
+            'numero:Le champ numéro doit être inférieur à 99998',
+            'numero:Le champ numéro doit être 0 au minimum',
+            'numero:Le champ numéro doit être un entier',
+            'numero:Le champ numero est obligatoire',
+          ],
           error: 'Bad Request',
           statusCode: 400,
         }),
