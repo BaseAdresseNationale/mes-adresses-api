@@ -70,6 +70,7 @@ import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
 import { In } from 'typeorm';
+import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -167,9 +168,7 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(page);
   }
 
-  @Get('')
-  @ApiQuery({ name: 'isExist', required: false, type: Boolean })
-  @ApiQuery({ name: 'ids', required: false, type: String, isArray: true })
+  @Post('/search-by-ids')
   @ApiOperation({
     summary: 'Find Many Bases Locales',
     operationId: 'findManyBaseLocales',
@@ -179,11 +178,13 @@ export class BaseLocaleController {
     type: ExtendedBaseLocaleDTO,
     isArray: true,
   })
+  @ApiBody({ type: FindManyBaseLocalDTO, required: true })
+  @ApiQuery({ name: 'isExist', required: false, type: Boolean })
   @ApiBearerAuth('admin-token')
   async findManyBaseLocales(
     @Req() req: CustomRequest,
     @Query('isExist', new ParseBoolPipe({ optional: true })) isExist: boolean,
-    @Query('ids') ids: string[],
+    @Body() { ids }: FindManyBaseLocalDTO,
     @Res() res: Response,
   ) {
     let basesLocales = await this.baseLocaleService.findMany({
