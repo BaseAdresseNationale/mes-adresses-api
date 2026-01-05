@@ -58,6 +58,7 @@ import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 import { TaskTitle } from '@/shared/types/task.type';
 import { QUEUE_NAME } from '@/shared/params/queue_name.const';
+import { getEmailsMairie } from '@/lib/utils/annuaire-service-public';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
@@ -645,7 +646,21 @@ export class BaseLocaleService {
     );
 
     try {
-      return await job.waitUntilFinished(queueEvents, 30000);
+      const result = await job.waitUntilFinished(queueEvents, 30000);
+      if (!result.success) {
+        throw new HttpException(result.error, HttpStatus.PRECONDITION_FAILED);
+      }
+      const baseLocale = await this.basesLocalesRepository.findOneBy({
+        id: balId,
+      });
+      const emails = await getEmailsMairie(baseLocale.commune);
+      if (emails) {
+        const uniqEmails = new Set([...emails, ...baseLocale.emails]);
+        await this.basesLocalesRepository.update(
+          { id: balId },
+          { emails: [...uniqEmails] },
+        );
+      }
     } catch (error) {
       this.taskQueue.remove(job.id);
       throw error;
