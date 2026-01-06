@@ -69,7 +69,7 @@ import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
-import { In } from 'typeorm';
+import { In, IsNull } from 'typeorm';
 import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
 
 @ApiTags('bases-locales')
@@ -179,21 +179,14 @@ export class BaseLocaleController {
     isArray: true,
   })
   @ApiBody({ type: FindManyBaseLocalDTO, required: true })
-  @ApiQuery({ name: 'isExist', required: false, type: Boolean })
-  @ApiBearerAuth('admin-token')
   async findManyBaseLocales(
-    @Req() req: CustomRequest,
-    @Query('isExist', new ParseBoolPipe({ optional: true })) isExist: boolean,
     @Body() { ids }: FindManyBaseLocalDTO,
     @Res() res: Response,
   ) {
-    let basesLocales = await this.baseLocaleService.findMany({
+    const basesLocales = await this.baseLocaleService.findMany({
       id: In(ids),
+      deletedAt: IsNull(),
     });
-
-    if (isExist) {
-      basesLocales = basesLocales.filter((baseLocale) => !baseLocale.deletedAt);
-    }
 
     const extendedBasesLocales = await Promise.all(
       basesLocales.map((baseLocale) =>
@@ -201,11 +194,9 @@ export class BaseLocaleController {
       ),
     );
 
-    const response = req.isAdmin
-      ? extendedBasesLocales
-      : extendedBasesLocales.map((baseLocale) =>
-          filterSensitiveFields(baseLocale),
-        );
+    const response = extendedBasesLocales.map((baseLocale) =>
+      filterSensitiveFields(baseLocale),
+    );
 
     res.status(HttpStatus.OK).json(response);
   }
