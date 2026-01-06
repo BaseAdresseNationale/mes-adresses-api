@@ -40,22 +40,23 @@ export class HabilitationService {
     }
   }
 
-  async isValid(habilitationId: string): Promise<boolean> {
-    let habilitation: Habilitation;
-
-    if (!ObjectId.isValid(habilitationId)) {
+  async areValid(habilitationIds: string[]): Promise<boolean> {
+    if (
+      habilitationIds.some(
+        (habilitationId) => !ObjectId.isValid(habilitationId),
+      )
+    ) {
       throw new HttpException(
-        'L’identifiant de l’habilitation est invalide',
+        'Les identifiants de l’habilitations sont invalides',
         HttpStatus.NOT_FOUND,
       );
     }
 
     try {
-      habilitation =
-        await this.apiDepotService.findOneHabiliation(habilitationId);
+      return await this.apiDepotService.habilitationsAreValid(habilitationIds);
     } catch (error) {
       this.logger.error(
-        `Impossible de trouver l'habilitation ${habilitationId}`,
+        `Impossible de vérifier si les habilitations sont valides`,
         error.response?.data || 'No server response',
         HabilitationService.name,
       );
@@ -64,12 +65,6 @@ export class HabilitationService {
         HttpStatus.BAD_GATEWAY,
       );
     }
-
-    // On verifie que l'habilitation est valide
-    if (habilitation.status !== StatusHabilitationEnum.ACCEPTED) {
-      return false;
-    }
-    return true;
   }
 
   async createOne(baseLocale: BaseLocale): Promise<Habilitation> {

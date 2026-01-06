@@ -1,5 +1,5 @@
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 
 export class ExtendedBaseLocaleDTO extends BaseLocale {
   @ApiProperty()
@@ -10,4 +10,15 @@ export class ExtendedBaseLocaleDTO extends BaseLocale {
 
   @ApiProperty()
   isAllCertified?: boolean;
+
+  @ApiProperty()
+  isHabilitationValid?: boolean;
+}
+
+export class BaseLocaleWithHabilitationDTO extends OmitType(
+  ExtendedBaseLocaleDTO,
+  ['token', 'emails'],
+) {
+  @ApiProperty()
+  isHabilitationValid?: boolean;
 }

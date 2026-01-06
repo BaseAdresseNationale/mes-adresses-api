@@ -30,6 +30,21 @@ export class ApiDepotService {
     return data;
   }
 
+  async habilitationsAreValid(habilitationIds: string[]): Promise<boolean> {
+    const { data } = await firstValueFrom(
+      this.httpService
+        .post<boolean>(`habilitations/are-valid`, {
+          ids: habilitationIds,
+        })
+        .pipe(
+          catchError((error: AxiosError) => {
+            throw error;
+          }),
+        ),
+    );
+    return data;
+  }
+
   async createOneHabiliation(baseLocale: BaseLocale): Promise<Habilitation> {
     const { data: habilitation } = await firstValueFrom(
       this.httpService
