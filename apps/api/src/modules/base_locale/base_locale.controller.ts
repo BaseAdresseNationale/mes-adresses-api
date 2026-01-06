@@ -69,6 +69,8 @@ import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
+import { In, IsNull } from 'typeorm';
+import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -164,6 +166,39 @@ export class BaseLocaleController {
       results,
     };
     res.status(HttpStatus.OK).json(page);
+  }
+
+  @Post('/search-by-ids')
+  @ApiOperation({
+    summary: 'Find Many Bases Locales',
+    operationId: 'findManyBaseLocales',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: ExtendedBaseLocaleDTO,
+    isArray: true,
+  })
+  @ApiBody({ type: FindManyBaseLocalDTO, required: true })
+  async findManyBaseLocales(
+    @Body() { ids }: FindManyBaseLocalDTO,
+    @Res() res: Response,
+  ) {
+    const basesLocales = await this.baseLocaleService.findMany({
+      id: In(ids),
+      deletedAt: IsNull(),
+    });
+
+    const extendedBasesLocales = await Promise.all(
+      basesLocales.map((baseLocale) =>
+        this.baseLocaleService.extendWithNumeros(baseLocale),
+      ),
+    );
+
+    const response = extendedBasesLocales.map((baseLocale) =>
+      filterSensitiveFields(baseLocale),
+    );
+
+    res.status(HttpStatus.OK).json(response);
   }
 
   @Get(':baseLocaleId')
