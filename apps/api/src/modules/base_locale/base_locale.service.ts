@@ -59,6 +59,7 @@ import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 import { TaskTitle } from '@/shared/types/task.type';
 import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 import { getEmailsMairie } from '@/lib/utils/annuaire-service-public';
+import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
@@ -558,12 +559,20 @@ export class BaseLocaleService {
     }
   }
 
-  async recoverAccessByCommune(codeCommune: string) {
-    const baseLocale = await this.basesLocalesRepository.findOneBy({
-      commune: codeCommune,
+  async recoverAccessByCommune({ codeCommune }: RecoverCommuneDTO) {
+    if (!codeCommune) {
+      throw new HttpException(
+        'Le code commune est requis',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const where: FindOptionsWhere<BaseLocale> = {
       status: StatusBaseLocalEnum.PUBLISHED,
       deletedAt: IsNull(),
-    });
+      commune: codeCommune,
+    };
+    const baseLocale = await this.basesLocalesRepository.findOneBy(where);
 
     if (!baseLocale) {
       throw new HttpException(
