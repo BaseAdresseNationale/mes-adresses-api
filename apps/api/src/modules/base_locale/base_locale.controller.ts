@@ -355,6 +355,33 @@ export class BaseLocaleController {
     res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
+  @Post('/recovery/commune')
+  @ApiOperation({
+    summary: 'Recover BAL access by commune',
+    operationId: 'recoveryBasesLocalesByCommune',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        codeCommune: {
+          type: 'string',
+        },
+      },
+      required: ['codeCommune'],
+    },
+    required: true,
+  })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  async recoveryBasesLocalesByCommune(
+    @Body() { codeCommune }: { codeCommune: string },
+    @Res() res: Response,
+  ) {
+    await this.baseLocaleService.recoverAccessByCommune(codeCommune);
+
+    res.sendStatus(HttpStatus.NO_CONTENT);
+  }
+
   @Get(':baseLocaleId/:token/recovery')
   @ApiOperation({
     summary: 'Restore deleted BAL',

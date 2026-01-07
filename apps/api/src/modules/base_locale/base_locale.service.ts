@@ -58,6 +58,7 @@ import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 import { TaskTitle } from '@/shared/types/task.type';
 import { QUEUE_NAME } from '@/shared/params/queue_name.const';
+import { getEmailsMairie } from '@/lib/utils/annuaire-service-public';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
@@ -553,6 +554,53 @@ export class BaseLocaleService {
       throw new HttpException(
         'Aucune base locale ne correspond à ces critères',
         HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+  async recoverAccessByCommune(codeCommune: string) {
+    const baseLocale = await this.basesLocalesRepository.findOneBy({
+      commune: codeCommune,
+      status: StatusBaseLocalEnum.PUBLISHED,
+      deletedAt: IsNull(),
+    });
+
+    if (!baseLocale) {
+      throw new HttpException(
+        'Aucune base locale ne correspond à ces critères',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const emails = await getEmailsMairie(codeCommune);
+    if (!emails || emails.length === 0) {
+      throw new HttpException(
+        'Aucune adresse email trouvée pour la commune',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      const apiUrl = getApiUrl();
+      const recoveryUrl = getEditorUrl(baseLocale);
+
+      await this.mailerService.sendMail({
+        to: emails,
+        subject: `Demande de récupération de la Bases Adresses Locales de ${baseLocale.communeNom}`,
+        template: 'recovery-commune-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          apiUrl,
+          recoveryUrl,
+          communeNom: baseLocale.communeNom,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      // Si aucune Bal ne correspond, on lance un erreur
+      throw new HttpException(
+        "Une erreur est survenue lors de l'envoi de l'email",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
