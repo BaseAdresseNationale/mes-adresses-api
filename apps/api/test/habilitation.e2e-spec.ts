@@ -1,13 +1,7 @@
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { ObjectId } from 'mongodb';
-import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
@@ -16,7 +10,6 @@ import {
   BaseLocale,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
-import { Position } from '@/shared/entities/position.entity';
 
 import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
 import MockAdapter from 'axios-mock-adapter';
@@ -27,91 +20,53 @@ import {
 } from '@/shared/modules/api_depot/api-depot.types';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { Repository } from 'typeorm';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
+import {
+  token,
+  createBal,
+  deleteRepositories,
+  getTypeORMModule,
+  getTypeormRepository,
+  initTypeormRepository,
+  startPostgresContainer,
+  stopPostgresContainer,
+} from './typeorm.utils';
 
 describe('HABILITATION MODULE', () => {
   let app: INestApplication;
   // DB
-  let postgresContainer: StartedPostgreSqlContainer;
-  let postgresClient: Client;
-  let numeroRepository: Repository<Numero>;
-  let voieRepository: Repository<Voie>;
-  let balRepository: Repository<BaseLocale>;
-  let toponymeRepository: Repository<Toponyme>;
-  // VAR
-  const token = 'xxxx';
-  const createdAt = new Date('2000-01-01');
-  const updatedAt = new Date('2000-01-02');
+  let repositories: {
+    numeros: Repository<Numero>;
+    voies: Repository<Voie>;
+    bals: Repository<BaseLocale>;
+    toponymes: Repository<Toponyme>;
+  };
   // AXIOS
   const axiosMock = new MockAdapter(axios);
 
   beforeAll(async () => {
     // INIT DB
-    postgresContainer = await new PostgreSqlContainer(
-      'postgis/postgis:12-3.0',
-    ).start();
-    postgresClient = new Client({
-      host: postgresContainer.getHost(),
-      port: postgresContainer.getPort(),
-      database: postgresContainer.getDatabase(),
-      user: postgresContainer.getUsername(),
-      password: postgresContainer.getPassword(),
-    });
-    await postgresClient.connect();
+    await startPostgresContainer();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: postgresContainer.getHost(),
-          port: postgresContainer.getPort(),
-          username: postgresContainer.getUsername(),
-          password: postgresContainer.getPassword(),
-          database: postgresContainer.getDatabase(),
-          synchronize: true,
-          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
-        }),
-        HabilitationModule,
-        MailerModule,
-      ],
+      imports: [getTypeORMModule(), HabilitationModule, MailerModule],
     }).compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     // INIT REPOSITORY
-    numeroRepository = app.get(getRepositoryToken(Numero));
-    voieRepository = app.get(getRepositoryToken(Voie));
-    balRepository = app.get(getRepositoryToken(BaseLocale));
-    toponymeRepository = app.get(getRepositoryToken(Toponyme));
+    initTypeormRepository(app);
+    repositories = getTypeormRepository();
   });
 
   afterAll(async () => {
-    await postgresClient.end();
-    await postgresContainer.stop();
+    await stopPostgresContainer();
     await app.close();
   });
 
   afterEach(async () => {
     axiosMock.reset();
-    await numeroRepository.delete({});
-    await voieRepository.delete({});
-    await balRepository.delete({});
-    await toponymeRepository.delete({});
+    await deleteRepositories();
   });
-
-  async function createBal(props: Partial<BaseLocale> = {}) {
-    const payload: Partial<BaseLocale> = {
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      status: props.status ?? StatusBaseLocalEnum.DRAFT,
-      token,
-      ...props,
-    };
-    const entityToInsert = balRepository.create(payload);
-    const result = await balRepository.save(entityToInsert);
-    return result.id;
-  }
 
   describe('GET /bases-locales/:id/habilitation', () => {
     it('expect 200 with admin token', async () => {
@@ -121,7 +76,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.PUBLISHED,
         habilitationId,
       });
@@ -153,7 +107,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.PUBLISHED,
         habilitationId,
       });
@@ -180,7 +133,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.PUBLISHED,
         habilitationId,
       });
@@ -214,7 +166,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.DRAFT,
       });
 
@@ -237,7 +188,7 @@ describe('HABILITATION MODULE', () => {
         JSON.stringify(habilitation),
       );
 
-      const updatedBAL = await balRepository.findOneBy({ id: balId });
+      const updatedBAL = await repositories.bals.findOneBy({ id: balId });
       expect(updatedBAL.habilitationId).toBe(habilitation.id);
     });
 
@@ -248,7 +199,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.DRAFT,
         habilitationId,
       });
@@ -284,7 +234,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.DRAFT,
         habilitationId,
       });
@@ -323,7 +272,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.DRAFT,
         habilitationId,
       });
@@ -360,7 +308,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.DRAFT,
         habilitationId,
       });
@@ -396,7 +343,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.DRAFT,
         habilitationId,
       });
@@ -442,7 +388,6 @@ describe('HABILITATION MODULE', () => {
         nom: 'BAL de test',
         commune,
         emails: ['test@test.fr'],
-        token,
         status: StatusBaseLocalEnum.DRAFT,
         habilitationId,
       });

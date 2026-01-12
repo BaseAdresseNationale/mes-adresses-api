@@ -1,8 +1,3 @@
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   HttpException,
@@ -12,7 +7,6 @@ import {
 import { ObjectId } from 'mongodb';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { v4 as uuid } from 'uuid';
 
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
@@ -22,7 +16,6 @@ import {
   StatusBaseLocalEnum,
   StatusSyncEnum,
 } from '@/shared/entities/base_locale.entity';
-import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
 import {
   Revision,
   StatusRevisionEnum,
@@ -32,57 +25,42 @@ import {
 } from '@/shared/modules/api_depot/api-depot.types';
 
 // import { MailerModule } from '@/shared/test/mailer.module.test';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { Point, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { PublicationService } from '@/shared/modules/publication/publication.service';
+import {
+  createBal,
+  createNumero,
+  createPositions,
+  createVoie,
+  deleteRepositories,
+  getTypeORMModule,
+  getTypeormRepository,
+  initTypeormRepository,
+  startPostgresContainer,
+  stopPostgresContainer,
+} from './typeorm.utils';
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
   // DB
-  let postgresContainer: StartedPostgreSqlContainer;
-  let postgresClient: Client;
-  let numeroRepository: Repository<Numero>;
-  let voieRepository: Repository<Voie>;
-  let balRepository: Repository<BaseLocale>;
-  let toponymeRepository: Repository<Toponyme>;
+  let repositories: {
+    numeros: Repository<Numero>;
+    voies: Repository<Voie>;
+    bals: Repository<BaseLocale>;
+    toponymes: Repository<Toponyme>;
+  };
   // SERVICE
   let publicationService: PublicationService;
-  // VAR
-  const token = 'xxxx';
-  const createdAt = new Date('2000-01-01');
-  const updatedAt = new Date('2000-01-02');
   // AXIOS
   const axiosMock = new MockAdapter(axios);
 
   beforeAll(async () => {
     // INIT DB
-    postgresContainer = await new PostgreSqlContainer(
-      'postgis/postgis:12-3.0',
-    ).start();
-    postgresClient = new Client({
-      host: postgresContainer.getHost(),
-      port: postgresContainer.getPort(),
-      database: postgresContainer.getDatabase(),
-      user: postgresContainer.getUsername(),
-      password: postgresContainer.getPassword(),
-    });
-    await postgresClient.connect();
+    await startPostgresContainer();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: postgresContainer.getHost(),
-          port: postgresContainer.getPort(),
-          username: postgresContainer.getUsername(),
-          password: postgresContainer.getPassword(),
-          database: postgresContainer.getDatabase(),
-          synchronize: true,
-          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
-        }),
-        PublicationModule,
-      ],
+      imports: [getTypeORMModule(), PublicationModule],
     }).compile();
     publicationService = await moduleFixture.resolve(PublicationService);
 
@@ -90,84 +68,19 @@ describe('PUBLICATION MODULE', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     // INIT REPOSITORY
-    numeroRepository = app.get(getRepositoryToken(Numero));
-    voieRepository = app.get(getRepositoryToken(Voie));
-    balRepository = app.get(getRepositoryToken(BaseLocale));
-    toponymeRepository = app.get(getRepositoryToken(Toponyme));
+    initTypeormRepository(app);
+    repositories = getTypeormRepository();
   });
 
   afterAll(async () => {
-    await postgresClient.end();
-    await postgresContainer.stop();
+    await stopPostgresContainer();
     await app.close();
   });
 
   afterEach(async () => {
     axiosMock.reset();
-    await numeroRepository.delete({});
-    await voieRepository.delete({});
-    await balRepository.delete({});
-    await toponymeRepository.delete({});
+    await deleteRepositories();
   });
-
-  async function createBal(props: Partial<BaseLocale> = {}) {
-    const payload: Partial<BaseLocale> = {
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      status: props.status ?? StatusBaseLocalEnum.DRAFT,
-      token,
-      ...props,
-    };
-    const entityToInsert = balRepository.create(payload);
-    const result = await balRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  async function createVoie(balId: string, props: Partial<Voie> = {}) {
-    const payload: Partial<Voie> = {
-      balId,
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      ...props,
-    };
-    const entityToInsert = voieRepository.create(payload);
-    const result = await voieRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  async function createNumero(
-    balId: string,
-    voieId: string,
-    props: Partial<Numero> = {},
-  ) {
-    const payload: Partial<Numero> = {
-      balId,
-      banId: uuid(),
-      voieId,
-      createdAt,
-      updatedAt,
-      ...props,
-    };
-    const entityToInsert = numeroRepository.create(payload);
-    const result = await numeroRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  function createPositions(coordinates: number[] = [8, 42]): Position {
-    const id = new ObjectId().toHexString();
-    const point: Point = {
-      type: 'Point',
-      coordinates,
-    };
-    return {
-      id,
-      type: PositionTypeEnum.ENTREE,
-      source: 'ban',
-      point,
-    } as Position;
-  }
 
   describe('POST /bases-locales/sync/exec', () => {
     it('Publish 200 DRAFT', async () => {
@@ -180,13 +93,13 @@ describe('PUBLICATION MODULE', () => {
         status: StatusBaseLocalEnum.DRAFT,
         emails: ['test@test.fr'],
       });
-      const { banId: communeUuid } = await balRepository.findOneBy({
+      const { banId: communeUuid } = await repositories.bals.findOneBy({
         id: balId,
       });
       const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
       });
-      const { banId: voieUuid } = await voieRepository.findOneBy({
+      const { banId: voieUuid } = await repositories.voies.findOneBy({
         id: voieId,
       });
       const numeroId = await createNumero(balId, voieId, {
@@ -197,7 +110,7 @@ describe('PUBLICATION MODULE', () => {
         updatedAt: new Date('2000-01-01'),
         communeDeleguee: '08294',
       });
-      const { banId: numeroUuid } = await numeroRepository.findOneBy({
+      const { banId: numeroUuid } = await repositories.numeros.findOneBy({
         id: numeroId,
       });
       // MOCK AXIOS
@@ -304,13 +217,13 @@ describe('PUBLICATION MODULE', () => {
           lastUploadedRevisionId: revisionId,
         },
       });
-      const { banId: communeUuid } = await balRepository.findOneBy({
+      const { banId: communeUuid } = await repositories.bals.findOneBy({
         id: balId,
       });
       const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
       });
-      const { banId: toponymeUuid } = await voieRepository.findOneBy({
+      const { banId: toponymeUuid } = await repositories.voies.findOneBy({
         id: voieId,
       });
       const numeroId = await createNumero(balId, voieId, {
@@ -320,7 +233,7 @@ describe('PUBLICATION MODULE', () => {
         certifie: true,
         updatedAt: new Date('2000-01-01'),
       });
-      const { banId: numeroUuid } = await numeroRepository.findOneBy({
+      const { banId: numeroUuid } = await repositories.numeros.findOneBy({
         id: numeroId,
       });
 
