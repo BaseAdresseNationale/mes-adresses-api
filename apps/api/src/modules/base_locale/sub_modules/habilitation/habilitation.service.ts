@@ -40,6 +40,34 @@ export class HabilitationService {
     }
   }
 
+  async isValid(habilitationId: string): Promise<boolean> {
+    let habilitation: Habilitation;
+
+    if (!ObjectId.isValid(habilitationId)) {
+      throw new HttpException(
+        'L’identifiant de l’habilitation est invalide',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      habilitation =
+        await this.apiDepotService.findOneHabiliation(habilitationId);
+    } catch (error) {
+      this.logger.error(
+        `Impossible de trouver l'habilitation ${habilitationId}`,
+        error.response?.data || 'No server response',
+        HabilitationService.name,
+      );
+    }
+
+    // On verifie que l'habilitation est valide
+    if (habilitation.status !== StatusHabilitationEnum.ACCEPTED) {
+      return false;
+    }
+    return true;
+  }
+
   async areValid(habilitationIds: string[]): Promise<boolean> {
     if (
       habilitationIds.some(
