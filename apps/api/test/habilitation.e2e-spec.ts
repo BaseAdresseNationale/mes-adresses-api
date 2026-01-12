@@ -52,6 +52,7 @@ describe('HABILITATION MODULE', () => {
     }).compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
+    app.useLogger(false);
     await app.init();
     // INIT REPOSITORY
     initTypeormRepository(app);
