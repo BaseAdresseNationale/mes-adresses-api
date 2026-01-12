@@ -59,6 +59,10 @@ export class HabilitationService {
         error.response?.data || 'No server response',
         HabilitationService.name,
       );
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
     }
 
     // On verifie que l'habilitation est valide
