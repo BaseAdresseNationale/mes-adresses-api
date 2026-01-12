@@ -1,8 +1,3 @@
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   forwardRef,
@@ -23,10 +18,8 @@ import {
   BaseLocale,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
-import { Position } from '@/shared/entities/position.entity';
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Signalement } from '@/shared/openapi-signalement';
 import { MailerModule } from '@/shared/test/mailer.module.test';
@@ -34,6 +27,17 @@ import { SignalementService } from '@/modules/signalement/signalement.service';
 import { OpenAPISignalementService } from '@/modules/signalement/openAPI-signalement.service';
 import { SignalementController } from '@/modules/signalement/signalement.controller';
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
+import {
+  token,
+  updatedAt,
+  createdAt,
+  deleteRepositories,
+  getTypeORMModule,
+  getTypeormRepository,
+  initTypeormRepository,
+  startPostgresContainer,
+  stopPostgresContainer,
+} from './typeorm.utils';
 
 const signalement = {
   createdAt: '2024-11-28T16:41:54.271Z',
@@ -105,42 +109,22 @@ class SignalementModule {
 describe('SIGNALEMENT MODULE', () => {
   let app: INestApplication;
   // DB
-  let postgresContainer: StartedPostgreSqlContainer;
-  let postgresClient: Client;
-  let balRepository: Repository<BaseLocale>;
-  // VAR
-  const token = 'xxxx';
-  const createdAt = new Date('2000-01-01');
-  const updatedAt = new Date('2000-01-02');
+  let repositories: {
+    numeros: Repository<Numero>;
+    voies: Repository<Voie>;
+    bals: Repository<BaseLocale>;
+    toponymes: Repository<Toponyme>;
+  };
   // AXIOS
   const axiosMock = new MockAdapter(axios);
 
   beforeAll(async () => {
     // INIT DB
-    postgresContainer = await new PostgreSqlContainer(
-      'postgis/postgis:12-3.0',
-    ).start();
-    postgresClient = new Client({
-      host: postgresContainer.getHost(),
-      port: postgresContainer.getPort(),
-      database: postgresContainer.getDatabase(),
-      user: postgresContainer.getUsername(),
-      password: postgresContainer.getPassword(),
-    });
-    await postgresClient.connect();
+    await startPostgresContainer();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: postgresContainer.getHost(),
-          port: postgresContainer.getPort(),
-          username: postgresContainer.getUsername(),
-          password: postgresContainer.getPassword(),
-          database: postgresContainer.getDatabase(),
-          synchronize: true,
-          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
-        }),
+        getTypeORMModule(),
         BaseLocaleModule,
         MailerModule,
         SignalementModule,
@@ -151,18 +135,18 @@ describe('SIGNALEMENT MODULE', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     // INIT REPOSITORY
-    balRepository = app.get(getRepositoryToken(BaseLocale));
+    initTypeormRepository(app);
+    repositories = getTypeormRepository();
   });
 
   afterAll(async () => {
-    await postgresClient.end();
-    await postgresContainer.stop();
+    await stopPostgresContainer();
     await app.close();
   });
 
   afterEach(async () => {
     axiosMock.reset();
-    await balRepository.delete({});
+    await deleteRepositories();
   });
 
   async function createBal(props: Partial<BaseLocale> = {}) {
@@ -174,8 +158,8 @@ describe('SIGNALEMENT MODULE', () => {
       token,
       ...props,
     };
-    const entityToInsert = balRepository.create(payload);
-    const result = await balRepository.save(entityToInsert);
+    const entityToInsert = repositories.bals.create(payload);
+    const result = await repositories.bals.save(entityToInsert);
     return result.id;
   }
 
