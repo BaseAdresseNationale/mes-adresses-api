@@ -1,99 +1,46 @@
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { v4 as uuid } from 'uuid';
 
-import { Numero } from '@/shared/entities/numero.entity';
-import { Voie } from '@/shared/entities/voie.entity';
-import { Toponyme } from '@/shared/entities/toponyme.entity';
-import {
-  BaseLocale,
-  StatusBaseLocalEnum,
-} from '@/shared/entities/base_locale.entity';
-import { Position } from '@/shared/entities/position.entity';
+import { StatusBaseLocalEnum } from '@/shared/entities/base_locale.entity';
 
 import { StatsModule } from '@/modules/stats/stats.module';
 import { CodeCommuneDTO } from '@/modules/stats/dto/code_commune.dto';
 import { MailerModule } from '@/shared/test/mailer.module.test';
-import { Repository } from 'typeorm';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
+import {
+  createBal,
+  deleteRepositories,
+  getTypeORMModule,
+  initTypeormRepository,
+  startPostgresContainer,
+  stopPostgresContainer,
+} from './typeorm.utils';
 
 describe('STATS MODULE', () => {
   let app: INestApplication;
-  // DB
-  let postgresContainer: StartedPostgreSqlContainer;
-  let postgresClient: Client;
-  let balRepository: Repository<BaseLocale>;
-  // VAR
-  const token = 'xxxx';
-  const createdAt = new Date('2000-01-01');
-  const updatedAt = new Date('2000-01-02');
 
   beforeAll(async () => {
     // INIT DB
-    postgresContainer = await new PostgreSqlContainer(
-      'postgis/postgis:12-3.0',
-    ).start();
-    postgresClient = new Client({
-      host: postgresContainer.getHost(),
-      port: postgresContainer.getPort(),
-      database: postgresContainer.getDatabase(),
-      user: postgresContainer.getUsername(),
-      password: postgresContainer.getPassword(),
-    });
-    await postgresClient.connect();
+    await startPostgresContainer();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: postgresContainer.getHost(),
-          port: postgresContainer.getPort(),
-          username: postgresContainer.getUsername(),
-          password: postgresContainer.getPassword(),
-          database: postgresContainer.getDatabase(),
-          synchronize: true,
-          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
-        }),
-        StatsModule,
-        MailerModule,
-      ],
+      imports: [getTypeORMModule(), StatsModule, MailerModule],
     }).compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     // INIT REPOSITORY
-    balRepository = app.get(getRepositoryToken(BaseLocale));
+    initTypeormRepository(app);
   });
 
   afterAll(async () => {
-    await postgresClient.end();
-    await postgresContainer.stop();
+    await stopPostgresContainer();
     await app.close();
   });
 
   afterEach(async () => {
-    await balRepository.delete({});
+    await deleteRepositories();
   });
-
-  async function createBal(props: Partial<BaseLocale> = {}) {
-    const payload: Partial<BaseLocale> = {
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      status: props.status ?? StatusBaseLocalEnum.DRAFT,
-      token,
-      ...props,
-    };
-    const entityToInsert = balRepository.create(payload);
-    const result = await balRepository.save(entityToInsert);
-    return result.id;
-  }
 
   describe('GET /stats/bals', () => {
     it('Return 200', async () => {

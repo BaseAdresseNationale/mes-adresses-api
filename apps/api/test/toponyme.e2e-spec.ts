@@ -1,168 +1,66 @@
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { Point, Repository } from 'typeorm';
-import { ObjectId } from 'mongodb';
-import { v4 as uuid } from 'uuid';
+import { Repository } from 'typeorm';
 
 import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
-import {
-  BaseLocale,
-  StatusBaseLocalEnum,
-} from '@/shared/entities/base_locale.entity';
-import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
+import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { MailerModule } from '@/shared/test/mailer.module.test';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
+import {
+  token,
+  updatedAt,
+  createBal,
+  createNumero,
+  createPositions,
+  createToponyme,
+  createVoie,
+  deleteRepositories,
+  getTypeORMModule,
+  getTypeormRepository,
+  initTypeormRepository,
+  startPostgresContainer,
+  stopPostgresContainer,
+} from './typeorm.utils';
 
 describe('TOPONYME MODULE', () => {
   let app: INestApplication;
   // DB
-  let postgresContainer: StartedPostgreSqlContainer;
-  let postgresClient: Client;
-  let numeroRepository: Repository<Numero>;
-  let voieRepository: Repository<Voie>;
-  let balRepository: Repository<BaseLocale>;
-  let toponymeRepository: Repository<Toponyme>;
-  // VAR
-  const token = 'xxxx';
-  const createdAt = new Date('2000-01-01');
-  const updatedAt = new Date('2000-01-02');
+  let repositories: {
+    numeros: Repository<Numero>;
+    voies: Repository<Voie>;
+    bals: Repository<BaseLocale>;
+    toponymes: Repository<Toponyme>;
+  };
 
   beforeAll(async () => {
     // INIT DB
-    postgresContainer = await new PostgreSqlContainer(
-      'postgis/postgis:12-3.0',
-    ).start();
-    postgresClient = new Client({
-      host: postgresContainer.getHost(),
-      port: postgresContainer.getPort(),
-      database: postgresContainer.getDatabase(),
-      user: postgresContainer.getUsername(),
-      password: postgresContainer.getPassword(),
-    });
-    await postgresClient.connect();
+    await startPostgresContainer();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: postgresContainer.getHost(),
-          port: postgresContainer.getPort(),
-          username: postgresContainer.getUsername(),
-          password: postgresContainer.getPassword(),
-          database: postgresContainer.getDatabase(),
-          synchronize: true,
-          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
-        }),
-        ToponymeModule,
-        MailerModule,
-      ],
+      imports: [getTypeORMModule(), ToponymeModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     // INIT REPOSITORY
-    numeroRepository = app.get(getRepositoryToken(Numero));
-    voieRepository = app.get(getRepositoryToken(Voie));
-    balRepository = app.get(getRepositoryToken(BaseLocale));
-    toponymeRepository = app.get(getRepositoryToken(Toponyme));
+    initTypeormRepository(app);
+    repositories = getTypeormRepository();
   });
 
   afterAll(async () => {
-    await postgresClient.end();
-    await postgresContainer.stop();
+    await stopPostgresContainer();
     await app.close();
   });
 
   afterEach(async () => {
-    await numeroRepository.delete({});
-    await voieRepository.delete({});
-    await balRepository.delete({});
-    await toponymeRepository.delete({});
+    await deleteRepositories();
   });
-
-  async function createBal(props: Partial<BaseLocale> = {}) {
-    const payload: Partial<BaseLocale> = {
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      status: props.status ?? StatusBaseLocalEnum.DRAFT,
-      token,
-      ...props,
-    };
-    const entityToInsert = balRepository.create(payload);
-    const result = await balRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  async function createVoie(balId: string, props: Partial<Voie> = {}) {
-    const payload: Partial<Voie> = {
-      balId,
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      ...props,
-    };
-    const entityToInsert = voieRepository.create(payload);
-    const result = await voieRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  async function createToponyme(balId: string, props: Partial<Toponyme> = {}) {
-    const payload: Partial<Toponyme> = {
-      balId,
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      ...props,
-    };
-    const entityToInsert = toponymeRepository.create(payload);
-    const result = await toponymeRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  async function createNumero(
-    balId: string,
-    voieId: string,
-    props: Partial<Numero> = {},
-  ) {
-    const payload: Partial<Numero> = {
-      balId,
-      banId: uuid(),
-      voieId,
-      createdAt,
-      updatedAt,
-      ...props,
-    };
-    const entityToInsert = numeroRepository.create(payload);
-    const result = await numeroRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  function createPositions(coordinates: number[] = [8, 42]): Position {
-    const id = new ObjectId().toHexString();
-    const point: Point = {
-      type: 'Point',
-      coordinates,
-    };
-    return {
-      id,
-      type: PositionTypeEnum.ENTREE,
-      source: 'ban',
-      point,
-    } as Position;
-  }
 
   describe('GET /toponymes/numeros', () => {
     it('Return 200 numero without comment', async () => {
@@ -253,7 +151,7 @@ describe('TOPONYME MODULE', () => {
       ]);
       expect(response.body.positions).toBeDefined();
 
-      const bal = await balRepository.findOneBy({ id: balId });
+      const bal = await repositories.bals.findOneBy({ id: balId });
       expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
@@ -295,12 +193,14 @@ describe('TOPONYME MODULE', () => {
         .send(changes)
         .expect(403);
 
-      const toponyme = await toponymeRepository.findOneBy({ id: toponymeId });
+      const toponyme = await repositories.toponymes.findOneBy({
+        id: toponymeId,
+      });
       expect(toponyme.nom).toEqual('rue de la paix');
       expect(toponyme.parcelles).toBeNull();
       expect(toponyme.positions).toEqual([]);
 
-      const bal = await balRepository.findOneBy({ id: balId });
+      const bal = await repositories.bals.findOneBy({ id: balId });
       expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
   });
@@ -324,16 +224,16 @@ describe('TOPONYME MODULE', () => {
         .set('authorization', `Bearer ${token}`)
         .expect(204);
 
-      const toponyme = await toponymeRepository.findOne({
+      const toponyme = await repositories.toponymes.findOne({
         where: { id: toponymeId },
         withDeleted: true,
       });
       expect(toponyme.deletedAt).not.toBeNull();
 
-      const bal = await balRepository.findOneBy({ id: balId });
+      const bal = await repositories.bals.findOneBy({ id: balId });
       expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
 
-      const numero = await numeroRepository.findOneBy({ id: numeroId });
+      const numero = await repositories.numeros.findOneBy({ id: numeroId });
       expect(numero.toponymeId).toBeNull();
     });
 
@@ -347,10 +247,12 @@ describe('TOPONYME MODULE', () => {
         .put(`/toponymes/${toponymeId}/soft-delete`)
         .expect(403);
 
-      const toponyme = await toponymeRepository.findOneBy({ id: toponymeId });
+      const toponyme = await repositories.toponymes.findOneBy({
+        id: toponymeId,
+      });
       expect(toponyme.deletedAt).toBeNull();
 
-      const bal = await balRepository.findOneBy({ id: balId });
+      const bal = await repositories.bals.findOneBy({ id: balId });
       expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
   });
@@ -368,7 +270,7 @@ describe('TOPONYME MODULE', () => {
 
       expect(response.body.deletedAt).toBeNull();
 
-      const bal = await balRepository.findOneBy({ id: balId });
+      const bal = await repositories.bals.findOneBy({ id: balId });
       expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
@@ -383,7 +285,7 @@ describe('TOPONYME MODULE', () => {
 
       expect(response.body.deletedAt).not.toBeNull();
 
-      const bal = await balRepository.findOneBy({ id: balId });
+      const bal = await repositories.bals.findOneBy({ id: balId });
       expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
   });
@@ -399,10 +301,10 @@ describe('TOPONYME MODULE', () => {
         .set('authorization', `Bearer ${token}`)
         .expect(204);
 
-      const voie = await toponymeRepository.findOneBy({ id: toponymeId });
+      const voie = await repositories.toponymes.findOneBy({ id: toponymeId });
       expect(voie).toBeNull();
 
-      const bal = await balRepository.findOneBy({ id: balId });
+      const bal = await repositories.bals.findOneBy({ id: balId });
       expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
@@ -416,10 +318,12 @@ describe('TOPONYME MODULE', () => {
         .delete(`/toponymes/${toponymeId}`)
         .expect(403);
 
-      const toponyme = await toponymeRepository.findOneBy({ id: toponymeId });
+      const toponyme = await repositories.toponymes.findOneBy({
+        id: toponymeId,
+      });
       expect(toponyme).not.toBeNull();
 
-      const bal = await balRepository.findOneBy({ id: balId });
+      const bal = await repositories.bals.findOneBy({ id: balId });
       expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
   });
