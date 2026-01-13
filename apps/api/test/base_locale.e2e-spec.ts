@@ -1,8 +1,3 @@
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
@@ -18,7 +13,7 @@ import {
   BaseLocale,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
-import { Position, PositionTypeEnum } from '@/shared/entities/position.entity';
+import { PositionTypeEnum } from '@/shared/entities/position.entity';
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { UpdateBatchNumeroDTO } from '@/modules/numeros/dto/update_batch_numero.dto';
@@ -26,8 +21,20 @@ import { DeleteBatchNumeroDTO } from '@/modules/numeros/dto/delete_batch_numero.
 import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { MailerModule } from '@/shared/test/mailer.module.test';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { Point, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import {
+  createBal,
+  createNumero,
+  createPositions,
+  createToponyme,
+  createVoie,
+  deleteRepositories,
+  getTypeORMModule,
+  getTypeormRepository,
+  initTypeormRepository,
+  startPostgresContainer,
+  stopPostgresContainer,
+} from './typeorm.utils';
 
 const BAN_API_URL = 'BAN_API_URL';
 process.env.BAN_API_URL = BAN_API_URL;
@@ -55,12 +62,12 @@ const baseLocalePublicProperties = [
 describe('BASE LOCAL MODULE', () => {
   let app: INestApplication;
   // DB
-  let postgresContainer: StartedPostgreSqlContainer;
-  let postgresClient: Client;
-  let numeroRepository: Repository<Numero>;
-  let voieRepository: Repository<Voie>;
-  let balRepository: Repository<BaseLocale>;
-  let toponymeRepository: Repository<Toponyme>;
+  let repositories: {
+    numeros: Repository<Numero>;
+    voies: Repository<Voie>;
+    bals: Repository<BaseLocale>;
+    toponymes: Repository<Toponyme>;
+  };
   // VAR
   const token = 'xxxx';
   const createdAt = new Date('2000-01-01');
@@ -70,130 +77,28 @@ describe('BASE LOCAL MODULE', () => {
 
   beforeAll(async () => {
     // INIT DB
-    postgresContainer = await new PostgreSqlContainer(
-      'postgis/postgis:12-3.0',
-    ).start();
-    postgresClient = new Client({
-      host: postgresContainer.getHost(),
-      port: postgresContainer.getPort(),
-      database: postgresContainer.getDatabase(),
-      user: postgresContainer.getUsername(),
-      password: postgresContainer.getPassword(),
-    });
-    await postgresClient.connect();
+    await startPostgresContainer();
     // INIT MODULE
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: postgresContainer.getHost(),
-          port: postgresContainer.getPort(),
-          username: postgresContainer.getUsername(),
-          password: postgresContainer.getPassword(),
-          database: postgresContainer.getDatabase(),
-          synchronize: true,
-          entities: [BaseLocale, Voie, Numero, Toponyme, Position],
-        }),
-        BaseLocaleModule,
-        MailerModule,
-      ],
+      imports: [getTypeORMModule(), BaseLocaleModule, MailerModule],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     // INIT REPOSITORY
-    numeroRepository = app.get(getRepositoryToken(Numero));
-    voieRepository = app.get(getRepositoryToken(Voie));
-    balRepository = app.get(getRepositoryToken(BaseLocale));
-    toponymeRepository = app.get(getRepositoryToken(Toponyme));
-  });
-
-  afterAll(async () => {
-    await postgresClient.end();
-    await postgresContainer.stop();
-    await app.close();
+    initTypeormRepository(app);
+    repositories = getTypeormRepository();
   });
 
   afterEach(async () => {
     axiosMock.reset();
-    await numeroRepository.delete({});
-    await voieRepository.delete({});
-    await balRepository.delete({});
-    await toponymeRepository.delete({});
+    await deleteRepositories();
   });
 
-  async function createBal(props: Partial<BaseLocale> = {}) {
-    const payload: Partial<BaseLocale> = {
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      status: props.status ?? StatusBaseLocalEnum.DRAFT,
-      token,
-      ...props,
-    };
-    const entityToInsert = balRepository.create(payload);
-    const result = await balRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  async function createVoie(balId: string, props: Partial<Voie> = {}) {
-    const payload: Partial<Voie> = {
-      balId,
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      ...props,
-    };
-    const entityToInsert = voieRepository.create(payload);
-    const result = await voieRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  async function createToponyme(balId: string, props: Partial<Toponyme> = {}) {
-    const payload: Partial<Toponyme> = {
-      balId,
-      banId: uuid(),
-      createdAt,
-      updatedAt,
-      ...props,
-    };
-    const entityToInsert = toponymeRepository.create(payload);
-    const result = await toponymeRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  async function createNumero(
-    balId: string,
-    voieId: string,
-    props: Partial<Numero> = {},
-  ) {
-    const payload: Partial<Numero> = {
-      balId,
-      banId: uuid(),
-      voieId,
-      createdAt,
-      updatedAt,
-      ...props,
-    };
-    const entityToInsert = numeroRepository.create(payload);
-    const result = await numeroRepository.save(entityToInsert);
-    return result.id;
-  }
-
-  function createPositions(coordinates: number[] = [8, 42]): Position {
-    const id = new ObjectId().toHexString();
-    const point: Point = {
-      type: 'Point',
-      coordinates,
-    };
-    return {
-      id,
-      type: PositionTypeEnum.ENTREE,
-      source: 'ban',
-      point,
-    } as Position;
-  }
+  afterAll(async () => {
+    await stopPostgresContainer();
+    await app.close();
+  });
 
   describe('PUT /bases-locales/numeros/batch', () => {
     it('Batch 200 numeros change voie', async () => {
@@ -246,7 +151,7 @@ describe('BASE LOCAL MODULE', () => {
         communeDeleguee: '08053',
       });
 
-      const numero1After: Numero = await numeroRepository.findOneBy({
+      const numero1After: Numero = await repositories.numeros.findOneBy({
         id: numeroId1,
       });
       expect(numero1After.updatedAt).not.toEqual(updatedAt.toISOString());
@@ -258,7 +163,7 @@ describe('BASE LOCAL MODULE', () => {
       expect(numero1After.comment).toEqual('coucou');
       expect(numero1After.communeDeleguee).toEqual('08053');
 
-      const numero2After: Numero = await numeroRepository.findOneBy({
+      const numero2After: Numero = await repositories.numeros.findOneBy({
         id: numeroId2,
       });
       expect(numero2After.updatedAt).not.toEqual(updatedAt.toISOString());
@@ -270,29 +175,37 @@ describe('BASE LOCAL MODULE', () => {
       expect(numero2After.comment).toEqual('coucou');
       expect(numero2After.communeDeleguee).toEqual('08053');
 
-      const voie1After: Voie = await voieRepository.findOneBy({ id: voieId1 });
+      const voie1After: Voie = await repositories.voies.findOneBy({
+        id: voieId1,
+      });
       expect(voie1After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(voie1After.centroid).toBeNull();
 
-      const voie2After: Voie = await voieRepository.findOneBy({ id: voieId2 });
+      const voie2After: Voie = await repositories.voies.findOneBy({
+        id: voieId2,
+      });
       expect(voie2After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(voie2After.centroid).toBeNull();
 
-      const voie3After: Voie = await voieRepository.findOneBy({ id: voieId3 });
+      const voie3After: Voie = await repositories.voies.findOneBy({
+        id: voieId3,
+      });
       expect(voie3After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(voie3After.centroid).not.toBeNull();
 
-      const toponymeAfter1: Toponyme = await toponymeRepository.findOneBy({
+      const toponymeAfter1: Toponyme = await repositories.toponymes.findOneBy({
         id: toponymeId1,
       });
       expect(toponymeAfter1.updatedAt).not.toEqual(updatedAt.toISOString());
 
-      const toponymeAfter2: Toponyme = await toponymeRepository.findOneBy({
+      const toponymeAfter2: Toponyme = await repositories.toponymes.findOneBy({
         id: toponymeId2,
       });
       expect(toponymeAfter2.updatedAt).not.toEqual(updatedAt.toISOString());
 
-      const balAfter: BaseLocale = await balRepository.findOneBy({ id: balId });
+      const balAfter: BaseLocale = await repositories.bals.findOneBy({
+        id: balId,
+      });
       expect(balAfter.updatedAt).not.toEqual(updatedAt.toISOString());
     });
 
@@ -387,33 +300,39 @@ describe('BASE LOCAL MODULE', () => {
         .send(deleteBtach)
         .set('authorization', `Bearer ${token}`)
         .expect(204);
-      const numero1After: Numero = await numeroRepository.findOne({
+      const numero1After: Numero = await repositories.numeros.findOne({
         where: { id: numeroId1 },
         withDeleted: true,
       });
       expect(numero1After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(numero1After.deletedAt).toBeDefined();
-      const numero2After: Numero = await numeroRepository.findOne({
+      const numero2After: Numero = await repositories.numeros.findOne({
         where: { id: numeroId2 },
         withDeleted: true,
       });
       expect(numero2After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(numero2After.deletedAt).toBeDefined();
-      const voie1After: Voie = await voieRepository.findOneBy({ id: voieId1 });
+      const voie1After: Voie = await repositories.voies.findOneBy({
+        id: voieId1,
+      });
       expect(voie1After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(voie1After.centroid).toBeNull();
-      const voie2After: Voie = await voieRepository.findOneBy({ id: voieId2 });
+      const voie2After: Voie = await repositories.voies.findOneBy({
+        id: voieId2,
+      });
       expect(voie2After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(voie2After.centroid).toBeNull();
-      const toponymeAfter1: Toponyme = await toponymeRepository.findOneBy({
+      const toponymeAfter1: Toponyme = await repositories.toponymes.findOneBy({
         id: toponymeId1,
       });
       expect(toponymeAfter1.updatedAt).not.toEqual(updatedAt.toISOString());
-      const toponymeAfter2: Toponyme = await toponymeRepository.findOneBy({
+      const toponymeAfter2: Toponyme = await repositories.toponymes.findOneBy({
         id: toponymeId2,
       });
       expect(toponymeAfter2.updatedAt).not.toEqual(updatedAt.toISOString());
-      const balAfter: BaseLocale = await balRepository.findOneBy({ id: balId });
+      const balAfter: BaseLocale = await repositories.bals.findOneBy({
+        id: balId,
+      });
       expect(balAfter.updatedAt).not.toEqual(updatedAt.toISOString());
     });
 
@@ -462,35 +381,41 @@ describe('BASE LOCAL MODULE', () => {
         .set('authorization', `Bearer ${token}`)
         .expect(204);
 
-      const numero1After: Numero = await numeroRepository.findOneBy({
+      const numero1After: Numero = await repositories.numeros.findOneBy({
         id: numeroId1,
       });
       expect(numero1After).toBeNull();
 
-      const numero2After: Numero = await numeroRepository.findOneBy({
+      const numero2After: Numero = await repositories.numeros.findOneBy({
         id: numeroId2,
       });
       expect(numero2After).toBeNull();
 
-      const voie1After: Voie = await voieRepository.findOneBy({ id: voieId1 });
+      const voie1After: Voie = await repositories.voies.findOneBy({
+        id: voieId1,
+      });
       expect(voie1After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(voie1After.centroid).toBeNull();
 
-      const voie2After: Voie = await voieRepository.findOneBy({ id: voieId2 });
+      const voie2After: Voie = await repositories.voies.findOneBy({
+        id: voieId2,
+      });
       expect(voie2After.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(voie2After.centroid).toBeNull();
 
-      const toponymeAfter1: Toponyme = await toponymeRepository.findOneBy({
+      const toponymeAfter1: Toponyme = await repositories.toponymes.findOneBy({
         id: toponymeId1,
       });
       expect(toponymeAfter1.updatedAt).not.toEqual(updatedAt.toISOString());
 
-      const toponymeAfter2: Toponyme = await toponymeRepository.findOneBy({
+      const toponymeAfter2: Toponyme = await repositories.toponymes.findOneBy({
         id: toponymeId2,
       });
       expect(toponymeAfter2.updatedAt).not.toEqual(updatedAt.toISOString());
 
-      const balAfter: BaseLocale = await balRepository.findOneBy({ id: balId });
+      const balAfter: BaseLocale = await repositories.bals.findOneBy({
+        id: balId,
+      });
       expect(balAfter.updatedAt).not.toEqual(updatedAt.toISOString());
     });
 
@@ -511,26 +436,26 @@ describe('BASE LOCAL MODULE', () => {
   describe('GET /bases-locales/csv', () => {
     it('GET CSV 200', async () => {
       const balId = await createBal({ nom: 'bal', commune: '08053' });
-      const { banId: communeUuid } = await balRepository.findOneBy({
+      const { banId: communeUuid } = await repositories.bals.findOneBy({
         id: balId,
       });
       const voieId1 = await createVoie(balId, {
         nom: 'rue de la paix',
       });
-      const { banId: voieUuid1 } = await voieRepository.findOneBy({
+      const { banId: voieUuid1 } = await repositories.voies.findOneBy({
         id: voieId1,
       });
       const voieId2 = await createVoie(balId, {
         nom: 'rue de paris',
       });
-      const { banId: voieUuid2 } = await voieRepository.findOneBy({
+      const { banId: voieUuid2 } = await repositories.voies.findOneBy({
         id: voieId2,
       });
       const toponymeId1 = await createToponyme(balId, {
         nom: 'allée',
         communeDeleguee: '08294',
       });
-      const { banId: toponymeUuid1 } = await toponymeRepository.findOneBy({
+      const { banId: toponymeUuid1 } = await repositories.toponymes.findOneBy({
         id: toponymeId1,
       });
       const numeroId1 = await createNumero(balId, voieId1, {
@@ -541,7 +466,7 @@ describe('BASE LOCAL MODULE', () => {
         certifie: true,
         communeDeleguee: '08053',
       });
-      const { banId: numeroUuid1 } = await numeroRepository.findOneBy({
+      const { banId: numeroUuid1 } = await repositories.numeros.findOneBy({
         id: numeroId1,
       });
       const numeroId2 = await createNumero(balId, voieId2, {
@@ -552,7 +477,7 @@ describe('BASE LOCAL MODULE', () => {
         certifie: false,
         communeDeleguee: '08294',
       });
-      const { banId: numeroUuid2 } = await numeroRepository.findOneBy({
+      const { banId: numeroUuid2 } = await repositories.numeros.findOneBy({
         id: numeroId2,
       });
       const deleteBtach: DeleteBatchNumeroDTO = {
@@ -969,7 +894,7 @@ describe('BASE LOCAL MODULE', () => {
         .set('authorization', `Bearer ${token}`)
         .expect(204);
 
-      const baseLocale = await balRepository.findOneBy({ id: balId });
+      const baseLocale = await repositories.bals.findOneBy({ id: balId });
 
       expect(baseLocale).toBeNull();
     });
@@ -1000,7 +925,7 @@ describe('BASE LOCAL MODULE', () => {
         .get(`/bases-locales/${balId}/${token}/recovery`)
         .expect(307);
 
-      const baseLocale = await balRepository.findOneBy({ id: balId });
+      const baseLocale = await repositories.bals.findOneBy({ id: balId });
 
       expect(baseLocale.deletedAt).toBeNull();
     });
