@@ -72,6 +72,33 @@ export class HabilitationService {
     return true;
   }
 
+  async areValid(habilitationIds: string[]): Promise<boolean> {
+    if (
+      habilitationIds.some(
+        (habilitationId) => !ObjectId.isValid(habilitationId),
+      )
+    ) {
+      throw new HttpException(
+        'Les identifiants de l’habilitations sont invalides',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      return await this.apiDepotService.habilitationsAreValid(habilitationIds);
+    } catch (error) {
+      this.logger.error(
+        `Impossible de vérifier si les habilitations sont valides`,
+        error.response?.data || 'No server response',
+        HabilitationService.name,
+      );
+      throw new HttpException(
+        (error.response?.data as any).message || 'No server response',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+  }
+
   async createOne(baseLocale: BaseLocale): Promise<Habilitation> {
     if (baseLocale.habilitationId) {
       const habilitation = await this.findOne(baseLocale.habilitationId);

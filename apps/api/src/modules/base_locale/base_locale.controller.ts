@@ -50,7 +50,10 @@ import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
 import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dto';
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
-import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
+import {
+  BaseLocaleWithHabilitationDTO,
+  ExtendedBaseLocaleDTO,
+} from './dto/extended_base_locale.dto';
 import { ExtendedVoieDTO, VoieMetas } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
@@ -70,6 +73,9 @@ import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
+import { In, IsNull } from 'typeorm';
+import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
+import { HabilitationService } from './sub_modules/habilitation/habilitation.service';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -83,6 +89,8 @@ export class BaseLocaleController {
     private voieService: VoieService,
     @Inject(forwardRef(() => ToponymeService))
     private toponymeService: ToponymeService,
+    @Inject(forwardRef(() => HabilitationService))
+    private habilitationService: HabilitationService,
   ) {}
 
   @Post('')
@@ -165,6 +173,54 @@ export class BaseLocaleController {
       results,
     };
     res.status(HttpStatus.OK).json(page);
+  }
+
+  @Post('/search-by-ids')
+  @ApiOperation({
+    summary: 'Find Many Bases Locales',
+    operationId: 'findManyBaseLocales',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: BaseLocaleWithHabilitationDTO,
+    isArray: true,
+  })
+  @ApiBody({ type: FindManyBaseLocalDTO, required: true })
+  async findManyBaseLocales(
+    @Body() { ids }: FindManyBaseLocalDTO,
+    @Res() res: Response,
+  ) {
+    const basesLocales = await this.baseLocaleService.findMany({
+      id: In(ids),
+      deletedAt: IsNull(),
+    });
+
+    const extendedBasesLocales = await Promise.all(
+      basesLocales.map((baseLocale) =>
+        this.baseLocaleService.extendWithNumeros(baseLocale),
+      ),
+    );
+
+    const filteredExtendedBasesLocales: Omit<
+      ExtendedBaseLocaleDTO,
+      'token' | 'emails'
+    >[] = extendedBasesLocales.map((baseLocale) =>
+      filterSensitiveFields(baseLocale),
+    );
+
+    const habilitationIds = filteredExtendedBasesLocales
+      .filter((baseLocale) => baseLocale.habilitationId)
+      .map((baseLocale) => baseLocale.habilitationId);
+
+    const habilitationsAreValid =
+      await this.habilitationService.areValid(habilitationIds);
+
+    const response = filteredExtendedBasesLocales.map((baseLocale) => ({
+      ...baseLocale,
+      isHabilitationValid: habilitationsAreValid[baseLocale.habilitationId],
+    }));
+
+    res.status(HttpStatus.OK).json(response);
   }
 
   @Get(':baseLocaleId')
