@@ -4,6 +4,7 @@ import {
   Injectable,
   Inject,
   forwardRef,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -82,6 +83,7 @@ export class BaseLocaleService {
     private banPlateformService: BanPlateformService,
     private configService: ConfigService,
     private cacheService: CacheService,
+    private readonly logger: Logger,
   ) {}
 
   public async findOneOrFail(balId: string): Promise<BaseLocale> {
@@ -605,8 +607,11 @@ export class BaseLocaleService {
         },
       });
     } catch (error) {
-      console.log(error);
-      // Si aucune Bal ne correspond, on lance un erreur
+      this.logger.error(
+        "Une erreur est survenue lors de l'envoi de l'email",
+        error,
+        BaseLocaleService.name,
+      );
       throw new HttpException(
         "Une erreur est survenue lors de l'envoi de l'email",
         HttpStatus.INTERNAL_SERVER_ERROR,
