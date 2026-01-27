@@ -4,6 +4,7 @@ import {
   Injectable,
   Inject,
   forwardRef,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -58,6 +59,8 @@ import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 import { TaskTitle } from '@/shared/types/task.type';
 import { QUEUE_NAME } from '@/shared/params/queue_name.const';
+import { getEmailsMairie } from '@/lib/utils/annuaire-service-public';
+import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
@@ -80,6 +83,7 @@ export class BaseLocaleService {
     private banPlateformService: BanPlateformService,
     private configService: ConfigService,
     private cacheService: CacheService,
+    private readonly logger: Logger,
   ) {}
 
   public async findOneOrFail(balId: string): Promise<BaseLocale> {
@@ -553,6 +557,64 @@ export class BaseLocaleService {
       throw new HttpException(
         'Aucune base locale ne correspond à ces critères',
         HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+  async recoverAccessByCommune({ codeCommune }: RecoverCommuneDTO) {
+    if (!codeCommune) {
+      throw new HttpException(
+        'Le code commune est requis',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const where: FindOptionsWhere<BaseLocale> = {
+      status: StatusBaseLocalEnum.PUBLISHED,
+      deletedAt: IsNull(),
+      commune: codeCommune,
+    };
+    const baseLocale = await this.basesLocalesRepository.findOneBy(where);
+
+    if (!baseLocale) {
+      throw new HttpException(
+        'Aucune base locale ne correspond à ces critères',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const emails = await getEmailsMairie(codeCommune);
+    if (!emails || emails.length === 0) {
+      throw new HttpException(
+        'Aucune adresse email trouvée pour la commune',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      const apiUrl = getApiUrl();
+      const recoveryUrl = getEditorUrl(baseLocale);
+
+      await this.mailerService.sendMail({
+        to: emails,
+        subject: `Demande de récupération de la Bases Adresses Locales de ${baseLocale.communeNom}`,
+        template: 'recovery-commune-notification',
+        bcc: this.configService.get('SMTP_BCC'),
+        context: {
+          apiUrl,
+          recoveryUrl,
+          communeNom: baseLocale.communeNom,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        "Une erreur est survenue lors de l'envoi de l'email",
+        error,
+        BaseLocaleService.name,
+      );
+      throw new HttpException(
+        "Une erreur est survenue lors de l'envoi de l'email",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
