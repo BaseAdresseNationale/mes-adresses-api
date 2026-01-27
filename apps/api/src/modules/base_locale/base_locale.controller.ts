@@ -75,6 +75,7 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
 import { In, IsNull } from 'typeorm';
 import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
+import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 import { HabilitationService } from './sub_modules/habilitation/habilitation.service';
 
 @ApiTags('bases-locales')
@@ -367,12 +368,35 @@ export class BaseLocaleController {
     summary: 'Recover BAL access',
     operationId: 'recoveryBasesLocales',
   })
+  @ApiBody({
+    type: RecoverBaseLocaleDTO,
+    required: true,
+  })
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   async recoverBALAccess(
     @Body() recoverBaseLocaleDTO: RecoverBaseLocaleDTO,
     @Res() res: Response,
   ) {
     await this.baseLocaleService.recoverAccess(recoverBaseLocaleDTO);
+
+    res.sendStatus(HttpStatus.NO_CONTENT);
+  }
+
+  @Post('/recovery/commune')
+  @ApiOperation({
+    summary: 'Recover BAL access by commune',
+    operationId: 'recoveryBasesLocalesByCommune',
+  })
+  @ApiBody({
+    type: RecoverCommuneDTO,
+    required: true,
+  })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  async recoveryBasesLocalesByCommune(
+    @Body() recoverCommuneDTO: RecoverCommuneDTO,
+    @Res() res: Response,
+  ) {
+    await this.baseLocaleService.recoverAccessByCommune(recoverCommuneDTO);
 
     res.sendStatus(HttpStatus.NO_CONTENT);
   }

@@ -3,6 +3,7 @@ import {
   MiddlewareConsumer,
   forwardRef,
   RequestMethod,
+  Logger,
 } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bullmq';
@@ -50,7 +51,7 @@ import { QUEUE_NAME } from '@/shared/params/queue_name.const';
     forwardRef(() => CommuneModule),
     forwardRef(() => PopulateModule),
   ],
-  providers: [BaseLocaleMiddleware, BaseLocaleService, SearchQueryPipe],
+  providers: [BaseLocaleMiddleware, BaseLocaleService, SearchQueryPipe, Logger],
   controllers: [BaseLocaleController],
   exports: [BaseLocaleService],
 })
