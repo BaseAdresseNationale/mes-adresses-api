@@ -124,6 +124,7 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `API_SIGNALEMENT_URL`               | URL de l'API Signalement                                                                                                              |
 | `API_SIGNALEMENT_CLIENT_SECRET`     | Secret du client de l'API Signalement                                                                                                 |
 | `API_ETABLISSEMENTS_PUBLIC`         | API Annuaire établissements publics                                                                                                   |
+| `API_ANNUAIRE_DES_COLLECTIVITES`    | API Annuaire des collectivités                                                                                                        |
 | ---                                 | ---                                                                                                                                   |
 | `SMTP_HOST`                         | Nom d'hôte du serveur SMTP                                                                                                            |
 | `SMTP_PORT`                         | Port du serveur SMTP                                                                                                                  |
