@@ -1801,13 +1801,12 @@
     multer "1.4.4-lts.1"
     tslib "2.6.2"
 
-"@nestjs/schedule@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@nestjs/schedule/-/schedule-3.0.4.tgz#c2a3d96bb2cb7d562349f030823080b8513b34c3"
-  integrity sha512-uFJpuZsXfpvgx2y7/KrIZW9e1L68TLiwRodZ6+Gc8xqQiHSUzAVn+9F4YMxWFlHITZvvkjWziUFgRNCitDcTZQ==
+"@nestjs/schedule@^6.1.0":
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/schedule/-/schedule-6.1.0.tgz#4653383c6aaf82e19754eae281ec1036da41febe"
+  integrity sha512-W25Ydc933Gzb1/oo7+bWzzDiOissE+h/dhIAPugA39b9MuIzBbLybuXpc1AjoQLczO3v0ldmxaffVl87W0uqoQ==
   dependencies:
-    cron "2.4.3"
-    uuid "9.0.1"
+    cron "4.3.5"
 
 "@nestjs/schematics@^10.0.0", "@nestjs/schematics@^10.0.1":
   version "10.0.2"
@@ -3830,10 +3829,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/luxon@~3.3.0":
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.3.2.tgz#f6e3524c2486b949a4db445e85d93c8e9886dfe2"
-  integrity sha512-l5cpE57br4BIjK+9BSkFBOsWtwv6J9bJpC7gdXIzZyI0vuKvNTk0wZZrkQxMGsUAuGW9+WMNWF2IJMD7br2yeQ==
+"@types/luxon@~3.7.0":
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.7.1.tgz#ef51b960ff86801e4e2de80c68813a96e529d531"
+  integrity sha512-H3iskjFIAn5SlJU7OuxUmTEpebK6TKB8rxZShDslBMZJ5u9S//KM1sbdAisiSrqwLQncVjnpi2OK2J51h+4lsg==
 
 "@types/mime@*":
   version "3.0.2"
@@ -4920,11 +4919,6 @@ buffer@^6.0.3:
     base64-js "^1.3.1"
     ieee754 "^1.2.1"
 
-buildcheck@~0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/buildcheck/-/buildcheck-0.0.6.tgz#89aa6e417cfd1e2196e3f8fe915eb709d2fe4238"
-  integrity sha512-8f9ZJCUXyT1M35Jx7MkBgmBMo3oHTTBIPLiY9xyL0pl3T5RwcPEY8cUHr5LBNfu/fk6c2T4DJZuVM/8ZZT2D2A==
-
 bullmq@^5.58.5:
   version "5.58.5"
   resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-5.58.5.tgz#e4de41cadaa27c19128b573e8689ce958f2dd6ea"
@@ -5635,13 +5629,10 @@ cosmiconfig@^7.0.1:
     path-type "^4.0.0"
     yaml "^1.10.0"
 
-cpu-features@~0.0.9:
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/cpu-features/-/cpu-features-0.0.10.tgz#9aae536db2710c7254d7ed67cb3cbc7d29ad79c5"
-  integrity sha512-9IkYqtX3YHPCzoVg1Py+o9057a3i0fp7S530UWokCSaFVTc7CwXPRiOjRjBQQ18ZCNafx78YfnG+HALxtVmOGA==
-  dependencies:
-    buildcheck "~0.0.6"
-    nan "^2.19.0"
+"cpu-features@npm:noop3@13.8.1", cpu-features@~0.0.9:
+  version "13.8.1"
+  resolved "https://registry.yarnpkg.com/noop3/-/noop3-13.8.1.tgz#0ae6414b6d7de3b6d85055cd2a920c1a0d61ad6e"
+  integrity sha512-OaPSc9qO9oYf1NF2yDnMeLmuvfpc7R2Dzp9LuGTUWlkZgLKlUrK1hsFX8ar7vZEzOsl4nTltlno9qOZ/f/ynmA==
 
 crc-32@^1.2.0:
   version "1.2.2"
@@ -5681,13 +5672,13 @@ cron-parser@^4.9.0:
   dependencies:
     luxon "^3.2.1"
 
-cron@2.4.3:
-  version "2.4.3"
-  resolved "https://registry.yarnpkg.com/cron/-/cron-2.4.3.tgz#4e43d8d9a6373b8f28d876c4e9a47c14422d8652"
-  integrity sha512-YBvExkQYF7w0PxyeFLRyr817YVDhGxaCi5/uRRMqa4aWD3IFKRd+uNbpW1VWMdqQy8PZ7CElc+accXJcauPKzQ==
+cron@4.3.5:
+  version "4.3.5"
+  resolved "https://registry.yarnpkg.com/cron/-/cron-4.3.5.tgz#53112ec0f5260722b89633ed72f005dc782864f1"
+  integrity sha512-hKPP7fq1+OfyCqoePkKfVq7tNAdFwiQORr4lZUHwrf0tebC65fYEeWgOrXOL6prn1/fegGOdTfrM6e34PJfksg==
   dependencies:
-    "@types/luxon" "~3.3.0"
-    luxon "~3.3.0"
+    "@types/luxon" "~3.7.0"
+    luxon "~3.7.0"
 
 cross-spawn@^6.0.0:
   version "6.0.5"
@@ -8597,15 +8588,10 @@ lru-cache@^6.0.0:
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.0.1.tgz#0a3be479df549cca0e5d693ac402ff19537a6b7a"
   integrity sha512-IJ4uwUTi2qCccrioU6g9g/5rvvVl13bsdczUUcqbciD9iLr095yj8DQKdObriEvuNSx325N1rV1O0sJFszx75g==
 
-luxon@^3.2.1:
+luxon@^3.2.1, luxon@~3.7.0:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.7.2.tgz#d697e48f478553cca187a0f8436aff468e3ba0ba"
   integrity sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==
-
-luxon@~3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.3.0.tgz#d73ab5b5d2b49a461c47cedbc7e73309b4805b48"
-  integrity sha512-An0UCfG/rSiqtAIiBPO0Y9/zAnHUZxAMiCpTd5h2smgsj7GGmcenvrvww2cqNA8/4A5ZrD1gJpHN2mIHZQF+Mg==
 
 macos-release@^2.5.0:
   version "2.5.1"
@@ -9307,7 +9293,7 @@ mz@^2.4.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-nan@^2.18.0, nan@^2.19.0:
+nan@^2.18.0:
   version "2.20.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.20.0.tgz#08c5ea813dd54ed16e5bd6505bf42af4f7838ca3"
   integrity sha512-bk3gXBZDGILuuo/6sKtr0DQmSThYHLtNCdSdXk9YkxD/jK6X2vmCyyXBBxyqZ4XcnzTyYEAThfX3DCEnLf6igw==
