@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  ParseArrayPipe,
   ParseBoolPipe,
   ParseFilePipeBuilder,
   Post,
@@ -573,17 +574,41 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(allDeleted);
   }
 
-  @Put(':baseLocaleId/numeros')
+  @Get(':baseLocaleId/numeros')
+  @ApiOperation({
+    summary: 'Find all Voie in Bal',
+    operationId: 'findNumeros',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Numero,
+    isArray: true,
+  })
+  async findNumeros(
+    @Req() req: CustomRequest,
+    @Query('select', new ParseArrayPipe({ optional: true }))
+    select: Array<keyof Numero>,
+    @Res() res: Response,
+  ) {
+    const numeros: Numero[] = await this.numeroService.findManyByBal(
+      req.baseLocale.id,
+      select,
+    );
+    res.status(HttpStatus.OK).json(numeros);
+  }
+
+  @Put(':baseLocaleId/search/numeros')
   @ApiOperation({
     summary: 'Search numero',
-    operationId: 'searchNumeros',
+    operationId: 'searchNumerosInPolygon',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiBody({ type: SearchNumeroDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async searchNumeros(
+  async searchNumerosInPolygon(
     @Req() req: CustomRequest,
     @Body() searchNumeroDTO: SearchNumeroDTO,
     @Res() res: Response,
