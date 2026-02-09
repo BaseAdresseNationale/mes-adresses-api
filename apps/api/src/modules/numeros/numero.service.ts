@@ -221,7 +221,7 @@ export class NumeroService {
     rawNumeros: Partial<Numero>[],
   ): Promise<void> {
     const validRawNumeros: Partial<Numero>[] = rawNumeros.filter(
-      ({ voieId, numero }) => Boolean(voieId && numero),
+      ({ voieId, numero }) => Boolean(voieId && Number.isInteger(numero)),
     );
     // On transforme les raw en numeros
     const numeros = validRawNumeros
