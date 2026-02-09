@@ -3,37 +3,96 @@ import * as sharp from 'sharp';
 const BLASON_BUCKET_URL =
   'https://base-adresse-locale-prod-blasons-communes.s3.fr-par.scw.cloud';
 
-export const getCommuneFlagSVG = async (
+export const getCommuneFlagUrl = async (
   codeCommune: string,
-): Promise<string> => {
+): Promise<string | null> => {
+  if (!process.env.API_ANNUAIRE_DES_COLLECTIVITES) {
+    return getCommuneFlagUrlFromBal(codeCommune);
+  }
+
+  const response = await fetch(
+    `${process.env.API_ANNUAIRE_DES_COLLECTIVITES}/commune/logo/${codeCommune}`,
+  );
+
+  if (!response.ok) {
+    return getCommuneFlagUrlFromBal(codeCommune);
+  }
+
+  const url = await response.text();
+
+  return url;
+};
+
+export const getCommuneFlagUrlFromBal = async (
+  codeCommune: string,
+): Promise<string | null> => {
   const url = `${BLASON_BUCKET_URL}/${codeCommune}.svg`;
 
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-    });
-    if (!response.ok) {
-      return '';
-    }
+  const response = await fetch(url, {
+    method: 'HEAD',
+  });
 
-    return await response.text();
-  } catch (error) {
-    return '';
+  if (!response.ok) {
+    return null;
   }
+
+  return url;
+};
+
+type CommuneFlagBase64 = {
+  dataUrl: string;
+  metadata: sharp.Metadata;
 };
 
 export const getCommuneFlagBase64PNG = async (
   codeCommune: string,
-): Promise<string | null> => {
-  const communeLogoSvgString = await getCommuneFlagSVG(codeCommune);
-  if (!communeLogoSvgString) {
+): Promise<CommuneFlagBase64 | null> => {
+  try {
+    const communeFlagUrl = await getCommuneFlagUrl(codeCommune);
+
+    if (!communeFlagUrl) {
+      return null;
+    }
+
+    if (communeFlagUrl.startsWith('data:image/svg+xml;base64,')) {
+      const base64Data = communeFlagUrl.replace(
+        'data:image/svg+xml;base64,',
+        '',
+      );
+      const svgBuffer = Buffer.from(base64Data, 'base64');
+      const sharpImage = sharp(svgBuffer);
+      const metadata = await sharpImage.metadata();
+      const pngBuffer = await sharpImage.png().toBuffer();
+
+      return {
+        dataUrl: `data:image/png;base64,${pngBuffer.toString('base64')}`,
+        metadata,
+      };
+    } else if (
+      communeFlagUrl.startsWith('https://') ||
+      communeFlagUrl.startsWith('http://')
+    ) {
+      const response = await fetch(communeFlagUrl);
+      if (!response.ok) {
+        return null;
+      }
+      const imageBuffer = await response.arrayBuffer();
+      const sharpImage = sharp(imageBuffer);
+      const metadata = await sharpImage.metadata();
+      const pngBuffer = await sharpImage.png().toBuffer();
+
+      return {
+        dataUrl: `data:image/png;base64,${pngBuffer.toString('base64')}`,
+        metadata,
+      };
+    } else {
+      return null;
+    }
+  } catch (err) {
+    console.error(
+      `Erreur lors de la récupération du drapeau pour la commune ${codeCommune}`,
+      err,
+    );
     return null;
   }
-
-  // Convert SVG string to PNG buffer using sharp
-  const svgBuffer = Buffer.from(communeLogoSvgString, 'utf-8');
-  const pngBuffer = await sharp(svgBuffer).png().toBuffer();
-  const communeLogo = `data:image/png;base64,${pngBuffer.toString('base64')}`;
-
-  return communeLogo;
 };
