@@ -1220,6 +1220,23 @@ describe('BASE LOCAL MODULE', () => {
       expect(voies).toHaveLength(1);
       expect(voies[0].codeVoie).toBeNull();
     });
+
+    it('Upload CSV with malformed codeVoie (5 chars) - stores null in DB', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '08053' });
+
+      const csvContent = `cle_interop;voie_nom;numero;commune_insee;position;long;lat;date_der_maj
+08053_ABCDE_00001;Rue de la Paix;1;08053;entree;5.123;48.456;2024-01-01`;
+
+      await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/upload`)
+        .attach('file', Buffer.from(csvContent), 'test.csv')
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const voies = await repositories.voies.find({ where: { balId } });
+      expect(voies).toHaveLength(1);
+      expect(voies[0].codeVoie).toBeNull();
+    });
   });
 
   describe('GET /:baseLocaleId/all/deleted', () => {
