@@ -206,10 +206,10 @@ export class VoieService {
     const where: FindOptionsWhere<Voie> = {
       id: voie.id,
     };
-    const res: UpdateResult = await this.voiesRepository.update(
-      where,
-      updateVoieDto,
-    );
+    const res: UpdateResult = await this.voiesRepository.update(where, {
+      ...updateVoieDto,
+      ...(updateVoieDto.nom !== voie.nom ? { codeVoie: null } : null),
+    });
     // On récupère la voie modifiée
     const voieUpdated: Voie = await this.voiesRepository.findOneBy(where);
     // Si la voie a été modifiée
