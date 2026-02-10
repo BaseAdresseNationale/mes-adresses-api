@@ -231,6 +231,7 @@ export class ToponymeService {
         parcelles: rawToponyme.parcelles || [],
         nomAlt: getNomAltDefault(rawToponyme.nomAlt),
         communeDeleguee: rawToponyme.communeDeleguee,
+        ...(rawToponyme.codeVoie && { codeVoie: rawToponyme.codeVoie }),
         ...(rawToponyme.updatedAt && { updatedAt: rawToponyme.updatedAt }),
         ...(rawToponyme.createdAt && { createdAt: rawToponyme.createdAt }),
       }));

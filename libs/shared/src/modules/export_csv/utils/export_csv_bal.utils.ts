@@ -15,9 +15,9 @@ import {
 import { roundCoordinate } from '@/shared/utils/coor.utils';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
-const DEFAULT_CODE_VOIE = 'xxxx';
-const DEFAULT_NUMERO_TOPONYME = 99999;
-const DEFAULT_SOURCE = 'commune';
+export const DEFAULT_CODE_VOIE = 'xxxx';
+export const DEFAULT_NUMERO_TOPONYME = 99999;
+export const DEFAULT_SOURCE = 'commune';
 
 type BanIdsType = {
   commune: string;
@@ -226,7 +226,7 @@ export async function exportBalToCsv(
             adresse: n.banId,
           },
           communeNomsAlt: baseLocale.communeNomsAlt,
-          codeVoie: DEFAULT_CODE_VOIE,
+          codeVoie: v.codeVoie?.toLowerCase() || DEFAULT_CODE_VOIE,
           numero: n.numero,
           suffixe: n.suffixe,
           certifie: n.certifie || false,
@@ -255,7 +255,7 @@ export async function exportBalToCsv(
             toponyme: t.banId,
           },
           communeNomsAlt: baseLocale.communeNomsAlt,
-          codeVoie: DEFAULT_CODE_VOIE,
+          codeVoie: t.codeVoie?.toLowerCase() || DEFAULT_CODE_VOIE,
           numero: DEFAULT_NUMERO_TOPONYME,
           updatedAt: t.updatedAt,
           nomVoie: t.nom,
@@ -273,7 +273,7 @@ export async function exportBalToCsv(
         codeCommune: baseLocale.commune,
         communeDeleguee: t.communeDeleguee,
         communeNomsAlt: baseLocale.communeNomsAlt,
-        codeVoie: DEFAULT_CODE_VOIE,
+        codeVoie: t.codeVoie?.toLowerCase() || DEFAULT_CODE_VOIE,
         numero: DEFAULT_NUMERO_TOPONYME,
         updatedAt: t.updatedAt,
         nomVoie: t.nom,

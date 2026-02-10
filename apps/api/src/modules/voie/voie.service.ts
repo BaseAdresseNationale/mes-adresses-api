@@ -176,6 +176,7 @@ export class VoieService {
         nomAlt: getNomAltDefault(rawVoie.nomAlt),
         typeNumerotation: rawVoie.typeNumerotation,
         trace: rawVoie.trace || null,
+        ...(rawVoie.codeVoie && { codeVoie: rawVoie.codeVoie }),
         ...(rawVoie.updatedAt && { updatedAt: rawVoie.updatedAt }),
         ...(rawVoie.createdAt && { createdAt: rawVoie.createdAt }),
       }));
