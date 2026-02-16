@@ -11,6 +11,7 @@ import {
   Max,
   Min,
   IsInt,
+  Matches,
 } from 'class-validator';
 
 import { Position } from '@/shared/entities/position.entity';
@@ -26,7 +27,8 @@ export class CreateNumeroDTO {
   numero: number;
 
   @IsOptional()
-  @Validate(ValidatorBal, ['suffixe'])
+  @Matches(/^[\da-z]/i, { message: 'suffixe:debut_invalide' })
+  @MaxLength(9, { message: 'suffixe:trop_long' })
   @ApiProperty({ required: false, nullable: true })
   suffixe?: string;
 
