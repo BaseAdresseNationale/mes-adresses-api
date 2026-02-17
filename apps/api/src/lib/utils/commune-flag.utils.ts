@@ -20,6 +20,11 @@ export const getCommuneFlagUrl = async (
 
   const url = await response.text();
 
+  // If the URL is from Wikimedia Commons, we fetch the flag from BAL S3 instead to avoid threshold issues
+  if (url.includes('commons.wikimedia.org')) {
+    return getCommuneFlagUrlFromBal(codeCommune);
+  }
+
   return url;
 };
 
@@ -74,6 +79,10 @@ export const getCommuneFlagBase64PNG = async (
     ) {
       const response = await fetch(communeFlagUrl);
       if (!response.ok) {
+        console.error(
+          `Erreur lors de la récupération du drapeau pour la commune ${codeCommune} à partir de l'URL ${communeFlagUrl}`,
+          response.statusText,
+        );
         return null;
       }
       const imageBuffer = await response.arrayBuffer();
