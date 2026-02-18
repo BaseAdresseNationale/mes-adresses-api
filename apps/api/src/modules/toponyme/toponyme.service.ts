@@ -156,9 +156,6 @@ export class ToponymeService {
     if (updateToponymeDto.nomAlt) {
       updateToponymeDto.nomAlt = cleanNomAlt(updateToponymeDto.nomAlt);
     }
-    if (toponyme.nom !== updateToponymeDto.nom) {
-      toponyme.codeVoie = null;
-    }
     // On update le numéro dans postgres
     Object.assign(toponyme, updateToponymeDto);
     const toponymeUpdated: Toponyme =
@@ -234,7 +231,6 @@ export class ToponymeService {
         parcelles: rawToponyme.parcelles || [],
         nomAlt: getNomAltDefault(rawToponyme.nomAlt),
         communeDeleguee: rawToponyme.communeDeleguee,
-        ...(rawToponyme.codeVoie && { codeVoie: rawToponyme.codeVoie }),
         ...(rawToponyme.updatedAt && { updatedAt: rawToponyme.updatedAt }),
         ...(rawToponyme.createdAt && { createdAt: rawToponyme.createdAt }),
       }));

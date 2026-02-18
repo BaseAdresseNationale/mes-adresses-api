@@ -50,10 +50,6 @@ export class Toponyme extends GlobalEntity {
   })
   positions?: Position[];
 
-  @ApiProperty()
-  @Column('varchar', { length: 4, name: 'code_voie', nullable: true })
-  codeVoie: string;
-
   @BeforeInsert()
   @BeforeUpdate()
   setRankPosition?() {
