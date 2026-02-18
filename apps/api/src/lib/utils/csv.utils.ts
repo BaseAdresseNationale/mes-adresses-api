@@ -31,6 +31,18 @@ export type FromCsvType = {
   toponymes?: Partial<Toponyme>[];
 };
 
+export function getVoieNomLang({
+  localizedValues,
+}: ValidateRowFullType): string | null {
+  return localizedValues.voie_nom || localizedValues.toponyme;
+}
+
+export function getVoieNom({
+  parsedValues,
+}: ValidateRowFullType): string | null {
+  return parsedValues.voie_nom || parsedValues.toponyme;
+}
+
 export function extractIdBanAdresse({
   parsedValues,
   additionalValues,
@@ -94,23 +106,18 @@ function extractDate(row: any) {
   }
 }
 
-function extractData(rows: ValidateRowFullType[]): {
-  voies: Partial<Voie>[];
-  numeros: Partial<Numero>[];
-  toponymes: Partial<Toponyme>[];
-} {
-  const toponymes: Partial<Toponyme>[] = chain(rows)
+function extractToponymes(rows: ValidateRowFullType[]): Partial<Toponyme>[] {
+  return chain(rows)
     .filter((r) => r.parsedValues.numero === DEFAULT_NUMERO_TOPONYME)
-    .groupBy((r) => normalize(r.parsedValues.voie_nom))
+    .groupBy((r) => normalize(getVoieNom(r)))
     .map((toponymeRows) => {
       const date = extractDate(toponymeRows[0]) || new Date();
+      const voieNomLang = getVoieNomLang(toponymeRows[0]);
       return {
         id: new ObjectId().toHexString(),
         banId: extractIdBanToponyme(toponymeRows[0]),
-        nom: beautifyUppercased(toponymeRows[0].parsedValues.voie_nom),
-        nomAlt: toponymeRows[0].localizedValues.voie_nom
-          ? beautifyNomAlt(toponymeRows[0].localizedValues.voie_nom)
-          : null,
+        nom: beautifyUppercased(getVoieNom(toponymeRows[0])),
+        nomAlt: voieNomLang ? beautifyNomAlt(voieNomLang) : null,
         positions: extractPositions(toponymeRows),
         communeDeleguee:
           toponymeRows[0].rawValues.commune_deleguee_insee || null,
@@ -120,42 +127,46 @@ function extractData(rows: ValidateRowFullType[]): {
       };
     })
     .value();
+}
 
-  const toponymesIndex = keyBy(toponymes, (t) => normalize(t.nom));
-
-  const voies: Partial<Voie>[] = chain(rows)
+function extractVoies(rows: ValidateRowFullType[]): Partial<Voie>[] {
+  return chain(rows)
     .filter((r) => r.parsedValues.numero !== DEFAULT_NUMERO_TOPONYME)
-    .groupBy((r) => normalize(r.parsedValues.voie_nom))
+    .groupBy((r) => normalize(getVoieNom(r)))
     .map((voieRows) => {
       const dates = compact(voieRows.map((r) => r.parsedValues.date_der_maj));
+      const voieNomLang = getVoieNomLang(voieRows[0]);
       return {
         id: new ObjectId().toHexString(),
         banId: extractIdBanToponyme(voieRows[0]),
-        nom: beautifyUppercased(voieRows[0].parsedValues.voie_nom),
-        nomAlt: voieRows[0].localizedValues.voie_nom
-          ? beautifyNomAlt(voieRows[0].localizedValues.voie_nom)
-          : null,
+        nom: beautifyUppercased(getVoieNom(voieRows[0])),
+        nomAlt: voieNomLang ? beautifyNomAlt(voieNomLang) : null,
         codeVoie: extractCodeVoie(voieRows[0]),
         createdAt: dates.length > 0 ? new Date(min(dates)) : new Date(),
         updatedAt: dates.length > 0 ? new Date(max(dates)) : new Date(),
       };
     })
     .value();
+}
 
-  const voiesIndex = keyBy(voies, (v) => normalize(v.nom));
-
-  const numeros: Partial<Numero>[] = chain(rows)
+function extractNumeros(
+  rows: ValidateRowFullType[],
+  toponymes: Partial<Toponyme>[],
+  toponymesIndex: Record<string, Partial<Toponyme>>,
+  voiesIndex: Record<string, Partial<Voie>>,
+): Partial<Numero>[] {
+  return chain(rows)
     .filter((r) => r.parsedValues.numero !== DEFAULT_NUMERO_TOPONYME)
     .groupBy(
       (r: ValidateRowFullType) =>
         `${r.parsedValues.numero}@@@${r.parsedValues.suffixe}@@@${normalize(
-          r.parsedValues.voie_nom,
+          getVoieNom(r),
         )}`,
     )
     .map((numeroRows: ValidateRowFullType[]) => {
       const date = extractDate(numeroRows[0]) || new Date();
 
-      const voieString = normalize(numeroRows[0].parsedValues.voie_nom);
+      const voieString = normalize(getVoieNom(numeroRows[0]));
       const toponymeString = numeroRows[0].parsedValues.lieudit_complement_nom
         ? normalize(numeroRows[0].parsedValues.lieudit_complement_nom)
         : null;
@@ -199,6 +210,30 @@ function extractData(rows: ValidateRowFullType[]): {
       };
     })
     .value();
+}
+
+function extractData(rows: ValidateRowFullType[]): {
+  voies: Partial<Voie>[];
+  numeros: Partial<Numero>[];
+  toponymes: Partial<Toponyme>[];
+} {
+  const toponymes: Partial<Toponyme>[] = extractToponymes(rows);
+  const toponymesIndex: Record<string, Partial<Toponyme>> = keyBy(
+    toponymes,
+    (t) => normalize(t.nom),
+  );
+
+  const voies: Partial<Voie>[] = extractVoies(rows);
+  const voiesIndex: Record<string, Partial<Voie>> = keyBy(voies, (v) =>
+    normalize(v.nom),
+  );
+
+  const numeros: Partial<Numero>[] = extractNumeros(
+    rows,
+    toponymes,
+    toponymesIndex,
+    voiesIndex,
+  );
 
   return { voies, numeros, toponymes };
 }
