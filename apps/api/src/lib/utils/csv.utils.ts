@@ -15,6 +15,10 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { ObjectId } from 'mongodb';
 import { Logger } from '@/shared/utils/logger.utils';
+import {
+  DEFAULT_CODE_VOIE,
+  DEFAULT_NUMERO_TOPONYME,
+} from '@/shared/modules/export_csv/utils/export_csv_bal.utils';
 
 export type FromCsvType = {
   isValid?: boolean;
@@ -70,6 +74,15 @@ export function extractCodeCommune({
   );
 }
 
+export function extractCodeVoie({
+  additionalValues,
+}: ValidateRowFullType): string | null {
+  return additionalValues?.cle_interop?.codeVoie &&
+    additionalValues?.cle_interop?.codeVoie !== DEFAULT_CODE_VOIE
+    ? additionalValues.cle_interop.codeVoie.toLowerCase()
+    : null;
+}
+
 function extractPosition(row: any) {
   return {
     source: row.parsedValues.source || null,
@@ -95,7 +108,7 @@ function extractDate(row: any) {
 
 function extractToponymes(rows: ValidateRowFullType[]): Partial<Toponyme>[] {
   return chain(rows)
-    .filter((r) => r.parsedValues.numero === 99999)
+    .filter((r) => r.parsedValues.numero === DEFAULT_NUMERO_TOPONYME)
     .groupBy((r) => normalize(getVoieNom(r)))
     .map((toponymeRows) => {
       const date = extractDate(toponymeRows[0]) || new Date();
@@ -108,6 +121,7 @@ function extractToponymes(rows: ValidateRowFullType[]): Partial<Toponyme>[] {
         positions: extractPositions(toponymeRows),
         communeDeleguee:
           toponymeRows[0].rawValues.commune_deleguee_insee || null,
+        codeVoie: extractCodeVoie(toponymeRows[0]),
         createdAt: date,
         updatedAt: date,
       };
@@ -117,7 +131,7 @@ function extractToponymes(rows: ValidateRowFullType[]): Partial<Toponyme>[] {
 
 function extractVoies(rows: ValidateRowFullType[]): Partial<Voie>[] {
   return chain(rows)
-    .filter((r) => r.parsedValues.numero !== 99999)
+    .filter((r) => r.parsedValues.numero !== DEFAULT_NUMERO_TOPONYME)
     .groupBy((r) => normalize(getVoieNom(r)))
     .map((voieRows) => {
       const dates = compact(voieRows.map((r) => r.parsedValues.date_der_maj));
@@ -127,6 +141,7 @@ function extractVoies(rows: ValidateRowFullType[]): Partial<Voie>[] {
         banId: extractIdBanToponyme(voieRows[0]),
         nom: beautifyUppercased(getVoieNom(voieRows[0])),
         nomAlt: voieNomLang ? beautifyNomAlt(voieNomLang) : null,
+        codeVoie: extractCodeVoie(voieRows[0]),
         createdAt: dates.length > 0 ? new Date(min(dates)) : new Date(),
         updatedAt: dates.length > 0 ? new Date(max(dates)) : new Date(),
       };
@@ -141,7 +156,7 @@ function extractNumeros(
   voiesIndex: Record<string, Partial<Voie>>,
 ): Partial<Numero>[] {
   return chain(rows)
-    .filter((r) => r.parsedValues.numero !== 99999)
+    .filter((r) => r.parsedValues.numero !== DEFAULT_NUMERO_TOPONYME)
     .groupBy(
       (r: ValidateRowFullType) =>
         `${r.parsedValues.numero}@@@${r.parsedValues.suffixe}@@@${normalize(
@@ -248,7 +263,6 @@ export async function extractFromCsv(
     const communeNomsAlt =
       rows.find((row) => row.localizedValues?.commune_nom)?.localizedValues
         ?.commune_nom || null;
-
     return {
       isValid: true,
       accepted: accepted.length,
