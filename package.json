@@ -14,6 +14,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "resolutions": {
+    "cpu-features": "npm:noop3@13.8.1"
+  },
   "scripts": {
     "build": "nest build api && nest build cron",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
@@ -52,7 +55,7 @@
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.3.7",
-    "@nestjs/schedule": "^3.0.4",
+    "@nestjs/schedule": "^6.1.0",
     "@nestjs/serve-static": "^4.0.2",
     "@nestjs/swagger": "^7.1.13",
     "@nestjs/typeorm": "^10.0.2",
@@ -153,6 +156,6 @@
     ]
   },
   "engines": {
-    "node": "22"
+    "node": "24"
   }
 }
