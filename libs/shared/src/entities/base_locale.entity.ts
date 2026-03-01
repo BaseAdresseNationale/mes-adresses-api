@@ -36,6 +36,9 @@ export class BaseLocaleSetting {
 
   @ApiProperty({ type: () => BaseLocaleFondDeCarte, isArray: true })
   fondsDeCartes: BaseLocaleFondDeCarte[];
+
+  @ApiProperty({ type: () => String, isArray: true })
+  ignoredAlertCodes: string[];
 }
 
 export class BaseLocaleSync {

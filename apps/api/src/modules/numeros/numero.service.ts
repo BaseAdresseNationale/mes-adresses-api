@@ -81,6 +81,14 @@ export class NumeroService {
     return numero;
   }
 
+  async findManyByBal(balId: string, select: string[]): Promise<Numero[]> {
+    const query = this.numerosRepository
+      .createQueryBuilder('numeros')
+      .select(select.map((field) => `numeros.${field}`))
+      .where('numeros.bal_id = :balId', { balId });
+    return query.getMany();
+  }
+
   async findMany(
     where: FindOptionsWhere<Numero>,
     select?: FindOptionsSelect<Numero>,
