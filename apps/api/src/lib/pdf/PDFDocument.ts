@@ -38,10 +38,14 @@ export class PdfDocument {
     const communeLogo = await getCommuneFlagBase64PNG(commune.code);
 
     if (communeLogo) {
-      this.addImage(communeLogo, 'png', {
-        width: 50,
-        height: 50,
-        x: this.doc.internal.pageSize.width - xMargin * 2 - 50,
+      const { dataUrl, metadata } = communeLogo;
+      const ratio = metadata.width / metadata.height;
+      const logoHeight = 50;
+      const logoWidth = logoHeight * ratio;
+      this.addImage(dataUrl, 'png', {
+        width: logoWidth,
+        height: logoHeight,
+        x: this.doc.internal.pageSize.width - xMargin * 2 - logoWidth,
         y: yMargin + 25,
       });
     }

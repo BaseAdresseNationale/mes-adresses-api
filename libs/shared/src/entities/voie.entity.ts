@@ -62,6 +62,10 @@ export class Voie extends GlobalEntity {
   bbox: number[] | null;
 
   @ApiProperty()
+  @Column('varchar', { length: 4, name: 'code_voie', nullable: true })
+  codeVoie: string;
+
+  @ApiProperty()
   @Column('text', { nullable: true })
   comment?: string | null;
 
