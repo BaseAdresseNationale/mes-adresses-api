@@ -14,6 +14,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "resolutions": {
+    "cpu-features": "npm:noop3@13.8.1"
+  },
   "scripts": {
     "build": "nest build api && nest build cron",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
@@ -40,7 +43,7 @@
     "@aws-sdk/client-s3": "^3.787.0",
     "@ban-team/adresses-util": "^0.9.0",
     "@ban-team/shared-data": "^1.4.2",
-    "@ban-team/validateur-bal": "^3.3.6",
+    "@ban-team/validateur-bal": "^3.3.7",
     "@etalab/decoupage-administratif": "^5.0.0",
     "@etalab/project-legal": "^0.6.0",
     "@mapbox/tilebelt": "^1.0.2",
@@ -52,7 +55,7 @@
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.3.7",
-    "@nestjs/schedule": "^3.0.4",
+    "@nestjs/schedule": "^6.1.0",
     "@nestjs/serve-static": "^4.0.2",
     "@nestjs/swagger": "^7.1.13",
     "@nestjs/typeorm": "^10.0.2",
@@ -153,6 +156,6 @@
     ]
   },
   "engines": {
-    "node": "22"
+    "node": "24"
   }
 }
