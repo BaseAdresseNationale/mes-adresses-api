@@ -4,6 +4,6 @@
 /* eslint-disable */
 export type MissingAddressContext = {
     idRNB?: string | null;
-    banId?: string | null;
+    idBAN?: string | null;
 };
 
