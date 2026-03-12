@@ -3,34 +3,45 @@ import {
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import {
-  UpdateManySignalementDTO,
-  UpdateOneSignalementDTO,
-} from './dto/update-signalement-dto';
+import { UpdateManyReportsDTO } from './dto/update-signalement-dto';
 import { OpenAPISignalementService } from './openAPI-signalement.service';
+import {
+  Alert,
+  Signalement,
+  Report,
+  UpdateSignalementDTO,
+  UpdateAlertDTO,
+} from '@/shared/openapi-signalement';
 
 @Injectable()
 export class SignalementService {
   constructor(private openAPISignalementService: OpenAPISignalementService) {}
 
-  async findOneOrFail(signalementId: string) {
-    const fetchedSignalement =
-      await this.openAPISignalementService.getSignalementById(signalementId);
+  async findOneOrFail(reportId: string): Promise<Signalement | Alert> {
+    let fetchedReport;
 
-    if (!fetchedSignalement) {
-      throw new HttpException(
-        `Signalement ${signalementId} not found`,
-        HttpStatus.NOT_FOUND,
-      );
+    try {
+      fetchedReport =
+        await this.openAPISignalementService.getSignalementById(reportId);
+    } catch (error) {
+      try {
+        fetchedReport =
+          await this.openAPISignalementService.getAlertById(reportId);
+      } catch (error) {
+        throw new HttpException(
+          `Report ${reportId} not found`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
     }
 
-    return fetchedSignalement;
+    return fetchedReport;
   }
 
   async updateOne(
     baseLocale: BaseLocale,
-    signalementId: string,
-    updateSignalementDTO: UpdateOneSignalementDTO,
+    reportId: string,
+    updateDTO: UpdateSignalementDTO | UpdateAlertDTO,
   ) {
     if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
       throw new HttpException(
@@ -39,31 +50,38 @@ export class SignalementService {
       );
     }
 
-    const fetchedSignalement = await this.findOneOrFail(signalementId);
+    const fetchedReport = await this.findOneOrFail(reportId);
 
-    if (baseLocale.commune !== fetchedSignalement.codeCommune) {
+    if (baseLocale.commune !== fetchedReport.codeCommune) {
       throw new HttpException(
-        `Communes do not match for signalement ${signalementId}`,
+        `Communes do not match for report ${reportId}`,
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    await this.openAPISignalementService.updateSignalement(
-      signalementId,
-      updateSignalementDTO,
-    );
+    if (fetchedReport.reportKind === Report.reportKind.SIGNALEMENT) {
+      await this.openAPISignalementService.updateSignalement(
+        reportId,
+        updateDTO as UpdateSignalementDTO,
+      );
+    } else if (fetchedReport.reportKind === Report.reportKind.ALERT) {
+      await this.openAPISignalementService.updateAlert(
+        reportId,
+        updateDTO as UpdateAlertDTO,
+      );
+    }
 
     return true;
   }
 
   async updateMany(
     baseLocale: BaseLocale,
-    updateSignalementDTO: UpdateManySignalementDTO,
+    updateSignalementDTO: UpdateManyReportsDTO,
   ) {
     const { ids, status } = updateSignalementDTO;
 
-    for (const signalementId of ids) {
-      await this.updateOne(baseLocale, signalementId, {
+    for (const reportId of ids) {
+      await this.updateOne(baseLocale, reportId, {
         status,
       });
     }

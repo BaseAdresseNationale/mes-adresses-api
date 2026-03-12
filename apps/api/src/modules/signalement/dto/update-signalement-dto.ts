@@ -1,17 +1,8 @@
-import { Signalement } from '@/shared/openapi-signalement';
+import { Report } from '@/shared/openapi-signalement';
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMinSize, IsEnum } from 'class-validator';
 
-export class UpdateOneSignalementDTO {
-  @ApiProperty({ required: true, nullable: false, enum: Signalement.status })
-  @IsEnum(Signalement.status)
-  status: Signalement.status;
-
-  @ApiProperty({ required: false })
-  rejectionReason?: string;
-}
-
-export class UpdateManySignalementDTO {
+export class UpdateManyReportsDTO {
   @ApiProperty({
     type: String,
     required: true,
@@ -21,7 +12,7 @@ export class UpdateManySignalementDTO {
   @ArrayMinSize(1)
   ids: string[];
 
-  @ApiProperty({ required: true, nullable: false, enum: Signalement.status })
-  @IsEnum(Signalement.status)
-  status: Signalement.status;
+  @ApiProperty({ required: true, nullable: false, enum: Report.status })
+  @IsEnum(Report.status)
+  status: Report.status;
 }
