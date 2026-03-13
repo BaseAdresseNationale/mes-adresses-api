@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Report } from './Report';
 export type Source = {
     id: string;
     createdAt: string;
@@ -9,7 +10,7 @@ export type Source = {
     deletedAt?: string | null;
     nom: string;
     type: Source.type;
-    signalements?: Array<string> | null;
+    reports?: Array<Report> | null;
 };
 export namespace Source {
     export enum type {

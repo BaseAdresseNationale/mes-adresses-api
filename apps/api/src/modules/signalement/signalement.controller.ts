@@ -25,8 +25,8 @@ import { AdminGuard } from '@/lib/guards/admin.guard';
 import { CustomRequest } from '@/lib/types/request.type';
 import { SignalementService } from './signalement.service';
 import {
-  UpdateOneSignalementDTO,
-  UpdateManySignalementDTO,
+  UpdateManyReportsDTO,
+  UpdateOneReportDTO,
 } from './dto/update-signalement-dto';
 
 @ApiTags('signalements')
@@ -37,62 +37,10 @@ export class SignalementController {
     private signalementService: SignalementService,
   ) {}
 
-  @Put(':baseLocaleId/:signalementId')
+  @Get('/:baseLocaleId/:idSignalement')
   @ApiOperation({
-    summary: 'Update one signalement',
-    operationId: 'updateSignalement',
-  })
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiParam({ name: 'signalementId', required: true, type: String })
-  @ApiBody({ type: UpdateOneSignalementDTO, required: true })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: Boolean,
-  })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  async updateOne(
-    @Req() req: CustomRequest,
-    @Body() updateSignalementDTO: UpdateOneSignalementDTO,
-    @Res() res: Response,
-  ) {
-    await this.signalementService.updateOne(
-      req.baseLocale,
-      req.params.signalementId,
-      updateSignalementDTO,
-    );
-    res.status(HttpStatus.OK).json(true);
-  }
-
-  @Put(':baseLocaleId')
-  @ApiOperation({
-    summary: 'Update many signalements',
-    operationId: 'updateSignalements',
-  })
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: UpdateManySignalementDTO, required: true })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: Boolean,
-  })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  async updateMany(
-    @Req() req: CustomRequest,
-    @Body() updateSignalementDTO: UpdateManySignalementDTO,
-    @Res() res: Response,
-  ) {
-    await this.signalementService.updateMany(
-      req.baseLocale,
-      updateSignalementDTO,
-    );
-    res.status(HttpStatus.OK).json(true);
-  }
-
-  @Get('/:baseLocaleId/:idSignalement/author')
-  @ApiOperation({
-    summary: 'Get author by signalement id',
-    operationId: 'getAuthor',
+    summary: 'Get signalement by id',
+    operationId: 'getReport',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiParam({ name: 'idSignalement', required: true, type: String })
@@ -101,7 +49,7 @@ export class SignalementController {
   @ApiResponse({
     status: HttpStatus.OK,
   })
-  async getAuthor(
+  async getReport(
     @Req() req: Request,
     @Res() res: Response,
     @Param('idSignalement') idSignalement: string,
@@ -109,6 +57,58 @@ export class SignalementController {
     const signalement =
       await this.signalementService.findOneOrFail(idSignalement);
 
-    res.status(HttpStatus.OK).json(signalement.author);
+    res.status(HttpStatus.OK).json(signalement);
+  }
+
+  @Put(':baseLocaleId/:reportId')
+  @ApiOperation({
+    summary: 'Update one report',
+    operationId: 'updateReport',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiParam({ name: 'reportId', required: true, type: String })
+  @ApiBody({ type: UpdateOneReportDTO, required: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Boolean,
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async updateOne(
+    @Req() req: CustomRequest,
+    @Body() updateOneReportDTO: UpdateOneReportDTO,
+    @Res() res: Response,
+  ) {
+    await this.signalementService.updateOne(
+      req.baseLocale,
+      req.params.reportId,
+      updateOneReportDTO,
+    );
+    res.status(HttpStatus.OK).json(true);
+  }
+
+  @Put(':baseLocaleId')
+  @ApiOperation({
+    summary: 'Update many reports',
+    operationId: 'updateReports',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: UpdateManyReportsDTO, required: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Boolean,
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async updateMany(
+    @Req() req: CustomRequest,
+    @Body() updateManyReportsDTO: UpdateManyReportsDTO,
+    @Res() res: Response,
+  ) {
+    await this.signalementService.updateMany(
+      req.baseLocale,
+      updateManyReportsDTO,
+    );
+    res.status(HttpStatus.OK).json(true);
   }
 }

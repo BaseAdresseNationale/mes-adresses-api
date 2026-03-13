@@ -2,9 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type SignalementStatsDTO = {
-    total: number;
-    fromSources: Record<string, any>;
-    processedBy: Record<string, any>;
+export type CombinedStatsDTO = {
+    alertStats: Record<string, any>;
+    signalementStats: Record<string, any>;
 };
 
