@@ -17,6 +17,7 @@ export { CommuneSettingsDTO } from './models/CommuneSettingsDTO';
 export { CommuneStatusDTO } from './models/CommuneStatusDTO';
 export { CreateAlertDTO } from './models/CreateAlertDTO';
 export type { CreateClientDTO } from './models/CreateClientDTO';
+export type { CreatedAddress } from './models/CreatedAddress';
 export { CreateSignalementDTO } from './models/CreateSignalementDTO';
 export { CreateSourceDTO } from './models/CreateSourceDTO';
 export type { DeleteNumeroChangesRequestedDTO } from './models/DeleteNumeroChangesRequestedDTO';

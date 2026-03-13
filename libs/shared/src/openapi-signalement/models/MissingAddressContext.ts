@@ -2,8 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { CreatedAddress } from './CreatedAddress';
 export type MissingAddressContext = {
     idRNB?: string | null;
-    idBAN?: string | null;
+    createdAddress?: CreatedAddress | null;
 };
 
