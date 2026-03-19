@@ -49,13 +49,8 @@ export class SignalementController {
   @ApiResponse({
     status: HttpStatus.OK,
   })
-  async getReport(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Param('reportId') reportId: string,
-  ) {
-    const signalement =
-      await this.signalementService.findOneOrFail(reportId);
+  async getReport(@Res() res: Response, @Param('reportId') reportId: string) {
+    const signalement = await this.signalementService.findOneOrFail(reportId);
 
     res.status(HttpStatus.OK).json(signalement);
   }
