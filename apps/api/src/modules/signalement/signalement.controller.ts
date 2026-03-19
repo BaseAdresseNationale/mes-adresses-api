@@ -37,13 +37,13 @@ export class SignalementController {
     private signalementService: SignalementService,
   ) {}
 
-  @Get('/:baseLocaleId/:idSignalement')
+  @Get('/:baseLocaleId/:reportId')
   @ApiOperation({
-    summary: 'Get signalement by id',
+    summary: 'Get report by id',
     operationId: 'getReport',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiParam({ name: 'idSignalement', required: true, type: String })
+  @ApiParam({ name: 'reportId', required: true, type: String })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   @ApiResponse({
@@ -52,10 +52,10 @@ export class SignalementController {
   async getReport(
     @Req() req: Request,
     @Res() res: Response,
-    @Param('idSignalement') idSignalement: string,
+    @Param('reportId') reportId: string,
   ) {
     const signalement =
-      await this.signalementService.findOneOrFail(idSignalement);
+      await this.signalementService.findOneOrFail(reportId);
 
     res.status(HttpStatus.OK).json(signalement);
   }
