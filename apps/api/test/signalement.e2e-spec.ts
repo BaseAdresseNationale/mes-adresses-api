@@ -21,7 +21,7 @@ import {
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { Repository } from 'typeorm';
-import { Report, Signalement } from '@/shared/openapi-signalement';
+import { ApiError, Report, Signalement } from '@/shared/openapi-signalement';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { SignalementService } from '@/modules/signalement/signalement.service';
 import { OpenAPISignalementService } from '@/modules/signalement/openAPI-signalement.service';
@@ -271,7 +271,20 @@ describe('SIGNALEMENT MODULE', () => {
 
     it('should get an alert by id when signalement not found', async () => {
       OpenAPISignalementServiceMock.getSignalementById.mockRejectedValueOnce(
-        new Error('Not found'),
+        new ApiError(
+          {
+            method: 'GET',
+            url: '/signalements/unknown-id',
+          },
+          {
+            status: 404,
+            statusText: 'Not found',
+            body: { message: 'Not found' },
+            ok: false,
+            url: '/signalements/unknown-id',
+          },
+          'Not found',
+        ),
       );
 
       const balId = await createBal({
@@ -292,10 +305,36 @@ describe('SIGNALEMENT MODULE', () => {
 
     it('should return 404 if report not found', async () => {
       OpenAPISignalementServiceMock.getSignalementById.mockRejectedValueOnce(
-        new Error('Not found'),
+        new ApiError(
+          {
+            method: 'GET',
+            url: '/signalements/unknown-id',
+          },
+          {
+            status: 404,
+            statusText: 'Not found',
+            body: { message: 'Not found' },
+            ok: false,
+            url: '/signalements/unknown-id',
+          },
+          'Not found',
+        ),
       );
       OpenAPISignalementServiceMock.getAlertById.mockRejectedValueOnce(
-        new Error('Not found'),
+        new ApiError(
+          {
+            method: 'GET',
+            url: '/alerts/unknown-id',
+          },
+          {
+            status: 404,
+            statusText: 'Not found',
+            body: { message: 'Not found' },
+            ok: false,
+            url: '/alerts/unknown-id',
+          },
+          'Not found',
+        ),
       );
 
       const balId = await createBal({
@@ -378,7 +417,20 @@ describe('SIGNALEMENT MODULE', () => {
 
     it('should update one alert', async () => {
       OpenAPISignalementServiceMock.getSignalementById.mockRejectedValueOnce(
-        new Error('Not found'),
+        new ApiError(
+          {
+            method: 'GET',
+            url: '/signalements/unknown-id',
+          },
+          {
+            status: 404,
+            statusText: 'Not found',
+            body: { message: 'Not found' },
+            ok: false,
+            url: '/signalements/unknown-id',
+          },
+          'Not found',
+        ),
       );
 
       const balId = await createBal({
@@ -409,7 +461,20 @@ describe('SIGNALEMENT MODULE', () => {
 
     it('should update one alert with context', async () => {
       OpenAPISignalementServiceMock.getSignalementById.mockRejectedValueOnce(
-        new Error('Not found'),
+        new ApiError(
+          {
+            method: 'GET',
+            url: '/signalements/unknown-id',
+          },
+          {
+            status: 404,
+            statusText: 'Not found',
+            body: { message: 'Not found' },
+            ok: false,
+            url: '/signalements/unknown-id',
+          },
+          'Not found',
+        ),
       );
 
       const balId = await createBal({
@@ -452,10 +517,36 @@ describe('SIGNALEMENT MODULE', () => {
 
     it('should return 404 if report not found', async () => {
       OpenAPISignalementServiceMock.getSignalementById.mockRejectedValueOnce(
-        new Error('Not found'),
+        new ApiError(
+          {
+            method: 'GET',
+            url: '/signalements/unknown-id',
+          },
+          {
+            status: 404,
+            statusText: 'Not found',
+            body: { message: 'Not found' },
+            ok: false,
+            url: '/signalements/unknown-id',
+          },
+          'Not found',
+        ),
       );
       OpenAPISignalementServiceMock.getAlertById.mockRejectedValueOnce(
-        new Error('Not found'),
+        new ApiError(
+          {
+            method: 'GET',
+            url: '/alerts/unknown-id',
+          },
+          {
+            status: 404,
+            statusText: 'Not found',
+            body: { message: 'Not found' },
+            ok: false,
+            url: '/alerts/unknown-id',
+          },
+          'Not found',
+        ),
       );
 
       const balId = await createBal({
