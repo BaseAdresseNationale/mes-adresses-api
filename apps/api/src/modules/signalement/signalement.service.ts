@@ -60,9 +60,14 @@ export class SignalementService {
     }
 
     if (fetchedReport.reportKind === Report.reportKind.SIGNALEMENT) {
+      // Remove alert-only fields (like `context`) before updating a signalement
+      const { context, ...signalementUpdateDTO } = updateDTO as UpdateSignalementDTO & {
+        // `context` can be present when coming from a broader DTO (e.g. UpdateOneReportDTO)
+        context?: unknown;
+      };
       await this.openAPISignalementService.updateSignalement(
         reportId,
-        updateDTO as UpdateSignalementDTO,
+        signalementUpdateDTO as UpdateSignalementDTO,
       );
     } else if (fetchedReport.reportKind === Report.reportKind.ALERT) {
       await this.openAPISignalementService.updateAlert(
