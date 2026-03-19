@@ -69,6 +69,11 @@ export class SignalementService {
         reportId,
         updateDTO as UpdateAlertDTO,
       );
+    } else {
+      throw new HttpException(
+        `Unexpected reportKind '${fetchedReport.reportKind}' for report ${reportId}`,
+        HttpStatus.BAD_GATEWAY,
+      );
     }
 
     return true;
