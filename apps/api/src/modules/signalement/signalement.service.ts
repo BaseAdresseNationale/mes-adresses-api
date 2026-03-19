@@ -11,6 +11,7 @@ import {
   Report,
   UpdateSignalementDTO,
   UpdateAlertDTO,
+  ApiError,
 } from '@/shared/openapi-signalement';
 
 @Injectable()
@@ -24,14 +25,21 @@ export class SignalementService {
       fetchedReport =
         await this.openAPISignalementService.getSignalementById(reportId);
     } catch (error) {
-      try {
-        fetchedReport =
-          await this.openAPISignalementService.getAlertById(reportId);
-      } catch (error) {
-        throw new HttpException(
-          `Report ${reportId} not found`,
-          HttpStatus.NOT_FOUND,
-        );
+      if (error instanceof ApiError && error.status === 404) {
+        try {
+          fetchedReport =
+            await this.openAPISignalementService.getAlertById(reportId);
+        } catch (alertError) {
+          if (alertError instanceof ApiError && alertError.status === 404) {
+            throw new HttpException(
+              `Report ${reportId} not found`,
+              HttpStatus.NOT_FOUND,
+            );
+          }
+          throw alertError;
+        }
+      } else {
+        throw error;
       }
     }
 
