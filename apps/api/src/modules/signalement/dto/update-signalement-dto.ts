@@ -47,6 +47,8 @@ export class UpdateOneReportDTO {
   status: Report.status;
 
   @ApiProperty({ required: false, nullable: true, type: String })
+  @IsOptional()
+  @IsString()
   rejectionReason?: string;
 
   @IsOptional()
