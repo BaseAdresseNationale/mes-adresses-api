@@ -2,12 +2,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Report } from './Report';
 export type Client = {
     id: string;
     createdAt: string;
     updatedAt: string;
     deletedAt?: string | null;
     nom: string;
-    processedSignalements?: Array<string> | null;
+    processedReports?: Array<Report> | null;
 };
 

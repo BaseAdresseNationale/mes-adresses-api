@@ -7,7 +7,9 @@ export type NumeroChangesRequestedDTO = {
     numero: number;
     suffixe?: string;
     nomVoie: string;
+    banIdVoie?: string;
     nomComplement?: string;
+    banIdComplement?: string;
     parcelles: Array<string>;
     positions: Array<PositionDTO>;
     comment?: string | null;

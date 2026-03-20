@@ -4,34 +4,25 @@
 /* eslint-disable */
 import type { Author } from './Author';
 import type { Client } from './Client';
-import type { DeleteNumeroChangesRequestedDTO } from './DeleteNumeroChangesRequestedDTO';
-import type { ExistingNumero } from './ExistingNumero';
-import type { ExistingToponyme } from './ExistingToponyme';
-import type { ExistingVoie } from './ExistingVoie';
-import type { NumeroChangesRequestedDTO } from './NumeroChangesRequestedDTO';
 import type { Source } from './Source';
-import type { ToponymeChangesRequestedDTO } from './ToponymeChangesRequestedDTO';
-import type { VoieChangesRequestedDTO } from './VoieChangesRequestedDTO';
-export type Signalement = {
+export type Report = {
     id: string;
     createdAt: string;
     updatedAt: string;
     deletedAt?: string | null;
     codeCommune: string;
     nomCommune?: string | null;
-    type: Signalement.type;
+    type: Report.type;
     author?: Author | null;
-    status: Signalement.status;
+    status: Report.status;
     point: Record<string, any>;
     source: Source;
     processedBy?: Client | null;
-    reportKind: Signalement.reportKind;
-    existingLocation?: (ExistingNumero | ExistingVoie | ExistingToponyme) | null;
-    changesRequested: (NumeroChangesRequestedDTO | DeleteNumeroChangesRequestedDTO | ToponymeChangesRequestedDTO | VoieChangesRequestedDTO);
-    rejectionReason?: string;
+    reportKind: Report.reportKind;
 };
-export namespace Signalement {
+export namespace Report {
     export enum type {
+        MISSING_ADDRESS = 'MISSING_ADDRESS',
         LOCATION_TO_UPDATE = 'LOCATION_TO_UPDATE',
         LOCATION_TO_DELETE = 'LOCATION_TO_DELETE',
         LOCATION_TO_CREATE = 'LOCATION_TO_CREATE',

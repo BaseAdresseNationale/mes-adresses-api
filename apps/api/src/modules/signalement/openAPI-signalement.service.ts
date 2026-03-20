@@ -5,6 +5,8 @@ import {
   SignalementsService,
   OpenAPI as OpenAPISignalement,
   UpdateSignalementDTO,
+  AlertsService,
+  UpdateAlertDTO,
 } from '@/shared/openapi-signalement';
 
 @Injectable()
@@ -20,6 +22,10 @@ export class OpenAPISignalementService {
     return SignalementsService.getSignalementById(signalementId);
   }
 
+  getAlertById(alertId: string) {
+    return AlertsService.getAlertById(alertId);
+  }
+
   async updateSignalement(
     signalementId: string,
     updateSignalementDTO: UpdateSignalementDTO,
@@ -28,5 +34,9 @@ export class OpenAPISignalementService {
       signalementId,
       updateSignalementDTO,
     );
+  }
+
+  async updateAlert(alertId: string, updateAlertDTO: UpdateAlertDTO) {
+    return AlertsService.updateAlert(alertId, updateAlertDTO);
   }
 }
