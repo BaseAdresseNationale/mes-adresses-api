@@ -40,8 +40,14 @@ import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { BatchNumeroResponseDTO } from './dto/batch_numero_response.dto';
 import { NumeroInBbox } from '@/lib/types/numero.type';
-import { generateCertificatAdressage } from '@/lib/pdf/templates/numero/certificat-adressage';
-import { generateArreteDeNumerotation } from '@/lib/pdf/templates/numero/arrete-de-numerotation';
+import {
+  prepareDocumentHeader,
+  processImageFile,
+} from '@/lib/document/document-builder';
+import { buildCertificatAdressageDefinition } from '@/lib/document/templates/numero/certificat-adressage';
+import { buildArreteDeNumerotationNumeroDefinition } from '@/lib/document/templates/numero/arrete-de-numerotation';
+import { generateDocument } from '@/lib/document/document-generator';
+import { DocumentFormat } from '@/lib/document/types';
 import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
 import { S3Service } from '@/shared/modules/s3/s3.service';
 
@@ -640,9 +646,9 @@ export class NumeroService {
   }
 
   async generateCertificatAdressage(
-    params: GenerateCertificatDTO & { numero: Numero },
+    params: GenerateCertificatDTO & { numero: Numero; format?: DocumentFormat },
   ): Promise<string> {
-    const { numero } = params;
+    const { numero, format = DocumentFormat.PDF } = params;
 
     if (numero.parcelles.length === 0) {
       throw new HttpException(
@@ -654,9 +660,12 @@ export class NumeroService {
     const { baseLocale, voie, toponyme } =
       await this.getGenerateDocumentForNumeroParams(numero);
 
-    const fileName = `certificat_adressage_${numero.id}.pdf`;
+    const header = await prepareDocumentHeader({
+      nom: baseLocale.communeNom,
+      code: baseLocale.commune,
+    });
 
-    const pdfFileData = await generateCertificatAdressage({
+    const definition = buildCertificatAdressageDefinition(header, {
       numero,
       baseLocale,
       voie,
@@ -664,13 +673,20 @@ export class NumeroService {
       ...params,
     });
 
+    const { data, contentType, extension } = await generateDocument(
+      definition,
+      format,
+    );
+
+    const fileName = `certificat_adressage_${numero.id}.${extension}`;
+
     await this.s3service.uploadPublicFile(
       fileName,
       process.env.S3_CONTAINER_GENERATED_FILES,
-      Buffer.from(pdfFileData, 'ascii'),
+      data,
       {
-        ContentType: 'application/pdf',
-        ContentEncoding: 'ascii',
+        ContentType: contentType,
+        ...(format === DocumentFormat.PDF ? { ContentEncoding: 'ascii' } : {}),
       },
     );
 
@@ -681,29 +697,44 @@ export class NumeroService {
 
   async generateArreteDeNumerotation(params: {
     numero: Numero;
+    format?: DocumentFormat;
     planDeSituation?: Express.Multer.File;
   }): Promise<string> {
-    const { numero } = params;
+    const { numero, format = DocumentFormat.PDF } = params;
     const { baseLocale, voie, toponyme } =
       await this.getGenerateDocumentForNumeroParams(numero);
 
-    const fileName = `arrete_de_numerotation_${numero.id}.pdf`;
+    const header = await prepareDocumentHeader({
+      nom: baseLocale.communeNom,
+      code: baseLocale.commune,
+    });
 
-    const pdfFileData = await generateArreteDeNumerotation({
+    const planDeSituationImage = params.planDeSituation
+      ? await processImageFile(params.planDeSituation)
+      : undefined;
+
+    const definition = buildArreteDeNumerotationNumeroDefinition(header, {
       numero,
       baseLocale,
       voie,
       toponyme,
-      ...params,
+      planDeSituation: planDeSituationImage,
     });
+
+    const { data, contentType, extension } = await generateDocument(
+      definition,
+      format,
+    );
+
+    const fileName = `arrete_de_numerotation_${numero.id}.${extension}`;
 
     await this.s3service.uploadPublicFile(
       fileName,
       process.env.S3_CONTAINER_GENERATED_FILES,
-      Buffer.from(pdfFileData, 'ascii'),
+      data,
       {
-        ContentType: 'application/pdf',
-        ContentEncoding: 'ascii',
+        ContentType: contentType,
+        ...(format === DocumentFormat.PDF ? { ContentEncoding: 'ascii' } : {}),
       },
     );
 

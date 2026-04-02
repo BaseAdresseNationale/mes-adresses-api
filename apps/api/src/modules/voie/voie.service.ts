@@ -37,7 +37,13 @@ import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { S3Service } from '@/shared/modules/s3/s3.service';
-import { generateArreteDeNumerotation } from '@/lib/pdf/templates/voie/arrete-de-numerotation';
+import {
+  prepareDocumentHeader,
+  processImageFile,
+} from '@/lib/document/document-builder';
+import { buildArreteDeNumerotationVoieDefinition } from '@/lib/document/templates/voie/arrete-de-numerotation';
+import { generateDocument } from '@/lib/document/document-generator';
+import { DocumentFormat } from '@/lib/document/types';
 
 @Injectable()
 export class VoieService {
@@ -449,30 +455,45 @@ export class VoieService {
 
   async generateArreteDeNumerotation(params: {
     voie: Voie;
+    format?: DocumentFormat;
     planDeSituation?: Express.Multer.File;
   }): Promise<string> {
-    const { voie } = params;
+    const { voie, format = DocumentFormat.PDF } = params;
     const { baseLocale } = await this.getGenerateDocumentForVoieParams(voie);
     const voieWithNumeros = await this.voiesRepository.findOne({
       where: { id: voie.id },
       relations: { numeros: true },
     });
 
-    const fileName = `arrete_de_numerotation_${voie.id}.pdf`;
+    const header = await prepareDocumentHeader({
+      nom: baseLocale.communeNom,
+      code: baseLocale.commune,
+    });
 
-    const pdfFileData = await generateArreteDeNumerotation({
-      ...params,
+    const planDeSituationImage = params.planDeSituation
+      ? await processImageFile(params.planDeSituation)
+      : undefined;
+
+    const definition = buildArreteDeNumerotationVoieDefinition(header, {
       baseLocale,
       voie: voieWithNumeros,
+      planDeSituation: planDeSituationImage,
     });
+
+    const { data, contentType, extension } = await generateDocument(
+      definition,
+      format,
+    );
+
+    const fileName = `arrete_de_numerotation_${voie.id}.${extension}`;
 
     await this.s3service.uploadPublicFile(
       fileName,
       process.env.S3_CONTAINER_GENERATED_FILES,
-      Buffer.from(pdfFileData, 'ascii'),
+      data,
       {
-        ContentType: 'application/pdf',
-        ContentEncoding: 'ascii',
+        ContentType: contentType,
+        ...(format === DocumentFormat.PDF ? { ContentEncoding: 'ascii' } : {}),
       },
     );
 
