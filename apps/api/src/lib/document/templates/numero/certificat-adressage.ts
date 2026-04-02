@@ -29,7 +29,7 @@ export function buildCertificatAdressageBlocks(
           ? `la propriété appartenant à ${destinataire} désignée ci-dessous `
           : `l'adresse désignée ci-dessous `
       }est certifiée dans la Base Adresse Locale de ${baseLocale.communeNom}.`,
-      align: 'left',
+      align: 'justify',
     },
     {
       type: 'table',
@@ -51,12 +51,13 @@ export function buildCertificatAdressageBlocks(
     {
       type: 'text',
       text: 'En foi de quoi, le présent certificat est délivré au demandeur pour servir et valoir ce que de droit.',
-      align: 'left',
+      align: 'justify',
     },
+    { type: 'newLine' },
     {
       type: 'text',
       text: "Il ne vaut pas : autorisation d'urbanisme, droit de passage, servitude, droit de propriété, certificat de résidence ou d'hébergement.",
-      align: 'left',
+      align: 'justify',
     },
   ];
 }
