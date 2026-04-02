@@ -1,8 +1,8 @@
 import { jsPDF, TextOptionsLight } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
-import { getAdresseMairie } from '../utils/annuaire-service-public';
-import { getCommuneFlagBase64PNG } from '../utils/commune-flag.utils';
-import { PDFAssetsManager } from './PDFAssetsManager';
+import { AssetsManager } from './AssetsManager';
+import { getCommuneFlagBase64PNG } from '@/lib/utils/commune-flag.utils';
+import { getAdresseMairie } from '@/lib/utils/annuaire-service-public';
 
 export const xMargin = 20;
 export const yMargin = 30;
@@ -29,11 +29,11 @@ export class PdfDocument {
   }
 
   async initDocument(docTitle: string, commune: { nom: string; code: string }) {
-    if (!PDFAssetsManager.isInitialized) {
-      await PDFAssetsManager.init();
+    if (!AssetsManager.isInitialized) {
+      await AssetsManager.init();
     }
 
-    this.changeFont('Arial', PDFAssetsManager.getArialFont());
+    this.changeFont('Arial', AssetsManager.getArialFont());
 
     const communeLogo = await getCommuneFlagBase64PNG(commune.code);
 

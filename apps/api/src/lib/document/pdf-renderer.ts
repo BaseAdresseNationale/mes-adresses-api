@@ -1,5 +1,5 @@
-import { PdfDocument, xMargin } from '../pdf/PDFDocument';
 import { DocumentDefinition } from './types';
+import { PdfDocument, xMargin } from './utils/PDFDocument';
 
 export async function renderPdf(
   definition: DocumentDefinition,
@@ -14,7 +14,9 @@ export async function renderPdf(
       case 'text':
         doc.addText(block.text, {
           align: block.align,
-          ...(block.useMaxWidth ? { maxWidth } : {}),
+          ...(block.useMaxWidth || block.align === 'justify'
+            ? { maxWidth }
+            : {}),
         });
         break;
       case 'table':
