@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'node:fs/promises';
 
-export class PDFAssetsManager {
+export class AssetsManager {
   private static arialFontBase64: string;
   private static rfLogoBase64: string;
   public static isInitialized = false;
@@ -20,7 +20,7 @@ export class PDFAssetsManager {
 
       this.isInitialized = true;
     } catch (error) {
-      console.error('Error initializing PDFAssetsManager:', error);
+      console.error('Error initializing AssetsManager:', error);
       throw error;
     }
   }
