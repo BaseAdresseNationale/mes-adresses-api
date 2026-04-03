@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   MaxLength,
   Validate,
@@ -27,10 +27,11 @@ export class CreateNumeroDTO {
   numero: number;
 
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? null : value))
   @Matches(/^[\da-z]/i, { message: 'suffixe:debut_invalide' })
   @MaxLength(9, { message: 'suffixe:trop_long' })
   @ApiProperty({ required: false, nullable: true })
-  suffixe?: string;
+  suffixe?: string | null;
 
   @IsOptional()
   @MaxLength(5000, {
