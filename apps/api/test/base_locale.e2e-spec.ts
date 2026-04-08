@@ -42,6 +42,7 @@ process.env.BAN_API_URL = BAN_API_URL;
 const baseLocaleAdminProperties = ['token', 'emails'];
 const baseLocalePublicProperties = [
   'id',
+  'importType',
   'banId',
   'nom',
   'communeNomsAlt',
