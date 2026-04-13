@@ -35,6 +35,9 @@ export class BaseLocaleFondDeCarte {
 
 export class BaseLocaleSetting {
   @ApiProperty()
+  otherBalPublishedIgnored: boolean;
+
+  @ApiProperty()
   languageGoalIgnored: boolean;
 
   @ApiProperty()
