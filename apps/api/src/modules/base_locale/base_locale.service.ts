@@ -30,6 +30,7 @@ import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import {
   BaseLocale,
+  ImportTypeEnum,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 import { Habilitation } from '@/shared/modules/api_depot/api-depot.types';
@@ -51,7 +52,10 @@ import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
 import { CreateDemoBaseLocaleDTO } from './dto/create_demo_base_locale.dto';
 import { getCommuneActuelle } from '@/shared/utils/cog.utils';
-import { PopulateService } from './sub_modules/populate/populate.service';
+import {
+  FromCsvSourceType,
+  PopulateService,
+} from './sub_modules/populate/populate.service';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
@@ -219,9 +223,16 @@ export class BaseLocaleService {
     const key = `${KEY_POPULATE_BAL_ID}#${baseLocale.id}`;
     await this.cacheService.set(key, '');
     // On extrait la Bal de l'assemblage BAN ou la derniere revision sur l'api-depot
-    const data: FromCsvType = await this.populateService.extract(
+    const data: FromCsvSourceType = await this.populateService.extract(
       baseLocale.commune,
     );
+    // On met le type d'import a jour
+    if (data.importType) {
+      await this.basesLocalesRepository.update(
+        { id: baseLocale.id },
+        { importType: data.importType },
+      );
+    }
     // On populate la Bal
     const res = await this.populate(baseLocale, data);
     await this.cacheService.del(key);
@@ -262,6 +273,11 @@ export class BaseLocaleService {
       toponymes,
       communeNomsAlt,
     });
+    // On met le type d'import a jour
+    await this.basesLocalesRepository.update(
+      { id: baseLocale.id },
+      { importType: ImportTypeEnum.CSV },
+    );
     // On met a jour le updatedAt de la Bal
     await this.touch(baseLocale.id);
 

@@ -6,6 +6,12 @@ import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
 import { getCommune } from '../utils/cog.utils';
 
+export enum ImportTypeEnum {
+  API_DEPOT = 'api-depot',
+  BAN = 'ban',
+  CSV = 'csv',
+}
+
 export enum StatusBaseLocalEnum {
   DRAFT = 'draft',
   PUBLISHED = 'published',
@@ -83,6 +89,14 @@ export class BaseLocale extends GlobalEntity {
   @ApiProperty({ enum: StatusBaseLocalEnum })
   @Column('enum', { enum: StatusBaseLocalEnum, nullable: false })
   status: StatusBaseLocalEnum;
+
+  @ApiProperty({ enum: ImportTypeEnum })
+  @Column('enum', {
+    enum: ImportTypeEnum,
+    name: 'import_type',
+    nullable: true,
+  })
+  importType: ImportTypeEnum;
 
   @ApiProperty()
   @Column('varchar', { name: 'habilitation_id', nullable: true, length: 24 })
