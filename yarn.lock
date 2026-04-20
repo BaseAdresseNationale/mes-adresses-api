@@ -1024,18 +1024,18 @@
     talisman "^1.1.4"
     written-number "^0.9.1"
 
-"@ban-team/shared-data@^1.4.2":
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/@ban-team/shared-data/-/shared-data-1.4.2.tgz#feb0a4e9aaa026cf1db39b99f8b4dda987682006"
-  integrity sha512-GBdEmqIJEcx89EKq+PkyL2YR7hfoiKyDlfNy/vob0N5ro4pCdKZ9cMfPvod35FSC9KOEwaUZuOJz5fFwfSqufA==
+"@ban-team/shared-data@^1.4.3":
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@ban-team/shared-data/-/shared-data-1.4.3.tgz#b8868d739dde7b6bb01af5a65221bbf0d81c7c25"
+  integrity sha512-2kvWdj/a8kuAyAgiBSuKdW6f0Xv7L7UufxgAVTSTaXITPBrTDAdaOFBxGXXUBnDuNiK99I0122uhMRX1F7FEiw==
 
-"@ban-team/validateur-bal@^3.5.1":
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/@ban-team/validateur-bal/-/validateur-bal-3.5.1.tgz#cabf7a4fd2879cbe42ab72051b81896495e69082"
-  integrity sha512-OGkZY6Wb/ksQQxFfdinc+VABk1BWHKe6wpT+KLMFurzXRcMoUYnYl5O80+UxHgP5TRolDru94ERnLmGvL0EJgw==
+"@ban-team/validateur-bal@^3.5.2":
+  version "3.5.2"
+  resolved "https://registry.yarnpkg.com/@ban-team/validateur-bal/-/validateur-bal-3.5.2.tgz#55ebad6122f0d5a062332abfddfac6b7738e1fc3"
+  integrity sha512-cwoBWbx0GUMZshBDDsG9Fttwh1aTDNlyt5tkdiKfk3lL4ZJoztyVMYFs07MGl3KAhIhMC6eKloDoF2GwavKvpw==
   dependencies:
     "@ban-team/adresses-util" "^0.9.0"
-    "@ban-team/shared-data" "^1.4.2"
+    "@ban-team/shared-data" "^1.4.3"
     "@etalab/project-legal" "^0.6.0"
     blob-to-buffer "^1.2.9"
     bluebird "^3.7.2"
