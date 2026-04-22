@@ -28,7 +28,7 @@ export function buildArreteDeNumerotationVoieBlocks(
     { type: 'newLine' },
     {
       type: 'text',
-      text: `Article 1 : L'accès aux locaux se fait par la voie ${voie.nom}. Le
+      text: `Article 1 : L'accès aux locaux se fait par la voie ${voie.nom}. Le\ 
 numérotage des parcelles cadastrées prescrit suivant le tableau ci-dessous :`,
       align: 'justify',
     },
@@ -51,7 +51,7 @@ numérotage des parcelles cadastrées prescrit suivant le tableau ci-dessous :`,
     { type: 'newLine' },
     {
       type: 'text',
-      text: `Article 2 : Un plan de numérotage sera déposé aux services techniques et mis à la
+      text: `Article 2 : Un plan de numérotage sera déposé aux services techniques et mis à la\ 
 disposition du public.`,
       align: 'justify',
       useMaxWidth: true,
@@ -59,7 +59,7 @@ disposition du public.`,
     { type: 'newLine' },
     {
       type: 'text',
-      text: `Article 3 : Les numéros seront fournis et fixés par la commune dont l'entretien
+      text: `Article 3 : Les numéros seront fournis et fixés par la commune dont l'entretien\ 
 incombera aux propriétaires riverains.`,
       align: 'justify',
       useMaxWidth: true,
