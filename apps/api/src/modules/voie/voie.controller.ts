@@ -15,6 +15,8 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseFilePipeBuilder,
+  ParseEnumPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -262,7 +264,7 @@ export class VoieController {
   async downloadArreteDeNumerotation(
     @Req() req: CustomRequest,
     @Res() res: Response,
-    @Query('format') format: DocumentFormat = DocumentFormat.PDF,
+    @Query('format', new DefaultValuePipe(DocumentFormat.PDF), new ParseEnumPipe(DocumentFormat)) format: DocumentFormat,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({

@@ -13,6 +13,8 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseFilePipeBuilder,
+  ParseEnumPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -75,7 +77,7 @@ export class NumeroController {
   async downloadCertificat(
     @Req() req: CustomRequest,
     @Body() generateCertificatDto: GenerateCertificatDTO,
-    @Query('format') format: DocumentFormat = DocumentFormat.PDF,
+    @Query('format', new DefaultValuePipe(DocumentFormat.PDF), new ParseEnumPipe(DocumentFormat)) format: DocumentFormat,
     @Res() res: Response,
   ) {
     const fileUrl = await this.numeroService.generateCertificatAdressage({
@@ -121,7 +123,7 @@ export class NumeroController {
   async downloadArreteDeNumerotation(
     @Req() req: CustomRequest,
     @Res() res: Response,
-    @Query('format') format: DocumentFormat = DocumentFormat.PDF,
+    @Query('format', new DefaultValuePipe(DocumentFormat.PDF), new ParseEnumPipe(DocumentFormat)) format: DocumentFormat,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
