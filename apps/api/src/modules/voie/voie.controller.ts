@@ -264,7 +264,12 @@ export class VoieController {
   async downloadArreteDeNumerotation(
     @Req() req: CustomRequest,
     @Res() res: Response,
-    @Query('format', new DefaultValuePipe(DocumentFormat.PDF), new ParseEnumPipe(DocumentFormat)) format: DocumentFormat,
+    @Query(
+      'format',
+      new DefaultValuePipe(DocumentFormat.PDF),
+      new ParseEnumPipe(DocumentFormat),
+    )
+    format: DocumentFormat,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
