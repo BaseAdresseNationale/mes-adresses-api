@@ -29,7 +29,7 @@ export function buildArreteDeNumerotationVoieBlocks(
     {
       type: 'text',
       text: `Article 1 : L'accès aux locaux se fait par la voie ${voie.nom}. Le
-numérotage des parcelles cadastrées precrit suivant le tableau ci-dessous :`,
+numérotage des parcelles cadastrées prescrit suivant le tableau ci-dessous :`,
       align: 'justify',
     },
     {

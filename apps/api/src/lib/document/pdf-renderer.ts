@@ -7,7 +7,7 @@ export async function renderPdf(
   const doc = new PdfDocument();
   const maxWidth = doc.getDocInstance().internal.pageSize.width - 2 * xMargin;
 
-  await doc.initDocument(definition.title, definition.header.commune);
+  await doc.initDocument(definition.title, definition.header);
 
   for (const block of definition.blocks) {
     switch (block.type) {

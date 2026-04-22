@@ -1,8 +1,7 @@
 import { jsPDF, TextOptionsLight } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 import { AssetsManager } from './AssetsManager';
-import { getCommuneFlagBase64PNG } from '@/lib/utils/commune-flag.utils';
-import { getAdresseMairie } from '@/lib/utils/annuaire-service-public';
+import { DocumentHeader } from '../types';
 
 export const xMargin = 20;
 export const yMargin = 30;
@@ -28,14 +27,14 @@ export class PdfDocument {
     this.doc.moveTo(this.x, this.y);
   }
 
-  async initDocument(docTitle: string, commune: { nom: string; code: string }) {
+  async initDocument(docTitle: string, header: DocumentHeader) {
     if (!AssetsManager.isInitialized) {
       await AssetsManager.init();
     }
 
-    this.changeFont('Arial', AssetsManager.getArialFont());
+    const { commune, communeLogo, adresseMairie, date } = header;
 
-    const communeLogo = await getCommuneFlagBase64PNG(commune.code);
+    this.changeFont('Arial', AssetsManager.getArialFont());
 
     if (communeLogo) {
       const { dataUrl, metadata } = communeLogo;
@@ -49,8 +48,6 @@ export class PdfDocument {
         y: yMargin + 25,
       });
     }
-
-    const adresseMairie = await getAdresseMairie(commune.code);
 
     if (adresseMairie) {
       this.addNewLine()
@@ -67,16 +64,9 @@ export class PdfDocument {
 
     return this.addNewLine()
       .addNewLine()
-      .addText(
-        `${commune.nom}, le ${new Date().toLocaleDateString('fr-Fr', {
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric',
-        })}`,
-        {
-          align: 'right',
-        },
-      )
+      .addText(`${commune.nom}, le ${date}`, {
+        align: 'right',
+      })
       .addNewLine()
       .addNewLine()
       .addNewLine()
