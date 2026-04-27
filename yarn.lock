@@ -5770,6 +5770,11 @@ date-fns@^2.29.3, date-fns@^2.30.0:
   dependencies:
     "@babel/runtime" "^7.21.0"
 
+date-fns@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-4.1.0.tgz#64b3d83fff5aa80438f5b1a633c2e83b8a1c2d14"
+  integrity sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==
+
 date-time@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/date-time/-/date-time-3.1.0.tgz#0d1e934d170579f481ed8df1e2b8ff70ee845e1e"
@@ -6838,6 +6843,17 @@ form-data@^4.0.0:
     asynckit "^0.4.0"
     combined-stream "^1.0.8"
     mime-types "^2.1.12"
+
+"formatting-bal@file:../formatting-bal":
+  version "0.1.0"
+  dependencies:
+    "@ban-team/adresses-util" "^0.9.0"
+    chardet "^1.4.0"
+    date-fns "^4.1.0"
+    file-type "^12.4.2"
+    iconv-lite "^0.6.3"
+    papaparse "^5.3.2"
+    yargs "^17.5.1"
 
 formidable@^2.1.2:
   version "2.1.2"
