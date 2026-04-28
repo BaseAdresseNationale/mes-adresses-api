@@ -9,9 +9,12 @@ import {
   HttpStatus,
   Body,
   Post,
+  Query,
   UseInterceptors,
   UploadedFile,
   ParseFilePipeBuilder,
+  ParseEnumPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -22,6 +25,7 @@ import {
   ApiOperation,
   ApiBearerAuth,
   ApiConsumes,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { Numero } from '@/shared/entities/numero.entity';
 
@@ -32,6 +36,7 @@ import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
 import { filterComments } from '@/shared/utils/filter.utils';
 import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { DocumentFormat } from '@/lib/document/types';
 
 @ApiTags('numeros')
 @Controller('numeros')
@@ -57,23 +62,36 @@ export class NumeroController {
     operationId: 'generateCertificat',
   })
   @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    enum: DocumentFormat,
+    description: 'Format du document généré (pdf par défaut)',
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
     type: String,
-    description: 'URL of the generated PDF certificat',
+    description: 'URL of the generated certificat',
   })
   @ApiBearerAuth('admin-token')
   async downloadCertificat(
     @Req() req: CustomRequest,
     @Body() generateCertificatDto: GenerateCertificatDTO,
+    @Query(
+      'format',
+      new DefaultValuePipe(DocumentFormat.PDF),
+      new ParseEnumPipe(DocumentFormat),
+    )
+    format: DocumentFormat,
     @Res() res: Response,
   ) {
-    const pdfUrl = await this.numeroService.generateCertificatAdressage({
+    const fileUrl = await this.numeroService.generateCertificatAdressage({
       numero: req.numero,
+      format,
       ...generateCertificatDto,
     });
 
-    return res.status(HttpStatus.CREATED).json(pdfUrl);
+    return res.status(HttpStatus.CREATED).json(fileUrl);
   }
 
   @Post('/generate-arrete-de-numerotation/:numeroId')
@@ -95,15 +113,27 @@ export class NumeroController {
   })
   @UseInterceptors(FileInterceptor('file'))
   @ApiParam({ name: 'numeroId', required: true, type: String })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    enum: DocumentFormat,
+    description: 'Format du document généré (pdf par défaut)',
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
     type: String,
-    description: 'URL of the generated PDF arrête de numérotation',
+    description: 'URL of the generated arrête de numérotation',
   })
   @ApiBearerAuth('admin-token')
   async downloadArreteDeNumerotation(
     @Req() req: CustomRequest,
     @Res() res: Response,
+    @Query(
+      'format',
+      new DefaultValuePipe(DocumentFormat.PDF),
+      new ParseEnumPipe(DocumentFormat),
+    )
+    format: DocumentFormat,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -119,12 +149,13 @@ export class NumeroController {
     )
     planDeSituation?: Express.Multer.File,
   ) {
-    const pdfUrl = await this.numeroService.generateArreteDeNumerotation({
+    const fileUrl = await this.numeroService.generateArreteDeNumerotation({
       numero: req.numero,
+      format,
       planDeSituation,
     });
 
-    return res.status(HttpStatus.CREATED).json(pdfUrl);
+    return res.status(HttpStatus.CREATED).json(fileUrl);
   }
 
   @Put(':numeroId')

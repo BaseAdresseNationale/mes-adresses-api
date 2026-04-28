@@ -11,9 +11,12 @@ import {
   Body,
   Inject,
   forwardRef,
+  Query,
   UseInterceptors,
   UploadedFile,
   ParseFilePipeBuilder,
+  ParseEnumPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -44,6 +47,7 @@ import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { filterComments } from '@/shared/utils/filter.utils';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { DocumentFormat } from '@/lib/document/types';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -245,15 +249,27 @@ export class VoieController {
   })
   @UseInterceptors(FileInterceptor('file'))
   @ApiParam({ name: 'voieId', required: true, type: String })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    enum: DocumentFormat,
+    description: 'Format du document généré (pdf par défaut)',
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
     type: String,
-    description: 'URL of the generated PDF arrête de numérotation',
+    description: 'URL of the generated arrête de numérotation',
   })
   @ApiBearerAuth('admin-token')
   async downloadArreteDeNumerotation(
     @Req() req: CustomRequest,
     @Res() res: Response,
+    @Query(
+      'format',
+      new DefaultValuePipe(DocumentFormat.PDF),
+      new ParseEnumPipe(DocumentFormat),
+    )
+    format: DocumentFormat,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -269,11 +285,12 @@ export class VoieController {
     )
     planDeSituation?: Express.Multer.File,
   ) {
-    const pdfUrl = await this.voieService.generateArreteDeNumerotation({
+    const fileUrl = await this.voieService.generateArreteDeNumerotation({
       voie: req.voie,
+      format,
       planDeSituation,
     });
 
-    return res.status(HttpStatus.CREATED).json(pdfUrl);
+    return res.status(HttpStatus.CREATED).json(fileUrl);
   }
 }
