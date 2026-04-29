@@ -133,7 +133,8 @@ export class BaseLocaleService {
       .select()
       .where(where)
       .limit(limit)
-      .offset(offset);
+      .offset(offset)
+      .orderBy('created_at', 'ASC');
 
     if (email) {
       query.andWhere('lower(emails::text)::text[] @> ARRAY[:email]', { email });
