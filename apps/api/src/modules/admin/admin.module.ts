@@ -1,4 +1,9 @@
-import { Module, forwardRef } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  RequestMethod,
+  forwardRef,
+} from '@nestjs/common';
 
 import { VoieModule } from '../voie/voie.module';
 import { BaseLocaleModule } from '../base_locale/base_locale.module';
@@ -7,6 +12,7 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { ToponymeModule } from '../toponyme/toponyme.module';
 import { NumeroModule } from '../numeros/numero.module';
+import { BaseLocaleMiddleware } from '../base_locale/base_locale.middleware';
 
 @Module({
   imports: [
@@ -19,4 +25,11 @@ import { NumeroModule } from '../numeros/numero.module';
   providers: [AdminService],
   controllers: [AdminController],
 })
-export class AdminModule {}
+export class AdminModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(BaseLocaleMiddleware).forRoutes({
+      path: 'admin/bases-locales/:baseLocaleId/sync-ids-ban-publish',
+      method: RequestMethod.POST,
+    });
+  }
+}

@@ -65,6 +65,9 @@ import { TaskTitle } from '@/shared/types/task.type';
 import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 import { getEmailsMairie } from '@/lib/utils/annuaire-service-public';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
+import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
+import { BalTree, formattingBAL } from 'formatting-bal';
+import { Numero } from '@/shared/entities/numero.entity';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
@@ -85,6 +88,7 @@ export class BaseLocaleService {
     private populateService: PopulateService,
     @Inject(forwardRef(() => BanPlateformService))
     private banPlateformService: BanPlateformService,
+    private exportCsvService: ExportCsvService,
     private configService: ConfigService,
     private cacheService: CacheService,
     private readonly logger: Logger,
@@ -730,6 +734,47 @@ export class BaseLocaleService {
       throw error;
     } finally {
       await queueEvents.close();
+    }
+  }
+
+  async syncIdsBAN(baseLocale: BaseLocale) {
+    const csvFile: string = await this.exportCsvService.exportToCsv(baseLocale);
+    const { tree: treeBAL } = (await formattingBAL(
+      Buffer.from(csvFile, 'utf8'),
+      {
+        withTree: true,
+      },
+    )) as { tree: BalTree; file: Buffer };
+
+    for (const voies of Object.values(treeBAL.voies)) {
+      if (voies.previous_id_ban_toponyme !== voies.id_ban_toponyme) {
+        await this.basesLocalesRepository
+          .createQueryBuilder('voies')
+          .update(Voie)
+          .set({
+            banId: voies.id_ban_toponyme,
+          })
+          .where({
+            banId: voies.previous_id_ban_toponyme,
+            balId: baseLocale.id,
+          })
+          .execute();
+      }
+      for (const numero of Object.values(voies.numeros)) {
+        if (numero.previous_id_ban_adresse !== numero.id_ban_adresse) {
+          await this.basesLocalesRepository
+            .createQueryBuilder('numeros')
+            .update(Numero)
+            .set({
+              banId: numero.id_ban_adresse,
+            })
+            .where({
+              banId: numero.previous_id_ban_adresse,
+              balId: baseLocale.id,
+            })
+            .execute();
+        }
+      }
     }
   }
 

@@ -18,6 +18,7 @@ import { BaseLocale } from '@/shared/entities/base_locale.entity';
 
 import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
 import { ExportCsvModule } from '@/modules/base_locale/sub_modules/export_csv/export_csv.module';
+import { ExportCsvModule as ExportCsvSharedModule } from '@/shared/modules/export_csv/export_csv.module';
 import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.module';
 import { NumeroModule } from '@/modules/numeros/numero.module';
 import { VoieModule } from '@/modules/voie/voie.module';
@@ -41,6 +42,7 @@ import { QUEUE_NAME } from '@/shared/params/queue_name.const';
         removeOnFail: true,
       },
     }),
+    ExportCsvSharedModule,
     forwardRef(() => BanPlateformModule),
     forwardRef(() => HabilitationModule),
     forwardRef(() => ExportCsvModule),

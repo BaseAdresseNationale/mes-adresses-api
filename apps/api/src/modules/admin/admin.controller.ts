@@ -2,8 +2,10 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
   HttpStatus,
   Post,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -23,17 +25,18 @@ import {
   ApiResponse,
   ApiExcludeEndpoint,
   ApiTags,
+  ApiParam,
 } from '@nestjs/swagger';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { FusionCommunesDTO } from './dto/fusion_bases_locales.dto';
 import { AdminService } from './admin.service';
+import { CustomRequest } from '@/lib/types/request.type';
 
 @ApiTags('admin')
 @Controller('admin')
 export class AdminController {
   constructor(
     private baseLocaleService: BaseLocaleService,
-    private voieService: VoieService,
     private adminService: AdminService,
   ) {}
 
@@ -100,5 +103,34 @@ export class AdminController {
       await this.adminService.fusionCommunes(fusionCommunesDTO);
 
     res.status(HttpStatus.OK).json(result);
+  }
+
+  @Post('bases-locales/:baseLocaleId/sync-ids-ban-publish')
+  @ApiOperation({
+    summary: 'Synchro ids BAL with ids BAN and publish',
+    operationId: 'syncIdsBANPublish',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.CREATED, type: BaseLocale })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(SuperAdminGuard)
+  async syncIdsBANPublish(@Req() req: CustomRequest, @Res() res: Response) {
+    try {
+      await this.baseLocaleService.syncIdsBAN(req.baseLocale);
+      const result = await this.baseLocaleService.forcePublish(
+        req.baseLocale.id,
+      );
+      if (!result.success) {
+        throw new HttpException(result.error, HttpStatus.PRECONDITION_FAILED);
+      }
+      const baseLocale = await this.baseLocaleService.findOneOrFail(
+        req.baseLocale.id,
+      );
+      res.status(HttpStatus.OK).json(baseLocale);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    res.status(HttpStatus.NO_CONTENT).send();
   }
 }
