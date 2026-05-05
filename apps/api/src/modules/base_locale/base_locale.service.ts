@@ -739,9 +739,12 @@ export class BaseLocaleService {
 
   async syncIdsBAN(baseLocale: BaseLocale) {
     const csvFile: string = await this.exportCsvService.exportToCsv(baseLocale);
-    const treeBAL = (await formattingBAL(Buffer.from(csvFile, 'utf8'), {
-      returnTree: true,
-    })) as BalTree;
+    const { tree: treeBAL } = (await formattingBAL(
+      Buffer.from(csvFile, 'utf8'),
+      {
+        withTree: true,
+      },
+    )) as { tree: BalTree; file: Buffer };
 
     for (const voies of Object.values(treeBAL.voies)) {
       if (voies.previous_id_ban_toponyme !== voies.id_ban_toponyme) {
