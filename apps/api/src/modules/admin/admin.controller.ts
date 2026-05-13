@@ -17,7 +17,6 @@ import * as intoStream from 'into-stream';
 import * as pumpify from 'pumpify';
 import { BaseLocaleService } from '../base_locale/base_locale.service';
 import { SuperAdminGuard } from '@/lib/guards/admin.guard';
-import { VoieService } from '../voie/voie.service';
 import {
   ApiBearerAuth,
   ApiBody,
