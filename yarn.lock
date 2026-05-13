@@ -1024,6 +1024,19 @@
     talisman "^1.1.4"
     written-number "^0.9.1"
 
+"@ban-team/formatter-bal@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@ban-team/formatter-bal/-/formatter-bal-0.1.1.tgz#1ebc83a99a0d21f6e72e6e9a73747f44f98a2a68"
+  integrity sha512-BsqvtBY5x1d0ypjdQJMpComa+oy5yYcc7HQNxXcQ75YUmmNbZl9gI2tjY7m6SSdFuy9p6/bzKjUnOjeWWM+w1w==
+  dependencies:
+    "@ban-team/adresses-util" "^0.9.0"
+    chardet "^1.4.0"
+    date-fns "^4.1.0"
+    file-type "^12.4.2"
+    iconv-lite "^0.6.3"
+    papaparse "^5.3.2"
+    yargs "^17.5.1"
+
 "@ban-team/shared-data@^1.4.3":
   version "1.4.3"
   resolved "https://registry.yarnpkg.com/@ban-team/shared-data/-/shared-data-1.4.3.tgz#b8868d739dde7b6bb01af5a65221bbf0d81c7c25"
@@ -6843,17 +6856,6 @@ form-data@^4.0.0:
     asynckit "^0.4.0"
     combined-stream "^1.0.8"
     mime-types "^2.1.12"
-
-"formatting-bal@file:../formatting-bal":
-  version "0.1.0"
-  dependencies:
-    "@ban-team/adresses-util" "^0.9.0"
-    chardet "^1.4.0"
-    date-fns "^4.1.0"
-    file-type "^12.4.2"
-    iconv-lite "^0.6.3"
-    papaparse "^5.3.2"
-    yargs "^17.5.1"
 
 formidable@^2.1.2:
   version "2.1.2"

@@ -66,7 +66,7 @@ import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 import { getEmailsMairie } from '@/lib/utils/annuaire-service-public';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
-import { BalTree, formattingBAL } from 'formatting-bal';
+import { BalTree, formatterBAL } from '@ban-team/formatter-bal';
 import { Numero } from '@/shared/entities/numero.entity';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
@@ -739,7 +739,7 @@ export class BaseLocaleService {
 
   async syncIdsBAN(baseLocale: BaseLocale) {
     const csvFile: string = await this.exportCsvService.exportToCsv(baseLocale);
-    const { tree: treeBAL } = (await formattingBAL(
+    const { tree: treeBAL } = (await formatterBAL(
       Buffer.from(csvFile, 'utf8'),
       {
         withTree: true,
