@@ -18,7 +18,15 @@ export const getCommuneFlagUrl = async (
     return getCommuneFlagUrlFromBal(codeCommune);
   }
 
-  const url = await response.text();
+  const data = (await response.json()) as {
+    logo: string | null;
+    blason: string | null;
+  };
+  const url = data?.logo;
+
+  if (!url) {
+    return getCommuneFlagUrlFromBal(codeCommune);
+  }
 
   // If the URL is from Wikimedia Commons, we fetch the flag from BAL S3 instead to avoid threshold issues
   if (url.includes('commons.wikimedia.org')) {
