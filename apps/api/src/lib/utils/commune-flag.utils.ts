@@ -22,14 +22,9 @@ export const getCommuneFlagUrl = async (
     logo: string | null;
     blason: string | null;
   };
-  const url = data?.logo;
+  const url = data?.logo || data?.blason || null;
 
   if (!url) {
-    return getCommuneFlagUrlFromBal(codeCommune);
-  }
-
-  // If the URL is from Wikimedia Commons, we fetch the flag from BAL S3 instead to avoid threshold issues
-  if (url.includes('commons.wikimedia.org')) {
     return getCommuneFlagUrlFromBal(codeCommune);
   }
 
