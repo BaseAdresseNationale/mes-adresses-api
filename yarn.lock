@@ -1024,10 +1024,10 @@
     talisman "^1.1.4"
     written-number "^0.9.1"
 
-"@ban-team/formatter-bal@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@ban-team/formatter-bal/-/formatter-bal-0.1.3.tgz#f08132fab7a5ee0e1271274342ebd8dcac93d052"
-  integrity sha512-WDVKe7U01CJ3sH8EQGFLP+gnWqXasNY9HxqAe/OsEbWF7j+5GBp2PQxTa9Qo30FQLbNiPrSIsTwNfYd5DnQ4Pw==
+"@ban-team/formatter-bal@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@ban-team/formatter-bal/-/formatter-bal-0.1.4.tgz#75538846a6052d1794d07adc7bafc5be42878e77"
+  integrity sha512-aQca03KlcRz7TSCLzfRQZzpncha1NJDZ45gZFWS5Vh4brjZrAdQBxPGqAFf0efIkj0kqGsBz49ue24PhiwSTwA==
   dependencies:
     "@ban-team/adresses-util" "^0.9.0"
     chardet "^1.4.0"
