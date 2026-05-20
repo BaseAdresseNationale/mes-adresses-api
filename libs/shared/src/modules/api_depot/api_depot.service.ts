@@ -193,6 +193,12 @@ export class ApiDepotService {
       // malgré l'échec de la réponse HTTP. On vérifie en comparant l'ID de la
       // révision courante avec celui qu'on vient de soumettre.
       const currentRevision = await this.getCurrentRevision(codeCommune);
+      this.logger.warn(
+        `Error publishRevision : currentRevision ${JSON.stringify(
+          currentRevision,
+        )}`,
+        ApiDepotService.name,
+      );
       if (currentRevision?.id === computedRevision.id) {
         return currentRevision;
       }
