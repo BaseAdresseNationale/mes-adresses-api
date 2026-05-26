@@ -141,8 +141,8 @@ describe('PUBLICATION MODULE', () => {
 
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
-      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-      08053_xxxx_00001_bis;${communeUuid};${voieUuid};${numeroUuid};rue de la paix;;1;bis;1;08053;Bazeilles;08294;La Moncelle;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;toponyme;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+        08053_xxxx_00001_bis;${communeUuid};${voieUuid};${numeroUuid};rue de la paix;;1;bis;1;08053;Bazeilles;08294;La Moncelle;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -256,8 +256,8 @@ describe('PUBLICATION MODULE', () => {
 
       axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
 
-      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;voie_nom;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
-      91534_xxxx_00001_bis;${communeUuid};${toponymeUuid};${numeroUuid};rue de la paix;;1;bis;1;91534;Saclay;;;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
+      const csvFile = `cle_interop;id_ban_commune;id_ban_toponyme;id_ban_adresse;toponyme;lieudit_complement_nom;numero;suffixe;certification_commune;commune_insee;commune_nom;commune_deleguee_insee;commune_deleguee_nom;position;long;lat;x;y;cad_parcelles;source;date_der_maj
+        91534_xxxx_00001_bis;${communeUuid};${toponymeUuid};${numeroUuid};rue de la paix;;1;bis;1;91534;Saclay;;;entrée;8;42;1114835.92;6113076.85;;ban;2000-01-01`;
       axiosMock
         .onPut(`/revisions/${revisionId}/files/bal`)
         .reply(({ data }) => {
@@ -316,7 +316,7 @@ describe('PUBLICATION MODULE', () => {
         files: [
           {
             type: TypeFileEnum.BAL,
-            hash: '37925d84890a965635aa5f119efade4fb2dc02331039a80c57497a9bb21ea82b',
+            hash: '2d254c7514e156510f2bee359c9a32c802f909e886f54ebfba6ed6ab2e1ff579',
           },
         ],
       };
