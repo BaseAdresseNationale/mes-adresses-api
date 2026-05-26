@@ -181,11 +181,29 @@ export class ApiDepotService {
         HttpStatus.EXPECTATION_FAILED,
       );
     }
-    const publishedRevision: Revision = await this.publishRevision(
-      computedRevision.id,
-      habilitationId,
-    );
-    return publishedRevision;
+    try {
+      return await this.publishRevision(computedRevision.id, habilitationId);
+    } catch (error) {
+      this.logger.warn(
+        `Error publishRevision : ${balId} pour la commune ${codeCommune}`,
+        error,
+        ApiDepotService.name,
+      );
+      // En cas d'erreur réseau, la révision a peut-être été publiée côté api-depot
+      // malgré l'échec de la réponse HTTP. On vérifie en comparant l'ID de la
+      // révision courante avec celui qu'on vient de soumettre.
+      const currentRevision = await this.getCurrentRevision(codeCommune);
+      this.logger.warn(
+        `Error publishRevision : currentRevision ${JSON.stringify(
+          currentRevision,
+        )}`,
+        ApiDepotService.name,
+      );
+      if (currentRevision?.id === computedRevision.id) {
+        return currentRevision;
+      }
+      throw error;
+    }
   }
 
   public async getCurrentRevision(codeCommune: string): Promise<Revision> {

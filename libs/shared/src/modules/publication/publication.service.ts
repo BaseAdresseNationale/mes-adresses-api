@@ -161,8 +161,8 @@ export class PublicationService {
         return this.markAsSynced(baseLocale, publishedRevision.id);
       }
 
-      // On marque le sync de la BAL en published
-      return this.markAsSynced(baseLocale, sync.lastUploadedRevisionId);
+      // On marque le sync de la BAL en published avec la révision courante de l'api-depot
+      return this.markAsSynced(baseLocale, currentRevision.id);
     }
 
     return this.basesLocalesRepository.findOneBy({ id: balId });
