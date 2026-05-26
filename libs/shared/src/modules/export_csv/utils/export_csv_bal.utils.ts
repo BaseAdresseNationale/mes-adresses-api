@@ -50,7 +50,7 @@ type CsvRowType = {
   id_ban_toponyme: string;
   id_ban_adresse: string;
   cle_interop: string;
-  voie_nom: string;
+  toponyme: string;
   lieudit_complement_nom: string;
   numero: string;
   suffixe: string;
@@ -132,7 +132,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
     id_ban_commune: obj.banIds.commune,
     id_ban_toponyme: obj.banIds.toponyme,
     id_ban_adresse: obj.banIds.adresse || '',
-    voie_nom: obj.nomVoie,
+    toponyme: obj.nomVoie,
     lieudit_complement_nom: obj.nomToponyme || '',
     numero: obj.numero.toString() || '',
     suffixe: obj.suffixe || '',
@@ -166,7 +166,7 @@ function createRow(obj: RowType, withComment: boolean): CsvRowType {
 
   if (obj.nomVoieAlt) {
     Object.keys(obj.nomVoieAlt).forEach((o) => {
-      row['voie_nom_' + o] = obj.nomVoieAlt[o];
+      row['toponyme_' + o] = obj.nomVoieAlt[o];
     });
   }
 
