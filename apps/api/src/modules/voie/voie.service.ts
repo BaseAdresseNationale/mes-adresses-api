@@ -336,6 +336,23 @@ export class VoieService {
     return toponyme;
   }
 
+  public async fusionVoie(voie: Voie, otherVoieIds: string[]): Promise<Voie> {
+    // On lance une erreur si la voie n'existe pas
+    if (!(await this.isVoieExist(voie.id))) {
+      throw new HttpException(
+        `Voie ${voie.id} is deleted`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    this.numeroService.updateMany(
+      { voieId: In(otherVoieIds) },
+      { voieId: voie.id },
+    );
+    this.deleteMany({ id: In(otherVoieIds) });
+
+    return this.findOneOrFail(voie.id);
+  }
+
   public async extendVoies(
     balId: string,
     voies: Voie[],

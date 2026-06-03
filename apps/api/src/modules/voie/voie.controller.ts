@@ -48,6 +48,7 @@ import { NumeroService } from '@/modules/numeros/numero.service';
 import { filterComments } from '@/shared/utils/filter.utils';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DocumentFormat } from '@/lib/document/types';
+import { FusionVoieDTO } from './dto/fusion_voie.dto';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -213,6 +214,28 @@ export class VoieController {
   @UseGuards(AdminGuard)
   async convertVoieToToponyme(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Toponyme = await this.voieService.convertToToponyme(req.voie);
+    res.status(HttpStatus.OK).json(result);
+  }
+
+  @Put(':voieId/fusion')
+  @ApiOperation({
+    summary: 'Fusionne plusieurs voie en une',
+    operationId: 'fusionVoies',
+  })
+  @ApiParam({ name: 'voieId', required: true, type: String })
+  @ApiBody({ type: FusionVoieDTO, required: true })
+  @ApiResponse({ status: HttpStatus.OK, type: Voie })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async fusionVoies(
+    @Req() req: CustomRequest,
+    @Body() { otherVoieIds }: FusionVoieDTO,
+    @Res() res: Response,
+  ) {
+    const result: Voie = await this.voieService.fusionVoie(
+      req.voie,
+      otherVoieIds,
+    );
     res.status(HttpStatus.OK).json(result);
   }
 
