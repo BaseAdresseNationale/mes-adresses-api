@@ -149,7 +149,3 @@ Toutes ces variables ont des valeurs par défaut que vous trouverez dans le fich
 ## Gouvernance
 
 Ce outil a été conçu à l'initiative d'Etalab. Il est depuis 2020 piloté conjointement par Etalab et l'ANCT.
-
-## Licence
-
-MIT
