@@ -73,3 +73,51 @@ export class LineStringValidator implements ValidatorConstraintInterface {
     return 'Les coordonnées de la lineString ne sont pas valide';
   }
 }
+
+@ValidatorConstraint({ name: 'polygonCoord', async: true })
+export class PolygonValidator implements ValidatorConstraintInterface {
+  async validate(coordinates: any) {
+    if (!Array.isArray(coordinates) || coordinates.length < 4) {
+      return false;
+    }
+
+    for (const coor of coordinates) {
+      if (!Array.isArray(coor) || coor.length !== 2) {
+        return false;
+      }
+
+      const [lat, long] = coor;
+      if (typeof lat !== 'number' || typeof long !== 'number') {
+        return false;
+      }
+
+      const latResults = await getValidateurBalColumnErrors(
+        'lat',
+        lat.toString(),
+      );
+      if (latResults.errors.length > 0) {
+        return false;
+      }
+
+      const longResults = await getValidateurBalColumnErrors(
+        'long',
+        long.toString(),
+      );
+      if (longResults.errors.length > 0) {
+        return false;
+      }
+    }
+
+    const [firstLat, firstLong] = coordinates[0];
+    const [lastLat, lastLong] = coordinates[coordinates.length - 1];
+    if (firstLat !== lastLat || firstLong !== lastLong) {
+      return false;
+    }
+
+    return true;
+  }
+
+  defaultMessage() {
+    return 'Les coordonnées du polygon ne sont pas valides';
+  }
+}
