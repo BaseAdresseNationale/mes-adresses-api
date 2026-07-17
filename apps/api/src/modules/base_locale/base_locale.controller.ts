@@ -577,7 +577,7 @@ export class BaseLocaleController {
 
   @Get(':baseLocaleId/numeros')
   @ApiOperation({
-    summary: 'Find all Voie in Bal',
+    summary: 'Find all numeros in Bal',
     operationId: 'findNumeros',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
