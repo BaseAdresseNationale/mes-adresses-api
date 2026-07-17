@@ -14,6 +14,8 @@ export const ALLOWED_NUMERO_SELECT_FIELDS: ReadonlySet<string> = new Set<
 >([
   'id',
   'banId',
+  'voieId',
+  'toponymeId',
   'numero',
   'suffixe',
   'numeroComplet',
