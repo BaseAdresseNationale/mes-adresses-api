@@ -14,19 +14,12 @@ export const ALLOWED_NUMERO_SELECT_FIELDS: ReadonlySet<string> = new Set<
 >([
   'id',
   'banId',
-  'balId',
-  'voieId',
-  'toponymeId',
   'numero',
   'suffixe',
   'numeroComplet',
-  'comment',
   'parcelles',
   'certifie',
   'communeDeleguee',
-  'createdAt',
-  'updatedAt',
-  'deletedAt',
 ]);
 
 @ValidatorConstraint({ name: 'numeroSelectField', async: false })
