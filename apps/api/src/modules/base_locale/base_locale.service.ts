@@ -17,7 +17,7 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { uniq, difference, groupBy, pick } from 'lodash';
+import { uniq, difference, groupBy } from 'lodash';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MailerService } from '@nestjs-modules/mailer';
