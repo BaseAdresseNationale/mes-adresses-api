@@ -165,7 +165,9 @@ export class BaseLocaleService {
     // On créer l'object bal
     const entityToSave: BaseLocale = this.basesLocalesRepository.create({
       banId,
-      ...createInput,
+      nom: createInput.nom,
+      emails: createInput.emails,
+      commune: createInput.commune,
       token: generateBase62String(20),
       status: StatusBaseLocalEnum.DRAFT,
       settings: {
