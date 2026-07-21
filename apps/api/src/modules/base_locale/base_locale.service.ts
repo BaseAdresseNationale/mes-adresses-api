@@ -17,7 +17,7 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { uniq, difference, groupBy } from 'lodash';
+import { uniq, difference, groupBy, pick } from 'lodash';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -165,7 +165,9 @@ export class BaseLocaleService {
     // On créer l'object bal
     const entityToSave: BaseLocale = this.basesLocalesRepository.create({
       banId,
-      ...createInput,
+      nom: createInput.nom,
+      emails: createInput.emails,
+      commune: createInput.commune,
       token: generateBase62String(20),
       status: StatusBaseLocalEnum.DRAFT,
       settings: {
