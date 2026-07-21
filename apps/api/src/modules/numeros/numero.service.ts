@@ -87,12 +87,30 @@ export class NumeroService {
     return numero;
   }
 
-  async findManyByBal(balId: string, select: string[]): Promise<Numero[]> {
-    const query = this.numerosRepository
-      .createQueryBuilder('numeros')
-      .select(select.map((field) => `numeros.${field}`))
-      .where('numeros.bal_id = :balId', { balId });
-    return query.getMany();
+  async findManyByBal(balId: string, select?: string[]): Promise<Numero[]> {
+    const where: FindOptionsWhere<Numero> = { balId };
+
+    // Si aucun champ n'est demandé, on renvoie tous les numeros de la BAL.
+    if (!select || select.length === 0) {
+      return this.numerosRepository.find({ where });
+    }
+
+    // La validation des champs autorisés est faite en amont par
+    // `NumeroSelectFieldValidator` (via `FindNumerosQueryDTO`).
+    // `numeroComplet` est un champ virtuel calculé côté entité (@AfterLoad)
+    // à partir de `numero` et `suffixe`; on développe ici pour projeter les
+    // colonnes réelles correspondantes.
+    const selectOptions: FindOptionsSelect<Numero> = {};
+    for (const field of select) {
+      if (field === 'numeroComplet') {
+        selectOptions.numero = true;
+        selectOptions.suffixe = true;
+      } else {
+        (selectOptions as Record<string, boolean>)[field] = true;
+      }
+    }
+
+    return this.numerosRepository.find({ where, select: selectOptions });
   }
 
   async findMany(

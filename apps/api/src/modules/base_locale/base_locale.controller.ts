@@ -6,7 +6,6 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  ParseArrayPipe,
   ParseBoolPipe,
   ParseFilePipeBuilder,
   Post,
@@ -17,6 +16,7 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  ValidationPipe,
   forwardRef,
 } from '@nestjs/common';
 import {
@@ -71,6 +71,7 @@ import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
 import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
+import { FindNumerosQueryDTO } from '../numeros/dto/find_numeros_query.dto';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
 import { In, IsNull } from 'typeorm';
@@ -576,7 +577,7 @@ export class BaseLocaleController {
 
   @Get(':baseLocaleId/numeros')
   @ApiOperation({
-    summary: 'Find all Voie in Bal',
+    summary: 'Find all numeros in Bal',
     operationId: 'findNumeros',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
@@ -587,13 +588,13 @@ export class BaseLocaleController {
   })
   async findNumeros(
     @Req() req: CustomRequest,
-    @Query('select', new ParseArrayPipe({ optional: true }))
-    select: Array<keyof Numero>,
+    @Query(new ValidationPipe({ transform: true }))
+    query: FindNumerosQueryDTO,
     @Res() res: Response,
   ) {
     const numeros: Numero[] = await this.numeroService.findManyByBal(
       req.baseLocale.id,
-      select,
+      query.select,
     );
     res.status(HttpStatus.OK).json(numeros);
   }
