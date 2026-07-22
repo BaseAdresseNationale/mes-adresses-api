@@ -107,7 +107,6 @@ export class VoieController {
     @Body(new ValidationPipe({ whitelist: true })) updateVoieDto: UpdateVoieDTO,
     @Res() res: Response,
   ) {
-    console.log(updateVoieDto);
     const result: Voie = await this.voieService.update(req.voie, updateVoieDto);
     res.status(HttpStatus.OK).json(result);
   }

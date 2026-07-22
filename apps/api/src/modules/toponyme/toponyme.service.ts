@@ -161,9 +161,12 @@ export class ToponymeService {
     }
     // On update le numéro dans postgres
     Object.assign(toponyme, updateToponymeDto);
+    const entityToSave: Toponyme = await this.toponymesRepository.create({
+      ...toponyme,
+      ...updateToponymeDto,
+    });
     const toponymeUpdated: Toponyme =
-      await this.toponymesRepository.save(toponyme);
-
+      await this.toponymesRepository.save(entityToSave);
     await this.baseLocaleService.touch(toponyme.balId);
     // On retourne le toponyme mis a jour
     return toponymeUpdated;
