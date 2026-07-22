@@ -10,6 +10,7 @@ import {
   Body,
   Inject,
   forwardRef,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -64,7 +65,8 @@ export class ToponymeController {
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
-    @Body() updateToponymeDto: UpdateToponymeDTO,
+    @Body(new ValidationPipe({ whitelist: true }))
+    updateToponymeDto: UpdateToponymeDTO,
     @Res() res: Response,
   ) {
     const result: Toponyme = await this.toponymeService.update(

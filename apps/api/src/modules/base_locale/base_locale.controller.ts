@@ -103,7 +103,8 @@ export class BaseLocaleController {
   @ApiBody({ type: CreateBaseLocaleDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   async createBaseLocale(
-    @Body() createBaseLocaleDTO: CreateBaseLocaleDTO,
+    @Body(new ValidationPipe({ whitelist: true }))
+    createBaseLocaleDTO: CreateBaseLocaleDTO,
     @Res() res: Response,
   ) {
     const newBaseLocale =
@@ -120,7 +121,8 @@ export class BaseLocaleController {
   @ApiBody({ type: CreateDemoBaseLocaleDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   async createDemoBaseLocale(
-    @Body() createDemoBaseLocaleDTO: CreateDemoBaseLocaleDTO,
+    @Body(new ValidationPipe({ whitelist: true }))
+    createDemoBaseLocaleDTO: CreateDemoBaseLocaleDTO,
     @Res() res: Response,
   ) {
     const newDemoBaseLocale = await this.baseLocaleService.createDemo(
@@ -270,7 +272,8 @@ export class BaseLocaleController {
   @UseGuards(AdminGuard)
   async updateOneBaseLocale(
     @Req() req: CustomRequest,
-    @Body() updateBaseLocaleDTO: UpdateBaseLocaleDTO,
+    @Body(new ValidationPipe({ whitelist: true }))
+    updateBaseLocaleDTO: UpdateBaseLocaleDTO,
     @Res() res: Response,
   ) {
     const updatedBaseLocale = await this.baseLocaleService.updateOne(

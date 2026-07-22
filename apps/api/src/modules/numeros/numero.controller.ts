@@ -15,6 +15,7 @@ import {
   ParseFilePipeBuilder,
   ParseEnumPipe,
   DefaultValuePipe,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -170,7 +171,8 @@ export class NumeroController {
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
-    @Body() updateNumeroDto: UpdateNumeroDTO,
+    @Body(new ValidationPipe({ whitelist: true }))
+    updateNumeroDto: UpdateNumeroDTO,
     @Res() res: Response,
   ) {
     const result: Numero = await this.numeroService.update(

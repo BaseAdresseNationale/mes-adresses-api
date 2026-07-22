@@ -17,6 +17,7 @@ import {
   ParseFilePipeBuilder,
   ParseEnumPipe,
   DefaultValuePipe,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -103,9 +104,10 @@ export class VoieController {
   @UseGuards(AdminGuard)
   async update(
     @Req() req: CustomRequest,
-    @Body() updateVoieDto: UpdateVoieDTO,
+    @Body(new ValidationPipe({ whitelist: true })) updateVoieDto: UpdateVoieDTO,
     @Res() res: Response,
   ) {
+    console.log(updateVoieDto);
     const result: Voie = await this.voieService.update(req.voie, updateVoieDto);
     res.status(HttpStatus.OK).json(result);
   }
