@@ -12,7 +12,6 @@ import {
   FindOptionsWhere,
   In,
   Repository,
-  UpdateResult,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as turf from '@turf/turf';
@@ -51,10 +50,7 @@ export class ToponymeService {
     const where: FindOptionsWhere<Toponyme> = {
       id: toponymeId,
     };
-    const toponyme = await this.toponymesRepository.findOne({
-      where,
-      withDeleted: true,
-    });
+    const toponyme = await this.toponymesRepository.findOne({ where });
     // Si le toponyme n'existe pas, on throw une erreur
     if (!toponyme) {
       throw new HttpException(
@@ -73,21 +69,11 @@ export class ToponymeService {
     return this.toponymesRepository.find({ where, ...(select && { select }) });
   }
 
-  async findManyWithDeleted(
-    where: FindOptionsWhere<Toponyme>,
-  ): Promise<Toponyme[]> {
-    // Get les numeros en fonction du where archivé ou non
-    return this.toponymesRepository.find({
-      where,
-      withDeleted: true,
-    });
-  }
-
   async findDistinctParcelles(balId: string): Promise<string[]> {
     const res: any[] = await this.toponymesRepository.query(
-      `SELECT ARRAY_AGG(distinct elem) 
-        FROM (select unnest(parcelles) as elem, bal_id, deleted_at from toponymes) s 
-        WHERE bal_id = '${balId}' AND deleted_at IS null`,
+      `SELECT ARRAY_AGG(distinct elem)
+        FROM (select unnest(parcelles) as elem, bal_id from toponymes) s
+        WHERE bal_id = '${balId}'`,
     );
     return res[0]?.array_agg || [];
   }
@@ -172,42 +158,15 @@ export class ToponymeService {
     return toponymeUpdated;
   }
 
-  public async softDelete(toponyme: Toponyme): Promise<void> {
-    // On archive le toponyme
-    const { affected }: UpdateResult =
-      await this.toponymesRepository.softDelete({
-        id: toponyme.id,
-      });
-    // Si le toponyme a bien été archivé
-    if (affected) {
-      // On détache le numéro qui appartenait a ce toponyme
-      await this.numeroService.updateMany(
-        { toponymeId: toponyme.id },
-        {
-          toponymeId: null,
-        },
-      );
-      // On met a jour le updatedAt de la BAL
-      await this.baseLocaleService.touch(toponyme.balId);
-    }
-  }
-
-  public async restore(toponyme: Toponyme): Promise<Toponyme> {
-    // On rétabli le toponyme
-    const { affected }: UpdateResult = await this.toponymesRepository.restore({
-      id: toponyme.id,
-    });
-    // Si le toponyme a été rétabli on met a jour le updateAt de la BAL
-    if (affected) {
-      await this.baseLocaleService.touch(toponyme.balId);
-    }
-    // On retourne le toponyme rétabli
-    return this.toponymesRepository.findOneBy({
-      id: toponyme.id,
-    });
-  }
-
   public async delete(toponyme: Toponyme) {
+    // On détache les numéros qui appartenaient a ce toponyme
+    // (la FK numeros.toponyme_id -> toponymes.id n'a pas de cascade)
+    await this.numeroService.updateMany(
+      { toponymeId: toponyme.id },
+      {
+        toponymeId: null,
+      },
+    );
     // On supprime le toponyme
     const { affected }: DeleteResult = await this.toponymesRepository.delete({
       id: toponyme.id,

@@ -32,7 +32,6 @@ import {
 } from '@/modules/voie/dto/extended_voie.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
 import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
-import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
@@ -65,10 +64,7 @@ export class VoieService {
     const where: FindOptionsWhere<Voie> = {
       id: voieId,
     };
-    const voie = await this.voiesRepository.findOne({
-      where,
-      withDeleted: true,
-    });
+    const voie = await this.voiesRepository.findOne({ where });
     // Si la voie n'existe pas, on throw une erreur
     if (!voie) {
       throw new HttpException(`Voie ${voieId} not found`, HttpStatus.NOT_FOUND);
@@ -85,16 +81,6 @@ export class VoieService {
       where,
       ...(select && { select }),
       ...(relations && { relations }),
-    });
-  }
-
-  async findManyWithDeleted(
-    where: FindOptionsWhere<Voie> | FindOptionsWhere<Voie>[],
-  ): Promise<Voie[]> {
-    // Get les voies en fonction du where archiver ou non
-    return this.voiesRepository.find({
-      where,
-      withDeleted: true,
     });
   }
 
@@ -254,41 +240,6 @@ export class VoieService {
 
   public deleteMany(where: FindOptionsWhere<Voie>): Promise<any> {
     return this.voiesRepository.delete(where);
-  }
-
-  public async softDelete(voie: Voie): Promise<void> {
-    // On créer le where et lance le softDelete typeorm
-    // Le softDelete va mettre a jour le deletedAt
-    await this.voiesRepository.softDelete({ id: voie.id });
-    // On archive également tous le numéros de la voie
-    await this.numeroService.softDeleteByVoie(voie.id);
-    // On met a jour le updatedAt de la BAL
-    await this.baseLocaleService.touch(voie.balId);
-  }
-
-  public async restore(
-    voie: Voie,
-    { numerosIds }: RestoreVoieDTO,
-  ): Promise<Voie> {
-    // On créer le where et on restore la voie
-    // Le restore met a null le deletedAt de la voie
-    const where: FindOptionsWhere<Voie> = {
-      id: voie.id,
-    };
-    await this.voiesRepository.restore(where);
-    // Si des numéros sont également restauré
-    if (numerosIds.length > 0) {
-      // On restaure le numéros
-      await this.numeroService.restore({
-        id: In(numerosIds),
-      });
-      // On met a jour le centroid de la voie
-      this.calcCentroidAndBbox(voie.id);
-    }
-    // On met a jour le updatedAt de la BAL
-    await this.baseLocaleService.touch(voie.balId);
-    // On retourne la voie restaurée
-    return this.voiesRepository.findOne({ where });
   }
 
   public async isVoieExist(id: string, balId: string = null): Promise<boolean> {

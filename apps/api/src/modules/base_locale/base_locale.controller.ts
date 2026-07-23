@@ -67,7 +67,6 @@ import {
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
-import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
 import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
@@ -561,23 +560,6 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(true);
   }
 
-  @Get(':baseLocaleId/all/deleted')
-  @ApiOperation({
-    summary: 'Find all model deleted in Bal',
-    operationId: 'findAllDeleted',
-  })
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({
-    type: AllDeletedInBalDTO,
-    status: HttpStatus.OK,
-  })
-  @ApiBearerAuth('admin-token')
-  async findAllDeletedByBal(@Req() req: CustomRequest, @Res() res: Response) {
-    const allDeleted: AllDeletedInBalDTO =
-      await this.baseLocaleService.findAllDeletedByBal(req.baseLocale);
-    res.status(HttpStatus.OK).json(allDeleted);
-  }
-
   @Get(':baseLocaleId/numeros')
   @ApiOperation({
     summary: 'Find all numeros in Bal',
@@ -645,28 +627,6 @@ export class BaseLocaleController {
       updateBatchNumeroDto,
     );
     res.status(HttpStatus.OK).json(result);
-  }
-
-  @Put(':baseLocaleId/numeros/batch/soft-delete')
-  @ApiOperation({
-    summary: 'Multi soft delete numeros',
-    operationId: 'softDeleteNumeros',
-  })
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: DeleteBatchNumeroDTO, required: true })
-  @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  async softDeleteNumeros(
-    @Req() req: CustomRequest,
-    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDTO,
-    @Res() res: Response,
-  ) {
-    await this.numeroService.softDeleteBatch(
-      req.baseLocale,
-      deleteBatchNumeroDto,
-    );
-    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @Delete(':baseLocaleId/numeros/batch')

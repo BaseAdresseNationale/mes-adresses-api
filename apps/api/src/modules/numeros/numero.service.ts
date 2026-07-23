@@ -73,10 +73,7 @@ export class NumeroService {
     const where: FindOptionsWhere<Numero> = {
       id: numeroId,
     };
-    const numero = await this.numerosRepository.findOne({
-      where,
-      withDeleted: true,
-    });
+    const numero = await this.numerosRepository.findOne({ where });
     // Si len numero n'existe pas, on throw une erreur
     if (!numero) {
       throw new HttpException(
@@ -118,7 +115,6 @@ export class NumeroService {
     select?: FindOptionsSelect<Numero>,
     order?: FindOptionsOrder<Numero>,
     relations?: FindOptionsRelations<Numero>,
-    withDeleted?: boolean,
   ): Promise<Numero[]> {
     // Get les numeros en fonction du where, select, order et des relations
     return this.numerosRepository.find({
@@ -126,7 +122,6 @@ export class NumeroService {
       ...(select && { select }),
       ...(order && { order }),
       ...(relations && { relations }),
-      ...(withDeleted && { withDeleted }),
     });
   }
 
@@ -146,16 +141,6 @@ export class NumeroService {
     return query.getRawOne();
   }
 
-  async findManyWithDeleted(
-    where: FindOptionsWhere<Numero>,
-  ): Promise<Numero[]> {
-    // Get les numeros en fonction du where archivé ou non
-    return this.numerosRepository.find({
-      where,
-      withDeleted: true,
-    });
-  }
-
   async findDistinct(
     where: FindOptionsWhere<Numero>,
     field: string,
@@ -166,16 +151,15 @@ export class NumeroService {
       .select(field)
       .distinctOn([field])
       .where(where)
-      .withDeleted()
       .getRawMany();
     return res.map((raw) => raw[field]);
   }
 
   async findDistinctParcelles(balId: string): Promise<string[]> {
     const res: any[] = await this.numerosRepository.query(
-      `SELECT ARRAY_AGG(distinct elem) 
-        FROM (select unnest(parcelles) as elem, bal_id, deleted_at from numeros) s 
-        WHERE bal_id = '${balId}' AND deleted_at IS null`,
+      `SELECT ARRAY_AGG(distinct elem)
+        FROM (select unnest(parcelles) as elem, bal_id from numeros) s
+        WHERE bal_id = '${balId}'`,
     );
     return res[0]?.array_agg || [];
   }
@@ -311,10 +295,6 @@ export class NumeroService {
     voie: Voie,
     createNumeroDto: CreateNumeroDTO,
   ): Promise<Numero> {
-    // On vérifie que la voie ne soit pas archivé
-    if (voie.deletedAt) {
-      throw new HttpException('Voie is archived', HttpStatus.NOT_FOUND);
-    }
     // Si il y a un toponyme, on vérifie qu'il existe
     if (
       createNumeroDto.toponymeId &&
@@ -419,30 +399,6 @@ export class NumeroService {
     await this.numerosRepository.delete(where);
   }
 
-  public async softDelete(numero: Numero): Promise<void> {
-    // On créer le where et on lance la requète
-    const { affected }: UpdateResult = await this.numerosRepository.softDelete({
-      id: numero.id,
-    });
-    // Si le numero a été suprimé
-    if (affected > 0) {
-      // On recalcule le centroid de la voie du numéro
-      await this.voieService.calcCentroidAndBbox(numero.voieId);
-      // On met a jour le updatedAt de la bal, la voie et le toponyme
-      await this.touch(numero);
-    }
-  }
-
-  public async softDeleteByVoie(voieId: string): Promise<void> {
-    await this.numerosRepository.softDelete({
-      voieId,
-    });
-  }
-
-  public async restore(where: FindOptionsWhere<Numero>): Promise<void> {
-    await this.numerosRepository.restore(where);
-  }
-
   public async certifyVoieNumeros(voie: Voie): Promise<void> {
     await this.numerosRepository.update(
       { voieId: voie.id },
@@ -539,43 +495,6 @@ export class NumeroService {
     }
 
     return { modifiedCount: affected, changes };
-  }
-
-  public async softDeleteBatch(
-    baseLocale: BaseLocale,
-    { numerosIds }: DeleteBatchNumeroDTO,
-  ): Promise<BatchNumeroResponseDTO> {
-    // On récupère les différentes voies et toponymes des numeros qu'on va modifier
-    const where: FindOptionsWhere<Numero> = {
-      id: In(numerosIds),
-      balId: baseLocale.id,
-    };
-    const voieIds: string[] = await this.findDistinct(where, 'voie_id');
-    const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
-    // On archive les numeros dans postgres
-    const { affected }: UpdateResult = await this.numerosRepository.softDelete({
-      id: In(numerosIds),
-      balId: baseLocale.id,
-    });
-    // Si des numeros ont été archivés
-    if (affected > 0) {
-      // On met a jour le updatedAt de la BAL
-      await this.baseLocaleService.touch(baseLocale.id);
-      // On met a jour les centroid des voies des numeros archivé
-      await Promise.all(
-        voieIds.map((voidId) => this.voieService.calcCentroidAndBbox(voidId)),
-      );
-      // Si les numeros avaient des toponyme, on met a jour leurs updatedAt
-      if (toponymeIds.length > 0) {
-        await Promise.all(
-          toponymeIds.map((toponymeId) =>
-            this.toponymeService.touch(toponymeId),
-          ),
-        );
-      }
-    }
-
-    return { modifiedCount: affected };
   }
 
   public async deleteBatch(

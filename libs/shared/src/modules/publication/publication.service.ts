@@ -88,7 +88,6 @@ export class PublicationService {
     // On récupère le nombre de numeros de la BAL
     const numeroCount = await this.numerosRepository.countBy({
       balId,
-      deletedAt: null,
     });
     // On vérifie qu'il y ai au moins un numero dans la BAL
     if (numeroCount === 0) {

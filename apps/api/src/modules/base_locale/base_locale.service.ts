@@ -11,13 +11,11 @@ import {
   ArrayContains,
   FindOptionsSelect,
   FindOptionsWhere,
-  In,
   IsNull,
-  Not,
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { uniq, difference, groupBy } from 'lodash';
+import { uniq, difference } from 'lodash';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -26,7 +24,6 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Job, Queue, QueueEvents } from 'bullmq';
 import { PriorityEnum } from '@/shared/types/task.type';
 
-import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import {
   BaseLocale,
@@ -59,7 +56,6 @@ import {
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
-import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 import { TaskTitle } from '@/shared/types/task.type';
 import { QUEUE_NAME } from '@/shared/params/queue_name.const';
@@ -410,43 +406,6 @@ export class BaseLocaleService {
   async softDelete(baseLocale: BaseLocale) {
     // On archive la Bal
     await this.basesLocalesRepository.softDelete({ id: baseLocale.id });
-  }
-
-  async findAllDeletedByBal(
-    baseLocale: BaseLocale,
-  ): Promise<AllDeletedInBalDTO> {
-    // On récupère les numeros archivés
-    const numerosDeleted = await this.numeroService.findManyWithDeleted({
-      balId: baseLocale.id,
-      deletedAt: Not(IsNull()),
-    });
-    const numerosByVoieId = groupBy(numerosDeleted, 'voieId');
-    // On récupère les voies archivés ou celle qui ont des numéros archivés
-    const voies: any[] = await this.voieService.findManyWithDeleted([
-      {
-        id: In(Object.keys(numerosByVoieId)),
-      },
-      {
-        balId: baseLocale.id,
-        deletedAt: Not(IsNull()),
-      },
-    ]);
-    // On populate les voie avec les numeros
-    const voiesPopulate: Voie[] = voies.map((voie: Voie) => ({
-      ...voie,
-      numeros: numerosByVoieId[voie.id] || [],
-    }));
-    // On récupère les toponyme archivé de la bal
-    const toponymes: Toponyme[] =
-      await this.toponymeService.findManyWithDeleted({
-        balId: baseLocale.id,
-        deletedAt: Not(IsNull()),
-      });
-    // On retourne le voies et toponyme archivé
-    return {
-      voies: voiesPopulate,
-      toponymes,
-    };
   }
 
   async populate(

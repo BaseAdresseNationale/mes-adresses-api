@@ -24,7 +24,6 @@ export class ExportCsvService {
     const voies: Voie[] = await this.voiesRepository.find({
       where: {
         balId,
-        deletedAt: null,
       },
       order: {
         nom: 'ASC',
@@ -33,7 +32,6 @@ export class ExportCsvService {
     const toponymes: Toponyme[] = await this.toponymesRepository.find({
       where: {
         balId,
-        deletedAt: null,
       },
       order: {
         nom: 'ASC',
@@ -42,7 +40,6 @@ export class ExportCsvService {
     const numeros: Numero[] = await this.numerosRepository.find({
       where: {
         balId,
-        deletedAt: null,
       },
       order: {
         numero: 'ASC',

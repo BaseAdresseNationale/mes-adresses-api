@@ -1,6 +1,13 @@
 import { GlobalEntity } from './global.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { AfterLoad, Column, Entity, OneToMany } from 'typeorm';
+import {
+  AfterLoad,
+  Column,
+  DeleteDateColumn,
+  Entity,
+  Index,
+  OneToMany,
+} from 'typeorm';
 import { Voie } from './voie.entity';
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
@@ -124,6 +131,11 @@ export class BaseLocale extends GlobalEntity {
   @ApiProperty({ type: () => Numero, isArray: true })
   @OneToMany(() => Numero, (numero) => numero.baseLocale)
   numeros?: Numero[];
+
+  @Index({ where: 'deleted_at IS NULL' })
+  @ApiProperty()
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt: Date | null;
 
   @AfterLoad()
   getCommuneNom?(): void {
