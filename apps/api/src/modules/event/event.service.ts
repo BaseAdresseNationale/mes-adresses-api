@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, IsNull, Repository } from 'typeorm';
 
 import {
   Event,
   EventActionEnum,
   EventEntityTypeEnum,
 } from '@/shared/entities/event.entity';
+import { EventDTO } from '@/modules/event/dto/event.dto';
 
 export interface RegisterEventContext {
   balId: string;
@@ -28,12 +29,56 @@ export interface RegisterCompositeEventParams {
   entities: { entityType: EventEntityTypeEnum; entityId: string }[];
 }
 
+export interface FindRootEventsByBalParams {
+  isSynced?: boolean;
+  limit: number;
+  offset: number;
+}
+
 @Injectable()
 export class EventService {
   constructor(
     @InjectRepository(Event)
     private eventsRepository: Repository<Event>,
   ) {}
+
+  // Lists root events (parentEventId IS NULL, including composite roots) for
+  // a BAL, most recent first, with their child events attached. Pagination
+  // applies to roots only — a root + its children counts as one page item.
+  public async findRootEventsByBal(
+    balId: string,
+    { isSynced, limit, offset }: FindRootEventsByBalParams,
+  ): Promise<{ count: number; results: EventDTO[] }> {
+    const where: FindOptionsWhere<Event> = {
+      balId,
+      parentEventId: IsNull(),
+      ...(isSynced !== undefined && { isSynced }),
+    };
+
+    const count = await this.eventsRepository.count({ where });
+    const roots = await this.eventsRepository.find({
+      where,
+      relations: { childEvents: true },
+      order: { createdAt: 'DESC' },
+      take: limit,
+      skip: offset,
+    });
+
+    // The `isSynced` filter also applies to the children loaded through the
+    // relation (TypeORM can't filter a joined collection via `find()`, only
+    // through QueryBuilder) — filtered/sorted in memory, still a single
+    // round-trip to the DB overall.
+    const results = roots.map((root) => ({
+      ...root,
+      childEvents: (root.childEvents ?? [])
+        .filter(
+          (child) => isSynced === undefined || child.isSynced === isSynced,
+        )
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
+    }));
+
+    return { count, results };
+  }
 
   // Registers a CREATE/UPDATE/DELETE action on a single entity, fusing it
   // with the entity's current unpublished event if there is one. Returns the

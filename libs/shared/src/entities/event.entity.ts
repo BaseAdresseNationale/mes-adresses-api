@@ -6,6 +6,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -49,6 +50,9 @@ export class Event {
   @ManyToOne(() => Event, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'parent_event_id' })
   parentEvent?: Event;
+
+  @OneToMany(() => Event, (event) => event.parentEvent)
+  childEvents?: Event[];
 
   @ApiProperty({ enum: EventEntityTypeEnum })
   @Column('enum', { enum: EventEntityTypeEnum, name: 'entity_type' })

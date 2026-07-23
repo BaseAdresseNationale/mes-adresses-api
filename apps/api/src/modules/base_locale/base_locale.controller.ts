@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpException,
@@ -8,6 +9,7 @@ import {
   Inject,
   ParseBoolPipe,
   ParseFilePipeBuilder,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -77,6 +79,8 @@ import { In, IsNull } from 'typeorm';
 import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 import { HabilitationService } from './sub_modules/habilitation/habilitation.service';
+import { EventService } from '@/modules/event/event.service';
+import { EventPageDTO } from '@/modules/event/dto/event_page.dto';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -92,6 +96,7 @@ export class BaseLocaleController {
     private toponymeService: ToponymeService,
     @Inject(forwardRef(() => HabilitationService))
     private habilitationService: HabilitationService,
+    private eventService: EventService,
   ) {}
 
   @Post('')
@@ -757,6 +762,47 @@ export class BaseLocaleController {
     const extendedToponyme: ExtentedToponymeDTO[] =
       await this.toponymeService.extendToponymes(toponymes);
     res.status(HttpStatus.OK).json(extendedToponyme);
+  }
+
+  @Get(':baseLocaleId/events')
+  @ApiOperation({
+    summary: 'Find all events for a Bal',
+    operationId: 'findBaseLocaleEvents',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiQuery({ name: 'isSynced', type: Boolean, required: false })
+  @ApiQuery({ name: 'limit', type: Number, required: false })
+  @ApiQuery({ name: 'offset', type: Number, required: false })
+  @ApiResponse({ status: HttpStatus.OK, type: EventPageDTO })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async findBaseLocaleEvents(
+    @Req() req: CustomRequest,
+    @Query('isSynced', new ParseBoolPipe({ optional: true }))
+    isSynced: boolean | undefined,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
+    @Res() res: Response,
+  ) {
+    if (!Number.isInteger(limit) || limit <= 0 || limit > 100) {
+      throw new HttpException(
+        'La valeur du champ "limit" doit être un entier compris entre 1 et 100 (défaut : 20)',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (!Number.isInteger(offset) || offset < 0) {
+      throw new HttpException(
+        'La valeur du champ "offset" doit être un entier positif (défaut : 0)',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const { count, results } = await this.eventService.findRootEventsByBal(
+      req.baseLocale.id,
+      { isSynced, limit, offset },
+    );
+    const page: EventPageDTO = { offset, limit, count, results };
+    res.status(HttpStatus.OK).json(page);
   }
 
   @Post(':baseLocaleId/toponymes')

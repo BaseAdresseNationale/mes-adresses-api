@@ -691,4 +691,155 @@ describe('EVENT MODULE', () => {
       ).toBe(true);
     });
   });
+
+  describe('GET /bases-locales/:baseLocaleId/events', () => {
+    it('requires an admin token', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events`)
+        .expect(403);
+    });
+
+    it('lists root events with their children, most recent first', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+
+      // Root event #1: VOIE UPDATE, no children.
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}`)
+        .send({ nom: 'nouvelle rue' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      // Root event #2: NUMERO CREATE, with 2 POSITION CREATE children.
+      await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({
+          numero: 1,
+          positions: [createPositions([8, 42]), createPositions([8.1, 42.1])],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(response.body.count).toEqual(2);
+      expect(response.body.offset).toEqual(0);
+      expect(response.body.limit).toEqual(20);
+      expect(response.body.results).toHaveLength(2);
+
+      const [numeroRoot, voieRoot] = response.body.results;
+      expect(numeroRoot.entityType).toEqual(EventEntityTypeEnum.NUMERO);
+      expect(numeroRoot.action).toEqual(EventActionEnum.CREATE);
+      expect(numeroRoot.childEvents).toHaveLength(2);
+      expect(
+        numeroRoot.childEvents.every(
+          (c) => c.entityType === EventEntityTypeEnum.POSITION,
+        ),
+      ).toBe(true);
+
+      expect(voieRoot.entityType).toEqual(EventEntityTypeEnum.VOIE);
+      expect(voieRoot.action).toEqual(EventActionEnum.UPDATE);
+      expect(voieRoot.childEvents).toHaveLength(0);
+    });
+
+    it('filters roots and children by isSynced', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}`)
+        .send({ nom: 'nouvelle rue' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({
+          numero: 1,
+          positions: [createPositions([8, 42])],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+
+      const voieRootEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.VOIE,
+      });
+      await eventsRepository.update(
+        { id: voieRootEvent.id },
+        { isSynced: true, syncedAt: new Date() },
+      );
+
+      const syncedResponse = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events?isSynced=true`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      expect(syncedResponse.body.count).toEqual(1);
+      expect(syncedResponse.body.results[0].id).toEqual(voieRootEvent.id);
+
+      const unsyncedResponse = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events?isSynced=false`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      expect(unsyncedResponse.body.count).toEqual(1);
+      expect(unsyncedResponse.body.results[0].entityType).toEqual(
+        EventEntityTypeEnum.NUMERO,
+      );
+      expect(unsyncedResponse.body.results[0].childEvents).toHaveLength(1);
+    });
+
+    it('paginates root events, most recent first', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId1 = await createVoie(balId, { nom: 'rue A' });
+      const voieId2 = await createVoie(balId, { nom: 'rue B' });
+
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId1}`)
+        .send({ nom: 'rue A modifiée' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId2}`)
+        .send({ nom: 'rue B modifiée' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const firstPage = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events?limit=1&offset=0`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      expect(firstPage.body.count).toEqual(2);
+      expect(firstPage.body.results).toHaveLength(1);
+      expect(firstPage.body.results[0].entityId).toEqual(voieId2);
+
+      const secondPage = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events?limit=1&offset=1`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      expect(secondPage.body.count).toEqual(2);
+      expect(secondPage.body.results).toHaveLength(1);
+      expect(secondPage.body.results[0].entityId).toEqual(voieId1);
+    });
+
+    it('validates limit/offset bounds', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events?limit=0`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(400);
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events?limit=101`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(400);
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events?offset=-1`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(400);
+    });
+  });
 });
