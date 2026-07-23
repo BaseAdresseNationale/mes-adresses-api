@@ -10,6 +10,11 @@ import {
   EventEntityTypeEnum,
 } from '@/shared/entities/event.entity';
 import { PositionTypeEnum } from '@/shared/entities/position.entity';
+import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
+import {
+  SerializedNumero,
+  SerializedVoie,
+} from '@/shared/entities/event_payload.type';
 import { EventModule } from '@/modules/event/event.module';
 import { EventService } from '@/modules/event/event.service';
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
@@ -74,6 +79,43 @@ describe('EVENT MODULE', () => {
     return new ObjectId().toHexString();
   }
 
+  // Minimal but properly-typed fixtures for the low-level EventService
+  // tests below, which only care about the fusion/merge logic, not about
+  // realistic entity content.
+  function fakeSerializedNumero(numero: number): SerializedNumero {
+    return {
+      id: 'fixture-numero-id',
+      banId: 'fixture-ban-id',
+      createdAt: new Date('2000-01-01').toISOString(),
+      balId: 'fixture-bal-id',
+      voieId: 'fixture-voie-id',
+      toponymeId: null,
+      numero,
+      suffixe: null,
+      comment: null,
+      parcelles: null,
+      certifie: false,
+      communeDeleguee: null,
+    };
+  }
+
+  function fakeSerializedVoie(nom: string): SerializedVoie {
+    return {
+      id: 'fixture-voie-id',
+      banId: 'fixture-ban-id',
+      createdAt: new Date('2000-01-01').toISOString(),
+      balId: 'fixture-bal-id',
+      nom,
+      nomAlt: null,
+      typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
+      centroid: null,
+      trace: null,
+      bbox: null,
+      codeVoie: null,
+      comment: null,
+    };
+  }
+
   describe('EventService.register — fusion table', () => {
     it('CREATE with no current event -> INSERT (before: null)', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
@@ -85,13 +127,13 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.CREATE,
-          after: { numero: 1 },
+          after: fakeSerializedNumero(1),
         },
       );
 
       expect(event.action).toEqual(EventActionEnum.CREATE);
       expect(event.payloadBefore).toBeNull();
-      expect(event.payloadAfter).toEqual({ numero: 1 });
+      expect(event.payloadAfter).toEqual(fakeSerializedNumero(1));
       expect(event.isSynced).toBe(false);
     });
 
@@ -105,14 +147,14 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 1 },
-          after: { numero: 2 },
+          before: fakeSerializedNumero(1),
+          after: fakeSerializedNumero(2),
         },
       );
 
       expect(event.action).toEqual(EventActionEnum.UPDATE);
-      expect(event.payloadBefore).toEqual({ numero: 1 });
-      expect(event.payloadAfter).toEqual({ numero: 2 });
+      expect(event.payloadBefore).toEqual(fakeSerializedNumero(1));
+      expect(event.payloadAfter).toEqual(fakeSerializedNumero(2));
     });
 
     it('DELETE with no current event -> INSERT (after: null)', async () => {
@@ -125,12 +167,12 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.DELETE,
-          before: { numero: 1 },
+          before: fakeSerializedNumero(1),
         },
       );
 
       expect(event.action).toEqual(EventActionEnum.DELETE);
-      expect(event.payloadBefore).toEqual({ numero: 1 });
+      expect(event.payloadBefore).toEqual(fakeSerializedNumero(1));
       expect(event.payloadAfter).toBeNull();
     });
 
@@ -144,7 +186,7 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.CREATE,
-          after: { numero: 1 },
+          after: fakeSerializedNumero(1),
         },
       );
       const event = await eventService.register(
@@ -153,14 +195,14 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 1 },
-          after: { numero: 2 },
+          before: fakeSerializedNumero(1),
+          after: fakeSerializedNumero(2),
         },
       );
 
       expect(event.action).toEqual(EventActionEnum.CREATE);
       expect(event.payloadBefore).toBeNull();
-      expect(event.payloadAfter).toEqual({ numero: 2 });
+      expect(event.payloadAfter).toEqual(fakeSerializedNumero(2));
 
       const count = await eventsRepository.count();
       expect(count).toEqual(1);
@@ -176,8 +218,8 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 1 },
-          after: { numero: 2 },
+          before: fakeSerializedNumero(1),
+          after: fakeSerializedNumero(2),
         },
       );
       const event = await eventService.register(
@@ -186,14 +228,14 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 2 },
-          after: { numero: 3 },
+          before: fakeSerializedNumero(2),
+          after: fakeSerializedNumero(3),
         },
       );
 
       expect(event.action).toEqual(EventActionEnum.UPDATE);
-      expect(event.payloadBefore).toEqual({ numero: 1 });
-      expect(event.payloadAfter).toEqual({ numero: 3 });
+      expect(event.payloadBefore).toEqual(fakeSerializedNumero(1));
+      expect(event.payloadAfter).toEqual(fakeSerializedNumero(3));
 
       const count = await eventsRepository.count();
       expect(count).toEqual(1);
@@ -209,7 +251,7 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.CREATE,
-          after: { numero: 1 },
+          after: fakeSerializedNumero(1),
         },
       );
       const result = await eventService.register(
@@ -218,7 +260,7 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.DELETE,
-          before: { numero: 1 },
+          before: fakeSerializedNumero(1),
         },
       );
 
@@ -237,8 +279,8 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 1 },
-          after: { numero: 2 },
+          before: fakeSerializedNumero(1),
+          after: fakeSerializedNumero(2),
         },
       );
       const event = await eventService.register(
@@ -247,12 +289,12 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.DELETE,
-          before: { numero: 2 },
+          before: fakeSerializedNumero(2),
         },
       );
 
       expect(event.action).toEqual(EventActionEnum.DELETE);
-      expect(event.payloadBefore).toEqual({ numero: 1 });
+      expect(event.payloadBefore).toEqual(fakeSerializedNumero(1));
       expect(event.payloadAfter).toBeNull();
 
       const count = await eventsRepository.count();
@@ -269,7 +311,7 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.DELETE,
-          before: { numero: 1 },
+          before: fakeSerializedNumero(1),
         },
       );
       const event = await eventService.register(
@@ -278,13 +320,13 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.CREATE,
-          after: { numero: 2 },
+          after: fakeSerializedNumero(2),
         },
       );
 
       expect(event.action).toEqual(EventActionEnum.UPDATE);
-      expect(event.payloadBefore).toEqual({ numero: 1 });
-      expect(event.payloadAfter).toEqual({ numero: 2 });
+      expect(event.payloadBefore).toEqual(fakeSerializedNumero(1));
+      expect(event.payloadAfter).toEqual(fakeSerializedNumero(2));
 
       const count = await eventsRepository.count();
       expect(count).toEqual(1);
@@ -300,7 +342,7 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.DELETE,
-          before: { numero: 1 },
+          before: fakeSerializedNumero(1),
         },
       );
 
@@ -311,7 +353,7 @@ describe('EVENT MODULE', () => {
             entityType: EventEntityTypeEnum.NUMERO,
             entityId,
             action: EventActionEnum.DELETE,
-            before: { numero: 1 },
+            before: fakeSerializedNumero(1),
           },
         ),
       ).rejects.toThrow();
@@ -321,12 +363,20 @@ describe('EVENT MODULE', () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const entityId = newEntityId();
 
+      const sourceVoie = fakeSerializedVoie('rue source');
+      const targetVoieBefore = fakeSerializedVoie('rue cible');
       await eventService.registerComposite(
         { balId },
         {
           action: EventActionEnum.MERGE_VOIES,
-          before: { voies: [entityId] },
-          after: { voie: entityId },
+          before: {
+            targetVoie: targetVoieBefore,
+            sourceVoies: [sourceVoie],
+          },
+          after: {
+            targetVoie: fakeSerializedVoie('rue cible'),
+            movedNumeroIds: [],
+          },
           entities: [{ entityType: EventEntityTypeEnum.VOIE, entityId }],
         },
       );
@@ -337,8 +387,8 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.VOIE,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { nom: 'a' },
-          after: { nom: 'b' },
+          before: fakeSerializedVoie('a'),
+          after: fakeSerializedVoie('b'),
         },
       );
 
@@ -354,7 +404,10 @@ describe('EVENT MODULE', () => {
         entityType: EventEntityTypeEnum.COMPOSITE,
       });
       expect(compositeRoot).not.toBeNull();
-      expect(compositeRoot.payloadBefore).toEqual({ voies: [entityId] });
+      expect(compositeRoot.payloadBefore).toEqual({
+        targetVoie: targetVoieBefore,
+        sourceVoies: [sourceVoie],
+      });
     });
   });
 
@@ -369,7 +422,7 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.CREATE,
-          after: { numero: 1 },
+          after: fakeSerializedNumero(1),
         },
       );
       await eventService.register(
@@ -378,8 +431,8 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 1 },
-          after: { numero: 2 },
+          before: fakeSerializedNumero(1),
+          after: fakeSerializedNumero(2),
         },
       );
       await eventService.register(
@@ -388,8 +441,8 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 2 },
-          after: { numero: 3 },
+          before: fakeSerializedNumero(2),
+          after: fakeSerializedNumero(3),
         },
       );
       const result = await eventService.register(
@@ -398,7 +451,7 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.DELETE,
-          before: { numero: 3 },
+          before: fakeSerializedNumero(3),
         },
       );
 
@@ -417,8 +470,8 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 1 },
-          after: { numero: 2 },
+          before: fakeSerializedNumero(1),
+          after: fakeSerializedNumero(2),
         },
       );
       await eventService.register(
@@ -427,14 +480,14 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.DELETE,
-          before: { numero: 2 },
+          before: fakeSerializedNumero(2),
         },
       );
 
       const events = await eventsRepository.find({ where: { entityId } });
       expect(events).toHaveLength(1);
       expect(events[0].action).toEqual(EventActionEnum.DELETE);
-      expect(events[0].payloadBefore).toEqual({ numero: 1 });
+      expect(events[0].payloadBefore).toEqual(fakeSerializedNumero(1));
     });
 
     it('update on an entity whose event is already synced creates a new event, leaving the old one intact', async () => {
@@ -447,8 +500,8 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 1 },
-          after: { numero: 2 },
+          before: fakeSerializedNumero(1),
+          after: fakeSerializedNumero(2),
         },
       );
       await eventsRepository.update(
@@ -462,20 +515,20 @@ describe('EVENT MODULE', () => {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId,
           action: EventActionEnum.UPDATE,
-          before: { numero: 2 },
-          after: { numero: 3 },
+          before: fakeSerializedNumero(2),
+          after: fakeSerializedNumero(3),
         },
       );
 
       expect(newEvent.id).not.toEqual(syncedEvent.id);
-      expect(newEvent.payloadBefore).toEqual({ numero: 2 });
-      expect(newEvent.payloadAfter).toEqual({ numero: 3 });
+      expect(newEvent.payloadBefore).toEqual(fakeSerializedNumero(2));
+      expect(newEvent.payloadAfter).toEqual(fakeSerializedNumero(3));
 
       const oldEvent = await eventsRepository.findOneBy({
         id: syncedEvent.id,
       });
-      expect(oldEvent.payloadBefore).toEqual({ numero: 1 });
-      expect(oldEvent.payloadAfter).toEqual({ numero: 2 });
+      expect(oldEvent.payloadBefore).toEqual(fakeSerializedNumero(1));
+      expect(oldEvent.payloadAfter).toEqual(fakeSerializedNumero(2));
       expect(oldEvent.isSynced).toBe(true);
 
       const count = await eventsRepository.count();

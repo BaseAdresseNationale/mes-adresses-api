@@ -7,7 +7,10 @@ import {
   EventActionEnum,
   EventEntityTypeEnum,
 } from '@/shared/entities/event.entity';
-import { EventDTO } from '@/modules/event/dto/event.dto';
+import {
+  CompositeEventPayload,
+  EntityEventPayload,
+} from '@/shared/entities/event_payload.type';
 
 export interface RegisterEventContext {
   balId: string;
@@ -18,14 +21,14 @@ export interface RegisterEventParams {
   entityType: EventEntityTypeEnum;
   entityId: string;
   action: EventActionEnum;
-  before?: Record<string, any> | null;
-  after?: Record<string, any> | null;
+  before?: EntityEventPayload | null;
+  after?: EntityEventPayload | null;
 }
 
 export interface RegisterCompositeEventParams {
   action: EventActionEnum;
-  before: Record<string, any>;
-  after: Record<string, any>;
+  before: CompositeEventPayload;
+  after: CompositeEventPayload;
   entities: { entityType: EventEntityTypeEnum; entityId: string }[];
 }
 
@@ -48,7 +51,7 @@ export class EventService {
   public async findRootEventsByBal(
     balId: string,
     { isSynced, limit, offset }: FindRootEventsByBalParams,
-  ): Promise<{ count: number; results: EventDTO[] }> {
+  ): Promise<{ count: number; results: Event[] }> {
     const where: FindOptionsWhere<Event> = {
       balId,
       parentEventId: IsNull(),

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { EVENT_PAYLOAD_MODELS, EventPayload } from './event_payload.type';
 
 export enum EventEntityTypeEnum {
   VOIE = 'voie',
@@ -27,12 +28,17 @@ export enum EventActionEnum {
   CONVERT_VOIE_TO_TOPONYME = 'CONVERT_VOIE_TO_TOPONYME',
 }
 
+const payloadSchema = {
+  oneOf: EVENT_PAYLOAD_MODELS.map((model) => ({ $ref: getSchemaPath(model) })),
+};
+
 @Entity({ name: 'events' })
 @Index('IDX_events_unsynced_entity', ['entityType', 'entityId'], {
   unique: true,
   where: '"is_synced" = false AND "entity_id" IS NOT NULL',
 })
 @Index('IDX_events_bal_id_is_synced', ['balId', 'isSynced'])
+@ApiExtraModels(...EVENT_PAYLOAD_MODELS)
 export class Event {
   @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
@@ -66,13 +72,13 @@ export class Event {
   @Column('enum', { enum: EventActionEnum })
   action: EventActionEnum;
 
-  @ApiProperty()
+  @ApiProperty({ ...payloadSchema, nullable: true })
   @Column('jsonb', { name: 'payload_before', nullable: true })
-  payloadBefore: Record<string, any> | null;
+  payloadBefore: EventPayload | null;
 
-  @ApiProperty()
+  @ApiProperty({ ...payloadSchema, nullable: true })
   @Column('jsonb', { name: 'payload_after', nullable: true })
-  payloadAfter: Record<string, any> | null;
+  payloadAfter: EventPayload | null;
 
   @ApiProperty()
   @Column('boolean', { name: 'is_synced', default: false })

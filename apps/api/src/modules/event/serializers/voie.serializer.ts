@@ -1,11 +1,12 @@
 import { Voie } from '@/shared/entities/voie.entity';
+import { SerializedVoie } from '@/shared/entities/event_payload.type';
 
 // Excludes updatedAt and loaded relations (numeros, baseLocale).
-export function serializeVoie(voie: Voie): Record<string, any> {
+export function serializeVoie(voie: Voie): SerializedVoie {
   return {
     id: voie.id,
     banId: voie.banId,
-    createdAt: voie.createdAt,
+    createdAt: voie.createdAt.toISOString(),
     balId: voie.balId,
     nom: voie.nom,
     nomAlt: voie.nomAlt ?? null,

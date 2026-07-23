@@ -1,6 +1,7 @@
 import { Position } from '@/shared/entities/position.entity';
+import { SerializedPosition } from '@/shared/entities/event_payload.type';
 
-export function serializePosition(position: Position): Record<string, any> {
+export function serializePosition(position: Position): SerializedPosition {
   return {
     id: position.id,
     toponymeId: position.toponymeId ?? null,

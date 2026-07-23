@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { EventDTO } from './event.dto';
+import { Event } from '@/shared/entities/event.entity';
 
 export class EventPageDTO {
   @ApiProperty()
@@ -11,6 +11,6 @@ export class EventPageDTO {
   @ApiProperty()
   count: number;
 
-  @ApiProperty({ type: () => EventDTO, isArray: true })
-  results: EventDTO[];
+  @ApiProperty({ type: () => Event, isArray: true })
+  results: Event[];
 }
