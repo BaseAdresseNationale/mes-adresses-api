@@ -24,7 +24,7 @@ export class CreateEvents1784801437175 implements MigrationInterface {
       `CREATE INDEX "IDX_events_parent_event_id" ON "events" ("parent_event_id")`,
     );
     await queryRunner.query(
-      `ALTER TABLE "events" ADD CONSTRAINT "FK_events_parent_event_id" FOREIGN KEY ("parent_event_id") REFERENCES "events"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+      `ALTER TABLE "events" ADD CONSTRAINT "FK_events_parent_event_id" FOREIGN KEY ("parent_event_id") REFERENCES "events"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
     );
   }
 
@@ -36,9 +36,7 @@ export class CreateEvents1784801437175 implements MigrationInterface {
     await queryRunner.query(
       `DROP INDEX "public"."IDX_events_bal_id_is_synced"`,
     );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_events_unsynced_entity"`,
-    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_events_unsynced_entity"`);
     await queryRunner.query(`DROP TABLE "events"`);
     await queryRunner.query(`DROP TYPE "public"."events_action_enum"`);
     await queryRunner.query(`DROP TYPE "public"."events_entity_type_enum"`);

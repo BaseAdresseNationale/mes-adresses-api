@@ -53,7 +53,7 @@ export class Event {
   @Column('uuid', { name: 'parent_event_id', nullable: true })
   parentEventId: string | null;
 
-  @ManyToOne(() => Event, { onDelete: 'CASCADE', nullable: true })
+  @ManyToOne(() => Event, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'parent_event_id' })
   parentEvent?: Event;
 
