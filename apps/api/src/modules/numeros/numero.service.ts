@@ -50,6 +50,14 @@ import { generateDocument } from '@/lib/document/document-generator';
 import { DocumentFormat } from '@/lib/document/types';
 import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
 import { S3Service } from '@/shared/modules/s3/s3.service';
+import { EventService } from '@/modules/event/event.service';
+import {
+  EventActionEnum,
+  EventEntityTypeEnum,
+} from '@/shared/entities/event.entity';
+import { serializeNumero } from '@/modules/event/serializers/numero.serializer';
+import { serializePosition } from '@/modules/event/serializers/position.serializer';
+import { emitPositionDiffEvents } from '@/modules/event/position-diff.util';
 
 @Injectable()
 export class NumeroService {
@@ -66,6 +74,7 @@ export class NumeroService {
     private baseLocaleService: BaseLocaleService,
     @Inject(forwardRef(() => S3Service))
     private s3service: S3Service,
+    private eventService: EventService,
   ) {}
 
   async findOneOrFail(numeroId: string): Promise<Numero> {
@@ -327,6 +336,23 @@ export class NumeroService {
     await this.voieService.calcCentroidAndBbox(voie.id);
     // On met a jour le updatedAt de la Bal
     await this.baseLocaleService.touch(numero.balId);
+
+    const numeroEvent = await this.eventService.register(
+      { balId: voie.balId },
+      {
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numeroCreated.id,
+        action: EventActionEnum.CREATE,
+        after: serializeNumero(numeroCreated),
+      },
+    );
+    await emitPositionDiffEvents(
+      this.eventService,
+      { balId: voie.balId, parentEventId: numeroEvent?.id },
+      [],
+      numeroCreated.positions ?? [],
+    );
+
     return numeroCreated;
   }
 
@@ -377,6 +403,23 @@ export class NumeroService {
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(numero.balId);
 
+    const numeroEvent = await this.eventService.register(
+      { balId: numero.balId },
+      {
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numero.id,
+        action: EventActionEnum.UPDATE,
+        before: serializeNumero(numero),
+        after: serializeNumero(numeroUpdated),
+      },
+    );
+    await emitPositionDiffEvents(
+      this.eventService,
+      { balId: numero.balId, parentEventId: numeroEvent?.id },
+      numero.positions ?? [],
+      numeroUpdated.positions ?? [],
+    );
+
     return numeroUpdated;
   }
 
@@ -391,6 +434,27 @@ export class NumeroService {
     if (affected > 0) {
       // On met a jour le updatedAt de la bal, la voie et le toponyme
       await this.touch(numero);
+
+      const numeroEvent = await this.eventService.register(
+        { balId: numero.balId },
+        {
+          entityType: EventEntityTypeEnum.NUMERO,
+          entityId: numero.id,
+          action: EventActionEnum.DELETE,
+          before: serializeNumero(numero),
+        },
+      );
+      for (const position of numero.positions ?? []) {
+        await this.eventService.register(
+          { balId: numero.balId, parentEventId: numeroEvent?.id },
+          {
+            entityType: EventEntityTypeEnum.POSITION,
+            entityId: position.id,
+            action: EventActionEnum.DELETE,
+            before: serializePosition(position),
+          },
+        );
+      }
     }
   }
 
@@ -443,6 +507,12 @@ export class NumeroService {
       }),
       ...pick(changes, ['comment', 'certifie', 'communeDeleguee']),
     };
+    // On charge l'état avant modification de chaque numéro concerné, pour
+    // le log d'events, avant toute mutation.
+    const numerosBefore: Numero[] = await this.numerosRepository.find({
+      where,
+    });
+
     // Si le positionType est changé, on change le type de la première position dans le batch
     let positionTypeAffected: number = 0;
     if (changes.positionType) {
@@ -492,6 +562,32 @@ export class NumeroService {
           ),
         );
       }
+
+      // 1 event UPDATE par numéro modifié, tous liés au même event racine.
+      const numerosAfter: Numero[] = await this.numerosRepository.find({
+        where: { id: In(numerosIds), balId: baseLocale.id },
+      });
+      const numerosAfterById = new Map(
+        numerosAfter.map((numero) => [numero.id, numero]),
+      );
+      let rootEventId: string | undefined;
+      for (const numeroBefore of numerosBefore) {
+        const numeroAfter = numerosAfterById.get(numeroBefore.id);
+        if (!numeroAfter) {
+          continue;
+        }
+        const event = await this.eventService.register(
+          { balId: baseLocale.id, parentEventId: rootEventId },
+          {
+            entityType: EventEntityTypeEnum.NUMERO,
+            entityId: numeroBefore.id,
+            action: EventActionEnum.UPDATE,
+            before: serializeNumero(numeroBefore),
+            after: serializeNumero(numeroAfter),
+          },
+        );
+        rootEventId = rootEventId ?? event?.id;
+      }
     }
 
     return { modifiedCount: affected, changes };
@@ -508,6 +604,9 @@ export class NumeroService {
     };
     const voieIds: string[] = await this.findDistinct(where, 'voie_id');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
+    // On charge les numeros (et leurs positions, chargées eager) avant leur
+    // suppression, pour le log d'events.
+    const numeros: Numero[] = await this.numerosRepository.find({ where });
     // On supprime les numero dans postgres
     const { affected }: DeleteResult = await this.numerosRepository.delete({
       id: In(numerosIds),
@@ -528,6 +627,32 @@ export class NumeroService {
             this.toponymeService.touch(toponymeId),
           ),
         );
+      }
+
+      // 1 event DELETE par numéro + 1 par position, tous liés au même event racine.
+      let rootEventId: string | undefined;
+      for (const numero of numeros) {
+        const numeroEvent = await this.eventService.register(
+          { balId: baseLocale.id, parentEventId: rootEventId },
+          {
+            entityType: EventEntityTypeEnum.NUMERO,
+            entityId: numero.id,
+            action: EventActionEnum.DELETE,
+            before: serializeNumero(numero),
+          },
+        );
+        rootEventId = rootEventId ?? numeroEvent?.id;
+        for (const position of numero.positions ?? []) {
+          await this.eventService.register(
+            { balId: baseLocale.id, parentEventId: rootEventId },
+            {
+              entityType: EventEntityTypeEnum.POSITION,
+              entityId: position.id,
+              action: EventActionEnum.DELETE,
+              before: serializePosition(position),
+            },
+          );
+        }
       }
     }
   }

@@ -25,6 +25,7 @@ import {
 } from '@/shared/entities/base_locale.entity';
 import { Voie, TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
+import { Numero } from '@/shared/entities/numero.entity';
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
 import {
   ExtendedVoieDTO,
@@ -43,6 +44,15 @@ import {
 import { buildArreteDeNumerotationVoieDefinition } from '@/lib/document/templates/voie/arrete-de-numerotation';
 import { generateDocument } from '@/lib/document/document-generator';
 import { DocumentFormat } from '@/lib/document/types';
+import { EventService } from '@/modules/event/event.service';
+import {
+  EventActionEnum,
+  EventEntityTypeEnum,
+} from '@/shared/entities/event.entity';
+import { serializeVoie } from '@/modules/event/serializers/voie.serializer';
+import { serializeNumero } from '@/modules/event/serializers/numero.serializer';
+import { serializePosition } from '@/modules/event/serializers/position.serializer';
+import { serializeToponyme } from '@/modules/event/serializers/toponyme.serializer';
 
 @Injectable()
 export class VoieService {
@@ -57,6 +67,7 @@ export class VoieService {
     private toponymeService: ToponymeService,
     @Inject(forwardRef(() => S3Service))
     private s3service: S3Service,
+    private eventService: EventService,
   ) {}
 
   async findOneOrFail(voieId: string): Promise<Voie> {
@@ -151,6 +162,15 @@ export class VoieService {
     const voieCreated: Voie = await this.voiesRepository.save(entityToSave);
     // Mettre a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(bal.id, voieCreated.updatedAt);
+    await this.eventService.register(
+      { balId: bal.id },
+      {
+        entityType: EventEntityTypeEnum.VOIE,
+        entityId: voieCreated.id,
+        action: EventActionEnum.CREATE,
+        after: serializeVoie(voieCreated),
+      },
+    );
     // On retourne la voie créé
     return voieCreated;
   }
@@ -207,16 +227,28 @@ export class VoieService {
     // Si la voie a été modifiée
     if (res.affected > 0) {
       // On met a jour le centroid de la voie si la trace a été mis a jour
+      let finalVoie = voieUpdated;
       if (
         updateVoieDto.trace &&
         voieUpdated.typeNumerotation === TypeNumerotationEnum.METRIQUE
       ) {
         await this.calcCentroidAndBboxWithTrace(voieUpdated);
+        finalVoie = await this.voiesRepository.findOneBy(where);
       }
       // On met a jour le updatedAt de la BAL
       await this.baseLocaleService.touch(
         voieUpdated.balId,
         voieUpdated.updatedAt,
+      );
+      await this.eventService.register(
+        { balId: voieUpdated.balId },
+        {
+          entityType: EventEntityTypeEnum.VOIE,
+          entityId: voie.id,
+          action: EventActionEnum.UPDATE,
+          before: serializeVoie(voie),
+          after: serializeVoie(finalVoie),
+        },
       );
     }
     // On retourne la voie modifiée
@@ -224,6 +256,13 @@ export class VoieService {
   }
 
   public async delete(voie: Voie) {
+    // On charge les numéros (et leurs positions, chargées eager) avant la
+    // suppression, puisqu'ils seront supprimés en cascade par postgres et
+    // qu'il n'y aura ensuite plus rien à lire pour journaliser leur event.
+    const numeros: Numero[] = await this.numeroService.findMany({
+      voieId: voie.id,
+    });
+
     // On lance la requète postgres pour supprimer définitivement la voie
     // Les numéros sont supprimé en cascade par postgres
     const { affected }: DeleteResult = await this.voiesRepository.delete({
@@ -231,10 +270,40 @@ export class VoieService {
     });
 
     if (affected >= 1) {
-      // On supprime egalement les numeros de la voie
-      await this.numeroService.deleteMany({ voieId: voie.id });
       // Si une voie a bien été supprimé on met a jour le updatedAt de la Bal
       await this.baseLocaleService.touch(voie.balId);
+
+      const voieEvent = await this.eventService.register(
+        { balId: voie.balId },
+        {
+          entityType: EventEntityTypeEnum.VOIE,
+          entityId: voie.id,
+          action: EventActionEnum.DELETE,
+          before: serializeVoie(voie),
+        },
+      );
+      for (const numero of numeros) {
+        await this.eventService.register(
+          { balId: voie.balId, parentEventId: voieEvent?.id },
+          {
+            entityType: EventEntityTypeEnum.NUMERO,
+            entityId: numero.id,
+            action: EventActionEnum.DELETE,
+            before: serializeNumero(numero),
+          },
+        );
+        for (const position of numero.positions ?? []) {
+          await this.eventService.register(
+            { balId: voie.balId, parentEventId: voieEvent?.id },
+            {
+              entityType: EventEntityTypeEnum.POSITION,
+              entityId: position.id,
+              action: EventActionEnum.DELETE,
+              before: serializePosition(position),
+            },
+          );
+        }
+      }
     }
   }
 
@@ -283,6 +352,25 @@ export class VoieService {
     );
     // On supprimer la voie de postgres
     await this.delete(voie);
+
+    // `create` et `delete` ci-dessus ont chacun émis leur propre event
+    // individuel (CREATE sur le toponyme, DELETE sur la voie) : l'event
+    // composite qui suit absorbe ces events non publiés (cf.
+    // EventService.registerComposite) pour ne laisser qu'un seul event
+    // agrégé, conformément à la granularité attendue pour cette opération.
+    await this.eventService.registerComposite(
+      { balId: voie.balId },
+      {
+        action: EventActionEnum.CONVERT_VOIE_TO_TOPONYME,
+        before: { voie: serializeVoie(voie) },
+        after: { toponyme: serializeToponyme(toponyme) },
+        entities: [
+          { entityType: EventEntityTypeEnum.VOIE, entityId: voie.id },
+          { entityType: EventEntityTypeEnum.TOPONYME, entityId: toponyme.id },
+        ],
+      },
+    );
+
     // On retourne le toponyme créé
     return toponyme;
   }
@@ -295,13 +383,48 @@ export class VoieService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    this.numeroService.updateMany(
+    const sourceVoies: Voie[] = await this.findMany({
+      id: In(otherVoieIds),
+    });
+    const movedNumeros: Numero[] = await this.numeroService.findMany({
+      voieId: In(otherVoieIds),
+    });
+
+    await this.numeroService.updateMany(
       { voieId: In(otherVoieIds) },
       { voieId: voie.id },
     );
-    this.deleteMany({ id: In(otherVoieIds) });
+    await this.deleteMany({ id: In(otherVoieIds) });
 
-    return this.findOneOrFail(voie.id);
+    const voieAfter: Voie = await this.findOneOrFail(voie.id);
+
+    await this.eventService.registerComposite(
+      { balId: voie.balId },
+      {
+        action: EventActionEnum.MERGE_VOIES,
+        before: {
+          targetVoie: serializeVoie(voie),
+          sourceVoies: sourceVoies.map(serializeVoie),
+        },
+        after: {
+          targetVoie: serializeVoie(voieAfter),
+          movedNumeroIds: movedNumeros.map(({ id }) => id),
+        },
+        entities: [
+          { entityType: EventEntityTypeEnum.VOIE, entityId: voie.id },
+          ...sourceVoies.map((v) => ({
+            entityType: EventEntityTypeEnum.VOIE,
+            entityId: v.id,
+          })),
+          ...movedNumeros.map((n) => ({
+            entityType: EventEntityTypeEnum.NUMERO,
+            entityId: n.id,
+          })),
+        ],
+      },
+    );
+
+    return voieAfter;
   }
 
   public async extendVoies(

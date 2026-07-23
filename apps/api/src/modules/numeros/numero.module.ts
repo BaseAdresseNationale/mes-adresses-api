@@ -12,6 +12,7 @@ import { ToponymeModule } from '@/modules/toponyme/toponyme.module';
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
 import { TilesModule } from '@/modules/base_locale/sub_modules/tiles/tiles.module';
 import { S3Module } from '@/shared/modules/s3/s3.module';
+import { EventModule } from '@/modules/event/event.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { S3Module } from '@/shared/modules/s3/s3.module';
     forwardRef(() => BaseLocaleModule),
     forwardRef(() => TilesModule),
     forwardRef(() => S3Module),
+    EventModule,
   ],
   providers: [NumeroService, NumeroMiddleware],
   controllers: [NumeroController],

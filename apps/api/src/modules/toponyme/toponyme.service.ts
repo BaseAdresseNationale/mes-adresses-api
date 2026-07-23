@@ -33,6 +33,14 @@ import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ObjectId } from 'mongodb';
 import { ToponymeInBox } from '@/lib/types/toponyme.type';
+import { EventService } from '@/modules/event/event.service';
+import {
+  EventActionEnum,
+  EventEntityTypeEnum,
+} from '@/shared/entities/event.entity';
+import { serializeToponyme } from '@/modules/event/serializers/toponyme.serializer';
+import { serializePosition } from '@/modules/event/serializers/position.serializer';
+import { emitPositionDiffEvents } from '@/modules/event/position-diff.util';
 
 @Injectable()
 export class ToponymeService {
@@ -43,6 +51,7 @@ export class ToponymeService {
     private baseLocaleService: BaseLocaleService,
     @Inject(forwardRef(() => NumeroService))
     private numeroService: NumeroService,
+    private eventService: EventService,
   ) {}
 
   async findOneOrFail(toponymeId: string): Promise<Toponyme> {
@@ -127,6 +136,23 @@ export class ToponymeService {
       await this.toponymesRepository.save(entityToSave);
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(bal.id, toponymeCreated.updatedAt);
+
+    const toponymeEvent = await this.eventService.register(
+      { balId: bal.id },
+      {
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeCreated.id,
+        action: EventActionEnum.CREATE,
+        after: serializeToponyme(toponymeCreated),
+      },
+    );
+    await emitPositionDiffEvents(
+      this.eventService,
+      { balId: bal.id, parentEventId: toponymeEvent?.id },
+      [],
+      toponymeCreated.positions ?? [],
+    );
+
     // On retourne le toponyme créé
     return toponymeCreated;
   }
@@ -135,6 +161,11 @@ export class ToponymeService {
     toponyme: Toponyme,
     updateToponymeDto: UpdateToponymeDTO,
   ): Promise<Toponyme> {
+    // On capture l'état avant modification pour le log d'events, avant que
+    // `toponyme` ne soit muté en place ci-dessous.
+    const positionsBefore: Position[] = toponyme.positions ?? [];
+    const toponymeBeforePayload = serializeToponyme(toponyme);
+
     // On clean le nom et le nomAlt si ils sont présent dans le dto
     if (updateToponymeDto.nom) {
       updateToponymeDto.nom = cleanNom(updateToponymeDto.nom);
@@ -154,6 +185,24 @@ export class ToponymeService {
     const toponymeUpdated: Toponyme =
       await this.toponymesRepository.save(entityToSave);
     await this.baseLocaleService.touch(toponyme.balId);
+
+    const toponymeEvent = await this.eventService.register(
+      { balId: toponymeUpdated.balId },
+      {
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeUpdated.id,
+        action: EventActionEnum.UPDATE,
+        before: toponymeBeforePayload,
+        after: serializeToponyme(toponymeUpdated),
+      },
+    );
+    await emitPositionDiffEvents(
+      this.eventService,
+      { balId: toponymeUpdated.balId, parentEventId: toponymeEvent?.id },
+      positionsBefore,
+      toponymeUpdated.positions ?? [],
+    );
+
     // On retourne le toponyme mis a jour
     return toponymeUpdated;
   }
@@ -174,6 +223,27 @@ export class ToponymeService {
     // Si le toponyme a été supprimer on met a jour le updateAt de la BAL
     if (affected > 0) {
       await this.baseLocaleService.touch(toponyme.balId);
+
+      const toponymeEvent = await this.eventService.register(
+        { balId: toponyme.balId },
+        {
+          entityType: EventEntityTypeEnum.TOPONYME,
+          entityId: toponyme.id,
+          action: EventActionEnum.DELETE,
+          before: serializeToponyme(toponyme),
+        },
+      );
+      for (const position of toponyme.positions ?? []) {
+        await this.eventService.register(
+          { balId: toponyme.balId, parentEventId: toponymeEvent?.id },
+          {
+            entityType: EventEntityTypeEnum.POSITION,
+            entityId: position.id,
+            action: EventActionEnum.DELETE,
+            before: serializePosition(position),
+          },
+        );
+      }
     }
   }
 

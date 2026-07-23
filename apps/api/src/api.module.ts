@@ -10,11 +10,13 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Position } from '@/shared/entities/position.entity';
 import { Cache } from '@/shared/entities/cache.entity';
+import { Event } from '@/shared/entities/event.entity';
 
 import { NumeroModule } from './modules/numeros/numero.module';
 import { BaseLocaleModule } from './modules/base_locale/base_locale.module';
 import { VoieModule } from './modules/voie/voie.module';
 import { ToponymeModule } from './modules/toponyme/toponyme.module';
+import { EventModule } from './modules/event/event.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailerParams } from '@/shared/params/mailer.params';
@@ -36,7 +38,7 @@ import { BullModule } from '@nestjs/bullmq';
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
         schema: 'public',
-        entities: [BaseLocale, Voie, Numero, Toponyme, Position, Cache],
+        entities: [BaseLocale, Voie, Numero, Toponyme, Position, Cache, Event],
       }),
       inject: [ConfigService],
     }),
@@ -58,6 +60,7 @@ import { BullModule } from '@nestjs/bullmq';
     BaseLocaleModule,
     VoieModule,
     ToponymeModule,
+    EventModule,
     StatsModule,
     AdminModule,
     SignalementModule,
