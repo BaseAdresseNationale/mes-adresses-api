@@ -15,6 +15,7 @@ import {
 export interface RegisterEventContext {
   balId: string;
   parentEventId?: string;
+  voieId?: string;
 }
 
 export interface RegisterEventParams {
@@ -38,6 +39,28 @@ export interface FindRootEventsByBalParams {
   offset: number;
 }
 
+export interface ReparentOrphanedNumerosParams {
+  balId: string;
+  voieId: string;
+  newRootId: string;
+}
+
+// Applies the `isSynced` filter (also meant for children, since TypeORM
+// can't filter a joined collection via `find()`, only through QueryBuilder)
+// and a most-recent-first sort at every level of the tree, recursively.
+// Bounded in practice by how deep `relations` was loaded (2 levels of
+// `childEvents` today — VOIE/COMPOSITE root -> NUMERO -> POSITION, the only
+// hierarchy in this domain), but works at any depth.
+function sortAndFilterChildren(event: Event, isSynced?: boolean): Event {
+  return {
+    ...event,
+    childEvents: (event.childEvents ?? [])
+      .filter((child) => isSynced === undefined || child.isSynced === isSynced)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .map((child) => sortAndFilterChildren(child, isSynced)),
+  };
+}
+
 @Injectable()
 export class EventService {
   constructor(
@@ -46,8 +69,9 @@ export class EventService {
   ) {}
 
   // Lists root events (parentEventId IS NULL, including composite roots) for
-  // a BAL, most recent first, with their child events attached. Pagination
-  // applies to roots only — a root + its children counts as one page item.
+  // a BAL, most recent first, with their full descendants attached (up to 2
+  // levels: NUMERO children, and POSITION grandchildren). Pagination applies
+  // to roots only — a root + its descendants counts as one page item.
   public async findRootEventsByBal(
     balId: string,
     { isSynced, limit, offset }: FindRootEventsByBalParams,
@@ -61,26 +85,54 @@ export class EventService {
     const count = await this.eventsRepository.count({ where });
     const roots = await this.eventsRepository.find({
       where,
-      relations: { childEvents: true },
+      relations: { childEvents: { childEvents: true } },
       order: { createdAt: 'DESC' },
       take: limit,
       skip: offset,
     });
 
-    // The `isSynced` filter also applies to the children loaded through the
-    // relation (TypeORM can't filter a joined collection via `find()`, only
-    // through QueryBuilder) — filtered/sorted in memory, still a single
-    // round-trip to the DB overall.
-    const results = roots.map((root) => ({
-      ...root,
-      childEvents: (root.childEvents ?? [])
-        .filter(
-          (child) => isSynced === undefined || child.isSynced === isSynced,
-        )
-        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
-    }));
+    const results = roots.map((root) => sortAndFilterChildren(root, isSynced));
 
     return { count, results };
+  }
+
+  // Reparents under `newRootId` any root, non-synced NUMERO DELETE event
+  // whose numero belonged to `voieId` before being deleted independently,
+  // earlier and separately from this voie's own deletion (so it no longer
+  // exists in the `numeros` table). Its own children (POSITION DELETE
+  // events) already correctly point to it and are left untouched — the
+  // resulting tree is VOIE -> NUMERO -> POSITION, never flattened.
+  public async reparentOrphanedDeletedNumeros({
+    balId,
+    voieId,
+    newRootId,
+  }: ReparentOrphanedNumerosParams): Promise<void> {
+    await this.eventsRepository.update(
+      {
+        balId,
+        voieId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        action: EventActionEnum.DELETE,
+        isSynced: false,
+        parentEventId: IsNull(),
+      },
+      { parentEventId: newRootId },
+    );
+  }
+
+  // Returns the id of `voieId`'s own pending (unsynced) CREATE event, if
+  // any — used to nest a numero's very first event under it, so rolling
+  // back the voie's creation cannot leave numeros created under it dangling.
+  public async findUnsyncedVoieCreateEventId(
+    voieId: string,
+  ): Promise<string | undefined> {
+    const voieCreateEvent = await this.eventsRepository.findOneBy({
+      entityType: EventEntityTypeEnum.VOIE,
+      entityId: voieId,
+      action: EventActionEnum.CREATE,
+      isSynced: false,
+    });
+    return voieCreateEvent?.id;
   }
 
   // Registers a CREATE/UPDATE/DELETE action on a single entity, fusing it
@@ -180,6 +232,7 @@ export class EventService {
       repo.create({
         balId: ctx.balId,
         parentEventId: ctx.parentEventId ?? null,
+        voieId: ctx.voieId ?? null,
         entityType: params.entityType,
         entityId: params.entityId,
         action: params.action,
@@ -218,7 +271,15 @@ export class EventService {
         // DELETE's `before`) transitions directly to the new `after`.
         current.action = EventActionEnum.UPDATE;
         current.payloadAfter = params.after ?? null;
-        current.parentEventId = ctx.parentEventId ?? null;
+        current.voieId = ctx.voieId ?? null;
+        // Only repoint the parent when the caller explicitly provides one —
+        // otherwise a plain standalone update/delete call (no parentEventId
+        // in its ctx) would silently wipe out a nesting established earlier
+        // (e.g. a numero created under its voie's still-unsynced CREATE
+        // event, see NumeroService.create()).
+        if (ctx.parentEventId !== undefined) {
+          current.parentEventId = ctx.parentEventId;
+        }
         return repo.save(current);
       }
 
@@ -233,7 +294,15 @@ export class EventService {
         // Whether current is CREATE or UPDATE, only `after` moves forward;
         // a CREATE-origin event stays a CREATE, `before` never changes.
         current.payloadAfter = params.after ?? null;
-        current.parentEventId = ctx.parentEventId ?? null;
+        current.voieId = ctx.voieId ?? null;
+        // Only repoint the parent when the caller explicitly provides one —
+        // otherwise a plain standalone update/delete call (no parentEventId
+        // in its ctx) would silently wipe out a nesting established earlier
+        // (e.g. a numero created under its voie's still-unsynced CREATE
+        // event, see NumeroService.create()).
+        if (ctx.parentEventId !== undefined) {
+          current.parentEventId = ctx.parentEventId;
+        }
         return repo.save(current);
       }
 
@@ -252,7 +321,15 @@ export class EventService {
         // original `before` of that UPDATE.
         current.action = EventActionEnum.DELETE;
         current.payloadAfter = null;
-        current.parentEventId = ctx.parentEventId ?? null;
+        current.voieId = ctx.voieId ?? null;
+        // Only repoint the parent when the caller explicitly provides one —
+        // otherwise a plain standalone update/delete call (no parentEventId
+        // in its ctx) would silently wipe out a nesting established earlier
+        // (e.g. a numero created under its voie's still-unsynced CREATE
+        // event, see NumeroService.create()).
+        if (ctx.parentEventId !== undefined) {
+          current.parentEventId = ctx.parentEventId;
+        }
         return repo.save(current);
       }
     }

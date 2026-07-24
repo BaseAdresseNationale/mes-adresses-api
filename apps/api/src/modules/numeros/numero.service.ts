@@ -337,8 +337,16 @@ export class NumeroService {
     // On met a jour le updatedAt de la Bal
     await this.baseLocaleService.touch(numero.balId);
 
+    // If the voie itself was just created and isn't published yet, nest this
+    // numero's CREATE under the voie's CREATE event — so rolling back the
+    // voie's creation cannot leave a numero dangling with a voieId pointing
+    // to a voie that never existed publicly. This nesting survives any
+    // later update()/delete() on this numero (see EventService.fuse()).
+    const parentEventId = await this.eventService.findUnsyncedVoieCreateEventId(
+      voie.id,
+    );
     const numeroEvent = await this.eventService.register(
-      { balId: voie.balId },
+      { balId: voie.balId, parentEventId, voieId: voie.id },
       {
         entityType: EventEntityTypeEnum.NUMERO,
         entityId: numeroCreated.id,
@@ -348,7 +356,7 @@ export class NumeroService {
     );
     await emitPositionDiffEvents(
       this.eventService,
-      { balId: voie.balId, parentEventId: numeroEvent?.id },
+      { balId: voie.balId, parentEventId: numeroEvent?.id, voieId: voie.id },
       [],
       numeroCreated.positions ?? [],
     );
@@ -404,7 +412,7 @@ export class NumeroService {
     await this.baseLocaleService.touch(numero.balId);
 
     const numeroEvent = await this.eventService.register(
-      { balId: numero.balId },
+      { balId: numero.balId, voieId: numeroUpdated.voieId },
       {
         entityType: EventEntityTypeEnum.NUMERO,
         entityId: numero.id,
@@ -415,7 +423,11 @@ export class NumeroService {
     );
     await emitPositionDiffEvents(
       this.eventService,
-      { balId: numero.balId, parentEventId: numeroEvent?.id },
+      {
+        balId: numero.balId,
+        parentEventId: numeroEvent?.id,
+        voieId: numeroUpdated.voieId,
+      },
       numero.positions ?? [],
       numeroUpdated.positions ?? [],
     );
@@ -436,7 +448,7 @@ export class NumeroService {
       await this.touch(numero);
 
       const numeroEvent = await this.eventService.register(
-        { balId: numero.balId },
+        { balId: numero.balId, voieId: numero.voieId },
         {
           entityType: EventEntityTypeEnum.NUMERO,
           entityId: numero.id,
@@ -446,7 +458,11 @@ export class NumeroService {
       );
       for (const position of numero.positions ?? []) {
         await this.eventService.register(
-          { balId: numero.balId, parentEventId: numeroEvent?.id },
+          {
+            balId: numero.balId,
+            parentEventId: numeroEvent?.id,
+            voieId: numero.voieId,
+          },
           {
             entityType: EventEntityTypeEnum.POSITION,
             entityId: position.id,
@@ -577,7 +593,11 @@ export class NumeroService {
           continue;
         }
         const event = await this.eventService.register(
-          { balId: baseLocale.id, parentEventId: rootEventId },
+          {
+            balId: baseLocale.id,
+            parentEventId: rootEventId,
+            voieId: numeroAfter.voieId,
+          },
           {
             entityType: EventEntityTypeEnum.NUMERO,
             entityId: numeroBefore.id,
@@ -633,7 +653,11 @@ export class NumeroService {
       let rootEventId: string | undefined;
       for (const numero of numeros) {
         const numeroEvent = await this.eventService.register(
-          { balId: baseLocale.id, parentEventId: rootEventId },
+          {
+            balId: baseLocale.id,
+            parentEventId: rootEventId,
+            voieId: numero.voieId,
+          },
           {
             entityType: EventEntityTypeEnum.NUMERO,
             entityId: numero.id,
@@ -644,7 +668,11 @@ export class NumeroService {
         rootEventId = rootEventId ?? numeroEvent?.id;
         for (const position of numero.positions ?? []) {
           await this.eventService.register(
-            { balId: baseLocale.id, parentEventId: rootEventId },
+            {
+              balId: baseLocale.id,
+              parentEventId: rootEventId,
+              voieId: numero.voieId,
+            },
             {
               entityType: EventEntityTypeEnum.POSITION,
               entityId: position.id,

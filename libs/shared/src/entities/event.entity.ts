@@ -49,6 +49,11 @@ export class Event {
   balId: string;
 
   @ApiProperty()
+  @Index('IDX_events_voie_id')
+  @Column('varchar', { length: 24, name: 'voie_id', nullable: true })
+  voieId: string | null;
+
+  @ApiProperty()
   @Index('IDX_events_parent_event_id')
   @Column('uuid', { name: 'parent_event_id', nullable: true })
   parentEventId: string | null;

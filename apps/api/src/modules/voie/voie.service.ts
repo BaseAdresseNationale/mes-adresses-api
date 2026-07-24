@@ -163,7 +163,7 @@ export class VoieService {
     // Mettre a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(bal.id, voieCreated.updatedAt);
     await this.eventService.register(
-      { balId: bal.id },
+      { balId: bal.id, voieId: voieCreated.id },
       {
         entityType: EventEntityTypeEnum.VOIE,
         entityId: voieCreated.id,
@@ -241,7 +241,7 @@ export class VoieService {
         voieUpdated.updatedAt,
       );
       await this.eventService.register(
-        { balId: voieUpdated.balId },
+        { balId: voieUpdated.balId, voieId: voie.id },
         {
           entityType: EventEntityTypeEnum.VOIE,
           entityId: voie.id,
@@ -274,7 +274,7 @@ export class VoieService {
       await this.baseLocaleService.touch(voie.balId);
 
       const voieEvent = await this.eventService.register(
-        { balId: voie.balId },
+        { balId: voie.balId, voieId: voie.id },
         {
           entityType: EventEntityTypeEnum.VOIE,
           entityId: voie.id,
@@ -283,8 +283,8 @@ export class VoieService {
         },
       );
       for (const numero of numeros) {
-        await this.eventService.register(
-          { balId: voie.balId, parentEventId: voieEvent?.id },
+        const numeroEvent = await this.eventService.register(
+          { balId: voie.balId, parentEventId: voieEvent?.id, voieId: voie.id },
           {
             entityType: EventEntityTypeEnum.NUMERO,
             entityId: numero.id,
@@ -294,7 +294,11 @@ export class VoieService {
         );
         for (const position of numero.positions ?? []) {
           await this.eventService.register(
-            { balId: voie.balId, parentEventId: voieEvent?.id },
+            {
+              balId: voie.balId,
+              parentEventId: numeroEvent?.id,
+              voieId: voie.id,
+            },
             {
               entityType: EventEntityTypeEnum.POSITION,
               entityId: position.id,
@@ -303,6 +307,18 @@ export class VoieService {
             },
           );
         }
+      }
+
+      if (voieEvent) {
+        // Numeros of this voie already deleted independently before this
+        // voie deletion (so absent from `numeros`, loaded above) left an
+        // orphan root DELETE event: reparent it here so this voie's whole
+        // unpublished history forms a single tree.
+        await this.eventService.reparentOrphanedDeletedNumeros({
+          balId: voie.balId,
+          voieId: voie.id,
+          newRootId: voieEvent.id,
+        });
       }
     }
   }

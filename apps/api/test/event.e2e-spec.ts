@@ -735,13 +735,238 @@ describe('EVENT MODULE', () => {
         true,
       );
 
+      // Positions are nested under their own numero event, not flattened
+      // directly under the voie — the tree is VOIE -> NUMERO -> POSITION.
       const positionEvents = events.filter(
         (e) => e.entityType === EventEntityTypeEnum.POSITION,
       );
       expect(positionEvents).toHaveLength(2);
-      expect(
-        positionEvents.every((e) => e.parentEventId === voieEvent.id),
-      ).toBe(true);
+      for (const positionEvent of positionEvents) {
+        const owningNumeroEvent = numeroEvents.find(
+          (e) => e.id === positionEvent.parentEventId,
+        );
+        expect(owningNumeroEvent).toBeDefined();
+      }
+    });
+
+    it('deleting a voie reparents the orphan DELETE event of a numero already deleted independently beforehand', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        positions: [createPositions([8, 42])],
+      });
+
+      // Simulate a previous publication: the voie and numero CREATE events
+      // (and the position's) are already synced, so deleting the numero
+      // now produces a genuine standalone DELETE event instead of the
+      // CREATE+DELETE fusing away to nothing.
+      await eventsRepository.update(
+        { balId },
+        { isSynced: true, syncedAt: new Date() },
+      );
+
+      await request(app.getHttpServer())
+        .delete(`/numeros/${numeroId}`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(204);
+
+      const numeroDeleteEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numeroId,
+        isSynced: false,
+      });
+      expect(numeroDeleteEvent.action).toEqual(EventActionEnum.DELETE);
+      expect(numeroDeleteEvent.parentEventId).toBeNull();
+
+      const positionDeleteEventBefore = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.POSITION,
+        isSynced: false,
+      });
+      expect(positionDeleteEventBefore.parentEventId).toEqual(
+        numeroDeleteEvent.id,
+      );
+
+      // The voie itself still exists (only the numero was deleted): delete
+      // it now, independently.
+      await request(app.getHttpServer())
+        .delete(`/voies/${voieId}`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(204);
+
+      const voieDeleteEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.VOIE,
+        entityId: voieId,
+        isSynced: false,
+      });
+      expect(voieDeleteEvent.action).toEqual(EventActionEnum.DELETE);
+      expect(voieDeleteEvent.parentEventId).toBeNull();
+
+      // The previously-orphaned numero DELETE event is now a child of the
+      // voie's DELETE event — its own position child is left untouched
+      // (still a child of the numero event): VOIE -> NUMERO -> POSITION.
+      const reparentedNumeroEvent = await eventsRepository.findOneBy({
+        id: numeroDeleteEvent.id,
+      });
+      expect(reparentedNumeroEvent.parentEventId).toEqual(voieDeleteEvent.id);
+
+      const positionEventAfter = await eventsRepository.findOneBy({
+        id: positionDeleteEventBefore.id,
+      });
+      expect(positionEventAfter.parentEventId).toEqual(numeroDeleteEvent.id);
+
+      // The whole unpublished history for this voie now forms a single
+      // tree — confirmed through the read API too.
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events?isSynced=false`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      expect(response.body.count).toEqual(1);
+      expect(response.body.results[0].id).toEqual(voieDeleteEvent.id);
+      expect(response.body.results[0].childEvents).toHaveLength(1);
+      expect(response.body.results[0].childEvents[0].id).toEqual(
+        numeroDeleteEvent.id,
+      );
+      expect(response.body.results[0].childEvents[0].childEvents).toHaveLength(
+        1,
+      );
+      expect(response.body.results[0].childEvents[0].childEvents[0].id).toEqual(
+        positionDeleteEventBefore.id,
+      );
+    });
+
+    // These 3 tests need the voie's own CREATE event to actually exist and
+    // be unsynced — the `createVoie`/`createNumero` fixtures insert directly
+    // via the repository (no event emitted), so voie and numero are created
+    // through the HTTP API here instead.
+    it('creating a numero under a not-yet-synced voie nests its CREATE event under the voie CREATE event', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      const voieCreateEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.VOIE,
+        entityId: voieId,
+      });
+      expect(voieCreateEvent.isSynced).toBe(false);
+      expect(voieCreateEvent.voieId).toEqual(voieId);
+
+      const numeroResponse = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({
+          numero: 1,
+          positions: [createPositions([8, 42])],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const numeroId = numeroResponse.body.id;
+
+      const numeroCreateEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numeroId,
+      });
+      expect(numeroCreateEvent.parentEventId).toEqual(voieCreateEvent.id);
+      expect(numeroCreateEvent.voieId).toEqual(voieId);
+
+      const positionCreateEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.POSITION,
+      });
+      expect(positionCreateEvent.parentEventId).toEqual(numeroCreateEvent.id);
+      expect(positionCreateEvent.voieId).toEqual(voieId);
+
+      // The tree is VOIE -> NUMERO -> POSITION, confirmed via the read API.
+      const response = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      expect(response.body.count).toEqual(1);
+      const [root] = response.body.results;
+      expect(root.id).toEqual(voieCreateEvent.id);
+      expect(root.childEvents).toHaveLength(1);
+      expect(root.childEvents[0].id).toEqual(numeroCreateEvent.id);
+      expect(root.childEvents[0].childEvents).toHaveLength(1);
+      expect(root.childEvents[0].childEvents[0].id).toEqual(
+        positionCreateEvent.id,
+      );
+    });
+
+    it('updating a numero under a not-yet-synced voie preserves the nesting under the voie CREATE event', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      const voieCreateEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.VOIE,
+        entityId: voieId,
+      });
+
+      const numeroResponse = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({ numero: 1, positions: [createPositions([8, 42])] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const numeroId = numeroResponse.body.id;
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({ numero: 2 })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const numeroEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numeroId,
+      });
+      // Fused CREATE+UPDATE stays a CREATE (only `after` moves forward) — the
+      // parent set at creation time must survive this update untouched,
+      // confirming the EventService.fuse() fix.
+      expect(numeroEvent.action).toEqual(EventActionEnum.CREATE);
+      expect(numeroEvent.parentEventId).toEqual(voieCreateEvent.id);
+    });
+
+    it('creating a numero under an already-synced voie does not nest it', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      await eventsRepository.update(
+        { balId, entityType: EventEntityTypeEnum.VOIE, entityId: voieId },
+        { isSynced: true, syncedAt: new Date() },
+      );
+
+      const numeroResponse = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({ numero: 1, positions: [createPositions([8, 42])] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const numeroId = numeroResponse.body.id;
+
+      const numeroEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numeroId,
+      });
+      expect(numeroEvent.parentEventId).toBeNull();
     });
   });
 
