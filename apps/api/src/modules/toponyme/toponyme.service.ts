@@ -41,6 +41,7 @@ import {
 import { serializeToponyme } from '@/modules/event/serializers/toponyme.serializer';
 import { serializePosition } from '@/modules/event/serializers/position.serializer';
 import { emitPositionDiffEvents } from '@/modules/event/position-diff.util';
+import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 @Injectable()
 export class ToponymeService {
@@ -182,20 +183,37 @@ export class ToponymeService {
       ...toponyme,
       ...updateToponymeDto,
     });
-    const toponymeUpdated: Toponyme =
-      await this.toponymesRepository.save(entityToSave);
+    await this.toponymesRepository.save(entityToSave);
+    // On recharge le toponyme depuis postgres plutôt que d'utiliser la
+    // valeur renvoyée par save() : ses positions (FK toponyme_id, rank
+    // recalculé par le hook @BeforeUpdate) ne sont fiables qu'après un vrai
+    // rechargement, sans quoi le payload d'event avant/après serait construit
+    // sur un état partiellement obsolète.
+    const toponymeUpdated: Toponyme = await this.toponymesRepository.findOneBy({
+      id: toponyme.id,
+    });
     await this.baseLocaleService.touch(toponyme.balId);
 
-    const toponymeEvent = await this.eventService.register(
-      { balId: toponymeUpdated.balId },
-      {
-        entityType: EventEntityTypeEnum.TOPONYME,
-        entityId: toponymeUpdated.id,
-        action: EventActionEnum.UPDATE,
-        before: toponymeBeforePayload,
-        after: serializeToponyme(toponymeUpdated),
-      },
-    );
+    const toponymeAfterPayload = serializeToponyme(toponymeUpdated);
+    // Une requète UPDATE renvoie `affected > 0` même si les valeurs envoyées
+    // sont identiques aux valeurs actuelles : on ne journalise un event que
+    // si l'état du toponyme a réellement changé (les positions, elles, sont
+    // diffées indépendamment juste après par `emitPositionDiffEvents`).
+    const toponymeEvent = payloadsAreEqual(
+      toponymeBeforePayload,
+      toponymeAfterPayload,
+    )
+      ? undefined
+      : await this.eventService.register(
+          { balId: toponymeUpdated.balId },
+          {
+            entityType: EventEntityTypeEnum.TOPONYME,
+            entityId: toponymeUpdated.id,
+            action: EventActionEnum.UPDATE,
+            before: toponymeBeforePayload,
+            after: toponymeAfterPayload,
+          },
+        );
     await emitPositionDiffEvents(
       this.eventService,
       { balId: toponymeUpdated.balId, parentEventId: toponymeEvent?.id },

@@ -58,6 +58,7 @@ import {
 import { serializeNumero } from '@/modules/event/serializers/numero.serializer';
 import { serializePosition } from '@/modules/event/serializers/position.serializer';
 import { emitPositionDiffEvents } from '@/modules/event/position-diff.util';
+import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 @Injectable()
 export class NumeroService {
@@ -411,16 +412,27 @@ export class NumeroService {
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(numero.balId);
 
-    const numeroEvent = await this.eventService.register(
-      { balId: numero.balId, voieId: numeroUpdated.voieId },
-      {
-        entityType: EventEntityTypeEnum.NUMERO,
-        entityId: numero.id,
-        action: EventActionEnum.UPDATE,
-        before: serializeNumero(numero),
-        after: serializeNumero(numeroUpdated),
-      },
-    );
+    const numeroBeforePayload = serializeNumero(numero);
+    const numeroAfterPayload = serializeNumero(numeroUpdated);
+    // Une requète UPDATE renvoie `affected > 0` même si les valeurs envoyées
+    // sont identiques aux valeurs actuelles : on ne journalise un event que
+    // si l'état du numero a réellement changé (les positions, elles, sont
+    // diffées indépendamment juste après par `emitPositionDiffEvents`).
+    const numeroEvent = payloadsAreEqual(
+      numeroBeforePayload,
+      numeroAfterPayload,
+    )
+      ? undefined
+      : await this.eventService.register(
+          { balId: numero.balId, voieId: numeroUpdated.voieId },
+          {
+            entityType: EventEntityTypeEnum.NUMERO,
+            entityId: numero.id,
+            action: EventActionEnum.UPDATE,
+            before: numeroBeforePayload,
+            after: numeroAfterPayload,
+          },
+        );
     await emitPositionDiffEvents(
       this.eventService,
       {
@@ -592,6 +604,14 @@ export class NumeroService {
         if (!numeroAfter) {
           continue;
         }
+        const beforePayload = serializeNumero(numeroBefore);
+        const afterPayload = serializeNumero(numeroAfter);
+        // Le batch applique les mêmes changements à tous les numeros de la
+        // liste : certains peuvent ne subir aucun changement réel (ex: déjà
+        // certifié) — ne pas journaliser d'event dans ce cas.
+        if (payloadsAreEqual(beforePayload, afterPayload)) {
+          continue;
+        }
         const event = await this.eventService.register(
           {
             balId: baseLocale.id,
@@ -602,8 +622,8 @@ export class NumeroService {
             entityType: EventEntityTypeEnum.NUMERO,
             entityId: numeroBefore.id,
             action: EventActionEnum.UPDATE,
-            before: serializeNumero(numeroBefore),
-            after: serializeNumero(numeroAfter),
+            before: beforePayload,
+            after: afterPayload,
           },
         );
         rootEventId = rootEventId ?? event?.id;

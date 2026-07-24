@@ -8,6 +8,7 @@ import {
   RegisterEventContext,
 } from '@/modules/event/event.service';
 import { serializePosition } from '@/modules/event/serializers/position.serializer';
+import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 // Positions are still persisted implicitly through the parent Numero/Toponyme
 // cascade save (no explicit PositionService) — this only diffs the loaded
@@ -35,7 +36,7 @@ export async function emitPositionDiffEvents(
     }
     const previousPayload = serializePosition(previous);
     const currentPayload = serializePosition(position);
-    if (JSON.stringify(previousPayload) !== JSON.stringify(currentPayload)) {
+    if (!payloadsAreEqual(previousPayload, currentPayload)) {
       await eventService.register(ctx, {
         entityType: EventEntityTypeEnum.POSITION,
         entityId: position.id,

@@ -11,6 +11,7 @@ import {
   CompositeEventPayload,
   EntityEventPayload,
 } from '@/shared/entities/event_payload.type';
+import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 export interface RegisterEventContext {
   balId: string;
@@ -290,6 +291,16 @@ export class EventService {
           throw new Error(
             `Unexpected UPDATE event for ${params.entityType}:${params.entityId} while an unsynced DELETE event is already pending`,
           );
+        }
+        if (
+          current.action === EventActionEnum.UPDATE &&
+          payloadsAreEqual(current.payloadBefore, params.after ?? null)
+        ) {
+          // The value is back to its originally-published state — nothing
+          // left to publish for this entity, so the event is dropped
+          // entirely. Pendant of the CREATE+DELETE cancellation below.
+          await repo.delete({ id: current.id });
+          return null;
         }
         // Whether current is CREATE or UPDATE, only `after` moves forward;
         // a CREATE-origin event stays a CREATE, `before` never changes.

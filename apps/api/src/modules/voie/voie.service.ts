@@ -53,6 +53,7 @@ import { serializeVoie } from '@/modules/event/serializers/voie.serializer';
 import { serializeNumero } from '@/modules/event/serializers/numero.serializer';
 import { serializePosition } from '@/modules/event/serializers/position.serializer';
 import { serializeToponyme } from '@/modules/event/serializers/toponyme.serializer';
+import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 @Injectable()
 export class VoieService {
@@ -240,16 +241,23 @@ export class VoieService {
         voieUpdated.balId,
         voieUpdated.updatedAt,
       );
-      await this.eventService.register(
-        { balId: voieUpdated.balId, voieId: voie.id },
-        {
-          entityType: EventEntityTypeEnum.VOIE,
-          entityId: voie.id,
-          action: EventActionEnum.UPDATE,
-          before: serializeVoie(voie),
-          after: serializeVoie(finalVoie),
-        },
-      );
+      const voieBeforePayload = serializeVoie(voie);
+      const voieAfterPayload = serializeVoie(finalVoie);
+      // Une requète UPDATE renvoie `affected > 0` même si les valeurs
+      // envoyées sont identiques aux valeurs actuelles : on ne journalise un
+      // event que si l'état a réellement changé.
+      if (!payloadsAreEqual(voieBeforePayload, voieAfterPayload)) {
+        await this.eventService.register(
+          { balId: voieUpdated.balId, voieId: voie.id },
+          {
+            entityType: EventEntityTypeEnum.VOIE,
+            entityId: voie.id,
+            action: EventActionEnum.UPDATE,
+            before: voieBeforePayload,
+            after: voieAfterPayload,
+          },
+        );
+      }
     }
     // On retourne la voie modifiée
     return voieUpdated;

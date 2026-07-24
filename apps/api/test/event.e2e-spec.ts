@@ -30,6 +30,7 @@ import {
   createBal,
   createNumero,
   createPositions,
+  createToponyme,
   createVoie,
   deleteRepositories,
   getTypeORMModule,
@@ -239,6 +240,75 @@ describe('EVENT MODULE', () => {
 
       const count = await eventsRepository.count();
       expect(count).toEqual(1);
+    });
+
+    it('UPDATE onto a current UPDATE, back to the original before -> the event is deleted entirely', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const entityId = newEntityId();
+
+      await eventService.register(
+        { balId },
+        {
+          entityType: EventEntityTypeEnum.NUMERO,
+          entityId,
+          action: EventActionEnum.UPDATE,
+          before: fakeSerializedNumero(1),
+          after: fakeSerializedNumero(2),
+        },
+      );
+      const result = await eventService.register(
+        { balId },
+        {
+          entityType: EventEntityTypeEnum.NUMERO,
+          entityId,
+          action: EventActionEnum.UPDATE,
+          before: fakeSerializedNumero(2),
+          after: fakeSerializedNumero(1),
+        },
+      );
+
+      expect(result).toBeNull();
+      const count = await eventsRepository.count();
+      expect(count).toEqual(0);
+    });
+
+    it('same cancellation applies to POSITION (generic fuse() mechanism, entity-agnostic)', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const entityId = newEntityId();
+      const fakePosition = (rank: number) => ({
+        id: 'fixture-position-id',
+        toponymeId: null,
+        numeroId: 'fixture-numero-id',
+        type: PositionTypeEnum.ENTREE,
+        source: null,
+        rank,
+        point: { type: 'Point' as const, coordinates: [8, 42] },
+      });
+
+      await eventService.register(
+        { balId },
+        {
+          entityType: EventEntityTypeEnum.POSITION,
+          entityId,
+          action: EventActionEnum.UPDATE,
+          before: fakePosition(0),
+          after: fakePosition(1),
+        },
+      );
+      const result = await eventService.register(
+        { balId },
+        {
+          entityType: EventEntityTypeEnum.POSITION,
+          entityId,
+          action: EventActionEnum.UPDATE,
+          before: fakePosition(1),
+          after: fakePosition(0),
+        },
+      );
+
+      expect(result).toBeNull();
+      const count = await eventsRepository.count();
+      expect(count).toEqual(0);
     });
 
     it('DELETE onto a current CREATE -> the event is deleted entirely', async () => {
@@ -537,7 +607,7 @@ describe('EVENT MODULE', () => {
   });
 
   describe('composite operations (e2e)', () => {
-    it('updating a numero and its positions emits 1 event per position change, all sharing the same root', async () => {
+    it("updating only a numero's positions (numero fields unchanged) emits no NUMERO event, only POSITION events as roots", async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, { nom: 'rue de la paix' });
       const numeroId = await createNumero(balId, voieId, {
@@ -549,13 +619,12 @@ describe('EVENT MODULE', () => {
       });
       const [positionA, positionB] = numeroCreated.positions;
 
-      // NumeroService.update() replaces the whole `positions` array on save
-      // (Position ids are always regenerated on insert, see
-      // `GlobalEntity`/`Position`'s `@BeforeInsert`) — even a position sent
-      // back unchanged is therefore deleted and recreated under a new id,
-      // never matched in place. Only one of the two original positions is
-      // resent here, so the diff is expected to be: 1 CREATE (new position)
-      // + 2 DELETE (both original ones, since neither id survives the save).
+      // `positionA`'s id is resent and now survives validation (Position.id
+      // has an `@IsMongoId()` decorator), so NumeroService.update()'s
+      // cascade save correctly matches and updates it in place — no more
+      // id regeneration/DELETE+CREATE for a position that's still there.
+      // `positionB` isn't resent (real removal) and a brand new position is
+      // added, so the diff is expected to be: 1 UPDATE + 1 DELETE + 1 CREATE.
       const updateNumeroDto: UpdateNumeroDTO = {
         positions: [
           { ...positionA, type: PositionTypeEnum.BATIMENT },
@@ -578,29 +647,32 @@ describe('EVENT MODULE', () => {
         where: { balId },
         order: { createdAt: 'ASC' },
       });
-      expect(events).toHaveLength(5);
+      // No NUMERO event: only `positions` was sent in the DTO, so the
+      // numero's own fields never changed — just the 3 position events
+      // (1 UPDATE + 1 DELETE + 1 CREATE), each its own root (no numero
+      // event to nest them under).
+      expect(events).toHaveLength(3);
+      expect(
+        events.every((e) => e.entityType === EventEntityTypeEnum.POSITION),
+      ).toBe(true);
+      expect(events.every((e) => e.parentEventId === null)).toBe(true);
 
-      const numeroEvent = events.find(
-        (e) => e.entityType === EventEntityTypeEnum.NUMERO,
+      const updateEvent = events.find(
+        (e) => e.action === EventActionEnum.UPDATE,
       );
-      expect(numeroEvent.action).toEqual(EventActionEnum.UPDATE);
-      expect(numeroEvent.parentEventId).toBeNull();
+      expect(updateEvent.entityId).toEqual(positionA.id);
+      expect(updateEvent.payloadBefore).toMatchObject({ type: 'entrée' });
+      expect(updateEvent.payloadAfter).toMatchObject({ type: 'bâtiment' });
 
-      const positionEvents = events.filter(
-        (e) => e.entityType === EventEntityTypeEnum.POSITION,
+      const deleteEvent = events.find(
+        (e) => e.action === EventActionEnum.DELETE,
       );
-      expect(positionEvents).toHaveLength(4);
-      for (const event of positionEvents) {
-        expect(event.parentEventId).toEqual(numeroEvent.id);
-      }
-      const deletedIds = positionEvents
-        .filter((e) => e.action === EventActionEnum.DELETE)
-        .map((e) => e.entityId);
-      const createdCount = positionEvents.filter(
+      expect(deleteEvent.entityId).toEqual(positionB.id);
+
+      const createEvent = events.find(
         (e) => e.action === EventActionEnum.CREATE,
-      ).length;
-      expect(deletedIds.sort()).toEqual([positionA.id, positionB.id].sort());
-      expect(createdCount).toEqual(2);
+      );
+      expect(createEvent).toBeDefined();
     });
 
     it('deleting multiple numeros emits 1 DELETE event per numero, all sharing the same root', async () => {
@@ -1118,6 +1190,333 @@ describe('EVENT MODULE', () => {
         .get(`/bases-locales/${balId}/events?offset=-1`)
         .set('authorization', `Bearer ${token}`)
         .expect(400);
+    });
+  });
+
+  describe('no-op updates do not emit events', () => {
+    it('does not emit a VOIE event when the update payload matches the current state', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      const countBefore = await eventsRepository.count({ where: { balId } });
+
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const countAfter = await eventsRepository.count({ where: { balId } });
+      expect(countAfter).toEqual(countBefore);
+    });
+
+    it('does not emit any event when the numero update payload matches the current state (positions omitted)', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      const numeroResponse = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({ numero: 1, positions: [createPositions([8, 42])] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const numeroId = numeroResponse.body.id;
+
+      const countBefore = await eventsRepository.count({ where: { balId } });
+
+      // No `positions` key sent at all — the existing ones are left
+      // untouched.
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({ numero: 1 })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const countAfter = await eventsRepository.count({ where: { balId } });
+      expect(countAfter).toEqual(countBefore);
+    });
+
+    it('does not emit any event when the numero update payload matches the current state, positions resent identically', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      const numeroResponse = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({ numero: 1, positions: [createPositions([8, 42])] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const numeroId = numeroResponse.body.id;
+      const numeroCreated = await getTypeormRepository().numeros.findOneBy({
+        id: numeroId,
+      });
+      const [position] = numeroCreated.positions;
+
+      const countBefore = await eventsRepository.count({ where: { balId } });
+
+      // The position's own id is resent, unchanged (now that `Position.id`
+      // survives the update route's `ValidationPipe({ whitelist: true })`,
+      // it's correctly matched and updated in place instead of being
+      // deleted and recreated under a fresh id).
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({
+          numero: 1,
+          positions: [
+            {
+              id: position.id,
+              type: position.type,
+              source: position.source,
+              point: position.point,
+            },
+          ],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const countAfter = await eventsRepository.count({ where: { balId } });
+      expect(countAfter).toEqual(countBefore);
+
+      const numeroAfter = await getTypeormRepository().numeros.findOneBy({
+        id: numeroId,
+      });
+      expect(numeroAfter.positions).toHaveLength(1);
+      expect(numeroAfter.positions[0].id).toEqual(position.id);
+    });
+
+    it('does not emit a NUMERO event when only its positions change', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      const numeroResponse = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({ numero: 1, positions: [createPositions([8, 42])] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const numeroId = numeroResponse.body.id;
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({ numero: 1, positions: [createPositions([9, 43])] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const numeroEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.NUMERO },
+      });
+      // Only the initial CREATE event exists — no UPDATE emitted, since the
+      // numero's own fields never changed.
+      expect(numeroEvents).toHaveLength(1);
+      expect(numeroEvents[0].action).toEqual(EventActionEnum.CREATE);
+
+      const positionEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.POSITION },
+      });
+      // The old position's still-unsynced CREATE event cancels out against
+      // its DELETE (never published), leaving only the new position's
+      // CREATE — as a root, since there's no NUMERO UPDATE event to nest
+      // it under.
+      expect(positionEvents).toHaveLength(1);
+      expect(positionEvents[0].action).toEqual(EventActionEnum.CREATE);
+      expect(positionEvents[0].parentEventId).toBeNull();
+    });
+
+    it('does not emit a TOPONYME event when the update payload matches the current state', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const toponymeResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/toponymes`)
+        .send({ nom: 'place du marché' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const toponymeId = toponymeResponse.body.id;
+
+      const countBefore = await eventsRepository.count({ where: { balId } });
+
+      await request(app.getHttpServer())
+        .put(`/toponymes/${toponymeId}`)
+        .send({ nom: 'place du marché' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const countAfter = await eventsRepository.count({ where: { balId } });
+      expect(countAfter).toEqual(countBefore);
+    });
+  });
+
+  describe('an UPDATE round-trip back to the published state deletes the event', () => {
+    it('deletes the VOIE UPDATE event once the nom is reverted', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'aaa' });
+
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}`)
+        .send({ nom: 'bbb' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}`)
+        .send({ nom: 'aaa' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const count = await eventsRepository.count({ where: { balId } });
+      expect(count).toEqual(0);
+    });
+
+    it('deletes the NUMERO UPDATE event once the numero is reverted', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, { numero: 1 });
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({ numero: 2 })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({ numero: 1 })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const count = await eventsRepository.count({ where: { balId } });
+      expect(count).toEqual(0);
+    });
+
+    it('deletes the TOPONYME UPDATE event once the nom is reverted', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const toponymeId = await createToponyme(balId, { nom: 'aaa' });
+
+      await request(app.getHttpServer())
+        .put(`/toponymes/${toponymeId}`)
+        .send({ nom: 'bbb' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .put(`/toponymes/${toponymeId}`)
+        .send({ nom: 'aaa' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const count = await eventsRepository.count({ where: { balId } });
+      expect(count).toEqual(0);
+    });
+
+    it('deletes the POSITION UPDATE event once its point is reverted (numero)', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        positions: [createPositions([8, 42])],
+      });
+      const numeroCreated = await getTypeormRepository().numeros.findOneBy({
+        id: numeroId,
+      });
+      const [position] = numeroCreated.positions;
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({
+          numero: 1,
+          positions: [
+            {
+              id: position.id,
+              type: position.type,
+              source: position.source,
+              point: { type: 'Point', coordinates: [9, 43] },
+            },
+          ],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({
+          numero: 1,
+          positions: [
+            {
+              id: position.id,
+              type: position.type,
+              source: position.source,
+              point: position.point,
+            },
+          ],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      // The position's id stayed stable across both saves (no more
+      // regeneration), so the second call's `fuse()` correctly recognizes
+      // the round-trip and drops the event entirely.
+      const count = await eventsRepository.count({ where: { balId } });
+      expect(count).toEqual(0);
+
+      const numeroAfter = await getTypeormRepository().numeros.findOneBy({
+        id: numeroId,
+      });
+      expect(numeroAfter.positions[0].id).toEqual(position.id);
+    });
+
+    it('deletes the POSITION UPDATE event once its point is reverted (toponyme)', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const toponymeId = await createToponyme(balId, {
+        nom: 'place du marché',
+        positions: [createPositions([8, 42])],
+      });
+      const toponymeCreated = await getTypeormRepository().toponymes.findOneBy({
+        id: toponymeId,
+      });
+      const [position] = toponymeCreated.positions;
+
+      await request(app.getHttpServer())
+        .put(`/toponymes/${toponymeId}`)
+        .send({
+          positions: [
+            {
+              id: position.id,
+              type: position.type,
+              source: position.source,
+              point: { type: 'Point', coordinates: [9, 43] },
+            },
+          ],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .put(`/toponymes/${toponymeId}`)
+        .send({
+          positions: [
+            {
+              id: position.id,
+              type: position.type,
+              source: position.source,
+              point: position.point,
+            },
+          ],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const count = await eventsRepository.count({ where: { balId } });
+      expect(count).toEqual(0);
     });
   });
 });
