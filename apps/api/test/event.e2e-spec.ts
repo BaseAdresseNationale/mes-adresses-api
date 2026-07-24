@@ -607,7 +607,7 @@ describe('EVENT MODULE', () => {
   });
 
   describe('composite operations (e2e)', () => {
-    it("updating only a numero's positions (numero fields unchanged) emits no NUMERO event, only POSITION events as roots", async () => {
+    it("updating only a numero's positions (numero fields unchanged) still creates a trivial NUMERO UPDATE container parenting the POSITION events", async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, { nom: 'rue de la paix' });
       const numeroId = await createNumero(balId, voieId, {
@@ -647,39 +647,196 @@ describe('EVENT MODULE', () => {
         where: { balId },
         order: { createdAt: 'ASC' },
       });
-      // No NUMERO event: only `positions` was sent in the DTO, so the
-      // numero's own fields never changed — just the 3 position events
-      // (1 UPDATE + 1 DELETE + 1 CREATE), each its own root (no numero
-      // event to nest them under).
-      expect(events).toHaveLength(3);
-      expect(
-        events.every((e) => e.entityType === EventEntityTypeEnum.POSITION),
-      ).toBe(true);
-      expect(events.every((e) => e.parentEventId === null)).toBe(true);
+      // A POSITION event must never be a root: even though the numero's own
+      // fields never changed, a trivial (before === after) NUMERO UPDATE
+      // event is created purely to parent the 3 position events below.
+      expect(events).toHaveLength(4);
 
-      const updateEvent = events.find(
+      const numeroEvent = events.find(
+        (e) => e.entityType === EventEntityTypeEnum.NUMERO,
+      );
+      expect(numeroEvent.action).toEqual(EventActionEnum.UPDATE);
+      expect(numeroEvent.payloadBefore).toEqual(numeroEvent.payloadAfter);
+      expect(numeroEvent.parentEventId).toBeNull();
+
+      const positionEvents = events.filter(
+        (e) => e.entityType === EventEntityTypeEnum.POSITION,
+      );
+      expect(positionEvents).toHaveLength(3);
+      expect(
+        positionEvents.every((e) => e.parentEventId === numeroEvent.id),
+      ).toBe(true);
+
+      const updateEvent = positionEvents.find(
         (e) => e.action === EventActionEnum.UPDATE,
       );
       expect(updateEvent.entityId).toEqual(positionA.id);
       expect(updateEvent.payloadBefore).toMatchObject({ type: 'entrée' });
       expect(updateEvent.payloadAfter).toMatchObject({ type: 'bâtiment' });
 
-      const deleteEvent = events.find(
+      const deleteEvent = positionEvents.find(
         (e) => e.action === EventActionEnum.DELETE,
       );
       expect(deleteEvent.entityId).toEqual(positionB.id);
 
-      const createEvent = events.find(
+      const createEvent = positionEvents.find(
         (e) => e.action === EventActionEnum.CREATE,
       );
       expect(createEvent).toBeDefined();
     });
 
-    it('deleting multiple numeros emits 1 DELETE event per numero, all sharing the same root', async () => {
+    it('reuses the same trivial NUMERO container across two successive position-only updates (never orphaning the child)', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      // The voie's own CREATE is marked synced so its numero's CREATE isn't
+      // itself pending — isolating this test to the position-only-update
+      // container mechanism (fuse()'s children guard).
+      await eventsRepository.update({ balId }, { isSynced: true });
+
+      const numeroResponse = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({ numero: 1, positions: [createPositions([8, 42])] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const numeroId = numeroResponse.body.id;
+      await eventsRepository.update(
+        { balId, entityType: EventEntityTypeEnum.NUMERO },
+        { isSynced: true },
+      );
+      await eventsRepository.update(
+        { balId, entityType: EventEntityTypeEnum.POSITION },
+        { isSynced: true },
+      );
+      const numeroCreated = await getTypeormRepository().numeros.findOneBy({
+        id: numeroId,
+      });
+      const [position] = numeroCreated.positions;
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({
+          numero: 1,
+          positions: [
+            {
+              id: position.id,
+              type: position.type,
+              source: position.source,
+              point: { type: 'Point', coordinates: [9, 43] },
+            },
+          ],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const containerAfterFirstCall = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        isSynced: false,
+      });
+      expect(containerAfterFirstCall).not.toBeNull();
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({
+          numero: 1,
+          positions: [
+            {
+              id: position.id,
+              type: position.type,
+              source: position.source,
+              point: { type: 'Point', coordinates: [10, 44] },
+            },
+          ],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const numeroEvents = await eventsRepository.find({
+        where: {
+          balId,
+          entityType: EventEntityTypeEnum.NUMERO,
+          isSynced: false,
+        },
+      });
+      // Still the very same trivial container — not recreated, and not
+      // cancelled by the "back to original" fuse() logic even though the
+      // numero's own fields never changed across both calls, because it
+      // still has a live child depending on it.
+      expect(numeroEvents).toHaveLength(1);
+      expect(numeroEvents[0].id).toEqual(containerAfterFirstCall.id);
+
+      const positionEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.POSITION,
+        isSynced: false,
+      });
+      expect(positionEvent.parentEventId).toEqual(numeroEvents[0].id);
+      expect(positionEvent.payloadAfter).toMatchObject({
+        point: { type: 'Point', coordinates: [10, 44] },
+      });
+    });
+
+    it('emits a single non-trivial NUMERO UPDATE event when both a real field and a position change together', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, { nom: 'rue de la paix' });
-      const numeroId1 = await createNumero(balId, voieId, { numero: 1 });
-      const numeroId2 = await createNumero(balId, voieId, { numero: 2 });
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        positions: [createPositions([8, 42])],
+      });
+      const numeroCreated = await getTypeormRepository().numeros.findOneBy({
+        id: numeroId,
+      });
+      const [position] = numeroCreated.positions;
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({
+          numero: 2,
+          positions: [
+            {
+              id: position.id,
+              type: position.type,
+              source: position.source,
+              point: { type: 'Point', coordinates: [9, 43] },
+            },
+          ],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const numeroEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.NUMERO },
+      });
+      expect(numeroEvents).toHaveLength(1);
+      expect(numeroEvents[0].payloadBefore).not.toEqual(
+        numeroEvents[0].payloadAfter,
+      );
+
+      const positionEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.POSITION },
+      });
+      expect(positionEvents).toHaveLength(1);
+      expect(positionEvents[0].action).toEqual(EventActionEnum.UPDATE);
+      expect(positionEvents[0].parentEventId).toEqual(numeroEvents[0].id);
+    });
+
+    it('deleting multiple numeros emits 1 independent root DELETE event per numero', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const numeroId1 = await createNumero(balId, voieId, {
+        numero: 1,
+        positions: [createPositions([8, 42])],
+      });
+      const numeroId2 = await createNumero(balId, voieId, {
+        numero: 2,
+        positions: [createPositions([8.1, 42.1])],
+      });
 
       const deleteBatch: DeleteBatchNumeroDTO = {
         numerosIds: [numeroId1, numeroId2],
@@ -697,12 +854,21 @@ describe('EVENT MODULE', () => {
       expect(
         numeroEvents.every((e) => e.action === EventActionEnum.DELETE),
       ).toBe(true);
+      // Each numero's DELETE is its own independent root — no more shared
+      // batch root: a numero's positions are always children of its own
+      // numero event, never siblings chained under a different numero.
+      expect(numeroEvents.every((e) => e.parentEventId === null)).toBe(true);
 
-      const roots = numeroEvents.filter((e) => e.parentEventId === null);
-      const children = numeroEvents.filter((e) => e.parentEventId !== null);
-      expect(roots).toHaveLength(1);
-      expect(children).toHaveLength(1);
-      expect(children[0].parentEventId).toEqual(roots[0].id);
+      const positionEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.POSITION },
+      });
+      expect(positionEvents).toHaveLength(2);
+      for (const positionEvent of positionEvents) {
+        const owningNumeroEvent = numeroEvents.find(
+          (e) => e.id === positionEvent.parentEventId,
+        );
+        expect(owningNumeroEvent).toBeDefined();
+      }
     });
 
     it('converting a voie to a toponyme emits a single composite event covering both entities', async () => {
@@ -1297,7 +1463,7 @@ describe('EVENT MODULE', () => {
       expect(numeroAfter.positions[0].id).toEqual(position.id);
     });
 
-    it('does not emit a NUMERO event when only its positions change', async () => {
+    it('reuses the pending NUMERO CREATE event as parent when only its positions change', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieResponse = await request(app.getHttpServer())
         .post(`/bases-locales/${balId}/voies`)
@@ -1322,8 +1488,9 @@ describe('EVENT MODULE', () => {
       const numeroEvents = await eventsRepository.find({
         where: { balId, entityType: EventEntityTypeEnum.NUMERO },
       });
-      // Only the initial CREATE event exists — no UPDATE emitted, since the
-      // numero's own fields never changed.
+      // Only the initial CREATE event exists — no separate UPDATE emitted,
+      // since the numero's own fields never changed (fusing keeps it a
+      // CREATE, only `after` moves forward).
       expect(numeroEvents).toHaveLength(1);
       expect(numeroEvents[0].action).toEqual(EventActionEnum.CREATE);
 
@@ -1332,11 +1499,11 @@ describe('EVENT MODULE', () => {
       });
       // The old position's still-unsynced CREATE event cancels out against
       // its DELETE (never published), leaving only the new position's
-      // CREATE — as a root, since there's no NUMERO UPDATE event to nest
-      // it under.
+      // CREATE — but it must not be a root: a POSITION event is always
+      // parented, here reusing the numero's own pending CREATE event.
       expect(positionEvents).toHaveLength(1);
       expect(positionEvents[0].action).toEqual(EventActionEnum.CREATE);
-      expect(positionEvents[0].parentEventId).toBeNull();
+      expect(positionEvents[0].parentEventId).toEqual(numeroEvents[0].id);
     });
 
     it('does not emit a TOPONYME event when the update payload matches the current state', async () => {

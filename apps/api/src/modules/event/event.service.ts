@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, IsNull, Repository } from 'typeorm';
+import { FindOptionsWhere, In, IsNull, Repository } from 'typeorm';
 
 import {
   Event,
@@ -121,6 +121,23 @@ export class EventService {
     );
   }
 
+  // Repoints the given events' parent to `newParentId` — used once a
+  // parent event's existence is only known after its would-be children
+  // have already been registered (e.g. positions diffed before deciding
+  // whether a NUMERO/TOPONYME UPDATE container is needed at all).
+  public async reparentEvents(
+    eventIds: string[],
+    newParentId: string,
+  ): Promise<void> {
+    if (eventIds.length === 0) {
+      return;
+    }
+    await this.eventsRepository.update(
+      { id: In(eventIds) },
+      { parentEventId: newParentId },
+    );
+  }
+
   // Returns the id of `voieId`'s own pending (unsynced) CREATE event, if
   // any — used to nest a numero's very first event under it, so rolling
   // back the voie's creation cannot leave numeros created under it dangling.
@@ -224,6 +241,40 @@ export class EventService {
     });
   }
 
+  // After an event is deleted (fused away entirely), its former parent may
+  // now be an empty, purely-trivial container (before === after, created
+  // only to hold that child — see NumeroService/ToponymeService update()).
+  // Such a container carries no information of its own once it has no
+  // children left, so it's cleaned up too, recursively (in case the
+  // grandparent becomes empty as a result). A `CREATE` event's `before` is
+  // always `null` and its `after` always real content, so this never
+  // touches a legitimate CREATE — only UPDATE containers built purely as a
+  // parent placeholder.
+  private async cleanupEmptyTrivialParent(
+    repo: Repository<Event>,
+    parentEventId: string | null,
+  ): Promise<void> {
+    if (!parentEventId) {
+      return;
+    }
+    const parent = await repo.findOneBy({ id: parentEventId });
+    if (
+      !parent ||
+      !payloadsAreEqual(parent.payloadBefore, parent.payloadAfter)
+    ) {
+      return;
+    }
+    const hasOtherChildren = await repo.exists({
+      where: { parentEventId: parent.id },
+    });
+    if (hasOtherChildren) {
+      return;
+    }
+    const grandParentId = parent.parentEventId;
+    await repo.delete({ id: parent.id });
+    await this.cleanupEmptyTrivialParent(repo, grandParentId);
+  }
+
   private async insert(
     repo: Repository<Event>,
     ctx: RegisterEventContext,
@@ -297,10 +348,21 @@ export class EventService {
           payloadsAreEqual(current.payloadBefore, params.after ?? null)
         ) {
           // The value is back to its originally-published state — nothing
-          // left to publish for this entity, so the event is dropped
-          // entirely. Pendant of the CREATE+DELETE cancellation below.
-          await repo.delete({ id: current.id });
-          return null;
+          // left to publish for this entity, so the event would normally be
+          // dropped entirely (pendant of the CREATE+DELETE cancellation
+          // below). But if children still depend on it as their parent
+          // (e.g. a NUMERO/TOPONYME UPDATE container holding a still-live
+          // POSITION event), it must not vanish — a position event may
+          // never end up orphaned.
+          const hasChildren = await repo.exists({
+            where: { parentEventId: current.id },
+          });
+          if (!hasChildren) {
+            const formerParentId = current.parentEventId;
+            await repo.delete({ id: current.id });
+            await this.cleanupEmptyTrivialParent(repo, formerParentId);
+            return null;
+          }
         }
         // Whether current is CREATE or UPDATE, only `after` moves forward;
         // a CREATE-origin event stays a CREATE, `before` never changes.
@@ -325,7 +387,9 @@ export class EventService {
         }
         if (current.action === EventActionEnum.CREATE) {
           // The entity never existed from a publication standpoint.
+          const formerParentId = current.parentEventId;
           await repo.delete({ id: current.id });
+          await this.cleanupEmptyTrivialParent(repo, formerParentId);
           return null;
         }
         // current.action === UPDATE: becomes a DELETE, keeping the

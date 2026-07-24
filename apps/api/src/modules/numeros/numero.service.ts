@@ -412,37 +412,44 @@ export class NumeroService {
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(numero.balId);
 
+    // Les positions sont diffées avant de savoir si un event NUMERO est
+    // nécessaire : un event POSITION ne doit jamais rester orphelin, donc si
+    // au moins un en survit, un event NUMERO (même trivial, avant==après)
+    // doit exister pour le porter — voir le rattachement plus bas.
+    const positionEvents = await emitPositionDiffEvents(
+      this.eventService,
+      { balId: numero.balId, voieId: numeroUpdated.voieId },
+      numero.positions ?? [],
+      numeroUpdated.positions ?? [],
+    );
+
     const numeroBeforePayload = serializeNumero(numero);
     const numeroAfterPayload = serializeNumero(numeroUpdated);
     // Une requète UPDATE renvoie `affected > 0` même si les valeurs envoyées
     // sont identiques aux valeurs actuelles : on ne journalise un event que
-    // si l'état du numero a réellement changé (les positions, elles, sont
-    // diffées indépendamment juste après par `emitPositionDiffEvents`).
-    const numeroEvent = payloadsAreEqual(
-      numeroBeforePayload,
-      numeroAfterPayload,
-    )
-      ? undefined
-      : await this.eventService.register(
-          { balId: numero.balId, voieId: numeroUpdated.voieId },
-          {
-            entityType: EventEntityTypeEnum.NUMERO,
-            entityId: numero.id,
-            action: EventActionEnum.UPDATE,
-            before: numeroBeforePayload,
-            after: numeroAfterPayload,
-          },
-        );
-    await emitPositionDiffEvents(
-      this.eventService,
-      {
-        balId: numero.balId,
-        parentEventId: numeroEvent?.id,
-        voieId: numeroUpdated.voieId,
-      },
-      numero.positions ?? [],
-      numeroUpdated.positions ?? [],
-    );
+    // si l'état du numero a réellement changé, ou qu'il faut un conteneur
+    // pour les events position ci-dessus.
+    const numeroEvent =
+      !payloadsAreEqual(numeroBeforePayload, numeroAfterPayload) ||
+      positionEvents.length > 0
+        ? await this.eventService.register(
+            { balId: numero.balId, voieId: numeroUpdated.voieId },
+            {
+              entityType: EventEntityTypeEnum.NUMERO,
+              entityId: numero.id,
+              action: EventActionEnum.UPDATE,
+              before: numeroBeforePayload,
+              after: numeroAfterPayload,
+            },
+          )
+        : undefined;
+
+    if (numeroEvent) {
+      await this.eventService.reparentEvents(
+        positionEvents.map((event) => event.id),
+        numeroEvent.id,
+      );
+    }
 
     return numeroUpdated;
   }
@@ -669,13 +676,13 @@ export class NumeroService {
         );
       }
 
-      // 1 event DELETE par numéro + 1 par position, tous liés au même event racine.
-      let rootEventId: string | undefined;
+      // 1 event DELETE racine par numéro, chacun avec ses propres positions
+      // en enfants (jamais de racine partagée entre numeros).
       for (const numero of numeros) {
         const numeroEvent = await this.eventService.register(
           {
             balId: baseLocale.id,
-            parentEventId: rootEventId,
+            parentEventId: null,
             voieId: numero.voieId,
           },
           {
@@ -685,12 +692,11 @@ export class NumeroService {
             before: serializeNumero(numero),
           },
         );
-        rootEventId = rootEventId ?? numeroEvent?.id;
         for (const position of numero.positions ?? []) {
           await this.eventService.register(
             {
               balId: baseLocale.id,
-              parentEventId: rootEventId,
+              parentEventId: numeroEvent?.id,
               voieId: numero.voieId,
             },
             {
