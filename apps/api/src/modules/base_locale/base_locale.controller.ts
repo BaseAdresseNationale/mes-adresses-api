@@ -779,7 +779,7 @@ export class BaseLocaleController {
   async findBaseLocaleEvents(
     @Req() req: CustomRequest,
     @Query('isSynced', new ParseBoolPipe({ optional: true }))
-    isSynced: boolean | undefined,
+    isSynced: boolean | undefined = false,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
     @Res() res: Response,
