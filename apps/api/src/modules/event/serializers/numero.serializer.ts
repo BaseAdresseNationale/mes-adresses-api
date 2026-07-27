@@ -11,7 +11,6 @@ export function serializeNumero(numero: Numero): SerializedNumero {
     createdAt: numero.createdAt.toISOString(),
     balId: numero.balId,
     voieId: numero.voieId,
-    toponymeId: numero.toponymeId ?? null,
     numero: numero.numero,
     suffixe: numero.suffixe ?? null,
     comment: numero.comment ?? null,

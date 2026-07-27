@@ -41,6 +41,11 @@ export class SerializedToponyme {
   @ApiProperty() communeDeleguee: string | null;
   @ApiProperty({ type: String, isArray: true }) parcelles: string[] | null;
   @ApiProperty() codeVoie: string | null;
+  // Jonction numero<->toponyme : portée uniquement ici (pas dans
+  // SerializedNumero), pour que l'appartenance d'un numero à un toponyme ne
+  // soit visible que côté event TOPONYME — un event NUMERO reste totalement
+  // indépendant de son toponyme.
+  @ApiProperty({ type: String, isArray: true }) numeroIds: string[];
 }
 
 export class SerializedNumero {
@@ -49,7 +54,6 @@ export class SerializedNumero {
   @ApiProperty() createdAt: string;
   @ApiProperty() balId: string;
   @ApiProperty() voieId: string;
-  @ApiProperty() toponymeId: string | null;
   @ApiProperty() numero: number;
   @ApiProperty() suffixe: string | null;
   @ApiProperty() comment: string | null;

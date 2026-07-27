@@ -328,6 +328,26 @@ export class VoieService {
           newRootId: voieEvent.id,
         });
       }
+
+      // Jonction numero<->toponyme, groupée par toponyme impacté : un seul
+      // event TOPONYME UPDATE par toponyme touché même si plusieurs numeros
+      // de cette voie y étaient rattachés.
+      const detachedIdsByToponyme = new Map<string, string[]>();
+      for (const numero of numeros) {
+        if (numero.toponymeId) {
+          const ids = detachedIdsByToponyme.get(numero.toponymeId) ?? [];
+          ids.push(numero.id);
+          detachedIdsByToponyme.set(numero.toponymeId, ids);
+        }
+      }
+      for (const [toponymeId, detachedIds] of detachedIdsByToponyme) {
+        await this.toponymeService.registerNumeroLinkChange(
+          voie.balId,
+          toponymeId,
+          [],
+          detachedIds,
+        );
+      }
     }
   }
 

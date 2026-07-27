@@ -165,6 +165,18 @@ export class NumeroService {
     return res.map((raw) => raw[field]);
   }
 
+  // Liste triée des ids des numeros actuellement rattachés à ce toponyme —
+  // utilisée par ToponymeService pour construire le `numeroIds` d'un event
+  // TOPONYME (le tri garantit un tableau déterministe, condition nécessaire
+  // pour que la comparaison structurelle des payloads d'events reste fiable).
+  async findIdsByToponyme(toponymeId: string): Promise<string[]> {
+    const numeros = await this.numerosRepository.find({
+      where: { toponymeId },
+      select: { id: true },
+    });
+    return numeros.map(({ id }) => id).sort();
+  }
+
   async findDistinctParcelles(balId: string): Promise<string[]> {
     const res: any[] = await this.numerosRepository.query(
       `SELECT ARRAY_AGG(distinct elem)
@@ -362,6 +374,16 @@ export class NumeroService {
       numeroCreated.positions ?? [],
     );
 
+    // La jonction numero<->toponyme n'est visible que côté event TOPONYME.
+    if (numeroCreated.toponymeId) {
+      await this.toponymeService.registerNumeroLinkChange(
+        voie.balId,
+        numeroCreated.toponymeId,
+        [numeroCreated.id],
+        [],
+      );
+    }
+
     return numeroCreated;
   }
 
@@ -451,6 +473,27 @@ export class NumeroService {
       );
     }
 
+    // La jonction numero<->toponyme n'est visible que côté event TOPONYME —
+    // indépendant du guard ci-dessus, qui ne porte que sur les autres champs.
+    if (numero.toponymeId !== numeroUpdated.toponymeId) {
+      if (numero.toponymeId) {
+        await this.toponymeService.registerNumeroLinkChange(
+          numero.balId,
+          numero.toponymeId,
+          [],
+          [numero.id],
+        );
+      }
+      if (numeroUpdated.toponymeId) {
+        await this.toponymeService.registerNumeroLinkChange(
+          numero.balId,
+          numeroUpdated.toponymeId,
+          [numero.id],
+          [],
+        );
+      }
+    }
+
     return numeroUpdated;
   }
 
@@ -488,6 +531,14 @@ export class NumeroService {
             action: EventActionEnum.DELETE,
             before: serializePosition(position),
           },
+        );
+      }
+      if (numero.toponymeId) {
+        await this.toponymeService.registerNumeroLinkChange(
+          numero.balId,
+          numero.toponymeId,
+          [],
+          [numero.id],
         );
       }
     }
@@ -605,7 +656,6 @@ export class NumeroService {
       const numerosAfterById = new Map(
         numerosAfter.map((numero) => [numero.id, numero]),
       );
-      let rootEventId: string | undefined;
       for (const numeroBefore of numerosBefore) {
         const numeroAfter = numerosAfterById.get(numeroBefore.id);
         if (!numeroAfter) {
@@ -619,10 +669,10 @@ export class NumeroService {
         if (payloadsAreEqual(beforePayload, afterPayload)) {
           continue;
         }
-        const event = await this.eventService.register(
+        await this.eventService.register(
           {
             balId: baseLocale.id,
-            parentEventId: rootEventId,
+            parentEventId: null,
             voieId: numeroAfter.voieId,
           },
           {
@@ -633,7 +683,44 @@ export class NumeroService {
             after: afterPayload,
           },
         );
-        rootEventId = rootEventId ?? event?.id;
+      }
+
+      // Jonction numero<->toponyme, groupée par toponyme impacté : un seul
+      // event TOPONYME UPDATE par toponyme touché, même si plusieurs numeros
+      // du batch y sont rattachés/détachés d'un coup.
+      if (changes.toponymeId !== undefined) {
+        const detachedIdsByToponyme = new Map<string, string[]>();
+        const attachedIds: string[] = [];
+        for (const numeroBefore of numerosBefore) {
+          if (numeroBefore.toponymeId === changes.toponymeId) {
+            continue;
+          }
+          if (numeroBefore.toponymeId) {
+            const ids =
+              detachedIdsByToponyme.get(numeroBefore.toponymeId) ?? [];
+            ids.push(numeroBefore.id);
+            detachedIdsByToponyme.set(numeroBefore.toponymeId, ids);
+          }
+          if (changes.toponymeId) {
+            attachedIds.push(numeroBefore.id);
+          }
+        }
+        for (const [toponymeId, detachedIds] of detachedIdsByToponyme) {
+          await this.toponymeService.registerNumeroLinkChange(
+            baseLocale.id,
+            toponymeId,
+            [],
+            detachedIds,
+          );
+        }
+        if (changes.toponymeId && attachedIds.length > 0) {
+          await this.toponymeService.registerNumeroLinkChange(
+            baseLocale.id,
+            changes.toponymeId,
+            attachedIds,
+            [],
+          );
+        }
       }
     }
 
@@ -707,6 +794,26 @@ export class NumeroService {
             },
           );
         }
+      }
+
+      // Jonction numero<->toponyme, groupée par toponyme impacté : un seul
+      // event TOPONYME UPDATE par toponyme touché même si plusieurs numeros
+      // supprimés y étaient rattachés.
+      const detachedIdsByToponyme = new Map<string, string[]>();
+      for (const numero of numeros) {
+        if (numero.toponymeId) {
+          const ids = detachedIdsByToponyme.get(numero.toponymeId) ?? [];
+          ids.push(numero.id);
+          detachedIdsByToponyme.set(numero.toponymeId, ids);
+        }
+      }
+      for (const [toponymeId, detachedIds] of detachedIdsByToponyme) {
+        await this.toponymeService.registerNumeroLinkChange(
+          baseLocale.id,
+          toponymeId,
+          [],
+          detachedIds,
+        );
       }
     }
   }

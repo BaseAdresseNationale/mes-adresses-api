@@ -144,7 +144,8 @@ export class ToponymeService {
         entityType: EventEntityTypeEnum.TOPONYME,
         entityId: toponymeCreated.id,
         action: EventActionEnum.CREATE,
-        after: serializeToponyme(toponymeCreated),
+        // Un toponyme fraîchement créé n'a jamais encore de numeros rattachés.
+        after: serializeToponyme(toponymeCreated, []),
       },
     );
     await emitPositionDiffEvents(
@@ -165,7 +166,10 @@ export class ToponymeService {
     // On capture l'état avant modification pour le log d'events, avant que
     // `toponyme` ne soit muté en place ci-dessous.
     const positionsBefore: Position[] = toponyme.positions ?? [];
-    const toponymeBeforePayload = serializeToponyme(toponyme);
+    // Cette méthode ne touche jamais la jonction numero<->toponyme : le même
+    // `numeroIds` s'applique au before et à l'after.
+    const numeroIds = await this.numeroService.findIdsByToponyme(toponyme.id);
+    const toponymeBeforePayload = serializeToponyme(toponyme, numeroIds);
 
     // On clean le nom et le nomAlt si ils sont présent dans le dto
     if (updateToponymeDto.nom) {
@@ -205,7 +209,7 @@ export class ToponymeService {
       toponymeUpdated.positions ?? [],
     );
 
-    const toponymeAfterPayload = serializeToponyme(toponymeUpdated);
+    const toponymeAfterPayload = serializeToponyme(toponymeUpdated, numeroIds);
     // Une requète UPDATE renvoie `affected > 0` même si les valeurs envoyées
     // sont identiques aux valeurs actuelles : on ne journalise un event que
     // si l'état du toponyme a réellement changé, ou qu'il faut un conteneur
@@ -237,6 +241,11 @@ export class ToponymeService {
   }
 
   public async delete(toponyme: Toponyme) {
+    // Capturé avant détachement : l'event TOPONYME DELETE doit refléter qui
+    // était rattaché au moment de la suppression (avant que les numeros ne
+    // soient détachés ci-dessous). Pas d'event de jonction séparé par numero
+    // ici : ce `numeroIds` capture déjà tout ce qui disparaît avec ce toponyme.
+    const numeroIds = await this.numeroService.findIdsByToponyme(toponyme.id);
     // On détache les numéros qui appartenaient a ce toponyme
     // (la FK numeros.toponyme_id -> toponymes.id n'a pas de cascade)
     await this.numeroService.updateMany(
@@ -259,7 +268,7 @@ export class ToponymeService {
           entityType: EventEntityTypeEnum.TOPONYME,
           entityId: toponyme.id,
           action: EventActionEnum.DELETE,
-          before: serializeToponyme(toponyme),
+          before: serializeToponyme(toponyme, numeroIds),
         },
       );
       for (const position of toponyme.positions ?? []) {
@@ -361,6 +370,52 @@ export class ToponymeService {
       );
 
     return query.getRawMany();
+  }
+
+  // Journalise le rattachement/détachement d'un ou plusieurs numeros à ce
+  // toponyme comme un event TOPONYME UPDATE portant `numeroIds` avant/après.
+  // Prend des listes (plutôt qu'un numero à la fois) pour permettre un seul
+  // event par toponyme impacté même quand plusieurs numeros changent d'un
+  // coup (updateBatch/deleteBatch/voie.delete). Toujours appelée après que
+  // la mutation des numeros a déjà été persistée : `findIdsByToponyme`
+  // reflète donc l'état "après" réel, et l'état "avant" est reconstruit à
+  // partir de celui-ci.
+  public async registerNumeroLinkChange(
+    balId: string,
+    toponymeId: string,
+    attachedNumeroIds: string[],
+    detachedNumeroIds: string[],
+  ): Promise<void> {
+    if (attachedNumeroIds.length === 0 && detachedNumeroIds.length === 0) {
+      return;
+    }
+    const toponyme = await this.toponymesRepository.findOneBy({
+      id: toponymeId,
+    });
+    if (!toponyme) {
+      return;
+    }
+
+    const afterIds = await this.numeroService.findIdsByToponyme(toponymeId);
+    const beforeSet = new Set(afterIds);
+    for (const id of attachedNumeroIds) {
+      beforeSet.delete(id);
+    }
+    for (const id of detachedNumeroIds) {
+      beforeSet.add(id);
+    }
+    const beforeIds = [...beforeSet].sort();
+
+    await this.eventService.register(
+      { balId },
+      {
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeId,
+        action: EventActionEnum.UPDATE,
+        before: serializeToponyme(toponyme, beforeIds),
+        after: serializeToponyme(toponyme, afterIds),
+      },
+    );
   }
 
   public async isToponymeExist(

@@ -13,6 +13,7 @@ import { PositionTypeEnum } from '@/shared/entities/position.entity';
 import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import {
   SerializedNumero,
+  SerializedToponyme,
   SerializedVoie,
 } from '@/shared/entities/event_payload.type';
 import { EventModule } from '@/modules/event/event.module';
@@ -80,6 +81,12 @@ describe('EVENT MODULE', () => {
     return new ObjectId().toHexString();
   }
 
+  // `payloadBefore`/`payloadAfter` are typed as the `EventPayload` union —
+  // this narrows to the TOPONYME shape for the junction event tests below.
+  function numeroIdsOf(payload: Event['payloadBefore']): string[] {
+    return (payload as SerializedToponyme).numeroIds;
+  }
+
   // Minimal but properly-typed fixtures for the low-level EventService
   // tests below, which only care about the fusion/merge logic, not about
   // realistic entity content.
@@ -90,7 +97,6 @@ describe('EVENT MODULE', () => {
       createdAt: new Date('2000-01-01').toISOString(),
       balId: 'fixture-bal-id',
       voieId: 'fixture-voie-id',
-      toponymeId: null,
       numero,
       suffixe: null,
       comment: null,
@@ -1205,6 +1211,273 @@ describe('EVENT MODULE', () => {
         entityId: numeroId,
       });
       expect(numeroEvent.parentEventId).toBeNull();
+    });
+  });
+
+  describe('numero <-> toponyme junction events (e2e)', () => {
+    it('creating a numero with a toponymeId emits a TOPONYME UPDATE event, and the NUMERO event carries no toponymeId', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const toponymeId = await createToponyme(balId, {
+        nom: 'place du marché',
+      });
+
+      const numeroResponse = await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({
+          numero: 1,
+          toponymeId,
+          positions: [createPositions([8, 42])],
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const numeroId = numeroResponse.body.id;
+
+      const numeroEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numeroId,
+      });
+      expect(numeroEvent.action).toEqual(EventActionEnum.CREATE);
+      expect(numeroEvent.payloadAfter).not.toHaveProperty('toponymeId');
+
+      const toponymeEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeId,
+      });
+      expect(toponymeEvent.action).toEqual(EventActionEnum.UPDATE);
+      expect(numeroIdsOf(toponymeEvent.payloadBefore)).toEqual([]);
+      expect(numeroIdsOf(toponymeEvent.payloadAfter)).toEqual([numeroId]);
+    });
+
+    it("changing only a numero's toponymeId emits no NUMERO event, only TOPONYME junction events", async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const toponymeIdA = await createToponyme(balId, { nom: 'place A' });
+      const toponymeIdB = await createToponyme(balId, { nom: 'place B' });
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        toponymeId: toponymeIdA,
+      });
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({ numero: 1, toponymeId: toponymeIdB })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const numeroEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.NUMERO },
+      });
+      expect(numeroEvents).toHaveLength(0);
+
+      const toponymeEventA = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeIdA,
+      });
+      expect(numeroIdsOf(toponymeEventA.payloadBefore)).toEqual([numeroId]);
+      expect(numeroIdsOf(toponymeEventA.payloadAfter)).toEqual([]);
+
+      const toponymeEventB = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeIdB,
+      });
+      expect(numeroIdsOf(toponymeEventB.payloadBefore)).toEqual([]);
+      expect(numeroIdsOf(toponymeEventB.payloadAfter)).toEqual([numeroId]);
+    });
+
+    it('changing toponymeId together with a real field emits both a NUMERO UPDATE and a TOPONYME junction event', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const toponymeId = await createToponyme(balId, {
+        nom: 'place du marché',
+      });
+      const numeroId = await createNumero(balId, voieId, { numero: 1 });
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({ numero: 2, toponymeId })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const numeroEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.NUMERO },
+      });
+      expect(numeroEvents).toHaveLength(1);
+      expect(numeroEvents[0].payloadAfter).not.toHaveProperty('toponymeId');
+      expect((numeroEvents[0].payloadAfter as SerializedNumero).numero).toEqual(
+        2,
+      );
+
+      const toponymeEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeId,
+      });
+      expect(numeroIdsOf(toponymeEvent.payloadAfter)).toEqual([numeroId]);
+    });
+
+    it('deleting a numero attached to a toponyme detaches it from numeroIds', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const toponymeId = await createToponyme(balId, {
+        nom: 'place du marché',
+      });
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        toponymeId,
+      });
+
+      await request(app.getHttpServer())
+        .delete(`/numeros/${numeroId}`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(204);
+
+      const numeroEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numeroId,
+      });
+      expect(numeroEvent.action).toEqual(EventActionEnum.DELETE);
+
+      const toponymeEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeId,
+      });
+      expect(numeroIdsOf(toponymeEvent.payloadBefore)).toEqual([numeroId]);
+      expect(numeroIdsOf(toponymeEvent.payloadAfter)).toEqual([]);
+    });
+
+    it('attaching then detaching a numero to/from the same toponyme before publication cancels the junction event', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const toponymeId = await createToponyme(balId, {
+        nom: 'place du marché',
+      });
+      const numeroId = await createNumero(balId, voieId, { numero: 1 });
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({ numero: 1, toponymeId })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      let toponymeEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.TOPONYME },
+      });
+      expect(toponymeEvents).toHaveLength(1);
+
+      await request(app.getHttpServer())
+        .put(`/numeros/${numeroId}`)
+        .send({ numero: 1, toponymeId: null })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      toponymeEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.TOPONYME },
+      });
+      expect(toponymeEvents).toHaveLength(0);
+
+      const numeroEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.NUMERO },
+      });
+      expect(numeroEvents).toHaveLength(0);
+    });
+
+    it('batch-updating several numeros to the same new toponyme emits a single TOPONYME UPDATE event for it', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const toponymeId = await createToponyme(balId, {
+        nom: 'place du marché',
+      });
+      const numeroId1 = await createNumero(balId, voieId, { numero: 1 });
+      const numeroId2 = await createNumero(balId, voieId, { numero: 2 });
+
+      await request(app.getHttpServer())
+        .put(`/bases-locales/${balId}/numeros/batch`)
+        .send({
+          numerosIds: [numeroId1, numeroId2],
+          changes: { toponymeId },
+        })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const toponymeEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.TOPONYME },
+      });
+      expect(toponymeEvents).toHaveLength(1);
+      expect(numeroIdsOf(toponymeEvents[0].payloadBefore)).toEqual([]);
+      expect(numeroIdsOf(toponymeEvents[0].payloadAfter).sort()).toEqual(
+        [numeroId1, numeroId2].sort(),
+      );
+    });
+
+    it('batch-deleting several numeros attached to the same toponyme emits a single TOPONYME UPDATE event detaching all of them', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const toponymeId = await createToponyme(balId, {
+        nom: 'place du marché',
+      });
+      const numeroId1 = await createNumero(balId, voieId, {
+        numero: 1,
+        toponymeId,
+      });
+      const numeroId2 = await createNumero(balId, voieId, {
+        numero: 2,
+        toponymeId,
+      });
+
+      const deleteBatch: DeleteBatchNumeroDTO = {
+        numerosIds: [numeroId1, numeroId2],
+      };
+      await request(app.getHttpServer())
+        .delete(`/bases-locales/${balId}/numeros/batch`)
+        .send(deleteBatch)
+        .set('authorization', `Bearer ${token}`)
+        .expect(204);
+
+      const toponymeEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.TOPONYME },
+      });
+      expect(toponymeEvents).toHaveLength(1);
+      expect(numeroIdsOf(toponymeEvents[0].payloadBefore).sort()).toEqual(
+        [numeroId1, numeroId2].sort(),
+      );
+      expect(numeroIdsOf(toponymeEvents[0].payloadAfter)).toEqual([]);
+    });
+
+    it('deleting a voie whose numeros are attached to the same toponyme emits a single TOPONYME UPDATE event detaching all of them', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const toponymeId = await createToponyme(balId, {
+        nom: 'place du marché',
+      });
+      const numeroId1 = await createNumero(balId, voieId, {
+        numero: 1,
+        toponymeId,
+      });
+      const numeroId2 = await createNumero(balId, voieId, {
+        numero: 2,
+        toponymeId,
+      });
+
+      await request(app.getHttpServer())
+        .delete(`/voies/${voieId}`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(204);
+
+      const toponymeEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.TOPONYME },
+      });
+      expect(toponymeEvents).toHaveLength(1);
+      expect(numeroIdsOf(toponymeEvents[0].payloadBefore).sort()).toEqual(
+        [numeroId1, numeroId2].sort(),
+      );
+      expect(numeroIdsOf(toponymeEvents[0].payloadAfter)).toEqual([]);
     });
   });
 
