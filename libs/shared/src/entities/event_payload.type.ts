@@ -72,41 +72,13 @@ export class SerializedPosition {
   @ApiProperty() point: Point;
 }
 
-// Payload of a simple (non-composite) CREATE/UPDATE/DELETE event.
 export type EntityEventPayload =
   | SerializedVoie
   | SerializedToponyme
   | SerializedNumero
   | SerializedPosition;
 
-export class ConvertVoieToToponymeBeforePayload {
-  @ApiProperty({ type: () => SerializedVoie }) voie: SerializedVoie;
-}
-
-export class ConvertVoieToToponymeAfterPayload {
-  @ApiProperty({ type: () => SerializedToponyme })
-  toponyme: SerializedToponyme;
-}
-
-export class MergeVoiesBeforePayload {
-  @ApiProperty({ type: () => SerializedVoie }) targetVoie: SerializedVoie;
-  @ApiProperty({ type: () => SerializedVoie, isArray: true })
-  sourceVoies: SerializedVoie[];
-}
-
-export class MergeVoiesAfterPayload {
-  @ApiProperty({ type: () => SerializedVoie }) targetVoie: SerializedVoie;
-  @ApiProperty({ type: String, isArray: true }) movedNumeroIds: string[];
-}
-
-// Payload of a composite (MERGE_VOIES / CONVERT_VOIE_TO_TOPONYME) event.
-export type CompositeEventPayload =
-  | ConvertVoieToToponymeBeforePayload
-  | ConvertVoieToToponymeAfterPayload
-  | MergeVoiesBeforePayload
-  | MergeVoiesAfterPayload;
-
-export type EventPayload = EntityEventPayload | CompositeEventPayload;
+export type EventPayload = EntityEventPayload;
 
 // All concrete payload classes — registered on `Event` via `@ApiExtraModels`
 // so `getSchemaPath()` can reference them from the `oneOf` schema of
@@ -116,8 +88,4 @@ export const EVENT_PAYLOAD_MODELS = [
   SerializedToponyme,
   SerializedNumero,
   SerializedPosition,
-  ConvertVoieToToponymeBeforePayload,
-  ConvertVoieToToponymeAfterPayload,
-  MergeVoiesBeforePayload,
-  MergeVoiesAfterPayload,
 ] as const;

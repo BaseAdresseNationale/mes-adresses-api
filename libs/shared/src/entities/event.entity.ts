@@ -17,15 +17,12 @@ export enum EventEntityTypeEnum {
   TOPONYME = 'toponyme',
   NUMERO = 'numero',
   POSITION = 'position',
-  COMPOSITE = 'composite',
 }
 
 export enum EventActionEnum {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
-  MERGE_VOIES = 'MERGE_VOIES',
-  CONVERT_VOIE_TO_TOPONYME = 'CONVERT_VOIE_TO_TOPONYME',
 }
 
 const payloadSchema = {

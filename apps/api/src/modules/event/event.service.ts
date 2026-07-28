@@ -7,10 +7,7 @@ import {
   EventActionEnum,
   EventEntityTypeEnum,
 } from '@/shared/entities/event.entity';
-import {
-  CompositeEventPayload,
-  EntityEventPayload,
-} from '@/shared/entities/event_payload.type';
+import { EntityEventPayload } from '@/shared/entities/event_payload.type';
 import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 export interface RegisterEventContext {
@@ -25,13 +22,6 @@ export interface RegisterEventParams {
   action: EventActionEnum;
   before?: EntityEventPayload | null;
   after?: EntityEventPayload | null;
-}
-
-export interface RegisterCompositeEventParams {
-  action: EventActionEnum;
-  before: CompositeEventPayload;
-  after: CompositeEventPayload;
-  entities: { entityType: EventEntityTypeEnum; entityId: string }[];
 }
 
 export interface FindRootEventsByBalParams {
@@ -50,8 +40,8 @@ export interface ReparentOrphanedNumerosParams {
 // can't filter a joined collection via `find()`, only through QueryBuilder)
 // and a most-recent-first sort at every level of the tree, recursively.
 // Bounded in practice by how deep `relations` was loaded (2 levels of
-// `childEvents` today — VOIE/COMPOSITE root -> NUMERO -> POSITION, the only
-// hierarchy in this domain), but works at any depth.
+// `childEvents` today — VOIE root -> NUMERO -> POSITION, the only hierarchy
+// in this domain), but works at any depth.
 function sortAndFilterChildren(event: Event, isSynced?: boolean): Event {
   return {
     ...event,
@@ -69,8 +59,8 @@ export class EventService {
     private eventsRepository: Repository<Event>,
   ) {}
 
-  // Lists root events (parentEventId IS NULL, including composite roots) for
-  // a BAL, most recent first, with their full descendants attached (up to 2
+  // Lists root events (parentEventId IS NULL) for a BAL, most recent first,
+  // with their full descendants attached (up to 2
   // levels: NUMERO children, and POSITION grandchildren). Pagination applies
   // to roots only — a root + its descendants counts as one page item.
   public async findRootEventsByBal(
@@ -179,65 +169,7 @@ export class EventService {
         return this.insert(repo, ctx, params);
       }
 
-      // A composite event seals the state of the entities it covers: it is
-      // never fused with. `current` is then just the composite's coverage
-      // row for this entity (no payload of its own) — it is superseded by a
-      // fresh independent event, which takes over its slot in the unique
-      // "at most one unsynced event per entity" index. The composite root
-      // itself is untouched and keeps its aggregated history.
-      const parent = current.parentEventId
-        ? await repo.findOneBy({ id: current.parentEventId })
-        : null;
-      if (parent?.entityType === EventEntityTypeEnum.COMPOSITE) {
-        await repo.delete({ id: current.id });
-        return this.insert(repo, ctx, params);
-      }
-
       return this.fuse(repo, ctx, current, params);
-    });
-  }
-
-  // Registers a single composite event (MERGE_VOIES / CONVERT_VOIE_TO_TOPONYME)
-  // covering several entities at once. No individual event is emitted for
-  // the covered entities — any pending unsynced event on them is absorbed so
-  // the "at most one unsynced event per entity" invariant keeps holding.
-  public async registerComposite(
-    ctx: { balId: string },
-    params: RegisterCompositeEventParams,
-  ): Promise<Event> {
-    return this.eventsRepository.manager.transaction(async (manager) => {
-      const repo = manager.getRepository(Event);
-
-      for (const { entityType, entityId } of params.entities) {
-        await repo.delete({ entityType, entityId, isSynced: false });
-      }
-
-      const root = await repo.save(
-        repo.create({
-          balId: ctx.balId,
-          parentEventId: null,
-          entityType: EventEntityTypeEnum.COMPOSITE,
-          entityId: null,
-          action: params.action,
-          payloadBefore: params.before,
-          payloadAfter: params.after,
-        }),
-      );
-
-      const children = params.entities.map(({ entityType, entityId }) =>
-        repo.create({
-          balId: ctx.balId,
-          parentEventId: root.id,
-          entityType,
-          entityId,
-          action: params.action,
-          payloadBefore: null,
-          payloadAfter: null,
-        }),
-      );
-      await repo.save(children);
-
-      return root;
     });
   }
 

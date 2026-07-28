@@ -12,6 +12,7 @@ import {
   Min,
   IsInt,
   Matches,
+  IsUUID,
 } from 'class-validator';
 
 import { Position } from '@/shared/entities/position.entity';
@@ -69,4 +70,9 @@ export class CreateNumeroDTO {
     nullable: false,
   })
   positions?: Position[];
+
+  @IsOptional()
+  @IsUUID()
+  @ApiProperty({ type: String, required: false, nullable: true })
+  banId?: string;
 }

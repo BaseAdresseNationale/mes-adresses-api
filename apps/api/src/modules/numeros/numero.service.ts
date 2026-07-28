@@ -327,7 +327,7 @@ export class NumeroService {
     // On créer l'object numéro
     const numero: Partial<Numero> = {
       balId: voie.balId,
-      banId: uuid(),
+      banId: createNumeroDto.banId || uuid(),
       voieId: voie.id,
       numero: createNumeroDto.numero,
       suffixe: createNumeroDto.suffixe

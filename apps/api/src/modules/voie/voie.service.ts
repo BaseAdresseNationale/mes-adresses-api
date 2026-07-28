@@ -52,7 +52,6 @@ import {
 import { serializeVoie } from '@/modules/event/serializers/voie.serializer';
 import { serializeNumero } from '@/modules/event/serializers/numero.serializer';
 import { serializePosition } from '@/modules/event/serializers/position.serializer';
-import { serializeToponyme } from '@/modules/event/serializers/toponyme.serializer';
 import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 @Injectable()
@@ -143,7 +142,7 @@ export class VoieService {
     // Créer l'object Voie a partir du dto
     const voie: Partial<Voie> = {
       balId: bal.id,
-      banId: uuid(),
+      banId: createVoieDto.banId || uuid(),
       nom: createVoieDto.nom,
       typeNumerotation:
         createVoieDto.typeNumerotation || TypeNumerotationEnum.NUMERIQUE,
@@ -394,26 +393,10 @@ export class VoieService {
       baseLocale,
       payload,
     );
-    // On supprimer la voie de postgres
+    // On supprimer la voie de postgres — `create` et `delete` ci-dessus ont
+    // chacun déjà émis leur propre event individuel (CREATE sur le toponyme,
+    // DELETE sur la voie), qui restent deux events racine indépendants.
     await this.delete(voie);
-
-    // `create` et `delete` ci-dessus ont chacun émis leur propre event
-    // individuel (CREATE sur le toponyme, DELETE sur la voie) : l'event
-    // composite qui suit absorbe ces events non publiés (cf.
-    // EventService.registerComposite) pour ne laisser qu'un seul event
-    // agrégé, conformément à la granularité attendue pour cette opération.
-    await this.eventService.registerComposite(
-      { balId: voie.balId },
-      {
-        action: EventActionEnum.CONVERT_VOIE_TO_TOPONYME,
-        before: { voie: serializeVoie(voie) },
-        after: { toponyme: serializeToponyme(toponyme) },
-        entities: [
-          { entityType: EventEntityTypeEnum.VOIE, entityId: voie.id },
-          { entityType: EventEntityTypeEnum.TOPONYME, entityId: toponyme.id },
-        ],
-      },
-    );
 
     // On retourne le toponyme créé
     return toponyme;
@@ -427,48 +410,58 @@ export class VoieService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
     const sourceVoies: Voie[] = await this.findMany({
       id: In(otherVoieIds),
     });
-    const movedNumeros: Numero[] = await this.numeroService.findMany({
-      voieId: In(otherVoieIds),
+    const baseLocale = await this.baseLocaleService.findOneOrFail(voie.balId);
+
+    // Capturé avant toute suppression : tous les numeros qui doivent finir
+    // sous la voie fusionnée (ceux déjà sur la cible + ceux des sources).
+    const allNumeros: Numero[] = await this.numeroService.findMany({
+      voieId: In([voie.id, ...otherVoieIds]),
     });
 
-    await this.numeroService.updateMany(
-      { voieId: In(otherVoieIds) },
-      { voieId: voie.id },
-    );
-    await this.deleteMany({ id: In(otherVoieIds) });
+    // Supprime réellement la voie cible et toutes les voies sources — le
+    // moteur d'events ne garde qu'un seul event en attente par entité, donc
+    // réutiliser les mêmes ids pour la voie/les numeros fusionnés entrerait
+    // en conflit avec ça (cf. plan) : on les supprime pour de vrai (cascade
+    // DELETE existante, inchangée) puis on recrée tout sous des ids neufs.
+    for (const voieToDelete of [voie, ...sourceVoies]) {
+      await this.delete(voieToDelete);
+    }
 
-    const voieAfter: Voie = await this.findOneOrFail(voie.id);
+    // Recrée une voie neuve (id neuf) avec les attributs de la voie cible ;
+    // banId préservé pour la continuité BAN (comme convertToToponyme).
+    const newVoie: Voie = await this.create(baseLocale, {
+      nom: voie.nom,
+      nomAlt: voie.nomAlt,
+      typeNumerotation: voie.typeNumerotation,
+      trace: voie.trace,
+      comment: voie.comment,
+      banId: voie.banId,
+    });
 
-    await this.eventService.registerComposite(
-      { balId: voie.balId },
-      {
-        action: EventActionEnum.MERGE_VOIES,
-        before: {
-          targetVoie: serializeVoie(voie),
-          sourceVoies: sourceVoies.map(serializeVoie),
-        },
-        after: {
-          targetVoie: serializeVoie(voieAfter),
-          movedNumeroIds: movedNumeros.map(({ id }) => id),
-        },
-        entities: [
-          { entityType: EventEntityTypeEnum.VOIE, entityId: voie.id },
-          ...sourceVoies.map((v) => ({
-            entityType: EventEntityTypeEnum.VOIE,
-            entityId: v.id,
-          })),
-          ...movedNumeros.map((n) => ({
-            entityType: EventEntityTypeEnum.NUMERO,
-            entityId: n.id,
-          })),
-        ],
-      },
-    );
+    // Recrée chaque numero (id neuf, banId préservé) sous la voie neuve —
+    // `create()` rattache déjà son event CREATE sous l'event CREATE encore
+    // non synchronisé de cette voie (mécanisme existant, inchangé).
+    for (const numero of allNumeros) {
+      await this.numeroService.create(newVoie, {
+        numero: numero.numero,
+        suffixe: numero.suffixe,
+        toponymeId: numero.toponymeId,
+        positions: numero.positions,
+        comment: numero.comment,
+        parcelles: numero.parcelles,
+        certifie: numero.certifie,
+        communeDeleguee: numero.communeDeleguee,
+        banId: numero.banId,
+      });
+    }
 
-    return voieAfter;
+    // Recharge la voie : centroid/bbox ont été recalculés incrémentalement
+    // par chaque numeroService.create() ci-dessus.
+    return this.findOneOrFail(newVoie.id);
   }
 
   public async extendVoies(

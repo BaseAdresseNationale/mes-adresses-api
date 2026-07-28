@@ -10,11 +10,9 @@ import {
   EventEntityTypeEnum,
 } from '@/shared/entities/event.entity';
 import { PositionTypeEnum } from '@/shared/entities/position.entity';
-import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
 import {
   SerializedNumero,
   SerializedToponyme,
-  SerializedVoie,
 } from '@/shared/entities/event_payload.type';
 import { EventModule } from '@/modules/event/event.module';
 import { EventService } from '@/modules/event/event.service';
@@ -103,23 +101,6 @@ describe('EVENT MODULE', () => {
       parcelles: null,
       certifie: false,
       communeDeleguee: null,
-    };
-  }
-
-  function fakeSerializedVoie(nom: string): SerializedVoie {
-    return {
-      id: 'fixture-voie-id',
-      banId: 'fixture-ban-id',
-      createdAt: new Date('2000-01-01').toISOString(),
-      balId: 'fixture-bal-id',
-      nom,
-      nomAlt: null,
-      typeNumerotation: TypeNumerotationEnum.NUMERIQUE,
-      centroid: null,
-      trace: null,
-      bbox: null,
-      codeVoie: null,
-      comment: null,
     };
   }
 
@@ -433,57 +414,6 @@ describe('EVENT MODULE', () => {
           },
         ),
       ).rejects.toThrow();
-    });
-
-    it('a composite covered entity is not fused with: a new independent event is created', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const entityId = newEntityId();
-
-      const sourceVoie = fakeSerializedVoie('rue source');
-      const targetVoieBefore = fakeSerializedVoie('rue cible');
-      await eventService.registerComposite(
-        { balId },
-        {
-          action: EventActionEnum.MERGE_VOIES,
-          before: {
-            targetVoie: targetVoieBefore,
-            sourceVoies: [sourceVoie],
-          },
-          after: {
-            targetVoie: fakeSerializedVoie('rue cible'),
-            movedNumeroIds: [],
-          },
-          entities: [{ entityType: EventEntityTypeEnum.VOIE, entityId }],
-        },
-      );
-
-      const event = await eventService.register(
-        { balId },
-        {
-          entityType: EventEntityTypeEnum.VOIE,
-          entityId,
-          action: EventActionEnum.UPDATE,
-          before: fakeSerializedVoie('a'),
-          after: fakeSerializedVoie('b'),
-        },
-      );
-
-      expect(event.action).toEqual(EventActionEnum.UPDATE);
-      expect(event.parentEventId).toBeNull();
-
-      // The composite root (untouched, keeps its history) + the new
-      // independent event, which superseded the composite's coverage row.
-      const count = await eventsRepository.count();
-      expect(count).toEqual(2);
-
-      const compositeRoot = await eventsRepository.findOneBy({
-        entityType: EventEntityTypeEnum.COMPOSITE,
-      });
-      expect(compositeRoot).not.toBeNull();
-      expect(compositeRoot.payloadBefore).toEqual({
-        targetVoie: targetVoieBefore,
-        sourceVoies: [sourceVoie],
-      });
     });
   });
 
@@ -877,7 +807,7 @@ describe('EVENT MODULE', () => {
       }
     });
 
-    it('converting a voie to a toponyme emits a single composite event covering both entities', async () => {
+    it('converting a voie to a toponyme emits independent DELETE (voie) and CREATE (toponyme) root events', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, { nom: 'rue de la paix' });
 
@@ -888,57 +818,77 @@ describe('EVENT MODULE', () => {
       const toponymeId = response.body.id;
 
       const events = await eventsRepository.find({ where: { balId } });
-      expect(events).toHaveLength(3);
+      expect(events).toHaveLength(2);
+      expect(events.every((e) => e.parentEventId === null)).toBe(true);
 
-      const root = events.find(
-        (e) => e.entityType === EventEntityTypeEnum.COMPOSITE,
+      const voieEvent = events.find(
+        (e) => e.entityType === EventEntityTypeEnum.VOIE,
       );
-      expect(root.action).toEqual(EventActionEnum.CONVERT_VOIE_TO_TOPONYME);
-      expect(root.entityId).toBeNull();
-      expect(root.parentEventId).toBeNull();
+      expect(voieEvent.action).toEqual(EventActionEnum.DELETE);
+      expect(voieEvent.entityId).toEqual(voieId);
 
-      const children = events.filter((e) => e.id !== root.id);
-      expect(children).toHaveLength(2);
-      expect(children.every((e) => e.parentEventId === root.id)).toBe(true);
-      expect(
-        children.find((e) => e.entityType === EventEntityTypeEnum.VOIE)
-          .entityId,
-      ).toEqual(voieId);
-      expect(
-        children.find((e) => e.entityType === EventEntityTypeEnum.TOPONYME)
-          .entityId,
-      ).toEqual(toponymeId);
+      const toponymeEvent = events.find(
+        (e) => e.entityType === EventEntityTypeEnum.TOPONYME,
+      );
+      expect(toponymeEvent.action).toEqual(EventActionEnum.CREATE);
+      expect(toponymeEvent.entityId).toEqual(toponymeId);
     });
 
-    it('merging voies emits a single composite event covering the target voie, source voies and moved numeros', async () => {
+    it('merging voies deletes every source/target voie for real and recreates a fresh voie+numeros tree', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const targetVoieId = await createVoie(balId, { nom: 'rue cible' });
-      const sourceVoieId = await createVoie(balId, { nom: 'rue source' });
-      const movedNumeroId = await createNumero(balId, sourceVoieId, {
+      const targetNumeroId = await createNumero(balId, targetVoieId, {
         numero: 1,
       });
+      const sourceVoieId = await createVoie(balId, { nom: 'rue source' });
+      const movedNumeroId = await createNumero(balId, sourceVoieId, {
+        numero: 2,
+      });
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .put(`/voies/${targetVoieId}/fusion`)
         .send({ otherVoieIds: [sourceVoieId] })
         .set('authorization', `Bearer ${token}`)
         .expect(200);
+      const newVoieId = response.body.id;
+      expect(newVoieId).not.toEqual(targetVoieId);
 
-      const events = await eventsRepository.find({ where: { balId } });
-      expect(events).toHaveLength(4);
-
-      const root = events.find(
-        (e) => e.entityType === EventEntityTypeEnum.COMPOSITE,
+      const voieEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.VOIE },
+      });
+      expect(voieEvents).toHaveLength(3);
+      const deletedVoieEvents = voieEvents.filter(
+        (e) => e.action === EventActionEnum.DELETE,
       );
-      expect(root.action).toEqual(EventActionEnum.MERGE_VOIES);
-      expect(root.parentEventId).toBeNull();
+      expect(deletedVoieEvents.map((e) => e.entityId).sort()).toEqual(
+        [targetVoieId, sourceVoieId].sort(),
+      );
+      const newVoieEvent = voieEvents.find((e) => e.entityId === newVoieId);
+      expect(newVoieEvent.action).toEqual(EventActionEnum.CREATE);
+      expect(newVoieEvent.parentEventId).toBeNull();
 
-      const children = events.filter((e) => e.id !== root.id);
-      expect(children).toHaveLength(3);
-      expect(children.every((e) => e.parentEventId === root.id)).toBe(true);
-      const childEntityIds = children.map((e) => e.entityId);
-      expect(childEntityIds).toEqual(
-        expect.arrayContaining([targetVoieId, sourceVoieId, movedNumeroId]),
+      const numeroEvents = await eventsRepository.find({
+        where: { balId, entityType: EventEntityTypeEnum.NUMERO },
+      });
+      // 2 DELETE (the pre-merge numeros, under their old voies) + 2 CREATE
+      // (recreated with fresh ids under the new voie).
+      expect(numeroEvents).toHaveLength(4);
+      const deletedNumeroEvents = numeroEvents.filter(
+        (e) => e.action === EventActionEnum.DELETE,
+      );
+      expect(deletedNumeroEvents.map((e) => e.entityId).sort()).toEqual(
+        [targetNumeroId, movedNumeroId].sort(),
+      );
+
+      const createdNumeroEvents = numeroEvents.filter(
+        (e) => e.action === EventActionEnum.CREATE,
+      );
+      expect(createdNumeroEvents).toHaveLength(2);
+      expect(
+        createdNumeroEvents.every((e) => e.parentEventId === newVoieEvent.id),
+      ).toBe(true);
+      expect(createdNumeroEvents.map((e) => e.entityId)).not.toEqual(
+        expect.arrayContaining([targetNumeroId, movedNumeroId]),
       );
     });
 
