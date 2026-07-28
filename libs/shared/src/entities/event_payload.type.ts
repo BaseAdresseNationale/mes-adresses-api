@@ -72,13 +72,11 @@ export class SerializedPosition {
   @ApiProperty() point: Point;
 }
 
-export type EntityEventPayload =
+export type EventPayload =
   | SerializedVoie
   | SerializedToponyme
   | SerializedNumero
   | SerializedPosition;
-
-export type EventPayload = EntityEventPayload;
 
 // All concrete payload classes — registered on `Event` via `@ApiExtraModels`
 // so `getSchemaPath()` can reference them from the `oneOf` schema of
