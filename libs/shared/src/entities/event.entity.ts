@@ -62,6 +62,7 @@ export class Event {
   @JoinColumn({ name: 'parent_event_id' })
   parentEvent?: Event;
 
+  @ApiProperty({ type: () => Event, nullable: true, isArray: true })
   @OneToMany(() => Event, (event) => event.parentEvent)
   childEvents?: Event[];
 
