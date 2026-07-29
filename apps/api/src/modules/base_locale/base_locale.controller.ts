@@ -764,7 +764,6 @@ export class BaseLocaleController {
     operationId: 'findBaseLocaleEvents',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiQuery({ name: 'isSynced', type: Boolean, required: false })
   @ApiQuery({ name: 'limit', type: Number, required: false })
   @ApiQuery({ name: 'offset', type: Number, required: false })
   @ApiResponse({ status: HttpStatus.OK, type: EventPageDTO })
@@ -772,8 +771,6 @@ export class BaseLocaleController {
   @UseGuards(AdminGuard)
   async findBaseLocaleEvents(
     @Req() req: CustomRequest,
-    @Query('isSynced', new ParseBoolPipe({ optional: true }))
-    isSynced: boolean | undefined = false,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
     @Res() res: Response,
@@ -793,7 +790,7 @@ export class BaseLocaleController {
 
     const { count, results } = await this.eventService.findRootEventsByBal(
       req.baseLocale.id,
-      { isSynced, limit, offset },
+      { limit, offset },
     );
     const page: EventPageDTO = { offset, limit, count, results };
     res.status(HttpStatus.OK).json(page);

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
+import { FindOptionsWhere, In, IsNull, Repository } from 'typeorm';
 
 import {
   Event,
@@ -42,17 +42,13 @@ export interface ReparentOrphanedNumerosParams {
 // Bounded in practice by how deep `relations` was loaded (2 levels of
 // `childEvents` today — VOIE root -> NUMERO -> POSITION, the only hierarchy
 // in this domain), but works at any depth.
-function sortAndFilterChildren(event: Event, isSynced?: boolean): Event {
+function sortAndFilterChildren(event: Event): Event {
   return {
     ...event,
     childEvents: (event.childEvents ?? [])
-      .filter(
-        (child) =>
-          isSynced === undefined ||
-          (child.isSyncedWithRevision !== null) === isSynced,
-      )
+      .filter((child) => child.isSyncedWithRevision === null)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .map((child) => sortAndFilterChildren(child, isSynced)),
+      .map((child) => sortAndFilterChildren(child)),
   };
 }
 
@@ -65,14 +61,12 @@ export class EventService {
 
   public async findRootEventsByBal(
     balId: string,
-    { isSynced, limit, offset }: FindRootEventsByBalParams,
+    { limit, offset }: FindRootEventsByBalParams,
   ): Promise<{ count: number; results: Event[] }> {
     const where: FindOptionsWhere<Event> = {
       balId,
       parentEventId: IsNull(),
-      ...(isSynced !== undefined && {
-        isSyncedWithRevision: isSynced ? Not(IsNull()) : IsNull(),
-      }),
+      isSyncedWithRevision: IsNull(),
     };
 
     const count = await this.eventsRepository.count({ where });
@@ -84,7 +78,7 @@ export class EventService {
       skip: offset,
     });
 
-    const results = roots.map((root) => sortAndFilterChildren(root, isSynced));
+    const results = roots.map((root) => sortAndFilterChildren(root));
 
     return { count, results };
   }
