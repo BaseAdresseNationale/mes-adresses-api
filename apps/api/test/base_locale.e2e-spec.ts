@@ -53,6 +53,7 @@ const baseLocalePublicProperties = [
   'isAllCertified',
   'settings',
   'status',
+  'eventsCount',
   'updatedAt',
   'createdAt',
   'deletedAt',
