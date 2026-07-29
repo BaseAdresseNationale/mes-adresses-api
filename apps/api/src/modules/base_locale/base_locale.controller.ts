@@ -53,8 +53,8 @@ import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dt
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
 import {
-  BaseLocaleWithHabilitationDTO,
   ExtendedBaseLocaleDTO,
+  ExtendedBaseLocaleSafeDTO,
 } from './dto/extended_base_locale.dto';
 import { ExtendedVoieDTO, VoieMetas } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
@@ -166,10 +166,10 @@ export class BaseLocaleController {
 
     for (const bal of basesLocales) {
       const balExtended: ExtendedBaseLocaleDTO =
-        await this.baseLocaleService.extendWithNumeros(bal);
+        await this.baseLocaleService.extendBalInfo(bal);
       const balExtendedFiltered:
         | ExtendedBaseLocaleDTO
-        | Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'> = isSuperAdmin(req)
+        | ExtendedBaseLocaleSafeDTO = isSuperAdmin(req)
         ? balExtended
         : filterSensitiveFields(balExtended);
       results.push(balExtendedFiltered);
@@ -190,7 +190,7 @@ export class BaseLocaleController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: BaseLocaleWithHabilitationDTO,
+    type: ExtendedBaseLocaleSafeDTO,
     isArray: true,
   })
   @ApiBody({ type: FindManyBaseLocalDTO, required: true })
@@ -205,16 +205,14 @@ export class BaseLocaleController {
 
     const extendedBasesLocales = await Promise.all(
       basesLocales.map((baseLocale) =>
-        this.baseLocaleService.extendWithNumeros(baseLocale),
+        this.baseLocaleService.extendBalInfo(baseLocale),
       ),
     );
 
-    const filteredExtendedBasesLocales: Omit<
-      ExtendedBaseLocaleDTO,
-      'token' | 'emails'
-    >[] = extendedBasesLocales.map((baseLocale) =>
-      filterSensitiveFields(baseLocale),
-    );
+    const filteredExtendedBasesLocales: ExtendedBaseLocaleSafeDTO[] =
+      extendedBasesLocales.map((baseLocale) =>
+        filterSensitiveFields(baseLocale),
+      );
 
     const habilitationIds = filteredExtendedBasesLocales
       .filter((baseLocale) => baseLocale.habilitationId)
@@ -254,7 +252,7 @@ export class BaseLocaleController {
         HttpStatus.NOT_FOUND,
       );
     }
-    const baseLocale = await this.baseLocaleService.extendWithNumeros(
+    const baseLocale = await this.baseLocaleService.extendBalInfo(
       req.baseLocale,
     );
     const response = req.isAdmin

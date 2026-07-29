@@ -12,13 +12,10 @@ export class ExtendedBaseLocaleDTO extends BaseLocale {
   isAllCertified?: boolean;
 
   @ApiProperty()
-  isHabilitationValid?: boolean;
+  eventsCount?: number;
 }
 
-export class BaseLocaleWithHabilitationDTO extends OmitType(
-  ExtendedBaseLocaleDTO,
-  ['token', 'emails'],
-) {
-  @ApiProperty()
-  isHabilitationValid?: boolean;
-}
+export class ExtendedBaseLocaleSafeDTO extends OmitType(ExtendedBaseLocaleDTO, [
+  'token',
+  'emails',
+]) {}

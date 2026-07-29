@@ -10,6 +10,7 @@ export class FindNumerosQueryDTO {
     description:
       'Liste (séparée par des virgules) des champs à retourner pour chaque numero',
     example: 'id,numero,suffixe',
+    isArray: true,
   })
   @IsOptional()
   @Transform(({ value }) =>

@@ -439,11 +439,14 @@ export class BaseLocaleService {
     return baseLocale;
   }
 
-  async extendWithNumeros(
-    baseLocale: BaseLocale,
-  ): Promise<ExtendedBaseLocaleDTO> {
+  async extendBalInfo(baseLocale: BaseLocale): Promise<ExtendedBaseLocaleDTO> {
     const { nbNumeros, nbNumerosCertifies } =
       await this.numeroService.countBalNumeroAndCertifie(baseLocale.id);
+
+    const { count } = await this.eventService.findRootEventsByBal(
+      baseLocale.id,
+      { limit: 1, offset: 0 },
+    );
     const balExtended: ExtendedBaseLocaleDTO = {
       ...baseLocale,
       nbNumeros: Number(nbNumeros),
@@ -452,6 +455,7 @@ export class BaseLocaleService {
         Number(nbNumeros) > 0
           ? Number(nbNumeros) === Number(nbNumerosCertifies)
           : false,
+      eventsCount: count,
     };
     return balExtended;
   }
