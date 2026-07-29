@@ -7,7 +7,7 @@ import {
   EventActionEnum,
   EventEntityTypeEnum,
 } from '@/shared/entities/event.entity';
-import { EntityEventPayload } from '@/shared/entities/event_payload.type';
+import { EventPayload } from '@/shared/entities/event_payload.type';
 import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 export interface RegisterEventContext {
@@ -20,8 +20,8 @@ export interface RegisterEventParams {
   entityType: EventEntityTypeEnum;
   entityId: string;
   action: EventActionEnum;
-  before?: EntityEventPayload | null;
-  after?: EntityEventPayload | null;
+  before?: EventPayload | null;
+  after?: EventPayload | null;
 }
 
 export interface FindRootEventsByBalParams {
