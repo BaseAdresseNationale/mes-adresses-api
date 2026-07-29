@@ -676,10 +676,13 @@ export class BaseLocaleService {
   }
 
   async forcePublish(balId: string): Promise<BaseLocale> {
-    const baseLocale = await this.publicationService.exec(balId, {
-      force: true,
-    });
-    await this.eventService.updateEventSynced(balId);
+    const { baseLocale, revisionId } = await this.publicationService.exec(
+      balId,
+      { force: true },
+    );
+    if (revisionId) {
+      await this.eventService.updateEventSynced(balId, revisionId);
+    }
 
     return baseLocale;
   }

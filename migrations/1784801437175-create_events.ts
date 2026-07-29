@@ -12,13 +12,13 @@ export class CreateEvents1784801437175 implements MigrationInterface {
       `CREATE TYPE "public"."events_action_enum" AS ENUM('CREATE', 'UPDATE', 'DELETE')`,
     );
     await queryRunner.query(
-      `CREATE TABLE "events" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "bal_id" character varying(24) NOT NULL, "voie_id" character varying(24), "parent_event_id" uuid, "entity_type" "public"."events_entity_type_enum" NOT NULL, "entity_id" character varying(24), "action" "public"."events_action_enum" NOT NULL, "payload_before" jsonb, "payload_after" jsonb, "is_synced" boolean NOT NULL DEFAULT false, "synced_at" TIMESTAMP WITH TIME ZONE, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_events_id" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "events" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "bal_id" character varying(24) NOT NULL, "voie_id" character varying(24), "parent_event_id" uuid, "entity_type" "public"."events_entity_type_enum" NOT NULL, "entity_id" character varying(24), "action" "public"."events_action_enum" NOT NULL, "payload_before" jsonb, "payload_after" jsonb, "is_synced_with_revision" character varying(24), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_events_id" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE UNIQUE INDEX "IDX_events_unsynced_entity" ON "events" ("entity_type", "entity_id") WHERE "is_synced" = false AND "entity_id" IS NOT NULL`,
+      `CREATE UNIQUE INDEX "IDX_events_unsynced_entity" ON "events" ("entity_type", "entity_id") WHERE "is_synced_with_revision" IS NULL AND "entity_id" IS NOT NULL`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_events_bal_id_is_synced" ON "events" ("bal_id", "is_synced")`,
+      `CREATE INDEX "IDX_events_bal_id_is_synced_with_revision" ON "events" ("bal_id", "is_synced_with_revision")`,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_events_parent_event_id" ON "events" ("parent_event_id")`,
@@ -38,7 +38,7 @@ export class CreateEvents1784801437175 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "public"."IDX_events_voie_id"`);
     await queryRunner.query(`DROP INDEX "public"."IDX_events_parent_event_id"`);
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_events_bal_id_is_synced"`,
+      `DROP INDEX "public"."IDX_events_bal_id_is_synced_with_revision"`,
     );
     await queryRunner.query(`DROP INDEX "public"."IDX_events_unsynced_entity"`);
     await queryRunner.query(`DROP TABLE "events"`);

@@ -32,9 +32,12 @@ const payloadSchema = {
 @Entity({ name: 'events' })
 @Index('IDX_events_unsynced_entity', ['entityType', 'entityId'], {
   unique: true,
-  where: '"is_synced" = false AND "entity_id" IS NOT NULL',
+  where: '"is_synced_with_revision" IS NULL AND "entity_id" IS NOT NULL',
 })
-@Index('IDX_events_bal_id_is_synced', ['balId', 'isSynced'])
+@Index('IDX_events_bal_id_is_synced_with_revision', [
+  'balId',
+  'isSyncedWithRevision',
+])
 @ApiExtraModels(...EVENT_PAYLOAD_MODELS)
 export class Event {
   @ApiProperty()
@@ -83,13 +86,15 @@ export class Event {
   @Column('jsonb', { name: 'payload_after', nullable: true })
   payloadAfter: EventPayload | null;
 
-  @ApiProperty()
-  @Column('boolean', { name: 'is_synced', default: false })
-  isSynced: boolean;
-
-  @ApiProperty()
-  @Column('timestamptz', { name: 'synced_at', nullable: true })
-  syncedAt: Date | null;
+  // null = event en attente de publication ; sinon l'id de la révision
+  // api-depot avec laquelle cet event a été publié.
+  @ApiProperty({ nullable: true })
+  @Column('varchar', {
+    length: 24,
+    name: 'is_synced_with_revision',
+    nullable: true,
+  })
+  isSyncedWithRevision: string | null;
 
   @ApiProperty()
   @CreateDateColumn({ name: 'created_at' })

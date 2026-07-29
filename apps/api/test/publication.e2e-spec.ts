@@ -167,7 +167,9 @@ describe('PUBLICATION MODULE', () => {
         return [200, publishedRevision];
       });
 
-      const res = await publicationService.exec(balId, { force: true });
+      const { baseLocale: res } = await publicationService.exec(balId, {
+        force: true,
+      });
       const syncExpected = {
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
@@ -282,7 +284,9 @@ describe('PUBLICATION MODULE', () => {
         return [200, publishedRevision];
       });
 
-      const res = await publicationService.exec(balId, { force: true });
+      const { baseLocale: res } = await publicationService.exec(balId, {
+        force: true,
+      });
 
       const syncExpected = {
         status: StatusSyncEnum.SYNCED,
@@ -362,7 +366,9 @@ describe('PUBLICATION MODULE', () => {
         .onGet(`habilitations/${habilitationId}`)
         .reply(200, habilitation);
 
-      const res = await publicationService.exec(balId, { force: true });
+      const { baseLocale: res } = await publicationService.exec(balId, {
+        force: true,
+      });
 
       const syncExpected = {
         status: StatusSyncEnum.SYNCED,

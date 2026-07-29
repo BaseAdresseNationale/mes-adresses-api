@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, In, IsNull, Repository } from 'typeorm';
+import { FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 
 import {
   Event,
@@ -46,7 +46,11 @@ function sortAndFilterChildren(event: Event, isSynced?: boolean): Event {
   return {
     ...event,
     childEvents: (event.childEvents ?? [])
-      .filter((child) => isSynced === undefined || child.isSynced === isSynced)
+      .filter(
+        (child) =>
+          isSynced === undefined ||
+          (child.isSyncedWithRevision !== null) === isSynced,
+      )
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .map((child) => sortAndFilterChildren(child, isSynced)),
   };
@@ -66,7 +70,9 @@ export class EventService {
     const where: FindOptionsWhere<Event> = {
       balId,
       parentEventId: IsNull(),
-      ...(isSynced !== undefined && { isSynced }),
+      ...(isSynced !== undefined && {
+        isSyncedWithRevision: isSynced ? Not(IsNull()) : IsNull(),
+      }),
     };
 
     const count = await this.eventsRepository.count({ where });
@@ -83,8 +89,14 @@ export class EventService {
     return { count, results };
   }
 
-  public async updateEventSynced(balId: string) {
-    await this.eventsRepository.update({ balId }, { isSynced: true });
+  public async updateEventSynced(
+    balId: string,
+    revisionId: string,
+  ): Promise<void> {
+    await this.eventsRepository.update(
+      { balId },
+      { isSyncedWithRevision: revisionId },
+    );
   }
 
   // Reparents under `newRootId` any root, non-synced NUMERO DELETE event
@@ -104,7 +116,7 @@ export class EventService {
         voieId,
         entityType: EventEntityTypeEnum.NUMERO,
         action: EventActionEnum.DELETE,
-        isSynced: false,
+        isSyncedWithRevision: IsNull(),
         parentEventId: IsNull(),
       },
       { parentEventId: newRootId },
@@ -138,7 +150,7 @@ export class EventService {
       entityType: EventEntityTypeEnum.VOIE,
       entityId: voieId,
       action: EventActionEnum.CREATE,
-      isSynced: false,
+      isSyncedWithRevision: IsNull(),
     });
     return voieCreateEvent?.id;
   }
@@ -160,7 +172,7 @@ export class EventService {
         where: {
           entityType: params.entityType,
           entityId: params.entityId,
-          isSynced: false,
+          isSyncedWithRevision: IsNull(),
         },
         lock: { mode: 'pessimistic_write' },
       });

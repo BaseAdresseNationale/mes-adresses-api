@@ -513,12 +513,6 @@ export class BaseLocaleController {
       const baseLocale = await this.baseLocaleService.forcePublish(
         req.baseLocale.id,
       );
-      // if (!result.success) {
-      //   throw new HttpException(result.error, HttpStatus.PRECONDITION_FAILED);
-      // }
-      // const baseLocale = await this.baseLocaleService.findOneOrFail(
-      //   req.baseLocale.id,
-      // );
       res.status(HttpStatus.OK).json(baseLocale);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

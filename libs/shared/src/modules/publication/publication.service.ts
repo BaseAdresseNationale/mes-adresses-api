@@ -38,7 +38,7 @@ export class PublicationService {
   async exec(
     balId: string,
     options: { force?: boolean } = {},
-  ): Promise<BaseLocale> {
+  ): Promise<{ baseLocale: BaseLocale; revisionId: string | null }> {
     const baseLocale = await this.basesLocalesRepository.findOneBy({
       id: balId,
     });
@@ -125,7 +125,10 @@ export class PublicationService {
         },
       });
 
-      return this.markAsSynced(baseLocale, publishedRevision.id);
+      return {
+        baseLocale: await this.markAsSynced(baseLocale, publishedRevision.id),
+        revisionId: publishedRevision.id,
+      };
     }
 
     const sync = await this.updateSyncInfo(baseLocale);
@@ -157,14 +160,26 @@ export class PublicationService {
           baseLocale.habilitationId,
         );
         // On marque le sync de la BAL en published
-        return this.markAsSynced(baseLocale, publishedRevision.id);
+        return {
+          baseLocale: await this.markAsSynced(baseLocale, publishedRevision.id),
+          revisionId: publishedRevision.id,
+        };
       }
 
       // On marque le sync de la BAL en published avec la révision courante de l'api-depot
-      return this.markAsSynced(baseLocale, currentRevision.id);
+      return {
+        baseLocale: await this.markAsSynced(baseLocale, currentRevision.id),
+        revisionId: currentRevision.id,
+      };
     }
 
-    return this.basesLocalesRepository.findOneBy({ id: balId });
+    const finalBaseLocale = await this.basesLocalesRepository.findOneBy({
+      id: balId,
+    });
+    return {
+      baseLocale: finalBaseLocale,
+      revisionId: finalBaseLocale.sync?.lastUploadedRevisionId ?? null,
+    };
   }
 
   public async pause(balId: string) {

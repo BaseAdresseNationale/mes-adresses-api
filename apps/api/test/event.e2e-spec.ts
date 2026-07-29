@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { ObjectId } from 'mongodb';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 
 import {
   Event,
@@ -122,7 +122,7 @@ describe('EVENT MODULE', () => {
       expect(event.action).toEqual(EventActionEnum.CREATE);
       expect(event.payloadBefore).toBeNull();
       expect(event.payloadAfter).toEqual(fakeSerializedNumero(1));
-      expect(event.isSynced).toBe(false);
+      expect(event.isSyncedWithRevision).toBeNull();
     });
 
     it('UPDATE with no current event -> INSERT (before + after)', async () => {
@@ -512,7 +512,7 @@ describe('EVENT MODULE', () => {
       );
       await eventsRepository.update(
         { id: syncedEvent.id },
-        { isSynced: true, syncedAt: new Date() },
+        { isSyncedWithRevision: 'fixture-revision-id' },
       );
 
       const newEvent = await eventService.register(
@@ -535,7 +535,7 @@ describe('EVENT MODULE', () => {
       });
       expect(oldEvent.payloadBefore).toEqual(fakeSerializedNumero(1));
       expect(oldEvent.payloadAfter).toEqual(fakeSerializedNumero(2));
-      expect(oldEvent.isSynced).toBe(true);
+      expect(oldEvent.isSyncedWithRevision).not.toBeNull();
 
       const count = await eventsRepository.count();
       expect(count).toEqual(2);
@@ -633,7 +633,10 @@ describe('EVENT MODULE', () => {
       // The voie's own CREATE is marked synced so its numero's CREATE isn't
       // itself pending — isolating this test to the position-only-update
       // container mechanism (fuse()'s children guard).
-      await eventsRepository.update({ balId }, { isSynced: true });
+      await eventsRepository.update(
+        { balId },
+        { isSyncedWithRevision: 'fixture-revision-id' },
+      );
 
       const numeroResponse = await request(app.getHttpServer())
         .post(`/voies/${voieId}/numeros`)
@@ -643,11 +646,11 @@ describe('EVENT MODULE', () => {
       const numeroId = numeroResponse.body.id;
       await eventsRepository.update(
         { balId, entityType: EventEntityTypeEnum.NUMERO },
-        { isSynced: true },
+        { isSyncedWithRevision: 'fixture-revision-id' },
       );
       await eventsRepository.update(
         { balId, entityType: EventEntityTypeEnum.POSITION },
-        { isSynced: true },
+        { isSyncedWithRevision: 'fixture-revision-id' },
       );
       const numeroCreated = await getTypeormRepository().numeros.findOneBy({
         id: numeroId,
@@ -673,7 +676,7 @@ describe('EVENT MODULE', () => {
       const containerAfterFirstCall = await eventsRepository.findOneBy({
         balId,
         entityType: EventEntityTypeEnum.NUMERO,
-        isSynced: false,
+        isSyncedWithRevision: IsNull(),
       });
       expect(containerAfterFirstCall).not.toBeNull();
 
@@ -697,7 +700,7 @@ describe('EVENT MODULE', () => {
         where: {
           balId,
           entityType: EventEntityTypeEnum.NUMERO,
-          isSynced: false,
+          isSyncedWithRevision: IsNull(),
         },
       });
       // Still the very same trivial container — not recreated, and not
@@ -710,7 +713,7 @@ describe('EVENT MODULE', () => {
       const positionEvent = await eventsRepository.findOneBy({
         balId,
         entityType: EventEntityTypeEnum.POSITION,
-        isSynced: false,
+        isSyncedWithRevision: IsNull(),
       });
       expect(positionEvent.parentEventId).toEqual(numeroEvents[0].id);
       expect(positionEvent.payloadAfter).toMatchObject({
@@ -957,7 +960,7 @@ describe('EVENT MODULE', () => {
       // CREATE+DELETE fusing away to nothing.
       await eventsRepository.update(
         { balId },
-        { isSynced: true, syncedAt: new Date() },
+        { isSyncedWithRevision: 'fixture-revision-id' },
       );
 
       await request(app.getHttpServer())
@@ -969,7 +972,7 @@ describe('EVENT MODULE', () => {
         balId,
         entityType: EventEntityTypeEnum.NUMERO,
         entityId: numeroId,
-        isSynced: false,
+        isSyncedWithRevision: IsNull(),
       });
       expect(numeroDeleteEvent.action).toEqual(EventActionEnum.DELETE);
       expect(numeroDeleteEvent.parentEventId).toBeNull();
@@ -977,7 +980,7 @@ describe('EVENT MODULE', () => {
       const positionDeleteEventBefore = await eventsRepository.findOneBy({
         balId,
         entityType: EventEntityTypeEnum.POSITION,
-        isSynced: false,
+        isSyncedWithRevision: IsNull(),
       });
       expect(positionDeleteEventBefore.parentEventId).toEqual(
         numeroDeleteEvent.id,
@@ -994,7 +997,7 @@ describe('EVENT MODULE', () => {
         balId,
         entityType: EventEntityTypeEnum.VOIE,
         entityId: voieId,
-        isSynced: false,
+        isSyncedWithRevision: IsNull(),
       });
       expect(voieDeleteEvent.action).toEqual(EventActionEnum.DELETE);
       expect(voieDeleteEvent.parentEventId).toBeNull();
@@ -1050,7 +1053,7 @@ describe('EVENT MODULE', () => {
         entityType: EventEntityTypeEnum.VOIE,
         entityId: voieId,
       });
-      expect(voieCreateEvent.isSynced).toBe(false);
+      expect(voieCreateEvent.isSyncedWithRevision).toBeNull();
       expect(voieCreateEvent.voieId).toEqual(voieId);
 
       const numeroResponse = await request(app.getHttpServer())
@@ -1145,7 +1148,7 @@ describe('EVENT MODULE', () => {
 
       await eventsRepository.update(
         { balId, entityType: EventEntityTypeEnum.VOIE, entityId: voieId },
-        { isSynced: true, syncedAt: new Date() },
+        { isSyncedWithRevision: 'fixture-revision-id' },
       );
 
       const numeroResponse = await request(app.getHttpServer())
@@ -1510,7 +1513,7 @@ describe('EVENT MODULE', () => {
       });
       await eventsRepository.update(
         { id: voieRootEvent.id },
-        { isSynced: true, syncedAt: new Date() },
+        { isSyncedWithRevision: 'fixture-revision-id' },
       );
 
       const syncedResponse = await request(app.getHttpServer())
