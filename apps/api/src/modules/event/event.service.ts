@@ -25,7 +25,6 @@ export interface RegisterEventParams {
 }
 
 export interface FindRootEventsByBalParams {
-  isSynced?: boolean;
   limit: number;
   offset: number;
 }
@@ -36,19 +35,23 @@ export interface ReparentOrphanedNumerosParams {
   newRootId: string;
 }
 
-// Applies the `isSynced` filter (also meant for children, since TypeORM
-// can't filter a joined collection via `find()`, only through QueryBuilder)
-// and a most-recent-first sort at every level of the tree, recursively.
-// Bounded in practice by how deep `relations` was loaded (2 levels of
-// `childEvents` today — VOIE root -> NUMERO -> POSITION, the only hierarchy
-// in this domain), but works at any depth.
-function sortAndFilterChildren(event: Event): Event {
+// Applies the same `isSyncedWithRevision` criterion to children (also
+// needed there, since TypeORM can't filter a joined collection via
+// `find()`, only through QueryBuilder) and a most-recent-first sort at
+// every level of the tree, recursively. Bounded in practice by how deep
+// `relations` was loaded (2 levels of `childEvents` today — VOIE root ->
+// NUMERO -> POSITION, the only hierarchy in this domain), but works at any
+// depth.
+function sortAndFilterChildren(
+  event: Event,
+  isSyncedWithRevision: string | null,
+): Event {
   return {
     ...event,
     childEvents: (event.childEvents ?? [])
-      .filter((child) => child.isSyncedWithRevision === null)
+      .filter((child) => child.isSyncedWithRevision === isSyncedWithRevision)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .map((child) => sortAndFilterChildren(child)),
+      .map((child) => sortAndFilterChildren(child, isSyncedWithRevision)),
   };
 }
 
@@ -59,14 +62,19 @@ export class EventService {
     private eventsRepository: Repository<Event>,
   ) {}
 
-  public async findRootEventsByBal(
+  // Lists root events (and their descendants) for a BAL matching a given
+  // `isSyncedWithRevision` state — `null` for still-pending events, or a
+  // specific revision id for events already published as part of it.
+  private async findRootEventsByBalAndSyncState(
     balId: string,
+    isSyncedWithRevision: string | null,
     { limit, offset }: FindRootEventsByBalParams,
   ): Promise<{ count: number; results: Event[] }> {
     const where: FindOptionsWhere<Event> = {
       balId,
       parentEventId: IsNull(),
-      isSyncedWithRevision: IsNull(),
+      isSyncedWithRevision:
+        isSyncedWithRevision === null ? IsNull() : isSyncedWithRevision,
     };
 
     const count = await this.eventsRepository.count({ where });
@@ -78,9 +86,29 @@ export class EventService {
       skip: offset,
     });
 
-    const results = roots.map((root) => sortAndFilterChildren(root));
+    const results = roots.map((root) =>
+      sortAndFilterChildren(root, isSyncedWithRevision),
+    );
 
     return { count, results };
+  }
+
+  public async findRootEventsByBal(
+    balId: string,
+    params: FindRootEventsByBalParams,
+  ): Promise<{ count: number; results: Event[] }> {
+    return this.findRootEventsByBalAndSyncState(balId, null, params);
+  }
+
+  // Same tree, restricted to events actually published as part of
+  // `revisionId` — lets a caller inspect what a given publication covered
+  // after the fact.
+  public async findSyncedRootEventsByBal(
+    balId: string,
+    revisionId: string,
+    params: FindRootEventsByBalParams,
+  ): Promise<{ count: number; results: Event[] }> {
+    return this.findRootEventsByBalAndSyncState(balId, revisionId, params);
   }
 
   public async updateEventSynced(
@@ -88,7 +116,7 @@ export class EventService {
     revisionId: string,
   ): Promise<void> {
     await this.eventsRepository.update(
-      { balId },
+      { balId, isSyncedWithRevision: IsNull() },
       { isSyncedWithRevision: revisionId },
     );
   }

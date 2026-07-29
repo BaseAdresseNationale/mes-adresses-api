@@ -1489,7 +1489,7 @@ describe('EVENT MODULE', () => {
       expect(voieRoot.childEvents).toHaveLength(0);
     });
 
-    it('filters roots and children by isSynced', async () => {
+    it('GET .../events/synced returns only the events synced with the given revision', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, { nom: 'rue de la paix' });
 
@@ -1516,22 +1516,42 @@ describe('EVENT MODULE', () => {
         { isSyncedWithRevision: 'fixture-revision-id' },
       );
 
+      // The pending-events route only ever returns still-unsynced roots —
+      // the freshly-synced VOIE event is now excluded from it.
+      const pendingResponse = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+      expect(pendingResponse.body.count).toEqual(1);
+      expect(pendingResponse.body.results[0].entityType).toEqual(
+        EventEntityTypeEnum.NUMERO,
+      );
+      expect(pendingResponse.body.results[0].childEvents).toHaveLength(1);
+
       const syncedResponse = await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/events?isSynced=true`)
+        .get(
+          `/bases-locales/${balId}/events/synced?revisionId=fixture-revision-id`,
+        )
         .set('authorization', `Bearer ${token}`)
         .expect(200);
       expect(syncedResponse.body.count).toEqual(1);
       expect(syncedResponse.body.results[0].id).toEqual(voieRootEvent.id);
 
-      const unsyncedResponse = await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/events?isSynced=false`)
+      // A different (unknown) revision id matches nothing.
+      const otherRevisionResponse = await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events/synced?revisionId=other-revision`)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
-      expect(unsyncedResponse.body.count).toEqual(1);
-      expect(unsyncedResponse.body.results[0].entityType).toEqual(
-        EventEntityTypeEnum.NUMERO,
-      );
-      expect(unsyncedResponse.body.results[0].childEvents).toHaveLength(1);
+      expect(otherRevisionResponse.body.count).toEqual(0);
+    });
+
+    it('GET .../events/synced requires a revisionId', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/events/synced`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(400);
     });
 
     it('paginates root events, most recent first', async () => {
