@@ -59,10 +59,6 @@ export class EventService {
     private eventsRepository: Repository<Event>,
   ) {}
 
-  // Lists root events (parentEventId IS NULL) for a BAL, most recent first,
-  // with their full descendants attached (up to 2
-  // levels: NUMERO children, and POSITION grandchildren). Pagination applies
-  // to roots only — a root + its descendants counts as one page item.
   public async findRootEventsByBal(
     balId: string,
     { isSynced, limit, offset }: FindRootEventsByBalParams,
@@ -85,6 +81,10 @@ export class EventService {
     const results = roots.map((root) => sortAndFilterChildren(root, isSynced));
 
     return { count, results };
+  }
+
+  public async updateEventSynced(balId: string) {
+    await this.eventsRepository.update({ balId }, { isSynced: true });
   }
 
   // Reparents under `newRootId` any root, non-synced NUMERO DELETE event

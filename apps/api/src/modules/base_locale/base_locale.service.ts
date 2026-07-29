@@ -20,9 +20,6 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Job, Queue, QueueEvents } from 'bullmq';
-import { PriorityEnum } from '@/shared/types/task.type';
 
 import { Voie } from '@/shared/entities/voie.entity';
 import {
@@ -57,20 +54,19 @@ import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
-import { TaskTitle } from '@/shared/types/task.type';
-import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 import { getEmailsMairie } from '@/lib/utils/annuaire-service-public';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
 import { BalTree, formatterBAL } from '@ban-team/formatter-bal';
 import { Numero } from '@/shared/entities/numero.entity';
+import { PublicationService } from '@/shared/modules/publication/publication.service';
+import { EventService } from '../event/event.service';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
 @Injectable()
 export class BaseLocaleService {
   constructor(
-    @InjectQueue(QUEUE_NAME) private taskQueue: Queue,
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
     private readonly mailerService: MailerService,
@@ -84,6 +80,9 @@ export class BaseLocaleService {
     private populateService: PopulateService,
     @Inject(forwardRef(() => BanPlateformService))
     private banPlateformService: BanPlateformService,
+    @Inject(forwardRef(() => EventService))
+    private eventService: EventService,
+    private publicationService: PublicationService,
     private exportCsvService: ExportCsvService,
     private configService: ConfigService,
     private cacheService: CacheService,
@@ -676,26 +675,13 @@ export class BaseLocaleService {
     return filaireGeoJSON;
   }
 
-  async forcePublish(balId: string) {
-    const queueEvents = new QueueEvents(QUEUE_NAME, {
-      connection: this.taskQueue.opts.connection,
+  async forcePublish(balId: string): Promise<BaseLocale> {
+    const baseLocale = await this.publicationService.exec(balId, {
+      force: true,
     });
-    await queueEvents.waitUntilReady();
+    await this.eventService.updateEventSynced(balId);
 
-    const job: Job = await this.taskQueue.add(
-      TaskTitle.FORCE_PUBLISH,
-      { balId },
-      { priority: PriorityEnum.HIGH },
-    );
-
-    try {
-      return await job.waitUntilFinished(queueEvents, 30000);
-    } catch (error) {
-      this.taskQueue.remove(job.id);
-      throw error;
-    } finally {
-      await queueEvents.close();
-    }
+    return baseLocale;
   }
 
   async syncIdsBAN(baseLocale: BaseLocale) {
