@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, In, IsNull, Repository } from 'typeorm';
+import { FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 
 import {
   Event,
@@ -53,6 +53,16 @@ function sortAndFilterChildren(
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .map((child) => sortAndFilterChildren(child, isSyncedWithRevision)),
   };
+}
+
+// Flattens an event and its `childEvents` (loaded up to 2 levels deep) into
+// a single list — used to turn a set of "main parent" event ids to ignore
+// into the full list of events (including their descendants) to roll back.
+function flattenEventTree(event: Event): Event[] {
+  return [
+    event,
+    ...(event.childEvents ?? []).flatMap((child) => flattenEventTree(child)),
+  ];
 }
 
 @Injectable()
@@ -114,11 +124,33 @@ export class EventService {
   public async updateEventSynced(
     balId: string,
     revisionId: string,
+    excludedEventIds: string[] = [],
   ): Promise<void> {
     await this.eventsRepository.update(
-      { balId, isSyncedWithRevision: IsNull() },
+      {
+        balId,
+        isSyncedWithRevision: IsNull(),
+        ...(excludedEventIds.length > 0 && { id: Not(In(excludedEventIds)) }),
+      },
       { isSyncedWithRevision: revisionId },
     );
+  }
+
+  // Loads the given events (assumed to be the "main parents" the caller
+  // wants to ignore for a publication) together with their descendants
+  // (2 levels of `childEvents`, same depth as `findRootEventsByBal` — the
+  // only hierarchy in this domain), flattened into a single list. Used to
+  // both roll back their effect in the exported CSV and to keep them (and
+  // their descendants) pending afterwards.
+  public async findEventsWithDescendants(eventIds: string[]): Promise<Event[]> {
+    if (eventIds.length === 0) {
+      return [];
+    }
+    const roots = await this.eventsRepository.find({
+      where: { id: In(eventIds) },
+      relations: { childEvents: { childEvents: true } },
+    });
+    return roots.flatMap((root) => flattenEventTree(root));
   }
 
   // Reparents under `newRootId` any root, non-synced NUMERO DELETE event

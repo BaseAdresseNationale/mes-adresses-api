@@ -81,6 +81,7 @@ import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 import { HabilitationService } from './sub_modules/habilitation/habilitation.service';
 import { EventService } from '@/modules/event/event.service';
 import { EventPageDTO } from '@/modules/event/dto/event_page.dto';
+import { SyncExecDTO } from '@/modules/base_locale/dto/sync_exec.dto';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -503,13 +504,20 @@ export class BaseLocaleController {
     operationId: 'publishBaseLocale',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: SyncExecDTO, required: false })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+  async publishBaseLocale(
+    @Req() req: CustomRequest,
+    @Body(new ValidationPipe({ whitelist: true }))
+    { ignoreEvents }: SyncExecDTO,
+    @Res() res: Response,
+  ) {
     try {
       const baseLocale = await this.baseLocaleService.forcePublish(
         req.baseLocale.id,
+        ignoreEvents ?? [],
       );
       res.status(HttpStatus.OK).json(baseLocale);
     } catch (error) {

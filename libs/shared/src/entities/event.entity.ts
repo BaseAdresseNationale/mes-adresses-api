@@ -34,11 +34,10 @@ const payloadSchema = {
   unique: true,
   where: '"is_synced_with_revision" IS NULL AND "entity_id" IS NOT NULL',
 })
-@Index(
-  'IDX_events_bal_id_is_synced_with_revision',
-  ['balId', 'isSyncedWithRevision'],
-  { where: '"parent_event_id" IS NULL' },
-)
+@Index('IDX_events_bal_id_is_synced_with_revision', [
+  'balId',
+  'isSyncedWithRevision',
+])
 @ApiExtraModels(...EVENT_PAYLOAD_MODELS)
 export class Event {
   @ApiProperty()

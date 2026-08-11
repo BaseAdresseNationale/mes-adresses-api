@@ -18,7 +18,7 @@ export class CreateEvents1784801437175 implements MigrationInterface {
       `CREATE UNIQUE INDEX "IDX_events_unsynced_entity" ON "events" ("entity_type", "entity_id") WHERE "is_synced_with_revision" IS NULL AND "entity_id" IS NOT NULL`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_events_bal_id_is_synced_with_revision" ON "events" ("bal_id", "is_synced_with_revision") WHERE "parent_event_id" IS NULL`,
+      `CREATE INDEX "IDX_events_bal_id_is_synced_with_revision" ON "events" ("bal_id", "is_synced_with_revision")`,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_events_parent_event_id" ON "events" ("parent_event_id")`,

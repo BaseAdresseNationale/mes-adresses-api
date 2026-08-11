@@ -679,13 +679,23 @@ export class BaseLocaleService {
     return filaireGeoJSON;
   }
 
-  async forcePublish(balId: string): Promise<BaseLocale> {
+  async forcePublish(
+    balId: string,
+    ignoreEventIds: string[] = [],
+  ): Promise<BaseLocale> {
+    const ignoredEvents =
+      await this.eventService.findEventsWithDescendants(ignoreEventIds);
+
     const { baseLocale, revisionId } = await this.publicationService.exec(
       balId,
-      { force: true },
+      { force: true, ignoredEvents },
     );
     if (revisionId) {
-      await this.eventService.updateEventSynced(balId, revisionId);
+      await this.eventService.updateEventSynced(
+        balId,
+        revisionId,
+        ignoredEvents.map((event) => event.id),
+      );
     }
 
     return baseLocale;

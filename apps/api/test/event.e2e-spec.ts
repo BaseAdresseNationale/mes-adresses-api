@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { ObjectId } from 'mongodb';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 
 import {
   Event,
@@ -1602,6 +1602,139 @@ describe('EVENT MODULE', () => {
         .get(`/bases-locales/${balId}/events?offset=-1`)
         .set('authorization', `Bearer ${token}`)
         .expect(400);
+    });
+  });
+
+  describe('EventService.findEventsWithDescendants / updateEventSynced (ignoreEvents rollback)', () => {
+    it('findEventsWithDescendants returns the given events and their full descendant subtree', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({ numero: 1, positions: [createPositions([8, 42])] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+
+      const voieRootEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.VOIE,
+      });
+
+      const descendants = await eventService.findEventsWithDescendants([
+        voieRootEvent.id,
+      ]);
+
+      expect(descendants.map((e) => e.entityType).sort()).toEqual(
+        [
+          EventEntityTypeEnum.VOIE,
+          EventEntityTypeEnum.NUMERO,
+          EventEntityTypeEnum.POSITION,
+        ].sort(),
+      );
+    });
+
+    it('findEventsWithDescendants returns nothing for an empty list', async () => {
+      const descendants = await eventService.findEventsWithDescendants([]);
+      expect(descendants).toEqual([]);
+    });
+
+    it('updateEventSynced leaves the given (and their descendant) events pending while marking the rest with the revision id', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/voies/${voieId}/numeros`)
+        .send({ numero: 1, positions: [createPositions([8, 42])] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+
+      const otherVoieId = await createVoie(balId, { nom: 'rue B' });
+      await request(app.getHttpServer())
+        .put(`/voies/${otherVoieId}`)
+        .send({ nom: 'rue B modifiée' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const voieRootEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.VOIE,
+        entityId: voieId,
+      });
+      const otherVoieEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.VOIE,
+        entityId: otherVoieId,
+      });
+
+      const ignoredEvents = await eventService.findEventsWithDescendants([
+        voieRootEvent.id,
+      ]);
+      expect(ignoredEvents).toHaveLength(3); // VOIE + NUMERO + POSITION
+
+      await eventService.updateEventSynced(
+        balId,
+        'fixture-revision-id',
+        ignoredEvents.map((e) => e.id),
+      );
+
+      const stillPending = await eventsRepository.find({
+        where: { balId, isSyncedWithRevision: IsNull() },
+      });
+      expect(stillPending.map((e) => e.id).sort()).toEqual(
+        ignoredEvents.map((e) => e.id).sort(),
+      );
+
+      const synced = await eventsRepository.findOneBy({
+        id: otherVoieEvent.id,
+      });
+      expect(synced.isSyncedWithRevision).toEqual('fixture-revision-id');
+    });
+
+    it('updateEventSynced never overwrites an event already synced with an earlier revision', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieResponse = await request(app.getHttpServer())
+        .post(`/bases-locales/${balId}/voies`)
+        .send({ nom: 'rue de la paix' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(201);
+      const voieId = voieResponse.body.id;
+
+      const firstEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.VOIE,
+      });
+      await eventService.updateEventSynced(balId, 'revision-1');
+
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}`)
+        .send({ nom: 'nouvelle rue' })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      await eventService.updateEventSynced(balId, 'revision-2');
+
+      const afterFirst = await eventsRepository.findOneBy({
+        id: firstEvent.id,
+      });
+      expect(afterFirst.isSyncedWithRevision).toEqual('revision-1');
+
+      const secondEvent = await eventsRepository.findOneBy({
+        balId,
+        entityType: EventEntityTypeEnum.VOIE,
+        id: Not(firstEvent.id),
+      });
+      expect(secondEvent.isSyncedWithRevision).toEqual('revision-2');
     });
   });
 
