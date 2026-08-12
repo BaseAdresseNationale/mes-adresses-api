@@ -443,10 +443,7 @@ export class BaseLocaleService {
     const { nbNumeros, nbNumerosCertifies } =
       await this.numeroService.countBalNumeroAndCertifie(baseLocale.id);
 
-    const { count } = await this.eventService.findRootEventsByBal(
-      baseLocale.id,
-      { limit: 1, offset: 0 },
-    );
+    const result = await this.eventService.findRootEventsByBal(baseLocale.id);
     const balExtended: ExtendedBaseLocaleDTO = {
       ...baseLocale,
       nbNumeros: Number(nbNumeros),
@@ -455,7 +452,7 @@ export class BaseLocaleService {
         Number(nbNumeros) > 0
           ? Number(nbNumeros) === Number(nbNumerosCertifies)
           : false,
-      eventsCount: count,
+      eventsCount: result.length,
     };
     return balExtended;
   }

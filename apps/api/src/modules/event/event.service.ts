@@ -24,11 +24,6 @@ export interface RegisterEventParams {
   after?: EventPayload | null;
 }
 
-export interface FindRootEventsByBalParams {
-  limit: number;
-  offset: number;
-}
-
 export interface ReparentOrphanedNumerosParams {
   balId: string;
   voieId: string;
@@ -78,8 +73,7 @@ export class EventService {
   private async findRootEventsByBalAndSyncState(
     balId: string,
     isSyncedWithRevision: string | null,
-    { limit, offset }: FindRootEventsByBalParams,
-  ): Promise<{ count: number; results: Event[] }> {
+  ): Promise<Event[]> {
     const where: FindOptionsWhere<Event> = {
       balId,
       parentEventId: IsNull(),
@@ -87,27 +81,21 @@ export class EventService {
         isSyncedWithRevision === null ? IsNull() : isSyncedWithRevision,
     };
 
-    const count = await this.eventsRepository.count({ where });
     const roots = await this.eventsRepository.find({
       where,
       relations: { childEvents: { childEvents: true } },
       order: { createdAt: 'DESC' },
-      take: limit,
-      skip: offset,
     });
 
     const results = roots.map((root) =>
       sortAndFilterChildren(root, isSyncedWithRevision),
     );
 
-    return { count, results };
+    return results;
   }
 
-  public async findRootEventsByBal(
-    balId: string,
-    params: FindRootEventsByBalParams,
-  ): Promise<{ count: number; results: Event[] }> {
-    return this.findRootEventsByBalAndSyncState(balId, null, params);
+  public async findRootEventsByBal(balId: string): Promise<Event[]> {
+    return this.findRootEventsByBalAndSyncState(balId, null);
   }
 
   // Same tree, restricted to events actually published as part of
@@ -116,9 +104,8 @@ export class EventService {
   public async findSyncedRootEventsByBal(
     balId: string,
     revisionId: string,
-    params: FindRootEventsByBalParams,
-  ): Promise<{ count: number; results: Event[] }> {
-    return this.findRootEventsByBalAndSyncState(balId, revisionId, params);
+  ): Promise<Event[]> {
+    return this.findRootEventsByBalAndSyncState(balId, revisionId);
   }
 
   public async updateEventSynced(

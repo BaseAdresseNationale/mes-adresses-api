@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   HttpException,
@@ -9,7 +8,6 @@ import {
   Inject,
   ParseBoolPipe,
   ParseFilePipeBuilder,
-  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -770,36 +768,14 @@ export class BaseLocaleController {
     operationId: 'findBaseLocaleEvents',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiQuery({ name: 'limit', type: Number, required: false })
-  @ApiQuery({ name: 'offset', type: Number, required: false })
   @ApiResponse({ status: HttpStatus.OK, type: EventPageDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async findBaseLocaleEvents(
-    @Req() req: CustomRequest,
-    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
-    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
-    @Res() res: Response,
-  ) {
-    if (!Number.isInteger(limit) || limit <= 0 || limit > 100) {
-      throw new HttpException(
-        'La valeur du champ "limit" doit être un entier compris entre 1 et 100 (défaut : 20)',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    if (!Number.isInteger(offset) || offset < 0) {
-      throw new HttpException(
-        'La valeur du champ "offset" doit être un entier positif (défaut : 0)',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const { count, results } = await this.eventService.findRootEventsByBal(
+  async findBaseLocaleEvents(@Req() req: CustomRequest, @Res() res: Response) {
+    const results = await this.eventService.findRootEventsByBal(
       req.baseLocale.id,
-      { limit, offset },
     );
-    const page: EventPageDTO = { offset, limit, count, results };
-    res.status(HttpStatus.OK).json(page);
+    res.status(HttpStatus.OK).json(results);
   }
 
   @Get(':baseLocaleId/events/synced')
@@ -809,45 +785,19 @@ export class BaseLocaleController {
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
   @ApiQuery({ name: 'revisionId', type: String, required: true })
-  @ApiQuery({ name: 'limit', type: Number, required: false })
-  @ApiQuery({ name: 'offset', type: Number, required: false })
   @ApiResponse({ status: HttpStatus.OK, type: EventPageDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async findBaseLocaleSyncedEvents(
     @Req() req: CustomRequest,
     @Query('revisionId') revisionId: string,
-    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
-    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
     @Res() res: Response,
   ) {
-    if (!revisionId) {
-      throw new HttpException(
-        'Le paramètre "revisionId" est obligatoire',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    if (!Number.isInteger(limit) || limit <= 0 || limit > 100) {
-      throw new HttpException(
-        'La valeur du champ "limit" doit être un entier compris entre 1 et 100 (défaut : 20)',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    if (!Number.isInteger(offset) || offset < 0) {
-      throw new HttpException(
-        'La valeur du champ "offset" doit être un entier positif (défaut : 0)',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const { count, results } =
-      await this.eventService.findSyncedRootEventsByBal(
-        req.baseLocale.id,
-        revisionId,
-        { limit, offset },
-      );
-    const page: EventPageDTO = { offset, limit, count, results };
-    res.status(HttpStatus.OK).json(page);
+    const results = await this.eventService.findSyncedRootEventsByBal(
+      req.baseLocale.id,
+      revisionId,
+    );
+    res.status(HttpStatus.OK).json(results);
   }
 
   @Post(':baseLocaleId/toponymes')
