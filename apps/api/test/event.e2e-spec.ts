@@ -1018,19 +1018,15 @@ describe('EVENT MODULE', () => {
       // The whole unpublished history for this voie now forms a single
       // tree — confirmed through the read API too.
       const response = await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/events?isSynced=false`)
+        .get(`/bases-locales/${balId}/events`)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
-      expect(response.body.count).toEqual(1);
-      expect(response.body.results[0].id).toEqual(voieDeleteEvent.id);
-      expect(response.body.results[0].childEvents).toHaveLength(1);
-      expect(response.body.results[0].childEvents[0].id).toEqual(
-        numeroDeleteEvent.id,
-      );
-      expect(response.body.results[0].childEvents[0].childEvents).toHaveLength(
-        1,
-      );
-      expect(response.body.results[0].childEvents[0].childEvents[0].id).toEqual(
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].id).toEqual(voieDeleteEvent.id);
+      expect(response.body[0].childEvents).toHaveLength(1);
+      expect(response.body[0].childEvents[0].id).toEqual(numeroDeleteEvent.id);
+      expect(response.body[0].childEvents[0].childEvents).toHaveLength(1);
+      expect(response.body[0].childEvents[0].childEvents[0].id).toEqual(
         positionDeleteEventBefore.id,
       );
     });
@@ -1086,8 +1082,8 @@ describe('EVENT MODULE', () => {
         .get(`/bases-locales/${balId}/events`)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
-      expect(response.body.count).toEqual(1);
-      const [root] = response.body.results;
+      expect(response.body).toHaveLength(1);
+      const [root] = response.body;
       expect(root.id).toEqual(voieCreateEvent.id);
       expect(root.childEvents).toHaveLength(1);
       expect(root.childEvents[0].id).toEqual(numeroCreateEvent.id);
@@ -1469,12 +1465,9 @@ describe('EVENT MODULE', () => {
         .set('authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(response.body.count).toEqual(2);
-      expect(response.body.offset).toEqual(0);
-      expect(response.body.limit).toEqual(20);
-      expect(response.body.results).toHaveLength(2);
+      expect(response.body).toHaveLength(2);
 
-      const [numeroRoot, voieRoot] = response.body.results;
+      const [numeroRoot, voieRoot] = response.body;
       expect(numeroRoot.entityType).toEqual(EventEntityTypeEnum.NUMERO);
       expect(numeroRoot.action).toEqual(EventActionEnum.CREATE);
       expect(numeroRoot.childEvents).toHaveLength(2);
@@ -1489,7 +1482,7 @@ describe('EVENT MODULE', () => {
       expect(voieRoot.childEvents).toHaveLength(0);
     });
 
-    it('GET .../events/synced returns only the events synced with the given revision', async () => {
+    it('GET .../events/synced returns only the already-synced root events', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, { nom: 'rue de la paix' });
 
@@ -1522,86 +1515,18 @@ describe('EVENT MODULE', () => {
         .get(`/bases-locales/${balId}/events`)
         .set('authorization', `Bearer ${token}`)
         .expect(200);
-      expect(pendingResponse.body.count).toEqual(1);
-      expect(pendingResponse.body.results[0].entityType).toEqual(
+      expect(pendingResponse.body).toHaveLength(1);
+      expect(pendingResponse.body[0].entityType).toEqual(
         EventEntityTypeEnum.NUMERO,
       );
-      expect(pendingResponse.body.results[0].childEvents).toHaveLength(1);
+      expect(pendingResponse.body[0].childEvents).toHaveLength(1);
 
       const syncedResponse = await request(app.getHttpServer())
-        .get(
-          `/bases-locales/${balId}/events/synced?revisionId=fixture-revision-id`,
-        )
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
-      expect(syncedResponse.body.count).toEqual(1);
-      expect(syncedResponse.body.results[0].id).toEqual(voieRootEvent.id);
-
-      // A different (unknown) revision id matches nothing.
-      const otherRevisionResponse = await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/events/synced?revisionId=other-revision`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
-      expect(otherRevisionResponse.body.count).toEqual(0);
-    });
-
-    it('GET .../events/synced requires a revisionId', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-
-      await request(app.getHttpServer())
         .get(`/bases-locales/${balId}/events/synced`)
         .set('authorization', `Bearer ${token}`)
-        .expect(400);
-    });
-
-    it('paginates root events, most recent first', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const voieId1 = await createVoie(balId, { nom: 'rue A' });
-      const voieId2 = await createVoie(balId, { nom: 'rue B' });
-
-      await request(app.getHttpServer())
-        .put(`/voies/${voieId1}`)
-        .send({ nom: 'rue A modifiée' })
-        .set('authorization', `Bearer ${token}`)
         .expect(200);
-      await request(app.getHttpServer())
-        .put(`/voies/${voieId2}`)
-        .send({ nom: 'rue B modifiée' })
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
-
-      const firstPage = await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/events?limit=1&offset=0`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
-      expect(firstPage.body.count).toEqual(2);
-      expect(firstPage.body.results).toHaveLength(1);
-      expect(firstPage.body.results[0].entityId).toEqual(voieId2);
-
-      const secondPage = await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/events?limit=1&offset=1`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
-      expect(secondPage.body.count).toEqual(2);
-      expect(secondPage.body.results).toHaveLength(1);
-      expect(secondPage.body.results[0].entityId).toEqual(voieId1);
-    });
-
-    it('validates limit/offset bounds', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-
-      await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/events?limit=0`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(400);
-      await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/events?limit=101`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(400);
-      await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/events?offset=-1`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(400);
+      expect(syncedResponse.body).toHaveLength(1);
+      expect(syncedResponse.body[0].id).toEqual(voieRootEvent.id);
     });
   });
 
