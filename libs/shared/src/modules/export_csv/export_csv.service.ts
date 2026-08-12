@@ -4,8 +4,10 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
+import { Event } from '@/shared/entities/event.entity';
 import { exportBalToCsv } from '@/shared/modules/export_csv/utils/export_csv_bal.utils';
 import { exportVoiesToCsv } from '@/shared/modules/export_csv/utils/export_csv_voies.utils';
+import { applyEventsRollback } from '@/shared/modules/export_csv/utils/rollback_events.utils';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -24,7 +26,6 @@ export class ExportCsvService {
     const voies: Voie[] = await this.voiesRepository.find({
       where: {
         balId,
-        deletedAt: null,
       },
       order: {
         nom: 'ASC',
@@ -33,7 +34,6 @@ export class ExportCsvService {
     const toponymes: Toponyme[] = await this.toponymesRepository.find({
       where: {
         balId,
-        deletedAt: null,
       },
       order: {
         nom: 'ASC',
@@ -42,7 +42,6 @@ export class ExportCsvService {
     const numeros: Numero[] = await this.numerosRepository.find({
       where: {
         balId,
-        deletedAt: null,
       },
       order: {
         numero: 'ASC',
@@ -58,12 +57,23 @@ export class ExportCsvService {
   async exportToCsv(
     baseLocale: BaseLocale,
     withComment: boolean = false,
+    ignoredEvents: Event[] = [],
   ): Promise<string> {
     const { voies, toponymes, numeros } = await this.getAllFromBal(
       baseLocale.id,
     );
+    const rolledBack = applyEventsRollback(
+      { voies, toponymes, numeros },
+      ignoredEvents,
+    );
 
-    return exportBalToCsv(baseLocale, voies, toponymes, numeros, withComment);
+    return exportBalToCsv(
+      baseLocale,
+      rolledBack.voies,
+      rolledBack.toponymes,
+      rolledBack.numeros,
+      withComment,
+    );
   }
 
   async exportVoiesToCsv(baseLocale: BaseLocale): Promise<string> {

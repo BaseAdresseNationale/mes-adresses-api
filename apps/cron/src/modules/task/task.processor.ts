@@ -34,15 +34,15 @@ export class TaskProcessor extends WorkerHost {
     );
     try {
       switch (job.name) {
-        case TaskTitle.DETECT_OUTDATED:
-          await this.detectOutdatedTask.run();
-          break;
-        case TaskTitle.DETECT_CONFLICT:
-          await this.detectConflictTask.run();
-          break;
-        case TaskTitle.SYNC_OUTDATED:
-          await this.syncOutdatedTask.run();
-          break;
+        // case TaskTitle.DETECT_OUTDATED:
+        //   await this.detectOutdatedTask.run();
+        //   break;
+        // case TaskTitle.DETECT_CONFLICT:
+        //   await this.detectConflictTask.run();
+        //   break;
+        // case TaskTitle.SYNC_OUTDATED:
+        //   await this.syncOutdatedTask.run();
+        //   break;
         case TaskTitle.FORCE_PUBLISH:
           await this.forcePublishTask.run(job.data.balId);
           break;

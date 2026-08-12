@@ -11,22 +11,16 @@ import {
   ArrayContains,
   FindOptionsSelect,
   FindOptionsWhere,
-  In,
   IsNull,
-  Not,
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { uniq, difference, groupBy } from 'lodash';
+import { uniq, difference } from 'lodash';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Job, Queue, QueueEvents } from 'bullmq';
-import { PriorityEnum } from '@/shared/types/task.type';
 
-import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import {
   BaseLocale,
@@ -59,22 +53,20 @@ import {
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
-import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
-import { TaskTitle } from '@/shared/types/task.type';
-import { QUEUE_NAME } from '@/shared/params/queue_name.const';
 import { getEmailsMairie } from '@/lib/utils/annuaire-service-public';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
 import { BalTree, formatterBAL } from '@ban-team/formatter-bal';
 import { Numero } from '@/shared/entities/numero.entity';
+import { PublicationService } from '@/shared/modules/publication/publication.service';
+import { EventService } from '../event/event.service';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 
 @Injectable()
 export class BaseLocaleService {
   constructor(
-    @InjectQueue(QUEUE_NAME) private taskQueue: Queue,
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
     private readonly mailerService: MailerService,
@@ -88,6 +80,9 @@ export class BaseLocaleService {
     private populateService: PopulateService,
     @Inject(forwardRef(() => BanPlateformService))
     private banPlateformService: BanPlateformService,
+    @Inject(forwardRef(() => EventService))
+    private eventService: EventService,
+    private publicationService: PublicationService,
     private exportCsvService: ExportCsvService,
     private configService: ConfigService,
     private cacheService: CacheService,
@@ -412,43 +407,6 @@ export class BaseLocaleService {
     await this.basesLocalesRepository.softDelete({ id: baseLocale.id });
   }
 
-  async findAllDeletedByBal(
-    baseLocale: BaseLocale,
-  ): Promise<AllDeletedInBalDTO> {
-    // On récupère les numeros archivés
-    const numerosDeleted = await this.numeroService.findManyWithDeleted({
-      balId: baseLocale.id,
-      deletedAt: Not(IsNull()),
-    });
-    const numerosByVoieId = groupBy(numerosDeleted, 'voieId');
-    // On récupère les voies archivés ou celle qui ont des numéros archivés
-    const voies: any[] = await this.voieService.findManyWithDeleted([
-      {
-        id: In(Object.keys(numerosByVoieId)),
-      },
-      {
-        balId: baseLocale.id,
-        deletedAt: Not(IsNull()),
-      },
-    ]);
-    // On populate les voie avec les numeros
-    const voiesPopulate: Voie[] = voies.map((voie: Voie) => ({
-      ...voie,
-      numeros: numerosByVoieId[voie.id] || [],
-    }));
-    // On récupère les toponyme archivé de la bal
-    const toponymes: Toponyme[] =
-      await this.toponymeService.findManyWithDeleted({
-        balId: baseLocale.id,
-        deletedAt: Not(IsNull()),
-      });
-    // On retourne le voies et toponyme archivé
-    return {
-      voies: voiesPopulate,
-      toponymes,
-    };
-  }
-
   async populate(
     baseLocale: BaseLocale,
     { voies, toponymes, numeros, communeNomsAlt }: FromCsvType,
@@ -481,11 +439,11 @@ export class BaseLocaleService {
     return baseLocale;
   }
 
-  async extendWithNumeros(
-    baseLocale: BaseLocale,
-  ): Promise<ExtendedBaseLocaleDTO> {
+  async extendBalInfo(baseLocale: BaseLocale): Promise<ExtendedBaseLocaleDTO> {
     const { nbNumeros, nbNumerosCertifies } =
       await this.numeroService.countBalNumeroAndCertifie(baseLocale.id);
+
+    const result = await this.eventService.findRootEventsByBal(baseLocale.id);
     const balExtended: ExtendedBaseLocaleDTO = {
       ...baseLocale,
       nbNumeros: Number(nbNumeros),
@@ -494,6 +452,7 @@ export class BaseLocaleService {
         Number(nbNumeros) > 0
           ? Number(nbNumeros) === Number(nbNumerosCertifies)
           : false,
+      eventsCount: result.length,
     };
     return balExtended;
   }
@@ -717,26 +676,26 @@ export class BaseLocaleService {
     return filaireGeoJSON;
   }
 
-  async forcePublish(balId: string) {
-    const queueEvents = new QueueEvents(QUEUE_NAME, {
-      connection: this.taskQueue.opts.connection,
-    });
-    await queueEvents.waitUntilReady();
+  async forcePublish(
+    balId: string,
+    ignoreEventIds: string[] = [],
+  ): Promise<BaseLocale> {
+    const ignoredEvents =
+      await this.eventService.findEventsWithDescendants(ignoreEventIds);
 
-    const job: Job = await this.taskQueue.add(
-      TaskTitle.FORCE_PUBLISH,
-      { balId },
-      { priority: PriorityEnum.HIGH },
+    const { baseLocale, revisionId } = await this.publicationService.exec(
+      balId,
+      { force: true, ignoredEvents },
     );
-
-    try {
-      return await job.waitUntilFinished(queueEvents, 30000);
-    } catch (error) {
-      this.taskQueue.remove(job.id);
-      throw error;
-    } finally {
-      await queueEvents.close();
+    if (revisionId) {
+      await this.eventService.updateEventSynced(
+        balId,
+        revisionId,
+        ignoredEvents.map((event) => event.id),
+      );
     }
+
+    return baseLocale;
   }
 
   async syncIdsBAN(baseLocale: BaseLocale) {

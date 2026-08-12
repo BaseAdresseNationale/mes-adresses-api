@@ -12,7 +12,6 @@ import {
   FindOptionsWhere,
   In,
   Repository,
-  UpdateResult,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as turf from '@turf/turf';
@@ -34,6 +33,15 @@ import { NumeroService } from '@/modules/numeros/numero.service';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { ObjectId } from 'mongodb';
 import { ToponymeInBox } from '@/lib/types/toponyme.type';
+import { EventService } from '@/modules/event/event.service';
+import {
+  EventActionEnum,
+  EventEntityTypeEnum,
+} from '@/shared/entities/event.entity';
+import { serializeToponyme } from '@/modules/event/serializers/toponyme.serializer';
+import { serializePosition } from '@/modules/event/serializers/position.serializer';
+import { emitPositionDiffEvents } from '@/modules/event/position-diff.util';
+import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 @Injectable()
 export class ToponymeService {
@@ -44,6 +52,7 @@ export class ToponymeService {
     private baseLocaleService: BaseLocaleService,
     @Inject(forwardRef(() => NumeroService))
     private numeroService: NumeroService,
+    private eventService: EventService,
   ) {}
 
   async findOneOrFail(toponymeId: string): Promise<Toponyme> {
@@ -51,10 +60,7 @@ export class ToponymeService {
     const where: FindOptionsWhere<Toponyme> = {
       id: toponymeId,
     };
-    const toponyme = await this.toponymesRepository.findOne({
-      where,
-      withDeleted: true,
-    });
+    const toponyme = await this.toponymesRepository.findOne({ where });
     // Si le toponyme n'existe pas, on throw une erreur
     if (!toponyme) {
       throw new HttpException(
@@ -73,21 +79,11 @@ export class ToponymeService {
     return this.toponymesRepository.find({ where, ...(select && { select }) });
   }
 
-  async findManyWithDeleted(
-    where: FindOptionsWhere<Toponyme>,
-  ): Promise<Toponyme[]> {
-    // Get les numeros en fonction du where archivé ou non
-    return this.toponymesRepository.find({
-      where,
-      withDeleted: true,
-    });
-  }
-
   async findDistinctParcelles(balId: string): Promise<string[]> {
     const res: any[] = await this.toponymesRepository.query(
-      `SELECT ARRAY_AGG(distinct elem) 
-        FROM (select unnest(parcelles) as elem, bal_id, deleted_at from toponymes) s 
-        WHERE bal_id = '${balId}' AND deleted_at IS null`,
+      `SELECT ARRAY_AGG(distinct elem)
+        FROM (select unnest(parcelles) as elem, bal_id from toponymes) s
+        WHERE bal_id = '${balId}'`,
     );
     return res[0]?.array_agg || [];
   }
@@ -141,6 +137,24 @@ export class ToponymeService {
       await this.toponymesRepository.save(entityToSave);
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(bal.id, toponymeCreated.updatedAt);
+
+    const toponymeEvent = await this.eventService.register(
+      { balId: bal.id },
+      {
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeCreated.id,
+        action: EventActionEnum.CREATE,
+        // Un toponyme fraîchement créé n'a jamais encore de numeros rattachés.
+        after: serializeToponyme(toponymeCreated, []),
+      },
+    );
+    await emitPositionDiffEvents(
+      this.eventService,
+      { balId: bal.id, parentEventId: toponymeEvent?.id },
+      [],
+      toponymeCreated.positions ?? [],
+    );
+
     // On retourne le toponyme créé
     return toponymeCreated;
   }
@@ -149,6 +163,14 @@ export class ToponymeService {
     toponyme: Toponyme,
     updateToponymeDto: UpdateToponymeDTO,
   ): Promise<Toponyme> {
+    // On capture l'état avant modification pour le log d'events, avant que
+    // `toponyme` ne soit muté en place ci-dessous.
+    const positionsBefore: Position[] = toponyme.positions ?? [];
+    // Cette méthode ne touche jamais la jonction numero<->toponyme : le même
+    // `numeroIds` s'applique au before et à l'after.
+    const numeroIds = await this.numeroService.findIdsByToponyme(toponyme.id);
+    const toponymeBeforePayload = serializeToponyme(toponyme, numeroIds);
+
     // On clean le nom et le nomAlt si ils sont présent dans le dto
     if (updateToponymeDto.nom) {
       updateToponymeDto.nom = cleanNom(updateToponymeDto.nom);
@@ -165,49 +187,73 @@ export class ToponymeService {
       ...toponyme,
       ...updateToponymeDto,
     });
-    const toponymeUpdated: Toponyme =
-      await this.toponymesRepository.save(entityToSave);
+    await this.toponymesRepository.save(entityToSave);
+    // On recharge le toponyme depuis postgres plutôt que d'utiliser la
+    // valeur renvoyée par save() : ses positions (FK toponyme_id, rank
+    // recalculé par le hook @BeforeUpdate) ne sont fiables qu'après un vrai
+    // rechargement, sans quoi le payload d'event avant/après serait construit
+    // sur un état partiellement obsolète.
+    const toponymeUpdated: Toponyme = await this.toponymesRepository.findOneBy({
+      id: toponyme.id,
+    });
     await this.baseLocaleService.touch(toponyme.balId);
+
+    // Les positions sont diffées avant de savoir si un event TOPONYME est
+    // nécessaire : un event POSITION ne doit jamais rester orphelin, donc si
+    // au moins un en survit, un event TOPONYME (même trivial, avant==après)
+    // doit exister pour le porter — voir le rattachement plus bas.
+    const positionEvents = await emitPositionDiffEvents(
+      this.eventService,
+      { balId: toponymeUpdated.balId },
+      positionsBefore,
+      toponymeUpdated.positions ?? [],
+    );
+
+    const toponymeAfterPayload = serializeToponyme(toponymeUpdated, numeroIds);
+    // Une requète UPDATE renvoie `affected > 0` même si les valeurs envoyées
+    // sont identiques aux valeurs actuelles : on ne journalise un event que
+    // si l'état du toponyme a réellement changé, ou qu'il faut un conteneur
+    // pour les events position ci-dessus.
+    const toponymeEvent =
+      !payloadsAreEqual(toponymeBeforePayload, toponymeAfterPayload) ||
+      positionEvents.length > 0
+        ? await this.eventService.register(
+            { balId: toponymeUpdated.balId },
+            {
+              entityType: EventEntityTypeEnum.TOPONYME,
+              entityId: toponymeUpdated.id,
+              action: EventActionEnum.UPDATE,
+              before: toponymeBeforePayload,
+              after: toponymeAfterPayload,
+            },
+          )
+        : undefined;
+
+    if (toponymeEvent) {
+      await this.eventService.reparentEvents(
+        positionEvents.map((event) => event.id),
+        toponymeEvent.id,
+      );
+    }
+
     // On retourne le toponyme mis a jour
     return toponymeUpdated;
   }
 
-  public async softDelete(toponyme: Toponyme): Promise<void> {
-    // On archive le toponyme
-    const { affected }: UpdateResult =
-      await this.toponymesRepository.softDelete({
-        id: toponyme.id,
-      });
-    // Si le toponyme a bien été archivé
-    if (affected) {
-      // On détache le numéro qui appartenait a ce toponyme
-      await this.numeroService.updateMany(
-        { toponymeId: toponyme.id },
-        {
-          toponymeId: null,
-        },
-      );
-      // On met a jour le updatedAt de la BAL
-      await this.baseLocaleService.touch(toponyme.balId);
-    }
-  }
-
-  public async restore(toponyme: Toponyme): Promise<Toponyme> {
-    // On rétabli le toponyme
-    const { affected }: UpdateResult = await this.toponymesRepository.restore({
-      id: toponyme.id,
-    });
-    // Si le toponyme a été rétabli on met a jour le updateAt de la BAL
-    if (affected) {
-      await this.baseLocaleService.touch(toponyme.balId);
-    }
-    // On retourne le toponyme rétabli
-    return this.toponymesRepository.findOneBy({
-      id: toponyme.id,
-    });
-  }
-
   public async delete(toponyme: Toponyme) {
+    // Capturé avant détachement : l'event TOPONYME DELETE doit refléter qui
+    // était rattaché au moment de la suppression (avant que les numeros ne
+    // soient détachés ci-dessous). Pas d'event de jonction séparé par numero
+    // ici : ce `numeroIds` capture déjà tout ce qui disparaît avec ce toponyme.
+    const numeroIds = await this.numeroService.findIdsByToponyme(toponyme.id);
+    // On détache les numéros qui appartenaient a ce toponyme
+    // (la FK numeros.toponyme_id -> toponymes.id n'a pas de cascade)
+    await this.numeroService.updateMany(
+      { toponymeId: toponyme.id },
+      {
+        toponymeId: null,
+      },
+    );
     // On supprime le toponyme
     const { affected }: DeleteResult = await this.toponymesRepository.delete({
       id: toponyme.id,
@@ -215,6 +261,27 @@ export class ToponymeService {
     // Si le toponyme a été supprimer on met a jour le updateAt de la BAL
     if (affected > 0) {
       await this.baseLocaleService.touch(toponyme.balId);
+
+      const toponymeEvent = await this.eventService.register(
+        { balId: toponyme.balId },
+        {
+          entityType: EventEntityTypeEnum.TOPONYME,
+          entityId: toponyme.id,
+          action: EventActionEnum.DELETE,
+          before: serializeToponyme(toponyme, numeroIds),
+        },
+      );
+      for (const position of toponyme.positions ?? []) {
+        await this.eventService.register(
+          { balId: toponyme.balId, parentEventId: toponymeEvent?.id },
+          {
+            entityType: EventEntityTypeEnum.POSITION,
+            entityId: position.id,
+            action: EventActionEnum.DELETE,
+            before: serializePosition(position),
+          },
+        );
+      }
     }
   }
 
@@ -303,6 +370,52 @@ export class ToponymeService {
       );
 
     return query.getRawMany();
+  }
+
+  // Journalise le rattachement/détachement d'un ou plusieurs numeros à ce
+  // toponyme comme un event TOPONYME UPDATE portant `numeroIds` avant/après.
+  // Prend des listes (plutôt qu'un numero à la fois) pour permettre un seul
+  // event par toponyme impacté même quand plusieurs numeros changent d'un
+  // coup (updateBatch/deleteBatch/voie.delete). Toujours appelée après que
+  // la mutation des numeros a déjà été persistée : `findIdsByToponyme`
+  // reflète donc l'état "après" réel, et l'état "avant" est reconstruit à
+  // partir de celui-ci.
+  public async registerNumeroLinkChange(
+    balId: string,
+    toponymeId: string,
+    attachedNumeroIds: string[],
+    detachedNumeroIds: string[],
+  ): Promise<void> {
+    if (attachedNumeroIds.length === 0 && detachedNumeroIds.length === 0) {
+      return;
+    }
+    const toponyme = await this.toponymesRepository.findOneBy({
+      id: toponymeId,
+    });
+    if (!toponyme) {
+      return;
+    }
+
+    const afterIds = await this.numeroService.findIdsByToponyme(toponymeId);
+    const beforeSet = new Set(afterIds);
+    for (const id of attachedNumeroIds) {
+      beforeSet.delete(id);
+    }
+    for (const id of detachedNumeroIds) {
+      beforeSet.add(id);
+    }
+    const beforeIds = [...beforeSet].sort();
+
+    await this.eventService.register(
+      { balId },
+      {
+        entityType: EventEntityTypeEnum.TOPONYME,
+        entityId: toponymeId,
+        action: EventActionEnum.UPDATE,
+        before: serializeToponyme(toponyme, beforeIds),
+        after: serializeToponyme(toponyme, afterIds),
+      },
+    );
   }
 
   public async isToponymeExist(

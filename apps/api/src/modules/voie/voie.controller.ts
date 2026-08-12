@@ -43,7 +43,6 @@ import {
   VoieMetas,
 } from '@/modules/voie/dto/extended_voie.dto';
 import { UpdateVoieDTO } from '@/modules/voie/dto/update_voie.dto';
-import { RestoreVoieDTO } from '@/modules/voie/dto/restore_voie.dto';
 import { CreateNumeroDTO } from '@/modules/numeros/dto/create_numero.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { filterComments } from '@/shared/utils/filter.utils';
@@ -111,39 +110,6 @@ export class VoieController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put(':voieId/soft-delete')
-  @ApiOperation({
-    summary: 'Soft delete Voie by id',
-    operationId: 'softDeleteVoie',
-  })
-  @ApiParam({ name: 'voieId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: Voie })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.voieService.softDelete(req.voie);
-    res.sendStatus(HttpStatus.NO_CONTENT);
-  }
-
-  @Put(':voieId/restore')
-  @ApiOperation({ summary: 'Restore Voie by id', operationId: 'restoreVoie' })
-  @ApiParam({ name: 'voieId', required: true, type: String })
-  @ApiBody({ type: RestoreVoieDTO, required: true })
-  @ApiResponse({ status: HttpStatus.OK, type: Voie })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  async restore(
-    @Req() req: CustomRequest,
-    @Body() restoreVoieDto: RestoreVoieDTO,
-    @Res() res: Response,
-  ) {
-    const result: Voie = await this.voieService.restore(
-      req.voie,
-      restoreVoieDto,
-    );
-    res.status(HttpStatus.OK).json(result);
-  }
-
   @Delete(':voieId')
   @ApiOperation({ summary: 'Delete Voie by id', operationId: 'deleteVoie' })
   @ApiParam({ name: 'voieId', required: true, type: String })
@@ -160,7 +126,6 @@ export class VoieController {
     summary: 'Find all numeros which belong to the voie',
     operationId: 'findVoieNumeros',
   })
-  @ApiQuery({ name: 'isdeleted', type: Boolean, required: false })
   @ApiParam({ name: 'voieId', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: Numero, isArray: true })
   @ApiBearerAuth('admin-token')

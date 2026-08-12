@@ -18,6 +18,7 @@ import {
   BaseLocaleSync,
 } from '@/shared/entities/base_locale.entity';
 import { Numero } from '@/shared/entities/numero.entity';
+import { Event } from '@/shared/entities/event.entity';
 import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
 import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
 import { getApiUrl, getEditorUrl } from '@/shared/utils/mailer.utils';
@@ -37,8 +38,9 @@ export class PublicationService {
 
   async exec(
     balId: string,
-    options: { force?: boolean } = {},
-  ): Promise<BaseLocale> {
+    options: { force?: boolean; ignoredEvents?: Event[] } = {},
+  ): Promise<{ baseLocale: BaseLocale; revisionId: string | null }> {
+    const ignoredEvents = options.ignoredEvents ?? [];
     const baseLocale = await this.basesLocalesRepository.findOneBy({
       id: balId,
     });
@@ -88,7 +90,6 @@ export class PublicationService {
     // On récupère le nombre de numeros de la BAL
     const numeroCount = await this.numerosRepository.countBy({
       balId,
-      deletedAt: null,
     });
     // On vérifie qu'il y ai au moins un numero dans la BAL
     if (numeroCount === 0) {
@@ -100,7 +101,11 @@ export class PublicationService {
     // On traite ensuite le cas de la première publication
     if (baseLocale.status === StatusBaseLocalEnum.DRAFT) {
       // On créer le fichier BAL CSV
-      const file: string = await this.exportCsvService.exportToCsv(baseLocale);
+      const file: string = await this.exportCsvService.exportToCsv(
+        baseLocale,
+        false,
+        ignoredEvents,
+      );
       // On créer la publication sur l'api-depot
       const publishedRevision: Revision =
         await this.apiDepotService.publishNewRevision(
@@ -126,7 +131,10 @@ export class PublicationService {
         },
       });
 
-      return this.markAsSynced(baseLocale, publishedRevision.id);
+      return {
+        baseLocale: await this.markAsSynced(baseLocale, publishedRevision.id),
+        revisionId: publishedRevision.id,
+      };
     }
 
     const sync = await this.updateSyncInfo(baseLocale);
@@ -137,7 +145,11 @@ export class PublicationService {
       sync.status === StatusSyncEnum.OUTDATED
     ) {
       // On créer le fichier BAL CSV
-      const file: string = await this.exportCsvService.exportToCsv(baseLocale);
+      const file: string = await this.exportCsvService.exportToCsv(
+        baseLocale,
+        false,
+        ignoredEvents,
+      );
       // ON créer le hash du fichier BAL CSV
       const hash = hasha(file, { algorithm: 'sha256' });
       // On récupère la révision courante pour la commune
@@ -158,14 +170,26 @@ export class PublicationService {
           baseLocale.habilitationId,
         );
         // On marque le sync de la BAL en published
-        return this.markAsSynced(baseLocale, publishedRevision.id);
+        return {
+          baseLocale: await this.markAsSynced(baseLocale, publishedRevision.id),
+          revisionId: publishedRevision.id,
+        };
       }
 
       // On marque le sync de la BAL en published avec la révision courante de l'api-depot
-      return this.markAsSynced(baseLocale, currentRevision.id);
+      return {
+        baseLocale: await this.markAsSynced(baseLocale, currentRevision.id),
+        revisionId: currentRevision.id,
+      };
     }
 
-    return this.basesLocalesRepository.findOneBy({ id: balId });
+    const finalBaseLocale = await this.basesLocalesRepository.findOneBy({
+      id: balId,
+    });
+    return {
+      baseLocale: finalBaseLocale,
+      revisionId: finalBaseLocale.sync?.lastUploadedRevisionId ?? null,
+    };
   }
 
   public async pause(balId: string) {

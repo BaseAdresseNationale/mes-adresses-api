@@ -50,6 +50,15 @@ import { generateDocument } from '@/lib/document/document-generator';
 import { DocumentFormat } from '@/lib/document/types';
 import { GenerateCertificatDTO } from './dto/generate_certificat.dto';
 import { S3Service } from '@/shared/modules/s3/s3.service';
+import { EventService } from '@/modules/event/event.service';
+import {
+  EventActionEnum,
+  EventEntityTypeEnum,
+} from '@/shared/entities/event.entity';
+import { serializeNumero } from '@/modules/event/serializers/numero.serializer';
+import { serializePosition } from '@/modules/event/serializers/position.serializer';
+import { emitPositionDiffEvents } from '@/modules/event/position-diff.util';
+import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
 
 @Injectable()
 export class NumeroService {
@@ -66,6 +75,7 @@ export class NumeroService {
     private baseLocaleService: BaseLocaleService,
     @Inject(forwardRef(() => S3Service))
     private s3service: S3Service,
+    private eventService: EventService,
   ) {}
 
   async findOneOrFail(numeroId: string): Promise<Numero> {
@@ -73,10 +83,7 @@ export class NumeroService {
     const where: FindOptionsWhere<Numero> = {
       id: numeroId,
     };
-    const numero = await this.numerosRepository.findOne({
-      where,
-      withDeleted: true,
-    });
+    const numero = await this.numerosRepository.findOne({ where });
     // Si len numero n'existe pas, on throw une erreur
     if (!numero) {
       throw new HttpException(
@@ -118,7 +125,6 @@ export class NumeroService {
     select?: FindOptionsSelect<Numero>,
     order?: FindOptionsOrder<Numero>,
     relations?: FindOptionsRelations<Numero>,
-    withDeleted?: boolean,
   ): Promise<Numero[]> {
     // Get les numeros en fonction du where, select, order et des relations
     return this.numerosRepository.find({
@@ -126,7 +132,6 @@ export class NumeroService {
       ...(select && { select }),
       ...(order && { order }),
       ...(relations && { relations }),
-      ...(withDeleted && { withDeleted }),
     });
   }
 
@@ -146,16 +151,6 @@ export class NumeroService {
     return query.getRawOne();
   }
 
-  async findManyWithDeleted(
-    where: FindOptionsWhere<Numero>,
-  ): Promise<Numero[]> {
-    // Get les numeros en fonction du where archivé ou non
-    return this.numerosRepository.find({
-      where,
-      withDeleted: true,
-    });
-  }
-
   async findDistinct(
     where: FindOptionsWhere<Numero>,
     field: string,
@@ -166,16 +161,27 @@ export class NumeroService {
       .select(field)
       .distinctOn([field])
       .where(where)
-      .withDeleted()
       .getRawMany();
     return res.map((raw) => raw[field]);
   }
 
+  // Liste triée des ids des numeros actuellement rattachés à ce toponyme —
+  // utilisée par ToponymeService pour construire le `numeroIds` d'un event
+  // TOPONYME (le tri garantit un tableau déterministe, condition nécessaire
+  // pour que la comparaison structurelle des payloads d'events reste fiable).
+  async findIdsByToponyme(toponymeId: string): Promise<string[]> {
+    const numeros = await this.numerosRepository.find({
+      where: { toponymeId },
+      select: { id: true },
+    });
+    return numeros.map(({ id }) => id).sort();
+  }
+
   async findDistinctParcelles(balId: string): Promise<string[]> {
     const res: any[] = await this.numerosRepository.query(
-      `SELECT ARRAY_AGG(distinct elem) 
-        FROM (select unnest(parcelles) as elem, bal_id, deleted_at from numeros) s 
-        WHERE bal_id = '${balId}' AND deleted_at IS null`,
+      `SELECT ARRAY_AGG(distinct elem)
+        FROM (select unnest(parcelles) as elem, bal_id from numeros) s
+        WHERE bal_id = '${balId}'`,
     );
     return res[0]?.array_agg || [];
   }
@@ -311,10 +317,6 @@ export class NumeroService {
     voie: Voie,
     createNumeroDto: CreateNumeroDTO,
   ): Promise<Numero> {
-    // On vérifie que la voie ne soit pas archivé
-    if (voie.deletedAt) {
-      throw new HttpException('Voie is archived', HttpStatus.NOT_FOUND);
-    }
     // Si il y a un toponyme, on vérifie qu'il existe
     if (
       createNumeroDto.toponymeId &&
@@ -325,7 +327,7 @@ export class NumeroService {
     // On créer l'object numéro
     const numero: Partial<Numero> = {
       balId: voie.balId,
-      banId: uuid(),
+      banId: createNumeroDto.banId || uuid(),
       voieId: voie.id,
       numero: createNumeroDto.numero,
       suffixe: createNumeroDto.suffixe
@@ -347,6 +349,41 @@ export class NumeroService {
     await this.voieService.calcCentroidAndBbox(voie.id);
     // On met a jour le updatedAt de la Bal
     await this.baseLocaleService.touch(numero.balId);
+
+    // If the voie itself was just created and isn't published yet, nest this
+    // numero's CREATE under the voie's CREATE event — so rolling back the
+    // voie's creation cannot leave a numero dangling with a voieId pointing
+    // to a voie that never existed publicly. This nesting survives any
+    // later update()/delete() on this numero (see EventService.fuse()).
+    const parentEventId = await this.eventService.findUnsyncedVoieCreateEventId(
+      voie.id,
+    );
+    const numeroEvent = await this.eventService.register(
+      { balId: voie.balId, parentEventId, voieId: voie.id },
+      {
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numeroCreated.id,
+        action: EventActionEnum.CREATE,
+        after: serializeNumero(numeroCreated),
+      },
+    );
+    await emitPositionDiffEvents(
+      this.eventService,
+      { balId: voie.balId, parentEventId: numeroEvent?.id, voieId: voie.id },
+      [],
+      numeroCreated.positions ?? [],
+    );
+
+    // La jonction numero<->toponyme n'est visible que côté event TOPONYME.
+    if (numeroCreated.toponymeId) {
+      await this.toponymeService.registerNumeroLinkChange(
+        voie.balId,
+        numeroCreated.toponymeId,
+        [numeroCreated.id],
+        [],
+      );
+    }
+
     return numeroCreated;
   }
 
@@ -397,6 +434,66 @@ export class NumeroService {
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(numero.balId);
 
+    // Les positions sont diffées avant de savoir si un event NUMERO est
+    // nécessaire : un event POSITION ne doit jamais rester orphelin, donc si
+    // au moins un en survit, un event NUMERO (même trivial, avant==après)
+    // doit exister pour le porter — voir le rattachement plus bas.
+    const positionEvents = await emitPositionDiffEvents(
+      this.eventService,
+      { balId: numero.balId, voieId: numeroUpdated.voieId },
+      numero.positions ?? [],
+      numeroUpdated.positions ?? [],
+    );
+
+    const numeroBeforePayload = serializeNumero(numero);
+    const numeroAfterPayload = serializeNumero(numeroUpdated);
+    // Une requète UPDATE renvoie `affected > 0` même si les valeurs envoyées
+    // sont identiques aux valeurs actuelles : on ne journalise un event que
+    // si l'état du numero a réellement changé, ou qu'il faut un conteneur
+    // pour les events position ci-dessus.
+    const numeroEvent =
+      !payloadsAreEqual(numeroBeforePayload, numeroAfterPayload) ||
+      positionEvents.length > 0
+        ? await this.eventService.register(
+            { balId: numero.balId, voieId: numeroUpdated.voieId },
+            {
+              entityType: EventEntityTypeEnum.NUMERO,
+              entityId: numero.id,
+              action: EventActionEnum.UPDATE,
+              before: numeroBeforePayload,
+              after: numeroAfterPayload,
+            },
+          )
+        : undefined;
+
+    if (numeroEvent) {
+      await this.eventService.reparentEvents(
+        positionEvents.map((event) => event.id),
+        numeroEvent.id,
+      );
+    }
+
+    // La jonction numero<->toponyme n'est visible que côté event TOPONYME —
+    // indépendant du guard ci-dessus, qui ne porte que sur les autres champs.
+    if (numero.toponymeId !== numeroUpdated.toponymeId) {
+      if (numero.toponymeId) {
+        await this.toponymeService.registerNumeroLinkChange(
+          numero.balId,
+          numero.toponymeId,
+          [],
+          [numero.id],
+        );
+      }
+      if (numeroUpdated.toponymeId) {
+        await this.toponymeService.registerNumeroLinkChange(
+          numero.balId,
+          numeroUpdated.toponymeId,
+          [numero.id],
+          [],
+        );
+      }
+    }
+
     return numeroUpdated;
   }
 
@@ -411,36 +508,45 @@ export class NumeroService {
     if (affected > 0) {
       // On met a jour le updatedAt de la bal, la voie et le toponyme
       await this.touch(numero);
+
+      const numeroEvent = await this.eventService.register(
+        { balId: numero.balId, voieId: numero.voieId },
+        {
+          entityType: EventEntityTypeEnum.NUMERO,
+          entityId: numero.id,
+          action: EventActionEnum.DELETE,
+          before: serializeNumero(numero),
+        },
+      );
+      for (const position of numero.positions ?? []) {
+        await this.eventService.register(
+          {
+            balId: numero.balId,
+            parentEventId: numeroEvent?.id,
+            voieId: numero.voieId,
+          },
+          {
+            entityType: EventEntityTypeEnum.POSITION,
+            entityId: position.id,
+            action: EventActionEnum.DELETE,
+            before: serializePosition(position),
+          },
+        );
+      }
+      if (numero.toponymeId) {
+        await this.toponymeService.registerNumeroLinkChange(
+          numero.balId,
+          numero.toponymeId,
+          [],
+          [numero.id],
+        );
+      }
     }
   }
 
   public async deleteMany(where: FindOptionsWhere<Numero>) {
     // On supprime les numero
     await this.numerosRepository.delete(where);
-  }
-
-  public async softDelete(numero: Numero): Promise<void> {
-    // On créer le where et on lance la requète
-    const { affected }: UpdateResult = await this.numerosRepository.softDelete({
-      id: numero.id,
-    });
-    // Si le numero a été suprimé
-    if (affected > 0) {
-      // On recalcule le centroid de la voie du numéro
-      await this.voieService.calcCentroidAndBbox(numero.voieId);
-      // On met a jour le updatedAt de la bal, la voie et le toponyme
-      await this.touch(numero);
-    }
-  }
-
-  public async softDeleteByVoie(voieId: string): Promise<void> {
-    await this.numerosRepository.softDelete({
-      voieId,
-    });
-  }
-
-  public async restore(where: FindOptionsWhere<Numero>): Promise<void> {
-    await this.numerosRepository.restore(where);
   }
 
   public async certifyVoieNumeros(voie: Voie): Promise<void> {
@@ -487,6 +593,12 @@ export class NumeroService {
       }),
       ...pick(changes, ['comment', 'certifie', 'communeDeleguee']),
     };
+    // On charge l'état avant modification de chaque numéro concerné, pour
+    // le log d'events, avant toute mutation.
+    const numerosBefore: Numero[] = await this.numerosRepository.find({
+      where,
+    });
+
     // Si le positionType est changé, on change le type de la première position dans le batch
     let positionTypeAffected: number = 0;
     if (changes.positionType) {
@@ -536,46 +648,83 @@ export class NumeroService {
           ),
         );
       }
-    }
 
-    return { modifiedCount: affected, changes };
-  }
-
-  public async softDeleteBatch(
-    baseLocale: BaseLocale,
-    { numerosIds }: DeleteBatchNumeroDTO,
-  ): Promise<BatchNumeroResponseDTO> {
-    // On récupère les différentes voies et toponymes des numeros qu'on va modifier
-    const where: FindOptionsWhere<Numero> = {
-      id: In(numerosIds),
-      balId: baseLocale.id,
-    };
-    const voieIds: string[] = await this.findDistinct(where, 'voie_id');
-    const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
-    // On archive les numeros dans postgres
-    const { affected }: UpdateResult = await this.numerosRepository.softDelete({
-      id: In(numerosIds),
-      balId: baseLocale.id,
-    });
-    // Si des numeros ont été archivés
-    if (affected > 0) {
-      // On met a jour le updatedAt de la BAL
-      await this.baseLocaleService.touch(baseLocale.id);
-      // On met a jour les centroid des voies des numeros archivé
-      await Promise.all(
-        voieIds.map((voidId) => this.voieService.calcCentroidAndBbox(voidId)),
+      // 1 event UPDATE par numéro modifié, tous liés au même event racine.
+      const numerosAfter: Numero[] = await this.numerosRepository.find({
+        where: { id: In(numerosIds), balId: baseLocale.id },
+      });
+      const numerosAfterById = new Map(
+        numerosAfter.map((numero) => [numero.id, numero]),
       );
-      // Si les numeros avaient des toponyme, on met a jour leurs updatedAt
-      if (toponymeIds.length > 0) {
-        await Promise.all(
-          toponymeIds.map((toponymeId) =>
-            this.toponymeService.touch(toponymeId),
-          ),
+      for (const numeroBefore of numerosBefore) {
+        const numeroAfter = numerosAfterById.get(numeroBefore.id);
+        if (!numeroAfter) {
+          continue;
+        }
+        const beforePayload = serializeNumero(numeroBefore);
+        const afterPayload = serializeNumero(numeroAfter);
+        // Le batch applique les mêmes changements à tous les numeros de la
+        // liste : certains peuvent ne subir aucun changement réel (ex: déjà
+        // certifié) — ne pas journaliser d'event dans ce cas.
+        if (payloadsAreEqual(beforePayload, afterPayload)) {
+          continue;
+        }
+        await this.eventService.register(
+          {
+            balId: baseLocale.id,
+            parentEventId: null,
+            voieId: numeroAfter.voieId,
+          },
+          {
+            entityType: EventEntityTypeEnum.NUMERO,
+            entityId: numeroBefore.id,
+            action: EventActionEnum.UPDATE,
+            before: beforePayload,
+            after: afterPayload,
+          },
         );
+      }
+
+      // Jonction numero<->toponyme, groupée par toponyme impacté : un seul
+      // event TOPONYME UPDATE par toponyme touché, même si plusieurs numeros
+      // du batch y sont rattachés/détachés d'un coup.
+      if (changes.toponymeId !== undefined) {
+        const detachedIdsByToponyme = new Map<string, string[]>();
+        const attachedIds: string[] = [];
+        for (const numeroBefore of numerosBefore) {
+          if (numeroBefore.toponymeId === changes.toponymeId) {
+            continue;
+          }
+          if (numeroBefore.toponymeId) {
+            const ids =
+              detachedIdsByToponyme.get(numeroBefore.toponymeId) ?? [];
+            ids.push(numeroBefore.id);
+            detachedIdsByToponyme.set(numeroBefore.toponymeId, ids);
+          }
+          if (changes.toponymeId) {
+            attachedIds.push(numeroBefore.id);
+          }
+        }
+        for (const [toponymeId, detachedIds] of detachedIdsByToponyme) {
+          await this.toponymeService.registerNumeroLinkChange(
+            baseLocale.id,
+            toponymeId,
+            [],
+            detachedIds,
+          );
+        }
+        if (changes.toponymeId && attachedIds.length > 0) {
+          await this.toponymeService.registerNumeroLinkChange(
+            baseLocale.id,
+            changes.toponymeId,
+            attachedIds,
+            [],
+          );
+        }
       }
     }
 
-    return { modifiedCount: affected };
+    return { modifiedCount: affected, changes };
   }
 
   public async deleteBatch(
@@ -589,6 +738,9 @@ export class NumeroService {
     };
     const voieIds: string[] = await this.findDistinct(where, 'voie_id');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
+    // On charge les numeros (et leurs positions, chargées eager) avant leur
+    // suppression, pour le log d'events.
+    const numeros: Numero[] = await this.numerosRepository.find({ where });
     // On supprime les numero dans postgres
     const { affected }: DeleteResult = await this.numerosRepository.delete({
       id: In(numerosIds),
@@ -608,6 +760,59 @@ export class NumeroService {
           toponymeIds.map((toponymeId) =>
             this.toponymeService.touch(toponymeId),
           ),
+        );
+      }
+
+      // 1 event DELETE racine par numéro, chacun avec ses propres positions
+      // en enfants (jamais de racine partagée entre numeros).
+      for (const numero of numeros) {
+        const numeroEvent = await this.eventService.register(
+          {
+            balId: baseLocale.id,
+            parentEventId: null,
+            voieId: numero.voieId,
+          },
+          {
+            entityType: EventEntityTypeEnum.NUMERO,
+            entityId: numero.id,
+            action: EventActionEnum.DELETE,
+            before: serializeNumero(numero),
+          },
+        );
+        for (const position of numero.positions ?? []) {
+          await this.eventService.register(
+            {
+              balId: baseLocale.id,
+              parentEventId: numeroEvent?.id,
+              voieId: numero.voieId,
+            },
+            {
+              entityType: EventEntityTypeEnum.POSITION,
+              entityId: position.id,
+              action: EventActionEnum.DELETE,
+              before: serializePosition(position),
+            },
+          );
+        }
+      }
+
+      // Jonction numero<->toponyme, groupée par toponyme impacté : un seul
+      // event TOPONYME UPDATE par toponyme touché même si plusieurs numeros
+      // supprimés y étaient rattachés.
+      const detachedIdsByToponyme = new Map<string, string[]>();
+      for (const numero of numeros) {
+        if (numero.toponymeId) {
+          const ids = detachedIdsByToponyme.get(numero.toponymeId) ?? [];
+          ids.push(numero.id);
+          detachedIdsByToponyme.set(numero.toponymeId, ids);
+        }
+      }
+      for (const [toponymeId, detachedIds] of detachedIdsByToponyme) {
+        await this.toponymeService.registerNumeroLinkChange(
+          baseLocale.id,
+          toponymeId,
+          [],
+          detachedIds,
         );
       }
     }

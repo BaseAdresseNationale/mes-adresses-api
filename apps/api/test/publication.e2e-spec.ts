@@ -17,6 +17,11 @@ import {
   StatusSyncEnum,
 } from '@/shared/entities/base_locale.entity';
 import {
+  Event,
+  EventActionEnum,
+  EventEntityTypeEnum,
+} from '@/shared/entities/event.entity';
+import {
   Revision,
   StatusRevisionEnum,
   TypeFileEnum,
@@ -54,6 +59,84 @@ describe('PUBLICATION MODULE', () => {
   let publicationService: PublicationService;
   // AXIOS
   const axiosMock = new MockAdapter(axios);
+
+  // Mocks a full "OUTDATED, hash différent" publish flow (habilitation,
+  // current-revision with an empty/never-matching hash so a new revision is
+  // always published, revision creation/compute/publish) and captures the
+  // CSV content actually uploaded, for tests that only care about the CSV
+  // rollback logic rather than the api-depot flow itself.
+  function mockOutdatedPublish({
+    commune,
+    habilitationId,
+    revisionId,
+  }: {
+    commune: string;
+    habilitationId: string;
+    revisionId: string;
+  }): { getUploadedCsv: () => string } {
+    let uploadedCsv: string;
+
+    const revision: Revision = {
+      id: revisionId,
+      codeCommune: commune,
+      status: StatusRevisionEnum.PENDING,
+      isReady: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isCurrent: false,
+      validation: { valid: true },
+      files: [{ type: TypeFileEnum.BAL, hash: '' }],
+    };
+    axiosMock
+      .onGet(`/communes/${commune}/current-revision`)
+      .reply(200, revision);
+
+    const habilitation: Habilitation = {
+      id: habilitationId,
+      status: StatusHabilitationEnum.ACCEPTED,
+      codeCommune: commune,
+      emailCommune: 'test@test.fr',
+    };
+    axiosMock.onGet(`habilitations/${habilitationId}`).reply(200, habilitation);
+
+    axiosMock.onPost(`/communes/${commune}/revisions`).reply(200, revision);
+    axiosMock.onPost(`/revisions/${revisionId}/compute`).reply(200, revision);
+
+    axiosMock.onPut(`/revisions/${revisionId}/files/bal`).reply(({ data }) => {
+      uploadedCsv = data;
+      return [200, null];
+    });
+
+    axiosMock.onPost(`/revisions/${revisionId}/publish`).reply(200, {
+      ...revision,
+      status: StatusRevisionEnum.PUBLISHED,
+      isReady: true,
+      isCurrent: true,
+    });
+
+    return { getUploadedCsv: () => uploadedCsv };
+  }
+
+  // Builds a minimal fake Event (never persisted — `ignoredEvents` is only
+  // ever passed as in-memory data down to PublicationService/ExportCsvService,
+  // which never re-query it) for the given entity/action/payloads.
+  function fakeEvent(overrides: Partial<Event>): Event {
+    return {
+      id: new ObjectId().toHexString(),
+      balId: null,
+      voieId: null,
+      parentEventId: null,
+      entityType: null,
+      entityId: null,
+      action: null,
+      payloadBefore: null,
+      payloadAfter: null,
+      isSyncedWithRevision: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...overrides,
+    } as Event;
+  }
 
   beforeAll(async () => {
     // INIT DB
@@ -167,7 +250,9 @@ describe('PUBLICATION MODULE', () => {
         return [200, publishedRevision];
       });
 
-      const res = await publicationService.exec(balId, { force: true });
+      const { baseLocale: res } = await publicationService.exec(balId, {
+        force: true,
+      });
       const syncExpected = {
         status: StatusSyncEnum.SYNCED,
         isPaused: false,
@@ -282,7 +367,9 @@ describe('PUBLICATION MODULE', () => {
         return [200, publishedRevision];
       });
 
-      const res = await publicationService.exec(balId, { force: true });
+      const { baseLocale: res } = await publicationService.exec(balId, {
+        force: true,
+      });
 
       const syncExpected = {
         status: StatusSyncEnum.SYNCED,
@@ -362,7 +449,9 @@ describe('PUBLICATION MODULE', () => {
         .onGet(`habilitations/${habilitationId}`)
         .reply(200, habilitation);
 
-      const res = await publicationService.exec(balId, { force: true });
+      const { baseLocale: res } = await publicationService.exec(balId, {
+        force: true,
+      });
 
       const syncExpected = {
         status: StatusSyncEnum.SYNCED,
@@ -459,6 +548,289 @@ describe('PUBLICATION MODULE', () => {
       await expect(
         publicationService.exec(balId, { force: true }),
       ).rejects.toThrow(HttpException);
+    });
+  });
+
+  describe('POST /bases-locales/sync/exec — ignoreEvents rollback', () => {
+    it('ignoring a NUMERO UPDATE event rolls its row back to payloadBefore in the CSV', async () => {
+      const commune = '91534';
+      const habilitationId = new ObjectId().toHexString();
+      const revisionId = new ObjectId().toHexString();
+
+      const balId = await createBal({
+        nom: 'bal',
+        commune,
+        habilitationId,
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+        sync: {
+          status: StatusSyncEnum.OUTDATED,
+          lastUploadedRevisionId: revisionId,
+        },
+      });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 2,
+        positions: [createPositions()],
+        certifie: true,
+      });
+      const numero = await repositories.numeros.findOneBy({ id: numeroId });
+
+      const ignoredEvent = fakeEvent({
+        balId,
+        voieId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: numeroId,
+        action: EventActionEnum.UPDATE,
+        payloadBefore: {
+          id: numeroId,
+          banId: numero.banId,
+          createdAt: numero.createdAt.toISOString(),
+          balId,
+          voieId,
+          numero: 1,
+          suffixe: null,
+          comment: null,
+          parcelles: null,
+          certifie: true,
+          communeDeleguee: null,
+        },
+        payloadAfter: {
+          id: numeroId,
+          banId: numero.banId,
+          createdAt: numero.createdAt.toISOString(),
+          balId,
+          voieId,
+          numero: 2,
+          suffixe: null,
+          comment: null,
+          parcelles: null,
+          certifie: true,
+          communeDeleguee: null,
+        },
+      });
+
+      const { getUploadedCsv } = mockOutdatedPublish({
+        commune,
+        habilitationId,
+        revisionId,
+      });
+
+      await publicationService.exec(balId, {
+        force: true,
+        ignoredEvents: [ignoredEvent],
+      });
+
+      const csv = getUploadedCsv();
+      expect(csv).toContain('91534_xxxx_00001;');
+      expect(csv).not.toContain('91534_xxxx_00002;');
+    });
+
+    it('ignoring a NUMERO DELETE event reconstructs its row (and position) despite the real deletion', async () => {
+      const commune = '91534';
+      const habilitationId = new ObjectId().toHexString();
+      const revisionId = new ObjectId().toHexString();
+
+      const balId = await createBal({
+        nom: 'bal',
+        commune,
+        habilitationId,
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+        sync: {
+          status: StatusSyncEnum.OUTDATED,
+          lastUploadedRevisionId: revisionId,
+        },
+      });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      // Un second numero est nécessaire : PublicationService refuse de
+      // publier une BAL qui n'a plus aucun numero.
+      await createNumero(balId, voieId, {
+        numero: 2,
+        positions: [createPositions([9, 43])],
+        certifie: true,
+      });
+      const deletedNumeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        positions: [createPositions([8, 42])],
+        certifie: true,
+      });
+      const deletedNumero = await repositories.numeros.findOneBy({
+        id: deletedNumeroId,
+      });
+      const [deletedPosition] = deletedNumero.positions;
+      await repositories.numeros.delete({ id: deletedNumeroId });
+
+      const numeroDeleteEvent = fakeEvent({
+        balId,
+        voieId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: deletedNumeroId,
+        action: EventActionEnum.DELETE,
+        payloadBefore: {
+          id: deletedNumeroId,
+          banId: deletedNumero.banId,
+          createdAt: deletedNumero.createdAt.toISOString(),
+          balId,
+          voieId,
+          numero: 1,
+          suffixe: null,
+          comment: null,
+          parcelles: null,
+          certifie: true,
+          communeDeleguee: null,
+        },
+        payloadAfter: null,
+      });
+      const positionDeleteEvent = fakeEvent({
+        balId,
+        voieId,
+        entityType: EventEntityTypeEnum.POSITION,
+        entityId: deletedPosition.id,
+        action: EventActionEnum.DELETE,
+        payloadBefore: {
+          id: deletedPosition.id,
+          toponymeId: null,
+          numeroId: deletedNumeroId,
+          type: deletedPosition.type,
+          source: deletedPosition.source ?? null,
+          rank: 0,
+          point: deletedPosition.point,
+        },
+        payloadAfter: null,
+      });
+
+      const { getUploadedCsv } = mockOutdatedPublish({
+        commune,
+        habilitationId,
+        revisionId,
+      });
+
+      await publicationService.exec(balId, {
+        force: true,
+        ignoredEvents: [numeroDeleteEvent, positionDeleteEvent],
+      });
+
+      const csv = getUploadedCsv();
+      expect(csv).toContain('91534_xxxx_00001;');
+      expect(csv).toContain('91534_xxxx_00002;');
+    });
+
+    it('ignoring a VOIE CREATE event (and its numero/position descendants) excludes them from the CSV', async () => {
+      const commune = '91534';
+      const habilitationId = new ObjectId().toHexString();
+      const revisionId = new ObjectId().toHexString();
+
+      const balId = await createBal({
+        nom: 'bal',
+        commune,
+        habilitationId,
+        status: StatusBaseLocalEnum.PUBLISHED,
+        emails: ['test@test.fr'],
+        sync: {
+          status: StatusSyncEnum.OUTDATED,
+          lastUploadedRevisionId: revisionId,
+        },
+      });
+      const publishedVoieId = await createVoie(balId, { nom: 'rue publiée' });
+      await createNumero(balId, publishedVoieId, {
+        numero: 1,
+        positions: [createPositions([8, 42])],
+        certifie: true,
+      });
+
+      const newVoieId = await createVoie(balId, { nom: 'rue toute neuve' });
+      const newVoie = await repositories.voies.findOneBy({ id: newVoieId });
+      const newNumeroId = await createNumero(balId, newVoieId, {
+        numero: 2,
+        positions: [createPositions([9, 43])],
+        certifie: true,
+      });
+      const newNumero = await repositories.numeros.findOneBy({
+        id: newNumeroId,
+      });
+      const [newPosition] = newNumero.positions;
+
+      const voieCreateEvent = fakeEvent({
+        balId,
+        voieId: newVoieId,
+        entityType: EventEntityTypeEnum.VOIE,
+        entityId: newVoieId,
+        action: EventActionEnum.CREATE,
+        payloadBefore: null,
+        payloadAfter: {
+          id: newVoieId,
+          banId: newVoie.banId,
+          createdAt: newVoie.createdAt.toISOString(),
+          balId,
+          nom: 'rue toute neuve',
+          nomAlt: null,
+          typeNumerotation: newVoie.typeNumerotation,
+          centroid: null,
+          trace: null,
+          bbox: null,
+          codeVoie: null,
+          comment: null,
+        },
+      });
+      const numeroCreateEvent = fakeEvent({
+        balId,
+        voieId: newVoieId,
+        entityType: EventEntityTypeEnum.NUMERO,
+        entityId: newNumeroId,
+        action: EventActionEnum.CREATE,
+        payloadBefore: null,
+        payloadAfter: {
+          id: newNumeroId,
+          banId: newNumero.banId,
+          createdAt: newNumero.createdAt.toISOString(),
+          balId,
+          voieId: newVoieId,
+          numero: 2,
+          suffixe: null,
+          comment: null,
+          parcelles: null,
+          certifie: true,
+          communeDeleguee: null,
+        },
+      });
+      const positionCreateEvent = fakeEvent({
+        balId,
+        voieId: newVoieId,
+        entityType: EventEntityTypeEnum.POSITION,
+        entityId: newPosition.id,
+        action: EventActionEnum.CREATE,
+        payloadBefore: null,
+        payloadAfter: {
+          id: newPosition.id,
+          toponymeId: null,
+          numeroId: newNumeroId,
+          type: newPosition.type,
+          source: newPosition.source ?? null,
+          rank: 0,
+          point: newPosition.point,
+        },
+      });
+
+      const { getUploadedCsv } = mockOutdatedPublish({
+        commune,
+        habilitationId,
+        revisionId,
+      });
+
+      await publicationService.exec(balId, {
+        force: true,
+        ignoredEvents: [
+          voieCreateEvent,
+          numeroCreateEvent,
+          positionCreateEvent,
+        ],
+      });
+
+      const csv = getUploadedCsv();
+      expect(csv).toContain('91534_xxxx_00001;');
+      expect(csv).not.toContain('91534_xxxx_00002;');
+      expect(csv).not.toContain('rue toute neuve');
     });
   });
 });

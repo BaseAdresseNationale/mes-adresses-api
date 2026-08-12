@@ -81,28 +81,6 @@ describe('VOIE MODULE', () => {
       expect(response.body[0].comment).toEqual(null);
     });
 
-    it('Return 200 numeronot deleted', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const voieId = await createVoie(balId, {
-        nom: 'rue de la paix',
-      });
-      await createNumero(balId, voieId, {
-        numero: 1,
-        comment: 'coucou',
-      });
-
-      await createNumero(balId, voieId, {
-        numero: 2,
-        comment: 'coucou',
-        deletedAt: new Date(),
-      });
-
-      const response = await request(app.getHttpServer())
-        .get(`/voies/${voieId}/numeros`)
-        .expect(200);
-      expect(response.body).toHaveLength(1);
-    });
-
     it('Return 200 numero with comment', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, {
@@ -159,7 +137,6 @@ describe('VOIE MODULE', () => {
       expect(response.body.certifie).toEqual(false);
       expect(response.body.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(response.body.createdAt).not.toEqual(createdAt.toISOString());
-      expect(response.body.deletedAt).toEqual(null);
       expect(response.body.communeDeleguee).toEqual('08294');
 
       const voieAfter: Voie = await repositories.voies.findOneBy({
@@ -215,7 +192,6 @@ describe('VOIE MODULE', () => {
       expect(response.body.certifie).toEqual(true);
       expect(response.body.updatedAt).not.toEqual(updatedAt.toISOString());
       expect(response.body.createdAt).not.toEqual(createdAt.toISOString());
-      expect(response.body.deletedAt).toEqual(null);
 
       const voieAfter: Voie = await repositories.voies.findOneBy({
         id: voieId,
@@ -229,52 +205,6 @@ describe('VOIE MODULE', () => {
       expect(balAfter.updatedAt.toISOString()).not.toEqual(
         updatedAt.toISOString(),
       );
-    });
-
-    it('Create 404 voie is deleted', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const voieId = await createVoie(balId, {
-        nom: 'rue de la paix',
-        deletedAt: new Date(),
-      });
-      const createdNumero: CreateNumeroDTO = {
-        numero: 1,
-        positions: [
-          {
-            type: PositionTypeEnum.ENTREE,
-            source: 'ban',
-            point: {
-              type: 'Point',
-              coordinates: [8, 42],
-            },
-          },
-        ],
-      };
-
-      const response = await request(app.getHttpServer())
-        .post(`/voies/${voieId}/numeros`)
-        .send(createdNumero)
-        .set('authorization', `Bearer ${token}`)
-        .expect(404);
-
-      expect(response.text).toEqual(
-        JSON.stringify({
-          statusCode: 404,
-          message: 'Voie is archived',
-        }),
-      );
-
-      const voieAfter: Voie = await repositories.voies.findOne({
-        where: { id: voieId },
-        withDeleted: true,
-      });
-      const balAfter: BaseLocale = await repositories.bals.findOneBy({
-        id: balId,
-      });
-      expect(voieAfter.updatedAt.toISOString()).toEqual(
-        updatedAt.toISOString(),
-      );
-      expect(balAfter.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
     });
 
     it('Create 404 toponyme not exist', async () => {
@@ -546,110 +476,14 @@ describe('VOIE MODULE', () => {
     });
   });
 
-  describe('PUT /soft-delete', () => {
-    it('Return 200', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const voieId = await createVoie(balId, {
-        nom: 'rue de la paix',
-        deletedAt: null,
-      });
-      await request(app.getHttpServer())
-        .put(`/voies/${voieId}/soft-delete`)
-        .set('authorization', `Bearer ${token}`)
-        .expect(204);
-
-      const bal = await repositories.bals.findOneBy({ id: balId });
-      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
-    });
-
-    it('Return 403', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const voieId = await createVoie(balId, {
-        nom: 'rue de la paix',
-        deletedAt: null,
-      });
-      await request(app.getHttpServer())
-        .put(`/voies/${voieId}/soft-delete`)
-        .expect(403);
-
-      const voie = await repositories.voies.findOneBy({ id: voieId });
-      expect(voie.deletedAt).toBeNull();
-
-      const bal = await repositories.bals.findOneBy({ id: balId });
-      expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
-    });
-  });
-
-  describe('PUT /restore', () => {
-    it('Return 200', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const voieId = await createVoie(balId, {
-        nom: 'rue de la paix',
-        deletedAt: updatedAt,
-      });
-      const numeroId = await createNumero(balId, voieId, {
-        numero: 1,
-        deletedAt: updatedAt,
-      });
-      const response = await request(app.getHttpServer())
-        .put(`/voies/${voieId}/restore`)
-        .send({ numerosIds: [numeroId] })
-        .set('authorization', `Bearer ${token}`)
-        .expect(200);
-
-      expect(response.body.deletedAt).toBeNull();
-
-      const numero = await repositories.numeros.findOneBy({ id: numeroId });
-
-      expect(numero.deletedAt).toEqual(null);
-
-      const bal = await repositories.bals.findOneBy({ id: balId });
-      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
-    });
-
-    it('Return 403', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const voieId = await createVoie(balId, {
-        nom: 'rue de la paix',
-        deletedAt: updatedAt,
-      });
-      const numeroId = await createNumero(balId, voieId, {
-        numero: 1,
-        deletedAt: updatedAt,
-      });
-      await request(app.getHttpServer())
-        .put(`/voies/${voieId}/restore`)
-        .send({ numeroIds: [numeroId] })
-        .expect(403);
-
-      const voie = await repositories.voies.findOne({
-        where: { id: voieId },
-        withDeleted: true,
-      });
-      expect(voie.deletedAt).not.toBeNull();
-
-      const numero = await repositories.numeros.findOne({
-        where: { id: numeroId },
-        withDeleted: true,
-      });
-
-      expect(numero.deletedAt).not.toBeNull();
-
-      const bal = await repositories.bals.findOneBy({ id: balId });
-      expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
-    });
-  });
-
   describe('DELETE /voies', () => {
     it('Return 200', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        deletedAt: updatedAt,
       });
       const numeroId = await createNumero(balId, voieId, {
         numero: 1,
-        deletedAt: updatedAt,
       });
       await request(app.getHttpServer())
         .delete(`/voies/${voieId}`)
@@ -670,28 +504,17 @@ describe('VOIE MODULE', () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, {
         nom: 'rue de la paix',
-        deletedAt: updatedAt,
       });
       const numeroId = await createNumero(balId, voieId, {
         numero: 1,
-        deletedAt: updatedAt,
       });
 
-      await request(app.getHttpServer())
-        .put(`/voies/${voieId}/restore`)
-        .send({ numeroIds: [numeroId] })
-        .expect(403);
+      await request(app.getHttpServer()).delete(`/voies/${voieId}`).expect(403);
 
-      const voie = await repositories.voies.findOne({
-        where: { id: voieId },
-        withDeleted: true,
-      });
+      const voie = await repositories.voies.findOneBy({ id: voieId });
       expect(voie).not.toBeNull();
 
-      const numero = await repositories.numeros.findOne({
-        where: { id: numeroId },
-        withDeleted: true,
-      });
+      const numero = await repositories.numeros.findOneBy({ id: numeroId });
       expect(numero).not.toBeNull();
 
       const bal = await repositories.bals.findOneBy({ id: balId });
