@@ -18,7 +18,7 @@ export class CreateEvents1784801437175 implements MigrationInterface {
       `CREATE UNIQUE INDEX "IDX_events_unsynced_entity" ON "events" ("entity_type", "entity_id") WHERE "is_synced_with_revision" IS NULL AND "entity_id" IS NOT NULL`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_events_bal_id_is_synced_with_revision" ON "events" ("bal_id", "is_synced_with_revision")`,
+      `CREATE INDEX "IDX_events_bal_id_pending" ON "events" ("bal_id") WHERE "is_synced_with_revision" IS NULL`,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_events_parent_event_id" ON "events" ("parent_event_id")`,
@@ -37,9 +37,7 @@ export class CreateEvents1784801437175 implements MigrationInterface {
     );
     await queryRunner.query(`DROP INDEX "public"."IDX_events_voie_id"`);
     await queryRunner.query(`DROP INDEX "public"."IDX_events_parent_event_id"`);
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_events_bal_id_is_synced_with_revision"`,
-    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_events_bal_id_pending"`);
     await queryRunner.query(`DROP INDEX "public"."IDX_events_unsynced_entity"`);
     await queryRunner.query(`DROP TABLE "events"`);
     await queryRunner.query(`DROP TYPE "public"."events_action_enum"`);

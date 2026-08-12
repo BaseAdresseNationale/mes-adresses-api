@@ -34,10 +34,14 @@ const payloadSchema = {
   unique: true,
   where: '"is_synced_with_revision" IS NULL AND "entity_id" IS NOT NULL',
 })
-@Index('IDX_events_bal_id_is_synced_with_revision', [
-  'balId',
-  'isSyncedWithRevision',
-])
+// `isSyncedWithRevision` is never queried against a specific revision id —
+// only ever IS NULL (pending) vs IS NOT NULL. Partial + balId-only covers
+// the two hottest paths (listing pending root events, and flipping them to
+// synced on publish) with a small, targeted index; listing already-synced
+// events (a rare admin/introspection read) falls back to a filtered scan.
+@Index('IDX_events_bal_id_pending', ['balId'], {
+  where: '"is_synced_with_revision" IS NULL',
+})
 @ApiExtraModels(...EVENT_PAYLOAD_MODELS)
 export class Event {
   @ApiProperty()

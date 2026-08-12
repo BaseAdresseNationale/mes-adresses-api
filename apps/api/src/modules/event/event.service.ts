@@ -37,16 +37,12 @@ export interface ReparentOrphanedNumerosParams {
 // `relations` was loaded (2 levels of `childEvents` today — VOIE root ->
 // NUMERO -> POSITION, the only hierarchy in this domain), but works at any
 // depth.
-function sortAndFilterChildren(
-  event: Event,
-  isSyncedWithRevision: string | null,
-): Event {
+function sortAndFilterChildren(event: Event): Event {
   return {
     ...event,
     childEvents: (event.childEvents ?? [])
-      .filter((child) => child.isSyncedWithRevision === isSyncedWithRevision)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .map((child) => sortAndFilterChildren(child, isSyncedWithRevision)),
+      .map((child) => sortAndFilterChildren(child)),
   };
 }
 
@@ -72,13 +68,12 @@ export class EventService {
   // specific revision id for events already published as part of it.
   private async findRootEventsByBalAndSyncState(
     balId: string,
-    isSyncedWithRevision: string | null,
+    isSynced: boolean,
   ): Promise<Event[]> {
     const where: FindOptionsWhere<Event> = {
       balId,
       parentEventId: IsNull(),
-      isSyncedWithRevision:
-        isSyncedWithRevision === null ? IsNull() : isSyncedWithRevision,
+      isSyncedWithRevision: isSynced ? Not(IsNull()) : IsNull(),
     };
 
     const roots = await this.eventsRepository.find({
@@ -87,25 +82,20 @@ export class EventService {
       order: { createdAt: 'DESC' },
     });
 
-    const results = roots.map((root) =>
-      sortAndFilterChildren(root, isSyncedWithRevision),
-    );
+    const results = roots.map((root) => sortAndFilterChildren(root));
 
     return results;
   }
 
   public async findRootEventsByBal(balId: string): Promise<Event[]> {
-    return this.findRootEventsByBalAndSyncState(balId, null);
+    return this.findRootEventsByBalAndSyncState(balId, false);
   }
 
   // Same tree, restricted to events actually published as part of
   // `revisionId` — lets a caller inspect what a given publication covered
   // after the fact.
-  public async findSyncedRootEventsByBal(
-    balId: string,
-    revisionId: string,
-  ): Promise<Event[]> {
-    return this.findRootEventsByBalAndSyncState(balId, revisionId);
+  public async findSyncedRootEventsByBal(balId: string): Promise<Event[]> {
+    return this.findRootEventsByBalAndSyncState(balId, true);
   }
 
   public async updateEventSynced(

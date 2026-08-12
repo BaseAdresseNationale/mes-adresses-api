@@ -78,8 +78,8 @@ import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 import { HabilitationService } from './sub_modules/habilitation/habilitation.service';
 import { EventService } from '@/modules/event/event.service';
-import { EventPageDTO } from '@/modules/event/dto/event_page.dto';
 import { SyncExecDTO } from '@/modules/base_locale/dto/sync_exec.dto';
+import { Event } from '@/shared/entities/event.entity';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -768,7 +768,7 @@ export class BaseLocaleController {
     operationId: 'findBaseLocaleEvents',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: EventPageDTO })
+  @ApiResponse({ status: HttpStatus.OK, type: Event, isArray: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async findBaseLocaleEvents(@Req() req: CustomRequest, @Res() res: Response) {
@@ -784,18 +784,15 @@ export class BaseLocaleController {
     operationId: 'findBaseLocaleSyncedEvents',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiQuery({ name: 'revisionId', type: String, required: true })
-  @ApiResponse({ status: HttpStatus.OK, type: EventPageDTO })
+  @ApiResponse({ status: HttpStatus.OK, type: Event, isArray: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async findBaseLocaleSyncedEvents(
     @Req() req: CustomRequest,
-    @Query('revisionId') revisionId: string,
     @Res() res: Response,
   ) {
     const results = await this.eventService.findSyncedRootEventsByBal(
       req.baseLocale.id,
-      revisionId,
     );
     res.status(HttpStatus.OK).json(results);
   }
