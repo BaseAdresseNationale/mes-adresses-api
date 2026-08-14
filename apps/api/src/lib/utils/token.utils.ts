@@ -1,54 +1,18 @@
-const A_LOWER = 'a'.codePointAt(0);
-const A_UPPER = 'A'.codePointAt(0);
+import { randomBytes } from 'crypto';
 
-function base62IntToChar(n) {
-  if (!Number.isInteger(n) || n < 0 || n >= 62) {
-    throw new Error('param must be an integer between 0 and 61');
+const TOKEN_CHARSET =
+  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+// Plus grand multiple de 62 <= 256, pour rejeter les octets biaisés
+const REJECTION_THRESHOLD = 256 - (256 % TOKEN_CHARSET.length);
+
+export function generateToken(length = 20): string {
+  let token = '';
+  while (token.length < length) {
+    for (const byte of randomBytes((length - token.length) * 2)) {
+      if (byte >= REJECTION_THRESHOLD) continue;
+      token += TOKEN_CHARSET[byte % TOKEN_CHARSET.length];
+      if (token.length === length) break;
+    }
   }
-
-  if (n < 10) {
-    return n.toString();
-  }
-
-  if (n < 36) {
-    return String.fromCodePoint(n - 10 + A_LOWER);
-  }
-
-  return String.fromCodePoint(n - 36 + A_UPPER);
-}
-
-function base62IntToString(n) {
-  if (!Number.isInteger(n) || n < 0 || n > Number.MAX_SAFE_INTEGER) {
-    throw new Error('param must be a safe positive integer');
-  }
-
-  if (n === 0) {
-    return '0';
-  }
-
-  let str = '';
-
-  while (n > 0) {
-    const mod = n % 62;
-    str = base62IntToChar(mod) + str;
-    n = n > mod ? (n - mod) / 62 : n - mod;
-  }
-
-  return str;
-}
-
-function generateBase62Part() {
-  return base62IntToString(
-    Number.parseInt(Math.random().toString().slice(2, 17), 10),
-  ).padStart(10, '0');
-}
-
-export function generateBase62String(length = 10) {
-  let result = '';
-
-  while (result.length < length) {
-    result += generateBase62Part().slice(2);
-  }
-
-  return result.slice(0, length);
+  return token;
 }
