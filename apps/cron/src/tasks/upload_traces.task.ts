@@ -2,13 +2,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { StatusBaseLocalEnum } from '@/shared/entities/base_locale.entity';
-import { Task } from '@/shared/types/task.type';
 import { TypeNumerotationEnum, Voie } from '@/shared/entities/voie.entity';
 import { S3Service } from '@/shared/modules/s3/s3.service';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
+import { Task } from '../queue.class';
 
 @Injectable()
 export class UploadTracesTask implements Task {
+  title: string = 'UPLOAD TRACES';
+
   constructor(
     @InjectRepository(Voie)
     private voiesRepository: Repository<Voie>,

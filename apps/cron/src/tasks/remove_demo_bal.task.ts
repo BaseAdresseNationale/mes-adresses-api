@@ -6,12 +6,14 @@ import {
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 
-import { Task } from '@/shared/types/task.type';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, LessThan, Repository } from 'typeorm';
+import { Task } from '../queue.class';
 
 @Injectable()
 export class RemoveDemoBalTask implements Task {
+  title: string = 'REMOVE DEMO BAL';
+
   constructor(
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,

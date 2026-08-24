@@ -3,10 +3,12 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
-import { Task } from '@/shared/types/task.type';
+import { Task } from '../queue.class';
 
 @Injectable()
 export class ResetCommunesForWebinaireTask implements Task {
+  title: string = 'RESET COMMUNES FOR WEBINAIRE';
+
   constructor(
     @InjectRepository(BaseLocale)
     private basesLocalesRepository: Repository<BaseLocale>,
