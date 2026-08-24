@@ -1,26 +1,5 @@
-import { Numero } from '../entities/numero.entity';
-import { WithNumero } from '../types/with-numero.type';
-
-export function displaySuffix(numero: Numero): string {
-  if (numero.suffixe) {
-    if (numero.suffixe.trim().match(/^\d/)) {
-      return '-' + numero.suffixe.trim();
-    }
-    return numero.suffixe.trim();
-  }
-
-  return '';
-}
-
-export function filterSensitiveFields(
-  numero: Numero,
-  filter: boolean = true,
-): Numero {
-  if (filter && numero.comment) {
-    numero.comment = null;
-  }
-  return numero;
-}
+import { Numero } from '@/shared/entities/numero.entity';
+import { WithNumero } from '../types/numero.type';
 
 export function normalizeSuffixe(suffixe: string): string {
   return suffixe.toLowerCase().trim();

@@ -28,7 +28,6 @@ import {
   BaseLocale,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
-import { normalizeSuffixe } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/entities/position.entity';
 
 import { UpdateNumeroDTO } from '@/modules/numeros/dto/update_numero.dto';
@@ -59,6 +58,7 @@ import { serializeNumero } from '@/modules/event/serializers/numero.serializer';
 import { serializePosition } from '@/modules/event/serializers/position.serializer';
 import { emitPositionDiffEvents } from '@/modules/event/position-diff.util';
 import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
+import { normalizeSuffixe } from '@/lib/utils/numero.utils';
 
 @Injectable()
 export class NumeroService {

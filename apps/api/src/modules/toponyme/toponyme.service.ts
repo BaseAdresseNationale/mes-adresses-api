@@ -22,7 +22,6 @@ import { v4 as uuid } from 'uuid';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Numero } from '@/shared/entities/numero.entity';
-import { extendWithNumeros } from '@/shared/utils/numero.utils';
 import { Position } from '@/shared/entities/position.entity';
 
 import { cleanNom, cleanNomAlt, getNomAltDefault } from '@/lib/utils/nom.util';
@@ -42,6 +41,7 @@ import { serializeToponyme } from '@/modules/event/serializers/toponyme.serializ
 import { serializePosition } from '@/modules/event/serializers/position.serializer';
 import { emitPositionDiffEvents } from '@/modules/event/position-diff.util';
 import { payloadsAreEqual } from '@/modules/event/payload-diff.util';
+import { extendWithNumeros } from '@/lib/utils/numero.utils';
 
 @Injectable()
 export class ToponymeService {
