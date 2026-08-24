@@ -5,14 +5,9 @@ import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middlewa
 import { HabilitationService } from './habilitation.service';
 import { BaseLocaleModule } from '../../base_locale.module';
 import { ApiDepotModule } from '../api_depot/api_depot.module';
-import { PublicationModule } from '../publication/publication.module';
 
 @Module({
-  imports: [
-    ApiDepotModule,
-    forwardRef(() => BaseLocaleModule),
-    forwardRef(() => PublicationModule),
-  ],
+  imports: [ApiDepotModule, forwardRef(() => BaseLocaleModule)],
   providers: [HabilitationService, BaseLocaleMiddleware, Logger],
   controllers: [HabilitationController],
   exports: [HabilitationService],
