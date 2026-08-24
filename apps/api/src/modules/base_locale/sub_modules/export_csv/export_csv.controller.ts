@@ -9,8 +9,8 @@ import {
 } from '@nestjs/swagger';
 
 import { CustomRequest } from '@/lib/types/request.type';
-import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
 import { isAdmin } from '@/lib/utils/is-admin.utils';
+import { ExportCsvService } from './export_csv.service';
 
 @ApiTags('export csv')
 @Controller('bases-locales')

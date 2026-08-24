@@ -10,7 +10,7 @@ import {
   Habilitation,
   StatusHabilitationEnum,
   TypeFileEnum,
-} from '@/shared/modules/api_depot/api-depot.types';
+} from '@/lib/types/api-depot.types';
 import {
   BaseLocale,
   StatusBaseLocalEnum,
@@ -19,9 +19,9 @@ import {
 } from '@/shared/entities/base_locale.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { Event } from '@/shared/entities/event.entity';
-import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
-import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
 import { getApiUrl, getEditorUrl } from '@/shared/utils/mailer.utils';
+import { ApiDepotService } from '../api_depot/api_depot.service';
+import { ExportCsvService } from '../base_locale/sub_modules/export_csv/export_csv.service';
 
 @Injectable()
 export class PublicationService {

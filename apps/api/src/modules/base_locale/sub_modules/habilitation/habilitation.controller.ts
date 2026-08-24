@@ -18,7 +18,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { Habilitation } from '@/shared/modules/api_depot/api-depot.types';
+import { Habilitation } from '@/lib/types/api-depot.types';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/guards/admin.guard';

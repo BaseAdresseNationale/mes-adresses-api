@@ -4,10 +4,10 @@ import { ObjectId } from 'mongodb';
 import {
   Habilitation,
   StatusHabilitationEnum,
-} from '@/shared/modules/api_depot/api-depot.types';
-import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
+} from '@/lib/types/api-depot.types';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { BaseLocaleService } from '../../base_locale.service';
+import { ApiDepotService } from '@/modules/api_depot/api_depot.service';
 
 @Injectable()
 export class HabilitationService {

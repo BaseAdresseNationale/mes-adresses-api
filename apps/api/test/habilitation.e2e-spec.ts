@@ -17,7 +17,7 @@ import axios from 'axios';
 import {
   Habilitation,
   StatusHabilitationEnum,
-} from '@/shared/modules/api_depot/api-depot.types';
+} from '@/lib/types/api-depot.types';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { Repository } from 'typeorm';
 import {

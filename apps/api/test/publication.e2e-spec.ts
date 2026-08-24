@@ -27,12 +27,10 @@ import {
   TypeFileEnum,
   Habilitation,
   StatusHabilitationEnum,
-} from '@/shared/modules/api_depot/api-depot.types';
+} from '@/lib/types/api-depot.types';
 
 // import { MailerModule } from '@/shared/test/mailer.module.test';
 import { Repository } from 'typeorm';
-import { PublicationModule } from '@/shared/modules/publication/publication.module';
-import { PublicationService } from '@/shared/modules/publication/publication.service';
 import {
   createBal,
   createNumero,
@@ -45,6 +43,8 @@ import {
   startPostgresContainer,
   stopPostgresContainer,
 } from './typeorm.utils';
+import { PublicationService } from '@/modules/publication/publication.service';
+import { PublicationModule } from '@/modules/publication/publication.module';
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;

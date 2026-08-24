@@ -4,9 +4,9 @@ import { AxiosError } from 'axios';
 import { of, catchError, firstValueFrom } from 'rxjs';
 import * as hasha from 'hasha';
 
-import { Habilitation, Revision } from './api-depot.types';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { ConfigService } from '@nestjs/config';
+import { Habilitation, Revision } from '@/lib/types/api-depot.types';
 
 @Injectable()
 export class ApiDepotService {

@@ -34,7 +34,6 @@ import { Response } from 'express';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
-import { PublicationService } from '@/shared/modules/publication/publication.service';
 import { getEditorUrl } from '@/shared/utils/mailer.utils';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
@@ -80,6 +79,7 @@ import { HabilitationService } from './sub_modules/habilitation/habilitation.ser
 import { EventService } from '@/modules/event/event.service';
 import { SyncExecDTO } from '@/modules/base_locale/dto/sync_exec.dto';
 import { Event } from '@/shared/entities/event.entity';
+import { PublicationService } from '../publication/publication.service';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')

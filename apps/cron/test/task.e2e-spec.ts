@@ -24,12 +24,9 @@ import {
 } from '@/shared/entities/base_locale.entity';
 import { Position } from '@/shared/entities/position.entity';
 
-import { ApiDepotModule } from '@/shared/modules/api_depot/api_depot.module';
-import { PublicationModule } from '@/shared/modules/publication/publication.module';
 import { MailerService } from '@nestjs-modules/mailer';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CacheModule } from '@/shared/modules/cache/cache.module';
 import { Cache } from '@/shared/entities/cache.entity';
 import { ResetCommunesForWebinaireTask } from '../src/tasks/reset_communes_for_webinaire.task';
 
@@ -52,10 +49,7 @@ describe('TASK MODULE', () => {
   // DB
   let postgresContainer: StartedPostgreSqlContainer;
   let postgresClient: Client;
-  let numeroRepository: Repository<Numero>;
-  let voieRepository: Repository<Voie>;
   let balRepository: Repository<BaseLocale>;
-  let toponymeRepository: Repository<Toponyme>;
   // SERVICE
   let resetCommuneForWebinaireTask: ResetCommunesForWebinaireTask;
   // VAR
@@ -93,10 +87,7 @@ describe('TASK MODULE', () => {
           entities: [BaseLocale, Voie, Numero, Toponyme, Position, Cache],
         }),
         TypeOrmModule.forFeature([BaseLocale]),
-        ApiDepotModule,
-        PublicationModule,
         MailerModule,
-        CacheModule,
       ],
       providers: [ResetCommunesForWebinaireTask, Logger],
     }).compile();
@@ -106,10 +97,7 @@ describe('TASK MODULE', () => {
     await app.init();
 
     // INIT REPOSITORY
-    numeroRepository = app.get(getRepositoryToken(Numero));
-    voieRepository = app.get(getRepositoryToken(Voie));
     balRepository = app.get(getRepositoryToken(BaseLocale));
-    toponymeRepository = app.get(getRepositoryToken(Toponyme));
     // INIT TASK
     resetCommuneForWebinaireTask = app.get<ResetCommunesForWebinaireTask>(
       ResetCommunesForWebinaireTask,
@@ -123,10 +111,7 @@ describe('TASK MODULE', () => {
   });
 
   afterEach(async () => {
-    await numeroRepository.delete({});
-    await voieRepository.delete({});
     await balRepository.delete({});
-    await toponymeRepository.delete({});
     axiosMock.reset();
   });
 

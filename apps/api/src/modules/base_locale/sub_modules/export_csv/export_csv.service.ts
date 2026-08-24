@@ -5,11 +5,11 @@ import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Event } from '@/shared/entities/event.entity';
-import { exportBalToCsv } from '@/shared/modules/export_csv/utils/export_csv_bal.utils';
-import { exportVoiesToCsv } from '@/shared/modules/export_csv/utils/export_csv_voies.utils';
-import { applyEventsRollback } from '@/shared/modules/export_csv/utils/rollback_events.utils';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { applyEventsRollback } from './utils/rollback_events.utils';
+import { exportBalToCsv } from './utils/export_csv_bal.utils';
+import { exportVoiesToCsv } from './utils/export_csv_voies.utils';
 
 @Injectable()
 export class ExportCsvService {

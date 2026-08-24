@@ -3,7 +3,7 @@ import {
   Habilitation,
   StatusHabilitationEnum,
   TypeStrategyEnum,
-} from '@/shared/modules/api_depot/api-depot.types';
+} from '@/lib/types/api-depot.types';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class StrategyDTO {

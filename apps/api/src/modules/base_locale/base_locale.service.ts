@@ -27,8 +27,6 @@ import {
   ImportTypeEnum,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
-import { Habilitation } from '@/shared/modules/api_depot/api-depot.types';
-import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 import {
   getApiRecoveryUrl,
   getApiUrl,
@@ -40,7 +38,6 @@ import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
-import { CacheService } from '@/shared/modules/cache/cache.service';
 import { CreateBaseLocaleDTO } from '@/modules/base_locale/dto/create_base_locale.dto';
 import { ExtendedBaseLocaleDTO } from './dto/extended_base_locale.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
@@ -56,11 +53,14 @@ import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
 import { createGeoJSONFeature } from '@/shared/utils/geojson.utils';
 import { getEmailsMairie } from '@/lib/utils/annuaire-service-public';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
-import { ExportCsvService } from '@/shared/modules/export_csv/export_csv.service';
 import { BalTree, formatterBAL } from '@ban-team/formatter-bal';
 import { Numero } from '@/shared/entities/numero.entity';
-import { PublicationService } from '@/shared/modules/publication/publication.service';
 import { EventService } from '../event/event.service';
+import { PublicationService } from '../publication/publication.service';
+import { BanPlateformService } from '../ban_plateform/ban_plateform.service';
+import { CacheService } from '../cache/cache.service';
+import { Habilitation } from '@/lib/types/api-depot.types';
+import { ExportCsvService } from './sub_modules/export_csv/export_csv.service';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 

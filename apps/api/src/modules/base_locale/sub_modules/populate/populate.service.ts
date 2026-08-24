@@ -1,7 +1,7 @@
 import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
+import { ApiDepotService } from '@/modules/api_depot/api_depot.service';
+import { BanPlateformService } from '@/modules/ban_plateform/ban_plateform.service';
 import { ImportTypeEnum } from '@/shared/entities/base_locale.entity';
-import { ApiDepotService } from '@/shared/modules/api_depot/api_depot.service';
-import { BanPlateformService } from '@/shared/modules/ban_plateform/ban_plateform.service';
 import { Inject, Injectable, forwardRef, Logger } from '@nestjs/common';
 
 export type FromCsvSourceType = FromCsvType & {
