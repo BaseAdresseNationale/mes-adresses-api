@@ -34,7 +34,7 @@ export async function getAdresseMairie(
 
     return `${mairieData.nom}\n${adresseMairie.numero_voie}\n${adresseMairie.code_postal} ${adresseMairie.nom_commune}`;
   } catch (error) {
-    console.log(
+    console.error(
       'Could not fetch mairie address for commune : ',
       codeCommune,
       error,
@@ -81,7 +81,7 @@ export async function getEmailsMairie(
       `Les adresses emails " ${emails.join(',')} " ne peut pas être utilisée`,
     );
   } catch (error) {
-    console.log(
+    console.error(
       'Could not fetch mairie mail for commune : ',
       codeCommune,
       error,

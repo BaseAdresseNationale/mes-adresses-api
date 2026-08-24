@@ -11,13 +11,13 @@ import {
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 
-import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
+import { HabilitationModule } from '@/modules/base_locale/modules/habilitation/habilitation.module';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 import {
   Habilitation,
   StatusHabilitationEnum,
-} from '@/shared/modules/api_depot/api-depot.types';
+} from '@/lib/types/api-depot.types';
 import { MailerModule } from '@/shared/test/mailer.module.test';
 import { Repository } from 'typeorm';
 import {

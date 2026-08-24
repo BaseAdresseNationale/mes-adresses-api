@@ -116,13 +116,7 @@ export class AdminController {
   async syncIdsBANPublish(@Req() req: CustomRequest, @Res() res: Response) {
     try {
       await this.baseLocaleService.syncIdsBAN(req.baseLocale);
-      const result = await this.baseLocaleService.forcePublish(
-        req.baseLocale.id,
-      );
-      if (!result.success) {
-        throw new HttpException(result.error, HttpStatus.PRECONDITION_FAILED);
-      }
-      const baseLocale = await this.baseLocaleService.findOneOrFail(
+      const baseLocale = await this.baseLocaleService.forcePublish(
         req.baseLocale.id,
       );
       res.status(HttpStatus.OK).json(baseLocale);

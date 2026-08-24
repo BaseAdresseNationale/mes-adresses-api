@@ -53,6 +53,7 @@ const baseLocalePublicProperties = [
   'isAllCertified',
   'settings',
   'status',
+  'eventsCount',
   'updatedAt',
   'createdAt',
   'deletedAt',
@@ -269,84 +270,6 @@ describe('BASE LOCAL MODULE', () => {
         .send(updateBtach)
         .set('authorization', `Bearer ${token}`)
         .expect(404);
-    });
-  });
-
-  describe('PUT /bases-locales/numeros/batch/soft-delete', () => {
-    it('Soft Delete 200', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const voieId1 = await createVoie(balId, { nom: 'rue de la paix' });
-      const toponymeId1 = await createToponyme(balId, {
-        nom: 'allée',
-      });
-      const toponymeId2 = await createToponyme(balId, {
-        nom: 'allée',
-      });
-      const voieId2 = await createVoie(balId, { nom: 'rue de la paix' });
-      const numeroId1 = await createNumero(balId, voieId1, {
-        numero: 99,
-        positions: [createPositions()],
-        toponymeId: toponymeId1,
-      });
-      const numeroId2 = await createNumero(balId, voieId2, {
-        numero: 99,
-        positions: [createPositions()],
-        toponymeId: toponymeId2,
-      });
-      const deleteBtach: DeleteBatchNumeroDTO = {
-        numerosIds: [numeroId1, numeroId2],
-      };
-      await request(app.getHttpServer())
-        .put(`/bases-locales/${balId}/numeros/batch/soft-delete`)
-        .send(deleteBtach)
-        .set('authorization', `Bearer ${token}`)
-        .expect(204);
-      const numero1After: Numero = await repositories.numeros.findOne({
-        where: { id: numeroId1 },
-        withDeleted: true,
-      });
-      expect(numero1After.updatedAt).not.toEqual(updatedAt.toISOString());
-      expect(numero1After.deletedAt).toBeDefined();
-      const numero2After: Numero = await repositories.numeros.findOne({
-        where: { id: numeroId2 },
-        withDeleted: true,
-      });
-      expect(numero2After.updatedAt).not.toEqual(updatedAt.toISOString());
-      expect(numero2After.deletedAt).toBeDefined();
-      const voie1After: Voie = await repositories.voies.findOneBy({
-        id: voieId1,
-      });
-      expect(voie1After.updatedAt).not.toEqual(updatedAt.toISOString());
-      expect(voie1After.centroid).toBeNull();
-      const voie2After: Voie = await repositories.voies.findOneBy({
-        id: voieId2,
-      });
-      expect(voie2After.updatedAt).not.toEqual(updatedAt.toISOString());
-      expect(voie2After.centroid).toBeNull();
-      const toponymeAfter1: Toponyme = await repositories.toponymes.findOneBy({
-        id: toponymeId1,
-      });
-      expect(toponymeAfter1.updatedAt).not.toEqual(updatedAt.toISOString());
-      const toponymeAfter2: Toponyme = await repositories.toponymes.findOneBy({
-        id: toponymeId2,
-      });
-      expect(toponymeAfter2.updatedAt).not.toEqual(updatedAt.toISOString());
-      const balAfter: BaseLocale = await repositories.bals.findOneBy({
-        id: balId,
-      });
-      expect(balAfter.updatedAt).not.toEqual(updatedAt.toISOString());
-    });
-
-    it('Soft Delete 400: Bad request', async () => {
-      const balId = await createBal({ nom: 'bal', commune: '91400' });
-      const deleteBtach: DeleteBatchNumeroDTO = {
-        numerosIds: [],
-      };
-      await request(app.getHttpServer())
-        .put(`/bases-locales/${balId}/numeros/batch/soft-delete`)
-        .send(deleteBtach)
-        .set('authorization', `Bearer ${token}`)
-        .expect(400);
     });
   });
 
@@ -1006,7 +929,7 @@ describe('BASE LOCAL MODULE', () => {
   });
 
   describe('GET /:baseLocaleId/voies', () => {
-    it('GET default not deleted', async () => {
+    it('GET 200', async () => {
       const balId = await createBal({
         nom: 'foo',
         commune: '27115',
@@ -1024,11 +947,6 @@ describe('BASE LOCAL MODULE', () => {
       createNumero(balId, voieId, {
         numero: 1,
         certifie: true,
-      });
-
-      createNumero(balId, voieId, {
-        numero: 1,
-        deletedAt: new Date(),
       });
 
       const response = await request(app.getHttpServer())
@@ -1073,7 +991,6 @@ describe('BASE LOCAL MODULE', () => {
         TypeNumerotationEnum.NUMERIQUE,
       );
       expect(response.body.centroid).toBeNull();
-      expect(response.body.deletedAt).toBeNull();
       expect(response.body.updatedAt).toBeDefined();
       expect(response.body.createdAt).toBeDefined();
     });
@@ -1100,7 +1017,7 @@ describe('BASE LOCAL MODULE', () => {
   });
 
   describe('GET /:baseLocaleId/toponymes', () => {
-    it('GET default not deleted', async () => {
+    it('GET 200', async () => {
       const balId = await createBal({
         nom: 'foo',
         commune: '27115',
@@ -1109,11 +1026,6 @@ describe('BASE LOCAL MODULE', () => {
 
       const toponymeId = await createToponyme(balId, {
         nom: 'rue de la paix',
-      });
-
-      await createToponyme(balId, {
-        nom: 'rue de paris',
-        deletedAt: new Date(),
       });
 
       const response = await request(app.getHttpServer())
@@ -1237,91 +1149,6 @@ describe('BASE LOCAL MODULE', () => {
       const voies = await repositories.voies.find({ where: { balId } });
       expect(voies).toHaveLength(1);
       expect(voies[0].codeVoie).toBeNull();
-    });
-  });
-
-  describe('GET /:baseLocaleId/all/deleted', () => {
-    it('GET 200 voie deleted', async () => {
-      const balId = await createBal({
-        nom: 'foo',
-        commune: '27115',
-        emails: ['me@domain.co'],
-      });
-      const voieId = await createVoie(balId, {
-        nom: 'rue de la paix',
-        deletedAt: new Date(),
-      });
-      await createVoie(balId, {
-        nom: 'rue de la paix',
-      });
-      const toponymeId = await createToponyme(balId, {
-        nom: 'rue de la paix',
-        deletedAt: new Date(),
-      });
-      await createToponyme(balId, {
-        nom: 'rue de la paix',
-      });
-
-      const numeroId = await createNumero(balId, voieId, {
-        numero: 1,
-        deletedAt: new Date(),
-      });
-
-      await createNumero(balId, voieId, {
-        numero: 1,
-      });
-
-      const response = await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/all/deleted`)
-        .expect(200);
-
-      expect(response.body.toponymes).toHaveLength(1);
-      expect(response.body.toponymes[0].id).toEqual(toponymeId);
-      expect(response.body.voies).toHaveLength(1);
-      expect(response.body.voies[0].id).toEqual(voieId.toString());
-      expect(response.body.voies[0].numeros).toHaveLength(1);
-      expect(response.body.voies[0].numeros[0].id).toEqual(numeroId);
-    });
-
-    it('GET 200 voie not deleted', async () => {
-      const balId = await createBal({
-        nom: 'foo',
-        commune: '27115',
-        emails: ['me@domain.co'],
-      });
-      const voieId = await createVoie(balId, {
-        nom: 'rue de la paix',
-      });
-      await createVoie(balId, {
-        nom: 'rue de la paix',
-      });
-      const toponymeId = await createToponyme(balId, {
-        nom: 'rue de la paix',
-        deletedAt: new Date(),
-      });
-      await createToponyme(balId, {
-        nom: 'rue de la paix',
-      });
-
-      const numeroId = await createNumero(balId, voieId, {
-        numero: 1,
-        deletedAt: new Date(),
-      });
-
-      await createNumero(balId, voieId, {
-        numero: 1,
-      });
-
-      const response = await request(app.getHttpServer())
-        .get(`/bases-locales/${balId}/all/deleted`)
-        .expect(200);
-
-      expect(response.body.toponymes).toHaveLength(1);
-      expect(response.body.toponymes[0].id).toEqual(toponymeId);
-      expect(response.body.voies).toHaveLength(1);
-      expect(response.body.voies[0].id).toEqual(voieId.toString());
-      expect(response.body.voies[0].numeros).toHaveLength(1);
-      expect(response.body.voies[0].numeros[0].id).toEqual(numeroId);
     });
   });
 });

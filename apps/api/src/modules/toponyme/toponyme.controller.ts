@@ -76,34 +76,6 @@ export class ToponymeController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put(':toponymeId/soft-delete')
-  @ApiOperation({
-    summary: 'Soft delete Tpponyme by id',
-    operationId: 'softDeleteToponyme',
-  })
-  @ApiParam({ name: 'toponymeId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.toponymeService.softDelete(req.toponyme);
-    res.sendStatus(HttpStatus.NO_CONTENT);
-  }
-
-  @Put(':toponymeId/restore')
-  @ApiOperation({
-    summary: 'Restore Toponyme by id',
-    operationId: 'restoreToponyme',
-  })
-  @ApiParam({ name: 'toponymeId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  async restore(@Req() req: CustomRequest, @Res() res: Response) {
-    const result: Toponyme = await this.toponymeService.restore(req.toponyme);
-    res.status(HttpStatus.OK).json(result);
-  }
-
   @Delete(':toponymeId')
   @ApiOperation({
     summary: 'Delete Toponyme by id',
