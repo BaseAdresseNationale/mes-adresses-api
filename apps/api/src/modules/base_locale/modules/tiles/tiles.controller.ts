@@ -7,8 +7,8 @@ import * as zlib from 'zlib';
 import { promisify } from 'util';
 
 import { CustomRequest } from '@/lib/types/request.type';
-import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
-import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
+import { TilesService } from '@/modules/base_locale/modules/tiles/tiles.service';
+import { GeoJsonCollectionType } from '@/modules/base_locale/modules/tiles/types/features.type';
 
 const gzip = promisify(zlib.gzip);
 

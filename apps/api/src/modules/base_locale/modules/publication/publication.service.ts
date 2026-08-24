@@ -21,7 +21,7 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { Event } from '@/shared/entities/event.entity';
 import { getApiUrl, getEditorUrl } from '@/shared/utils/mailer.utils';
 import { ApiDepotService } from '../api_depot/api_depot.service';
-import { ExportCsvService } from '../base_locale/sub_modules/export_csv/export_csv.service';
+import { ExportCsvService } from '../export_csv/export_csv.service';
 
 @Injectable()
 export class PublicationService {

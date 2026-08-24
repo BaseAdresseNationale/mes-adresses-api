@@ -75,11 +75,11 @@ import { filterComments } from '@/shared/utils/filter.utils';
 import { In, IsNull } from 'typeorm';
 import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
-import { HabilitationService } from './sub_modules/habilitation/habilitation.service';
+import { HabilitationService } from './modules/habilitation/habilitation.service';
 import { EventService } from '@/modules/event/event.service';
 import { SyncExecDTO } from '@/modules/base_locale/dto/sync_exec.dto';
 import { Event } from '@/shared/entities/event.entity';
-import { PublicationService } from '../publication/publication.service';
+import { PublicationService } from './modules/publication/publication.service';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')

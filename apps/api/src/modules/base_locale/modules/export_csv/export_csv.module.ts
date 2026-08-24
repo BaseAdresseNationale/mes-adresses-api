@@ -1,7 +1,7 @@
 import { Module, MiddlewareConsumer, forwardRef } from '@nestjs/common';
 
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
-import { ExportCsvController } from '@/modules/base_locale/sub_modules/export_csv/export_csv.controller';
+import { ExportCsvController } from '@/modules/base_locale/modules/export_csv/export_csv.controller';
 import { BaseLocaleModule } from '../../base_locale.module';
 import { ExportCsvService } from './export_csv.service';
 import { TypeOrmModule } from '@nestjs/typeorm';

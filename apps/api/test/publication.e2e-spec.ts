@@ -43,8 +43,8 @@ import {
   startPostgresContainer,
   stopPostgresContainer,
 } from './typeorm.utils';
-import { PublicationService } from '@/modules/publication/publication.service';
-import { PublicationModule } from '@/modules/publication/publication.module';
+import { PublicationService } from '@/modules/base_locale/modules/publication/publication.service';
+import { PublicationModule } from '@/modules/base_locale/modules/publication/publication.module';
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;

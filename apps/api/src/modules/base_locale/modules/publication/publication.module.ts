@@ -8,7 +8,7 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { MailerParams } from '@/shared/params/mailer.params';
 import { ApiDepotModule } from '../api_depot/api_depot.module';
 import { PublicationService } from './publication.service';
-import { ExportCsvModule } from '../base_locale/sub_modules/export_csv/export_csv.module';
+import { ExportCsvModule } from '../export_csv/export_csv.module';
 
 @Module({
   imports: [

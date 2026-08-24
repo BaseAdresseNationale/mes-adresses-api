@@ -18,7 +18,7 @@ import { Logger } from '@/shared/utils/logger.utils';
 import {
   DEFAULT_CODE_VOIE,
   DEFAULT_NUMERO_TOPONYME,
-} from '@/modules/base_locale/sub_modules/export_csv/utils/export_csv_bal.utils';
+} from '@/modules/base_locale/modules/export_csv/utils/export_csv_bal.utils';
 
 export type FromCsvType = {
   isValid?: boolean;

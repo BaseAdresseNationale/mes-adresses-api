@@ -4,8 +4,8 @@ import { HabilitationController } from './habilitation.controller';
 import { BaseLocaleMiddleware } from '@/modules/base_locale/base_locale.middleware';
 import { HabilitationService } from './habilitation.service';
 import { BaseLocaleModule } from '../../base_locale.module';
-import { ApiDepotModule } from '@/modules/api_depot/api_depot.module';
-import { PublicationModule } from '@/modules/publication/publication.module';
+import { ApiDepotModule } from '../api_depot/api_depot.module';
+import { PublicationModule } from '../publication/publication.module';
 
 @Module({
   imports: [

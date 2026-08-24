@@ -7,7 +7,7 @@ import {
 
 import { VoieModule } from '../voie/voie.module';
 import { BaseLocaleModule } from '../base_locale/base_locale.module';
-import { PopulateModule } from '../base_locale/sub_modules/populate/populate.module';
+import { PopulateModule } from '../base_locale/modules/populate/populate.module';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { ToponymeModule } from '../toponyme/toponyme.module';

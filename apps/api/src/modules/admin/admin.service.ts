@@ -3,7 +3,7 @@ import { ObjectId } from 'bson';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { FusionCommunesDTO } from './dto/fusion_bases_locales.dto';
-import { PopulateService } from '../base_locale/sub_modules/populate/populate.service';
+import { PopulateService } from '../base_locale/modules/populate/populate.service';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';

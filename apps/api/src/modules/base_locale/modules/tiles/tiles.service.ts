@@ -3,9 +3,9 @@ import { tileToBBOX } from '@mapbox/tilebelt';
 
 import { VoieService } from '@/modules/voie/voie.service';
 import { NumeroService } from '@/modules/numeros/numero.service';
-import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
-import { ZOOM } from '@/modules/base_locale/sub_modules/tiles/const/zoom.const';
-import { getGeoJson } from '@/modules/base_locale/sub_modules/tiles/utils/geojson.utils';
+import { GeoJsonCollectionType } from '@/modules/base_locale/modules/tiles/types/features.type';
+import { ZOOM } from '@/modules/base_locale/modules/tiles/const/zoom.const';
+import { getGeoJson } from '@/modules/base_locale/modules/tiles/utils/geojson.utils';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 
 @Injectable()

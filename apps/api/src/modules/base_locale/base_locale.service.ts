@@ -46,7 +46,7 @@ import { getCommuneActuelle } from '@/shared/utils/cog.utils';
 import {
   FromCsvSourceType,
   PopulateService,
-} from './sub_modules/populate/populate.service';
+} from './modules/populate/populate.service';
 import { UpdateBaseLocaleDemoDTO } from './dto/update_base_locale_demo.dto';
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
@@ -56,11 +56,11 @@ import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 import { BalTree, formatterBAL } from '@ban-team/formatter-bal';
 import { Numero } from '@/shared/entities/numero.entity';
 import { EventService } from '../event/event.service';
-import { PublicationService } from '../publication/publication.service';
-import { BanPlateformService } from '../ban_plateform/ban_plateform.service';
 import { CacheService } from '../cache/cache.service';
 import { Habilitation } from '@/lib/types/api-depot.types';
-import { ExportCsvService } from './sub_modules/export_csv/export_csv.service';
+import { ExportCsvService } from './modules/export_csv/export_csv.service';
+import { BanPlateformService } from './modules/ban_plateform/ban_plateform.service';
+import { PublicationService } from './modules/publication/publication.service';
 
 const KEY_POPULATE_BAL_ID = 'populateBalID';
 

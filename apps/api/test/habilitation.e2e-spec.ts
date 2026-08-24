@@ -11,7 +11,7 @@ import {
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 
-import { HabilitationModule } from '@/modules/base_locale/sub_modules/habilitation/habilitation.module';
+import { HabilitationModule } from '@/modules/base_locale/modules/habilitation/habilitation.module';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 import {

@@ -4,7 +4,7 @@ import { FeatureCollection } from 'geojson';
 
 import { Voie } from '@/shared/entities/voie.entity';
 
-import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
+import { GeoJsonCollectionType } from '@/modules/base_locale/modules/tiles/types/features.type';
 import { NumeroInBbox } from '@/lib/types/numero.type';
 import { ToponymeInBox } from '@/lib/types/toponyme.type';
 
