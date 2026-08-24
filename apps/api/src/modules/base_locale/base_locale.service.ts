@@ -33,7 +33,7 @@ import {
   getEditorUrl,
 } from '@/shared/utils/mailer.utils';
 
-import { generateBase62String } from '@/lib/utils/token.utils';
+import { generateToken } from '@/lib/utils/token.utils';
 import { FromCsvType, extractFromCsv } from '@/lib/utils/csv.utils';
 import { ToponymeService } from '@/modules/toponyme/toponyme.service';
 import { VoieService } from '@/modules/voie/voie.service';
@@ -163,7 +163,7 @@ export class BaseLocaleService {
       nom: createInput.nom,
       emails: createInput.emails,
       commune: createInput.commune,
-      token: generateBase62String(20),
+      token: generateToken(20),
       status: StatusBaseLocalEnum.DRAFT,
       settings: {
         languageGoalIgnored: false,
@@ -201,7 +201,7 @@ export class BaseLocaleService {
     // On créer l'object bal
     const entityToSave = this.basesLocalesRepository.create({
       banId,
-      token: generateBase62String(20),
+      token: generateToken(20),
       commune,
       nom: `Adresses de ${getCommuneActuelle(commune)?.nom} [démo]`,
       status: StatusBaseLocalEnum.DEMO,
@@ -610,7 +610,7 @@ export class BaseLocaleService {
 
   async renewToken(baseLocale: BaseLocale) {
     // On génère un token
-    const token = generateBase62String(20);
+    const token = generateToken(20);
     // On update le token de la Bal dans postgres
     const { affected }: UpdateResult = await this.basesLocalesRepository.update(
       { id: baseLocale.id },
