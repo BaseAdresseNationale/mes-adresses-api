@@ -351,8 +351,9 @@ export class VoieService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
     this.numeroService.updateMany(
-      { voieId: In(otherVoieIds) },
+      { voieId: In(otherVoieIds), balId: voie.balId },
       { voieId: voie.id },
     );
     this.deleteMany({ id: In(otherVoieIds) });
