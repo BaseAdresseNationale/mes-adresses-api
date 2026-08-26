@@ -344,73 +344,14 @@ export class VoieService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
     this.numeroService.updateMany(
-      { voieId: In(otherVoieIds) },
+      { voieId: In(otherVoieIds), balId: voie.balId },
       { voieId: voie.id },
     );
     this.deleteMany({ id: In(otherVoieIds) });
 
-<<<<<<< Updated upstream
     return this.findOneOrFail(voie.id);
-=======
-    const sourceVoies: Voie[] = await this.findMany({
-      id: In(otherVoieIds),
-    });
-    const baseLocale = await this.baseLocaleService.findOneOrFail(voie.balId);
-
-    if (!sourceVoies.every(({ balId }) => balId === baseLocale.id)) {
-      throw new HttpException(
-        `otherVoieIds do not belong to the BAL`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    // Capturé avant toute suppression : tous les numeros qui doivent finir
-    // sous la voie fusionnée (ceux déjà sur la cible + ceux des sources).
-    const allNumeros: Numero[] = await this.numeroService.findMany({
-      voieId: In([voie.id, ...otherVoieIds]),
-    });
-
-    // Supprime réellement la voie cible et toutes les voies sources — le
-    // moteur d'events ne garde qu'un seul event en attente par entité, donc
-    // réutiliser les mêmes ids pour la voie/les numeros fusionnés entrerait
-    // en conflit avec ça (cf. plan) : on les supprime pour de vrai (cascade
-    // DELETE existante, inchangée) puis on recrée tout sous des ids neufs.
-    for (const voieToDelete of [voie, ...sourceVoies]) {
-      await this.delete(voieToDelete);
-    }
-
-    // Recrée une voie neuve (id neuf) avec les attributs de la voie cible ;
-    // banId préservé pour la continuité BAN (comme convertToToponyme).
-    const newVoie: Voie = await this.create(baseLocale, {
-      nom: voie.nom,
-      nomAlt: voie.nomAlt,
-      typeNumerotation: voie.typeNumerotation,
-      trace: voie.trace,
-      comment: voie.comment,
-      banId: voie.banId,
-    });
-
-    // Recrée chaque numero (id neuf, banId préservé) sous la voie neuve —
-    // `create()` rattache déjà son event CREATE sous l'event CREATE encore
-    // non synchronisé de cette voie (mécanisme existant, inchangé).
-    for (const numero of allNumeros) {
-      await this.numeroService.create(newVoie, {
-        numero: numero.numero,
-        suffixe: numero.suffixe,
-        toponymeId: numero.toponymeId,
-        positions: numero.positions,
-        comment: numero.comment,
-        parcelles: numero.parcelles,
-        certifie: numero.certifie,
-        communeDeleguee: numero.communeDeleguee,
-        banId: numero.banId,
-      });
-    }
-
-    // Recharge la voie : centroid/bbox ont été recalculés incrémentalement
-    // par chaque numeroService.create() ci-dessus.
-    return this.findOneOrFail(newVoie.id);
->>>>>>> Stashed changes
   }
 
   public async extendVoies(
