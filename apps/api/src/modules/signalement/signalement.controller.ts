@@ -4,7 +4,6 @@ import {
   Get,
   HttpStatus,
   Inject,
-  Param,
   Put,
   Req,
   Res,
@@ -49,8 +48,12 @@ export class SignalementController {
   @ApiResponse({
     status: HttpStatus.OK,
   })
-  async getReport(@Res() res: Response, @Param('reportId') reportId: string) {
-    const signalement = await this.signalementService.findOneOrFail(reportId);
+  async getReport(@Res() res: Response, @Req() req: CustomRequest) {
+    const { reportId } = req.params;
+    const signalement = await this.signalementService.findOneOrFail(
+      req.baseLocale,
+      reportId,
+    );
 
     res.status(HttpStatus.OK).json(signalement);
   }
