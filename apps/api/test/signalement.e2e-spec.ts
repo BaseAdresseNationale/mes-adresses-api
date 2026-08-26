@@ -303,6 +303,38 @@ describe('SIGNALEMENT MODULE', () => {
       expect(response.body.reportKind).toBe(Report.reportKind.ALERT);
     });
 
+    it('should not get report if BAL is not published', async () => {
+      const balId = await createBal({
+        nom: 'bal',
+        commune: '37003',
+        status: StatusBaseLocalEnum.DRAFT,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/signalements/${balId}/${signalement.id}`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(412);
+
+      expect(response.body.message).toBe('BaseLocale is not published');
+    });
+
+    it('should not update report if communes do not match', async () => {
+      const balId = await createBal({
+        nom: 'bal',
+        commune: '91400',
+        status: StatusBaseLocalEnum.PUBLISHED,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/signalements/${balId}/${signalement.id}`)
+        .set('authorization', `Bearer ${token}`)
+        .expect(412);
+
+      expect(response.body.message).toBe(
+        `Communes do not match for report ${signalement.id}`,
+      );
+    });
+
     it('should return 404 if report not found', async () => {
       OpenAPISignalementServiceMock.getSignalementById.mockRejectedValueOnce(
         new ApiError(

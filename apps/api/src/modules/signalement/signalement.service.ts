@@ -18,17 +18,39 @@ import {
 export class SignalementService {
   constructor(private openAPISignalementService: OpenAPISignalementService) {}
 
-  async findOneOrFail(reportId: string): Promise<Signalement | Alert> {
+  async findOneOrFail(
+    baseLocale: BaseLocale,
+    reportId: string,
+  ): Promise<Signalement | Alert> {
+    if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
+      throw new HttpException(
+        'BaseLocale is not published',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
     let fetchedReport;
 
     try {
       fetchedReport =
         await this.openAPISignalementService.getSignalementById(reportId);
+      if (baseLocale.commune !== fetchedReport.codeCommune) {
+        throw new HttpException(
+          `Communes do not match for report ${reportId}`,
+          HttpStatus.PRECONDITION_FAILED,
+        );
+      }
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) {
         try {
           fetchedReport =
             await this.openAPISignalementService.getAlertById(reportId);
+          if (baseLocale.commune !== fetchedReport.codeCommune) {
+            throw new HttpException(
+              `Communes do not match for report ${reportId}`,
+              HttpStatus.PRECONDITION_FAILED,
+            );
+          }
         } catch (alertError) {
           if (alertError instanceof ApiError && alertError.status === 404) {
             throw new HttpException(
@@ -51,21 +73,7 @@ export class SignalementService {
     reportId: string,
     updateDTO: UpdateSignalementDTO | UpdateAlertDTO,
   ) {
-    if (baseLocale.status !== StatusBaseLocalEnum.PUBLISHED) {
-      throw new HttpException(
-        'BaseLocale is not published',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
-    const fetchedReport = await this.findOneOrFail(reportId);
-
-    if (baseLocale.commune !== fetchedReport.codeCommune) {
-      throw new HttpException(
-        `Communes do not match for report ${reportId}`,
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
+    const fetchedReport = await this.findOneOrFail(baseLocale, reportId);
 
     if (fetchedReport.reportKind === Report.reportKind.SIGNALEMENT) {
       await this.openAPISignalementService.updateSignalement(
