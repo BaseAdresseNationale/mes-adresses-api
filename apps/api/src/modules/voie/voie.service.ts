@@ -278,6 +278,13 @@ export class VoieService {
     await this.voiesRepository.restore(where);
     // Si des numéros sont également restauré
     if (numerosIds.length > 0) {
+      const numeros = await this.numeroService.findMany({ id: In(numerosIds) });
+      if (!numeros.every(({ voieId }) => voieId === voie.id)) {
+        throw new HttpException(
+          `Numero not belong to Voie`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       // On restaure le numéros
       await this.numeroService.restore({
         id: In(numerosIds),
