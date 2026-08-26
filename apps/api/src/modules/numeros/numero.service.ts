@@ -458,8 +458,15 @@ export class NumeroService {
     // On récupère les différentes voies et toponymes des numeros qu'on va modifier
     const where: FindOptionsWhere<Numero> = {
       id: In(numerosIds),
-      balId: baseLocale.id,
     };
+    const numeros = await this.findMany(where);
+    if (!numeros.every(({ balId }) => balId === baseLocale.id)) {
+      throw new HttpException(
+        'Numero not belong to BAL',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const voieIds: string[] = await this.findDistinct(where, 'voie_id');
     const toponymeIds: string[] = await this.findDistinct(where, 'toponyme_id');
     // Si la voie des numéro est changé, on vérifie que cette derniere existe bien
