@@ -811,7 +811,8 @@ export class BaseLocaleController {
   @UseGuards(AdminGuard)
   async create(
     @Req() req: CustomRequest,
-    @Body() createToponymeDto: CreateToponymeDTO,
+    @Body(new ValidationPipe({ whitelist: true }))
+    createToponymeDto: CreateToponymeDTO,
     @Res() res: Response,
   ) {
     const toponyme: Toponyme = await this.toponymeService.create(
