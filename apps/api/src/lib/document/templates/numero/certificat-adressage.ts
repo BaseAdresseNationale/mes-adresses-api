@@ -26,7 +26,7 @@ export function buildCertificatAdressageBlocks(
           : `Le Maire de ${baseLocale.communeNom} atteste que `
       }${
         destinataire
-          ? `la propriété appartenant à ${destinataire} désignée ci-dessous `
+          ? `la propriété occupée par ${destinataire} et désignée ci-dessous `
           : `l'adresse désignée ci-dessous `
       }est certifiée dans la Base Adresse Locale de ${baseLocale.communeNom}.`,
       align: 'justify',
