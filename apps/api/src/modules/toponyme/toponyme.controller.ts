@@ -32,6 +32,7 @@ import { UpdateToponymeDTO } from '@/modules/toponyme/dto/update_toponyme.dto';
 import { NumeroService } from '@/modules/numeros/numero.service';
 import { Numero } from '@/shared/entities/numero.entity';
 import { filterComments } from '@/shared/utils/filter.utils';
+import { DraftBalGuard } from '@/lib/guards/draft_bal.guard';
 
 @ApiTags('toponymes')
 @Controller('toponymes')
@@ -63,6 +64,7 @@ export class ToponymeController {
   @ApiBody({ type: UpdateToponymeDTO, required: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async update(
     @Req() req: CustomRequest,
     @Body(new ValidationPipe({ whitelist: true }))
@@ -85,6 +87,7 @@ export class ToponymeController {
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
     await this.toponymeService.softDelete(req.toponyme);
     res.sendStatus(HttpStatus.NO_CONTENT);
@@ -99,6 +102,7 @@ export class ToponymeController {
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async restore(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Toponyme = await this.toponymeService.restore(req.toponyme);
     res.status(HttpStatus.OK).json(result);
@@ -113,6 +117,7 @@ export class ToponymeController {
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async delete(@Req() req: CustomRequest, @Res() res: Response) {
     await this.toponymeService.delete(req.toponyme);
     res.status(HttpStatus.NO_CONTENT).send();

@@ -78,6 +78,7 @@ import { In, IsNull } from 'typeorm';
 import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
 import { HabilitationService } from './sub_modules/habilitation/habilitation.service';
+import { DraftBalGuard } from '@/lib/guards/draft_bal.guard';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -270,6 +271,7 @@ export class BaseLocaleController {
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async updateOneBaseLocale(
     @Req() req: CustomRequest,
     @Body(new ValidationPipe({ whitelist: true }))
@@ -504,6 +506,7 @@ export class BaseLocaleController {
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
     try {
       const result = await this.baseLocaleService.forcePublish(
@@ -635,6 +638,7 @@ export class BaseLocaleController {
   @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async batchNumeros(
     @Req() req: CustomRequest,
     @Body() updateBatchNumeroDto: UpdateBatchNumeroDTO,
@@ -657,6 +661,7 @@ export class BaseLocaleController {
   @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async softDeleteNumeros(
     @Req() req: CustomRequest,
     @Body() deleteBatchNumeroDto: DeleteBatchNumeroDTO,
@@ -679,6 +684,7 @@ export class BaseLocaleController {
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async deleteNumeros(
     @Req() req: CustomRequest,
     @Body() deleteBatchNumeroDto: DeleteBatchNumeroDTO,
@@ -766,6 +772,7 @@ export class BaseLocaleController {
   @ApiResponse({ status: HttpStatus.CREATED, type: Voie })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async createVoie(
     @Req() req: CustomRequest,
     @Body() createVoieDto: CreateVoieDTO,
@@ -809,6 +816,7 @@ export class BaseLocaleController {
   @ApiResponse({ status: HttpStatus.CREATED, type: Toponyme })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async create(
     @Req() req: CustomRequest,
     @Body(new ValidationPipe({ whitelist: true }))
