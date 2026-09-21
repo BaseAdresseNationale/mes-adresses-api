@@ -1,5 +1,4 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Observable } from 'rxjs';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
@@ -17,7 +16,7 @@ export class DraftBalGuard implements CanActivate {
     const req: CustomRequest = context.getArgByIndex(0);
     if (
       req.baseLocale.status !== StatusBaseLocalEnum.DRAFT ||
-      req.baseLocale.settings.otherBalPublishedIgnored ||
+      req.baseLocale.settings?.otherBalPublishedIgnored ||
       isSuperAdmin(req)
     ) {
       return true;
