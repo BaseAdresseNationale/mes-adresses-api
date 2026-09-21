@@ -352,11 +352,11 @@ export class VoieService {
       );
     }
 
-    this.numeroService.updateMany(
+    await this.numeroService.updateMany(
       { voieId: In(otherVoieIds), balId: voie.balId },
       { voieId: voie.id },
     );
-    this.deleteMany({ id: In(otherVoieIds) });
+    await this.deleteMany({ id: In(otherVoieIds) });
 
     return this.findOneOrFail(voie.id);
   }
