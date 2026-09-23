@@ -27,7 +27,6 @@ import {
   UpdateManyReportsDTO,
   UpdateOneReportDTO,
 } from './dto/update-signalement-dto';
-import { DraftBalGuard } from '@/lib/guards/draft_bal.guard';
 
 @ApiTags('signalements')
 @Controller('signalements')
@@ -73,7 +72,6 @@ export class SignalementController {
   })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  @UseGuards(DraftBalGuard)
   async updateOne(
     @Req() req: CustomRequest,
     @Body() updateOneReportDTO: UpdateOneReportDTO,
@@ -100,7 +98,6 @@ export class SignalementController {
   })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  @UseGuards(DraftBalGuard)
   async updateMany(
     @Req() req: CustomRequest,
     @Body() updateManyReportsDTO: UpdateManyReportsDTO,
