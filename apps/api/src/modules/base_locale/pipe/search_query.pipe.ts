@@ -4,11 +4,12 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { FindOptionsWhere, IsNull, Not } from 'typeorm';
+import { FindOptionsWhere, IsNull, Not, Raw } from 'typeorm';
 
 import {
   BaseLocale,
   StatusBaseLocalEnum,
+  StatusSyncEnum,
 } from '@/shared/entities/base_locale.entity';
 import { isCommune } from '@/shared/utils/cog.utils';
 
@@ -52,6 +53,21 @@ export class SearchQueryPipe implements PipeTransform {
     } else if (query.deleted) {
       throw new HttpException(
         'La valeur du champ "deleted" est invalide',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (query.current === 'false') {
+      res.filters.sync = Raw((alias) => `${alias} ->> 'status' != :status`, {
+        status: StatusSyncEnum.SYNCED,
+      });
+    } else if (query.current === 'true') {
+      res.filters.sync = Raw((alias) => `${alias} ->> 'status' = :status`, {
+        status: StatusSyncEnum.SYNCED,
+      });
+    } else if (query.current) {
+      throw new HttpException(
+        'La valeur du champ "current" est invalide',
         HttpStatus.BAD_REQUEST,
       );
     }
