@@ -173,6 +173,7 @@ export class BaseLocaleService {
       settings: {
         languageGoalIgnored: false,
         toponymeGoalIgnored: false,
+        otherBalPublishedIgnored: createInput.otherBalPublishedIgnored,
       },
     });
     // On insert l'object dans postgres

@@ -50,6 +50,7 @@ import { filterComments } from '@/shared/utils/filter.utils';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DocumentFormat } from '@/lib/document/types';
 import { FusionVoieDTO } from './dto/fusion_voie.dto';
+import { DraftBalGuard } from '@/lib/guards/draft_bal.guard';
 
 @ApiTags('voies')
 @Controller('voies')
@@ -102,6 +103,7 @@ export class VoieController {
   @ApiBody({ type: UpdateVoieDTO, required: true })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async update(
     @Req() req: CustomRequest,
     @Body(new ValidationPipe({ whitelist: true })) updateVoieDto: UpdateVoieDTO,
@@ -120,6 +122,7 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
     await this.voieService.softDelete(req.voie);
     res.sendStatus(HttpStatus.NO_CONTENT);
@@ -132,6 +135,7 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async restore(
     @Req() req: CustomRequest,
     @Body() restoreVoieDto: RestoreVoieDTO,
@@ -150,6 +154,7 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async delete(@Req() req: CustomRequest, @Res() res: Response) {
     await this.voieService.delete(req.voie);
     res.status(HttpStatus.NO_CONTENT).send();
@@ -192,9 +197,11 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.CREATED, type: Numero })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async createNumero(
     @Req() req: CustomRequest,
-    @Body() createNumeroDto: CreateNumeroDTO,
+    @Body(new ValidationPipe({ whitelist: true }))
+    createNumeroDto: CreateNumeroDTO,
     @Res() res: Response,
   ) {
     const result: Numero = await this.numeroService.create(
@@ -213,6 +220,7 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK, type: Toponyme })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async convertVoieToToponyme(@Req() req: CustomRequest, @Res() res: Response) {
     const result: Toponyme = await this.voieService.convertToToponyme(req.voie);
     res.status(HttpStatus.OK).json(result);
@@ -228,6 +236,7 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK, type: Voie })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async fusionVoies(
     @Req() req: CustomRequest,
     @Body() { otherVoieIds }: FusionVoieDTO,
@@ -249,6 +258,7 @@ export class VoieController {
   @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
+  @UseGuards(DraftBalGuard)
   async certifyAllNumeros(@Req() req: CustomRequest, @Res() res: Response) {
     await this.numeroService.certifyVoieNumeros(req.voie);
     res.sendStatus(HttpStatus.OK);

@@ -13,7 +13,6 @@ export class BaseLocaleMiddleware implements NestMiddleware {
 
   async use(req: CustomRequest, res: Response, next: NextFunction) {
     const { baseLocaleId } = req.params;
-
     if (ObjectId.isValid(baseLocaleId)) {
       const basesLocale: BaseLocale =
         await this.baseLocaleService.findOneOrFail(baseLocaleId);
