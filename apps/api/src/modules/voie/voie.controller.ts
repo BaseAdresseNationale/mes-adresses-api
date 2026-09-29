@@ -200,7 +200,8 @@ export class VoieController {
   @UseGuards(DraftBalGuard)
   async createNumero(
     @Req() req: CustomRequest,
-    @Body() createNumeroDto: CreateNumeroDTO,
+    @Body(new ValidationPipe({ whitelist: true }))
+    createNumeroDto: CreateNumeroDTO,
     @Res() res: Response,
   ) {
     const result: Numero = await this.numeroService.create(
