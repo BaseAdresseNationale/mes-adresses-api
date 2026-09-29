@@ -18,4 +18,7 @@ export class SearchBaseLocalQuery {
 
   @ApiProperty({ required: false, nullable: false })
   status?: string;
+
+  @ApiProperty({ required: false, nullable: false })
+  current?: string;
 }
