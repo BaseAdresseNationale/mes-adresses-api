@@ -20,6 +20,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { MailerParams } from '@/shared/params/mailer.params';
 import { AdminModule } from './modules/admin/admin.module';
 import { SignalementModule } from './modules/signalement/signalement.module';
+import { TrustedClientModule } from './modules/trusted_client/trusted_client.module';
 import { BullModule } from '@nestjs/bullmq';
 
 @Module({
@@ -61,6 +62,7 @@ import { BullModule } from '@nestjs/bullmq';
     StatsModule,
     AdminModule,
     SignalementModule,
+    TrustedClientModule,
   ],
   controllers: [],
   providers: [],
