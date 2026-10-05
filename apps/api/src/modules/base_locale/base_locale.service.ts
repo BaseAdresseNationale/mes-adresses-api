@@ -718,7 +718,10 @@ export class BaseLocaleService {
     return filaireGeoJSON;
   }
 
-  async forcePublish(balId: string) {
+  async forcePublish(
+    balId: string,
+    priority: PriorityEnum = PriorityEnum.HIGH,
+  ) {
     const queueEvents = new QueueEvents(QUEUE_NAME, {
       connection: this.taskQueue.opts.connection,
     });
@@ -727,7 +730,7 @@ export class BaseLocaleService {
     const job: Job = await this.taskQueue.add(
       TaskTitle.FORCE_PUBLISH,
       { balId },
-      { priority: PriorityEnum.HIGH },
+      { priority },
     );
 
     try {

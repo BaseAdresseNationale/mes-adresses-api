@@ -4,6 +4,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Param,
   Post,
   Req,
   Res,
@@ -28,6 +29,10 @@ import {
 } from '@nestjs/swagger';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { FusionCommunesDTO } from './dto/fusion_bases_locales.dto';
+import {
+  RepublishCommunesDTO,
+  RepublishCommunesReportDTO,
+} from './dto/republish_communes.dto';
 import { AdminService } from './admin.service';
 import { CustomRequest } from '@/lib/types/request.type';
 
@@ -102,6 +107,57 @@ export class AdminController {
       await this.adminService.fusionCommunes(fusionCommunesDTO);
 
     res.status(HttpStatus.OK).json(result);
+  }
+
+  @Post('/republish-communes')
+  @ApiOperation({
+    summary:
+      'Lance en tâche de fond la republication des BALs publiées d’une liste de communes',
+    operationId: 'republishCommunes',
+  })
+  @ApiBody({
+    type: RepublishCommunesDTO,
+    required: true,
+    description: `
+    {
+      "codesCommunes": ["08439", "08300"]
+    }`,
+  })
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    type: RepublishCommunesReportDTO,
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(SuperAdminGuard)
+  async republishCommunes(
+    @Body() republishCommunesDTO: RepublishCommunesDTO,
+    @Res() res: Response,
+  ) {
+    const report: RepublishCommunesReportDTO =
+      await this.adminService.startRepublishCommunes(
+        republishCommunesDTO.codesCommunes,
+      );
+
+    res.status(HttpStatus.ACCEPTED).json(report);
+  }
+
+  @Get('/republish-communes/:reportId')
+  @ApiOperation({
+    summary: 'Rapport de republication des BALs',
+    operationId: 'getRepublishCommunesReport',
+  })
+  @ApiParam({ name: 'reportId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: RepublishCommunesReportDTO })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(SuperAdminGuard)
+  async getRepublishCommunesReport(
+    @Param('reportId') reportId: string,
+    @Res() res: Response,
+  ) {
+    const report: RepublishCommunesReportDTO =
+      await this.adminService.getRepublishReport(reportId);
+
+    res.status(HttpStatus.OK).json(report);
   }
 
   @Post('bases-locales/:baseLocaleId/sync-ids-ban-publish')
