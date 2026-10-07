@@ -602,7 +602,8 @@ export class BaseLocaleController {
       req.baseLocale.id,
       query.select,
     );
-    res.status(HttpStatus.OK).json(numeros);
+    const result = numeros.map((n) => filterComments(n, !req.isAdmin));
+    res.status(HttpStatus.OK).json(result);
   }
 
   @Put(':baseLocaleId/search/numeros')
