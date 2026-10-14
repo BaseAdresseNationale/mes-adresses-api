@@ -7,11 +7,13 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
   ArrayNotEmpty,
+  IsArray,
   IsEmail,
   IsNotEmpty,
   IsNotEmptyObject,
   IsOptional,
   Validate,
+  ValidateIf,
 } from 'class-validator';
 
 export class UpdateBaseLocaleDTO implements Partial<BaseLocale> {
@@ -26,11 +28,12 @@ export class UpdateBaseLocaleDTO implements Partial<BaseLocale> {
   @ApiProperty({ required: false, nullable: true })
   communeNomsAlt?: Record<string, string>;
 
-  @IsOptional()
-  @ApiProperty({ required: false, nullable: false })
+  @ValidateIf((_, value) => value !== undefined)
+  @IsArray()
   @ArrayNotEmpty()
   @ArrayMaxSize(100)
   @IsEmail({}, { each: true })
+  @ApiProperty({ required: false, nullable: false })
   emails?: Array<string>;
 
   @IsOptional()
