@@ -27,6 +27,15 @@ async function bootstrap() {
       },
       'admin-token',
     )
+    .addApiKey(
+      {
+        description: `Secret of a trusted client (e.g. mes-donnees-geo)`,
+        name: 'x-client-secret',
+        type: 'apiKey',
+        in: 'header',
+      },
+      'client-secret',
+    )
     .build();
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('v2');
