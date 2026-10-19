@@ -711,15 +711,7 @@ export class BaseLocaleController {
     const voies: Voie[] = await this.voieService.findMany({
       balId: req.baseLocale.id,
     });
-
-    const extendedVoie: ExtendedVoieDTO[] = await this.voieService.extendVoies(
-      req.baseLocale.id,
-      voies,
-    );
-    const voiesFiltered: ExtendedVoieDTO[] = extendedVoie.map((v) =>
-      filterComments(v, !req.isAdmin),
-    );
-    res.status(HttpStatus.OK).json(voiesFiltered);
+    res.status(HttpStatus.OK).json(voies);
   }
 
   @Get(':baseLocaleId/voies/geojson')
@@ -802,9 +794,7 @@ export class BaseLocaleController {
     const toponymes: Toponyme[] = await this.toponymeService.findMany({
       balId: req.baseLocale.id,
     });
-    const extendedToponyme: ExtentedToponymeDTO[] =
-      await this.toponymeService.extendToponymes(toponymes);
-    res.status(HttpStatus.OK).json(extendedToponyme);
+    res.status(HttpStatus.OK).json(toponymes);
   }
 
   @Post(':baseLocaleId/toponymes')
