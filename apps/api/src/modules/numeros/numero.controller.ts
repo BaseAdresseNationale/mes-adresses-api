@@ -184,21 +184,6 @@ export class NumeroController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put(':numeroId/soft-delete')
-  @ApiOperation({
-    summary: 'Soft delete the numero by id',
-    operationId: 'softDeleteNumero',
-  })
-  @ApiParam({ name: 'numeroId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: Numero })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  @UseGuards(DraftBalGuard)
-  async softDelete(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.numeroService.softDelete(req.numero);
-    res.sendStatus(HttpStatus.NO_CONTENT);
-  }
-
   @Delete(':numeroId')
   @ApiOperation({
     summary: 'Delete the numero by id',

@@ -34,7 +34,6 @@ import { Response } from 'express';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { BaseLocale } from '@/shared/entities/base_locale.entity';
 import { Voie } from '@/shared/entities/voie.entity';
-import { PublicationService } from '@/shared/modules/publication/publication.service';
 import { getEditorUrl } from '@/shared/utils/mailer.utils';
 
 import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
@@ -51,8 +50,8 @@ import { ExtentedToponymeDTO } from '@/modules/toponyme/dto/extended_toponyme.dt
 import { CreateToponymeDTO } from '@/modules/toponyme/dto/create_toponyme.dto';
 import { filterSensitiveFields } from '@/modules/base_locale/utils/base_locale.utils';
 import {
-  BaseLocaleWithHabilitationDTO,
   ExtendedBaseLocaleDTO,
+  ExtendedBaseLocaleSafeDTO,
 } from './dto/extended_base_locale.dto';
 import { ExtendedVoieDTO, VoieMetas } from '../voie/dto/extended_voie.dto';
 import { UpdateBaseLocaleDTO } from './dto/update_base_locale.dto';
@@ -67,7 +66,6 @@ import {
 import { ImportFileBaseLocaleDTO } from './dto/import_file_base_locale.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RecoverBaseLocaleDTO } from './dto/recover_base_locale.dto';
-import { AllDeletedInBalDTO } from './dto/all_deleted_in_bal.dto';
 import { BatchNumeroResponseDTO } from '../numeros/dto/batch_numero_response.dto';
 import { isSuperAdmin } from '@/lib/utils/is-admin.utils';
 import { SearchNumeroDTO } from '../numeros/dto/search_numero.dto';
@@ -77,8 +75,12 @@ import { filterComments } from '@/shared/utils/filter.utils';
 import { In, IsNull } from 'typeorm';
 import { FindManyBaseLocalDTO } from './dto/find_many_base_locale.dto';
 import { RecoverCommuneDTO } from './dto/recover_commune.dto';
-import { HabilitationService } from './sub_modules/habilitation/habilitation.service';
 import { DraftBalGuard } from '@/lib/guards/draft_bal.guard';
+import { HabilitationService } from './modules/habilitation/habilitation.service';
+import { EventService } from '@/modules/event/event.service';
+import { SyncExecDTO } from '@/modules/base_locale/dto/sync_exec.dto';
+import { Event } from '@/shared/entities/event.entity';
+import { PublicationService } from './modules/publication/publication.service';
 
 @ApiTags('bases-locales')
 @Controller('bases-locales')
@@ -94,6 +96,7 @@ export class BaseLocaleController {
     private toponymeService: ToponymeService,
     @Inject(forwardRef(() => HabilitationService))
     private habilitationService: HabilitationService,
+    private eventService: EventService,
   ) {}
 
   @Post('')
@@ -163,10 +166,10 @@ export class BaseLocaleController {
 
     for (const bal of basesLocales) {
       const balExtended: ExtendedBaseLocaleDTO =
-        await this.baseLocaleService.extendWithNumeros(bal);
+        await this.baseLocaleService.extendBalInfo(bal);
       const balExtendedFiltered:
         | ExtendedBaseLocaleDTO
-        | Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'> = isSuperAdmin(req)
+        | ExtendedBaseLocaleSafeDTO = isSuperAdmin(req)
         ? balExtended
         : filterSensitiveFields(balExtended);
       results.push(balExtendedFiltered);
@@ -187,7 +190,7 @@ export class BaseLocaleController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: BaseLocaleWithHabilitationDTO,
+    type: ExtendedBaseLocaleSafeDTO,
     isArray: true,
   })
   @ApiBody({ type: FindManyBaseLocalDTO, required: true })
@@ -202,16 +205,14 @@ export class BaseLocaleController {
 
     const extendedBasesLocales = await Promise.all(
       basesLocales.map((baseLocale) =>
-        this.baseLocaleService.extendWithNumeros(baseLocale),
+        this.baseLocaleService.extendBalInfo(baseLocale),
       ),
     );
 
-    const filteredExtendedBasesLocales: Omit<
-      ExtendedBaseLocaleDTO,
-      'token' | 'emails'
-    >[] = extendedBasesLocales.map((baseLocale) =>
-      filterSensitiveFields(baseLocale),
-    );
+    const filteredExtendedBasesLocales: ExtendedBaseLocaleSafeDTO[] =
+      extendedBasesLocales.map((baseLocale) =>
+        filterSensitiveFields(baseLocale),
+      );
 
     const habilitationIds = filteredExtendedBasesLocales
       .filter((baseLocale) => baseLocale.habilitationId)
@@ -251,7 +252,7 @@ export class BaseLocaleController {
         HttpStatus.NOT_FOUND,
       );
     }
-    const baseLocale = await this.baseLocaleService.extendWithNumeros(
+    const baseLocale = await this.baseLocaleService.extendBalInfo(
       req.baseLocale,
     );
     const response = req.isAdmin
@@ -503,24 +504,25 @@ export class BaseLocaleController {
     operationId: 'publishBaseLocale',
   })
   @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiBody({ type: SyncExecDTO, required: false })
   @ApiResponse({ status: HttpStatus.OK, type: BaseLocale })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   @UseGuards(DraftBalGuard)
-  async publishBaseLocale(@Req() req: CustomRequest, @Res() res: Response) {
+  async publishBaseLocale(
+    @Req() req: CustomRequest,
+    @Body(new ValidationPipe({ whitelist: true }))
+    { ignoreEvents }: SyncExecDTO,
+    @Res() res: Response,
+  ) {
     try {
-      const result = await this.baseLocaleService.forcePublish(
+      const baseLocale = await this.baseLocaleService.forcePublish(
         req.baseLocale.id,
-      );
-      if (!result.success) {
-        throw new HttpException(result.error, HttpStatus.PRECONDITION_FAILED);
-      }
-      const baseLocale = await this.baseLocaleService.findOneOrFail(
-        req.baseLocale.id,
+        ignoreEvents ?? [],
       );
       res.status(HttpStatus.OK).json(baseLocale);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -562,23 +564,6 @@ export class BaseLocaleController {
     }
     await this.publicationService.resume(req.baseLocale.id);
     res.status(HttpStatus.OK).json(true);
-  }
-
-  @Get(':baseLocaleId/all/deleted')
-  @ApiOperation({
-    summary: 'Find all model deleted in Bal',
-    operationId: 'findAllDeleted',
-  })
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiResponse({
-    type: AllDeletedInBalDTO,
-    status: HttpStatus.OK,
-  })
-  @ApiBearerAuth('admin-token')
-  async findAllDeletedByBal(@Req() req: CustomRequest, @Res() res: Response) {
-    const allDeleted: AllDeletedInBalDTO =
-      await this.baseLocaleService.findAllDeletedByBal(req.baseLocale);
-    res.status(HttpStatus.OK).json(allDeleted);
   }
 
   @Get(':baseLocaleId/numeros')
@@ -652,29 +637,6 @@ export class BaseLocaleController {
     res.status(HttpStatus.OK).json(result);
   }
 
-  @Put(':baseLocaleId/numeros/batch/soft-delete')
-  @ApiOperation({
-    summary: 'Multi soft delete numeros',
-    operationId: 'softDeleteNumeros',
-  })
-  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
-  @ApiBody({ type: DeleteBatchNumeroDTO, required: true })
-  @ApiResponse({ status: HttpStatus.OK, type: BatchNumeroResponseDTO })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  @UseGuards(DraftBalGuard)
-  async softDeleteNumeros(
-    @Req() req: CustomRequest,
-    @Body() deleteBatchNumeroDto: DeleteBatchNumeroDTO,
-    @Res() res: Response,
-  ) {
-    await this.numeroService.softDeleteBatch(
-      req.baseLocale,
-      deleteBatchNumeroDto,
-    );
-    res.sendStatus(HttpStatus.NO_CONTENT);
-  }
-
   @Delete(':baseLocaleId/numeros/batch')
   @ApiOperation({
     summary: 'Multi delete numeros',
@@ -711,15 +673,7 @@ export class BaseLocaleController {
     const voies: Voie[] = await this.voieService.findMany({
       balId: req.baseLocale.id,
     });
-
-    const extendedVoie: ExtendedVoieDTO[] = await this.voieService.extendVoies(
-      req.baseLocale.id,
-      voies,
-    );
-    const voiesFiltered: ExtendedVoieDTO[] = extendedVoie.map((v) =>
-      filterComments(v, !req.isAdmin),
-    );
-    res.status(HttpStatus.OK).json(voiesFiltered);
+    res.status(HttpStatus.OK).json(voies);
   }
 
   @Get(':baseLocaleId/voies/geojson')
@@ -802,9 +756,42 @@ export class BaseLocaleController {
     const toponymes: Toponyme[] = await this.toponymeService.findMany({
       balId: req.baseLocale.id,
     });
-    const extendedToponyme: ExtentedToponymeDTO[] =
-      await this.toponymeService.extendToponymes(toponymes);
-    res.status(HttpStatus.OK).json(extendedToponyme);
+    res.status(HttpStatus.OK).json(toponymes);
+  }
+
+  @Get(':baseLocaleId/events')
+  @ApiOperation({
+    summary: 'Find all events for a Bal',
+    operationId: 'findBaseLocaleEvents',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: Event, isArray: true })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async findBaseLocaleEvents(@Req() req: CustomRequest, @Res() res: Response) {
+    const results = await this.eventService.findRootEventsByBal(
+      req.baseLocale.id,
+    );
+    res.status(HttpStatus.OK).json(results);
+  }
+
+  @Get(':baseLocaleId/events/synced')
+  @ApiOperation({
+    summary: 'Find all events synced with a given revision for a Bal',
+    operationId: 'findBaseLocaleSyncedEvents',
+  })
+  @ApiParam({ name: 'baseLocaleId', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: Event, isArray: true })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async findBaseLocaleSyncedEvents(
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+  ) {
+    const results = await this.eventService.findSyncedRootEventsByBal(
+      req.baseLocale.id,
+    );
+    res.status(HttpStatus.OK).json(results);
   }
 
   @Post(':baseLocaleId/toponymes')

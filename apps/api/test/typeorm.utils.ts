@@ -13,6 +13,7 @@ import {
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
 import { Position } from '@/shared/entities/position.entity';
+import { Event } from '@/shared/entities/event.entity';
 import { Client } from 'pg';
 import { Point, Repository } from 'typeorm';
 import { INestApplication } from '@nestjs/common';
@@ -31,11 +32,13 @@ const repositories: {
   voies: Repository<Voie>;
   bals: Repository<BaseLocale>;
   toponymes: Repository<Toponyme>;
+  events: Repository<Event>;
 } = {
   numeros: null,
   voies: null,
   bals: null,
   toponymes: null,
+  events: null,
 };
 
 export async function startPostgresContainer() {
@@ -63,15 +66,31 @@ export function getTypeORMModule() {
     password: postgresContainer.getPassword(),
     database: postgresContainer.getDatabase(),
     synchronize: true,
-    entities: [BaseLocale, Voie, Numero, Toponyme, Position],
+    entities: [BaseLocale, Voie, Numero, Toponyme, Position, Event],
   });
 }
 
+// Not every test's TestingModule imports every module (e.g. a spec testing
+// only PublicationModule has no Event/Numero/... repository in its DI
+// container) — repositories that aren't registered are left as `null`
+// rather than throwing, since a given spec only needs a subset of them.
+function tryGetRepository<T>(
+  app: INestApplication<any>,
+  entity: new () => T,
+): Repository<T> | null {
+  try {
+    return app.get(getRepositoryToken(entity));
+  } catch {
+    return null;
+  }
+}
+
 export function initTypeormRepository(app: INestApplication<any>) {
-  repositories.numeros = app.get(getRepositoryToken(Numero));
-  repositories.voies = app.get(getRepositoryToken(Voie));
-  repositories.bals = app.get(getRepositoryToken(BaseLocale));
-  repositories.toponymes = app.get(getRepositoryToken(Toponyme));
+  repositories.numeros = tryGetRepository(app, Numero);
+  repositories.voies = tryGetRepository(app, Voie);
+  repositories.bals = tryGetRepository(app, BaseLocale);
+  repositories.toponymes = tryGetRepository(app, Toponyme);
+  repositories.events = tryGetRepository(app, Event);
 }
 
 export function getTypeormRepository() {
@@ -79,10 +98,11 @@ export function getTypeormRepository() {
 }
 
 export async function deleteRepositories() {
-  await repositories.numeros.delete({});
-  await repositories.voies.delete({});
-  await repositories.bals.delete({});
-  await repositories.toponymes.delete({});
+  await repositories.events?.delete({});
+  await repositories.numeros?.delete({});
+  await repositories.voies?.delete({});
+  await repositories.bals?.delete({});
+  await repositories.toponymes?.delete({});
 }
 
 export async function stopPostgresContainer() {
