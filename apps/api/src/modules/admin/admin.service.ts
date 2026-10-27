@@ -17,24 +17,23 @@ import {
   RepublishReportStatusEnum,
   RepublishStatusEnum,
 } from './dto/republish_communes.dto';
-import { CacheService } from '@/shared/modules/cache/cache.service';
-import { PriorityEnum } from '@/shared/types/task.type';
-
-const REPUBLISH_REPORT_KEY_PREFIX = 'republish-communes-report:';
-const REPUBLISH_CURRENT_REPORT_KEY = 'republish-communes-current-report';
-// Au-delà de ce délai sans mise à jour, un lot "running" est considéré comme interrompu
-const REPUBLISH_STALE_DELAY_MS = 5 * 60 * 1000;
-import { PopulateService } from '../base_locale/sub_modules/populate/populate.service';
 import {
   BaseLocale,
   StatusBaseLocalEnum,
 } from '@/shared/entities/base_locale.entity';
+import { PopulateService } from '../base_locale/modules/populate/populate.service';
 import { Voie } from '@/shared/entities/voie.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Numero } from '@/shared/entities/numero.entity';
 import { VoieService } from '../voie/voie.service';
 import { ToponymeService } from '../toponyme/toponyme.service';
 import { NumeroService } from '../numeros/numero.service';
+import { CacheService } from '../cache/cache.service';
+
+const REPUBLISH_REPORT_KEY_PREFIX = 'republish-communes-report:';
+const REPUBLISH_CURRENT_REPORT_KEY = 'republish-communes-current-report';
+// Au-delà de ce délai sans mise à jour, un lot "running" est considéré comme interrompu
+const REPUBLISH_STALE_DELAY_MS = 5 * 60 * 1000;
 
 @Injectable()
 export class AdminService {
@@ -164,15 +163,8 @@ export class AdminService {
 
     try {
       const previousRevisionId = baseLocale.sync?.lastUploadedRevisionId;
-      // Priorité basse pour ne pas bloquer les autres tâches du cron
-      const result = await this.baseLocaleService.forcePublish(
-        baseLocale.id,
-        PriorityEnum.LOW,
-      );
-      if (!result.success) {
-        report.error = result.error;
-        return report;
-      }
+
+      await this.baseLocaleService.forcePublish(baseLocale.id);
 
       const updatedBaseLocale = await this.baseLocaleService.findOneOrFail(
         baseLocale.id,
@@ -183,7 +175,7 @@ export class AdminService {
           ? RepublishStatusEnum.PUBLISHED
           : RepublishStatusEnum.UNCHANGED;
     } catch (error) {
-      report.error = error.message || String(error);
+      report.error = String(error);
     }
 
     return report;
