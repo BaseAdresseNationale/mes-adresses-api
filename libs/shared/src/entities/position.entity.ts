@@ -12,7 +12,7 @@ import {
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
 import { ObjectId } from 'mongodb';
-import { Validate } from 'class-validator';
+import { IsMongoId, IsOptional, IsString, Validate } from 'class-validator';
 import { PointValidator } from '../validators/coord.validator';
 import { ValidatorBal } from '../validators/validator_bal.validator';
 
@@ -30,6 +30,8 @@ export enum PositionTypeEnum {
 @Entity({ name: 'positions' })
 export class Position {
   @ApiProperty()
+  @IsOptional()
+  @IsMongoId()
   @PrimaryColumn('varchar', { length: 24 })
   id?: string;
 
@@ -60,6 +62,8 @@ export class Position {
   type: PositionTypeEnum;
 
   @ApiProperty()
+  @IsOptional()
+  @IsString()
   @Column('text', { nullable: true })
   source?: string;
 

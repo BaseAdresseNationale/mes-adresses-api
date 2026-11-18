@@ -9,6 +9,7 @@ import {
   IsEnum,
   MaxLength,
   IsNotEmpty,
+  IsUUID,
 } from 'class-validator';
 
 import { TypeNumerotationEnum } from '@/shared/entities/voie.entity';
@@ -47,4 +48,9 @@ export class CreateVoieDTO {
   })
   @ApiProperty({ required: false, nullable: true })
   comment?: string;
+
+  @IsOptional()
+  @IsUUID()
+  @ApiProperty({ required: false, nullable: true })
+  banId?: string;
 }

@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ExtendedBaseLocaleDTO } from './extended_base_locale.dto';
+import {
+  ExtendedBaseLocaleDTO,
+  ExtendedBaseLocaleSafeDTO,
+} from './extended_base_locale.dto';
 import { Type } from 'class-transformer';
 
 export class PageBaseLocaleDTO {
@@ -17,7 +20,5 @@ export class PageBaseLocaleDTO {
     type: () => ExtendedBaseLocaleDTO,
     isArray: true,
   })
-  results?: Array<
-    ExtendedBaseLocaleDTO | Omit<ExtendedBaseLocaleDTO, 'token' | 'emails'>
-  >;
+  results?: Array<ExtendedBaseLocaleDTO | ExtendedBaseLocaleSafeDTO>;
 }

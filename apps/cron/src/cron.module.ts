@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -8,27 +8,16 @@ import { Numero } from '@/shared/entities/numero.entity';
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Position } from '@/shared/entities/position.entity';
 import { Cache } from '@/shared/entities/cache.entity';
-
-import { BullModule } from '@nestjs/bullmq';
-import { ScheduleTaskModule } from './modules/schedule_task/schedule_task.module';
-import { TaskModule } from './modules/task/task.module';
+import { CronService } from './cron.service';
+import { RemoveSoftDeleteBalTask } from './tasks/remove_soft_delete_bal.task';
+import { RemoveDemoBalTask } from './tasks/remove_demo_bal.task';
+import { UploadTracesTask } from './tasks/upload_traces.task';
+import { ResetCommunesForWebinaireTask } from './tasks/reset_communes_for_webinaire.task';
+import { S3Module } from '@/shared/modules/s3/s3.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    BullModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        connection: {
-          url: config.get('REDIS_URL'),
-        },
-        defaultJobOptions: {
-          removeOnComplete: true,
-          removeOnFail: true,
-        },
-      }),
-      inject: [ConfigService],
-    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -40,8 +29,17 @@ import { TaskModule } from './modules/task/task.module';
       }),
       inject: [ConfigService],
     }),
-    ScheduleTaskModule,
-    TaskModule,
+    TypeOrmModule.forFeature([BaseLocale]),
+    TypeOrmModule.forFeature([Voie]),
+    S3Module,
+  ],
+  providers: [
+    CronService,
+    RemoveSoftDeleteBalTask,
+    RemoveDemoBalTask,
+    UploadTracesTask,
+    ResetCommunesForWebinaireTask,
+    Logger,
   ],
 })
 export class CronModule {}
