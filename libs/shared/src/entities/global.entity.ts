@@ -5,7 +5,6 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Index,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -27,7 +26,6 @@ export class GlobalEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @Index({ where: 'deleted_at IS NULL' })
   @ApiProperty()
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date | null;
