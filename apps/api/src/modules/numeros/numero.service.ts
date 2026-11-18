@@ -514,8 +514,6 @@ export class NumeroService {
 
     // Si il y a plus d'un numéro qui a changé
     if (affected > 0 || positionTypeAffected > 0) {
-      // On met a jour le updatedAt de la BAL
-      await this.baseLocaleService.touch(baseLocale.id);
       // Si la voie a changé
       if (changes.voieId) {
         // On met a jour le updatedAt de la BAL
@@ -543,6 +541,8 @@ export class NumeroService {
           ),
         );
       }
+      // On met a jour le updatedAt de la BAL en dernier (sert de version aux tuiles)
+      await this.baseLocaleService.touch(baseLocale.id);
     }
 
     return { modifiedCount: affected, changes };
@@ -566,8 +566,6 @@ export class NumeroService {
     });
     // Si des numeros ont été archivés
     if (affected > 0) {
-      // On met a jour le updatedAt de la BAL
-      await this.baseLocaleService.touch(baseLocale.id);
       // On met a jour les centroid des voies des numeros archivé
       await Promise.all(
         voieIds.map((voidId) => this.voieService.calcCentroidAndBbox(voidId)),
@@ -580,6 +578,8 @@ export class NumeroService {
           ),
         );
       }
+      // On met a jour le updatedAt de la BAL en dernier (sert de version aux tuiles)
+      await this.baseLocaleService.touch(baseLocale.id);
     }
 
     return { modifiedCount: affected };

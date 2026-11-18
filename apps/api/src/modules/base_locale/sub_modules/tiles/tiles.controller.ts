@@ -9,6 +9,7 @@ import { promisify } from 'util';
 import { CustomRequest } from '@/lib/types/request.type';
 import { TilesService } from '@/modules/base_locale/sub_modules/tiles/tiles.service';
 import { GeoJsonCollectionType } from '@/modules/base_locale/sub_modules/tiles/types/features.type';
+import { getTilesEtag } from '@/modules/base_locale/sub_modules/tiles/utils/etag.utils';
 
 const gzip = promisify(zlib.gzip);
 
@@ -33,6 +34,17 @@ export class TilesController {
     @Param('y') y: string,
     @Res() res: Response,
   ) {
+    // Cache HTTP : le navigateur stocke la tuile mais la revalide toujours.
+    // Si la BAL n'a pas changé, on répond 304 sans requêter les voies/numéros/toponymes
+    const etag: string = getTilesEtag(req.baseLocale);
+    res.set({
+      ETag: etag,
+      'Cache-Control': 'private, no-cache',
+    });
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(HttpStatus.NOT_MODIFIED).send();
+    }
+
     const tile: number[] = [parseInt(x), parseInt(y), parseInt(z)];
     const {
       numeroPoints,
