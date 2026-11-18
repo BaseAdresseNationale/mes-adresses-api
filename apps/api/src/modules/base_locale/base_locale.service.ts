@@ -478,6 +478,8 @@ export class BaseLocaleService {
     await Promise.all(
       voiesCreated.map(({ id }) => this.voieService.calcCentroidAndBbox(id)),
     );
+    // On met a jour le updatedAt de la Bal (sert de version aux tuiles)
+    await this.touch(baseLocale.id);
     // On retourne la Bal
     return baseLocale;
   }
