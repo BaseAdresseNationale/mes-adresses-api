@@ -16,6 +16,7 @@ import {
 import { PositionTypeEnum } from '@/shared/entities/position.entity';
 
 import { BaseLocaleModule } from '@/modules/base_locale/base_locale.module';
+import { BaseLocaleService } from '@/modules/base_locale/base_locale.service';
 import { UpdateBatchNumeroDTO } from '@/modules/numeros/dto/update_batch_numero.dto';
 import { DeleteBatchNumeroDTO } from '@/modules/numeros/dto/delete_batch_numero.dto';
 import { CreateVoieDTO } from '@/modules/voie/dto/create_voie.dto';
@@ -99,6 +100,37 @@ describe('BASE LOCAL MODULE', () => {
   afterAll(async () => {
     await stopPostgresContainer();
     await app.close();
+  });
+
+  describe('BaseLocaleService.touch', () => {
+    it('updatedAt is strictly increasing when touched twice with the same date', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const baseLocaleService = app.get(BaseLocaleService);
+      const date = new Date('2024-06-01T10:00:00.123Z');
+
+      await baseLocaleService.touch(balId, date);
+      const balAfterFirst = await repositories.bals.findOneBy({ id: balId });
+      expect(balAfterFirst.updatedAt.getTime()).toEqual(date.getTime());
+
+      await baseLocaleService.touch(balId, date);
+      const balAfterSecond = await repositories.bals.findOneBy({ id: balId });
+      expect(balAfterSecond.updatedAt.getTime()).toEqual(date.getTime() + 1);
+    });
+
+    it('updatedAt never goes backwards', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const baseLocaleService = app.get(BaseLocaleService);
+      const date = new Date('2024-06-01T10:00:00.123Z');
+
+      await baseLocaleService.touch(balId, date);
+      await baseLocaleService.touch(
+        balId,
+        new Date('2024-06-01T09:00:00.000Z'),
+      );
+
+      const bal = await repositories.bals.findOneBy({ id: balId });
+      expect(bal.updatedAt.getTime()).toEqual(date.getTime() + 1);
+    });
   });
 
   describe('PUT /bases-locales/numeros/batch', () => {

@@ -95,6 +95,44 @@ describe('TILES MODULE', () => {
       expect(response.body).toEqual({});
     });
 
+    it('Return 304 when If-None-Match is a list containing the ETag', async () => {
+      const { balId } = await createBalWithNumero();
+      const etag = `W/"${balId}-${updatedAt.getTime()}"`;
+
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/tiles/${z}/${x}/${y}.pbf`)
+        .set('If-None-Match', `W/"${balId}-0", ${etag}`)
+        .expect(304);
+    });
+
+    it('Return 304 when If-None-Match is the strong equivalent', async () => {
+      const { balId } = await createBalWithNumero();
+
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/tiles/${z}/${x}/${y}.pbf`)
+        .set('If-None-Match', `"${balId}-${updatedAt.getTime()}"`)
+        .expect(304);
+    });
+
+    it('Return 304 when If-None-Match is *', async () => {
+      const { balId } = await createBalWithNumero();
+
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/tiles/${z}/${x}/${y}.pbf`)
+        .set('If-None-Match', '*')
+        .expect(304);
+    });
+
+    it('Return 200 when client sends Cache-Control: no-cache', async () => {
+      const { balId } = await createBalWithNumero();
+
+      await request(app.getHttpServer())
+        .get(`/bases-locales/${balId}/tiles/${z}/${x}/${y}.pbf`)
+        .set('If-None-Match', `W/"${balId}-${updatedAt.getTime()}"`)
+        .set('Cache-Control', 'no-cache')
+        .expect(200);
+    });
+
     it('Return 200 with new ETag after BAL modification', async () => {
       const { balId, numeroId } = await createBalWithNumero();
 

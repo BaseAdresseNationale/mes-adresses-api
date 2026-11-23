@@ -396,7 +396,9 @@ export class VoieService {
 
   private async calcCentroidAndBboxWithNumeros(voieId: string): Promise<void> {
     const res = await this.numeroService.findCentroidAndBboxVoie(voieId);
-    if (res) {
+    // Si les numéros de la voie n'ont aucune position, la requête renvoie
+    // une ligne avec centroid et polygon à null : on vide alors centroid et bbox
+    if (res?.centroid && res?.polygon) {
       const { centroid, polygon } = res;
       const bbox: number[] = turf.bbox(polygon);
       await this.voiesRepository.update({ id: voieId }, { centroid, bbox });

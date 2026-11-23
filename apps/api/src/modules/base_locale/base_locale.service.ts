@@ -786,7 +786,21 @@ export class BaseLocaleService {
     }
   }
 
+  // updatedAt sert de version aux tuiles (ETag) et à la détection des BAL à republier :
+  // il doit être strictement croissant à la milliseconde près, même si deux écritures
+  // tombent dans la même ms ou si l'horloge d'un conteneur est en retard.
+  // Postgres sérialise les UPDATE concurrents sur une même ligne et réévalue le GREATEST
+  // sur la dernière version, donc chaque touch donne une valeur distincte.
   touch(balId: string, updatedAt: Date = new Date()) {
-    return this.basesLocalesRepository.update({ id: balId }, { updatedAt });
+    return this.basesLocalesRepository
+      .createQueryBuilder()
+      .update(BaseLocale)
+      .set({
+        updatedAt: () =>
+          `GREATEST(:updatedAt::timestamp, date_trunc('milliseconds', updated_at) + interval '1 millisecond')`,
+      })
+      .setParameters({ updatedAt })
+      .where('id = :balId', { balId })
+      .execute();
   }
 }

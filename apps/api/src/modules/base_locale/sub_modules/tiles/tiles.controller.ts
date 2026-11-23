@@ -41,7 +41,9 @@ export class TilesController {
       ETag: etag,
       'Cache-Control': 'private, no-cache',
     });
-    if (req.headers['if-none-match'] === etag) {
+    // req.fresh compare If-None-Match à l'ETag de la réponse selon la RFC 9110
+    // (listes, *, comparaison faible W/) : l'ETag doit donc être posé avant
+    if (req.fresh) {
       return res.status(HttpStatus.NOT_MODIFIED).send();
     }
 
