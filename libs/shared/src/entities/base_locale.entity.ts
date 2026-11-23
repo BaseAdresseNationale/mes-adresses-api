@@ -1,6 +1,6 @@
 import { GlobalEntity } from './global.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { AfterLoad, Column, Entity, OneToMany } from 'typeorm';
+import { AfterLoad, Column, Entity, Index, OneToMany } from 'typeorm';
 import { Voie } from './voie.entity';
 import { Numero } from './numero.entity';
 import { Toponyme } from './toponyme.entity';
@@ -77,6 +77,7 @@ export class BaseLocale extends GlobalEntity {
   @Column('json', { name: 'commune_noms_alt', nullable: true })
   communeNomsAlt: Record<string, string> | null;
 
+  @Index('IDX_bases_locales_commune')
   @ApiProperty()
   @Column('varchar', { nullable: false, length: 5 })
   commune: string;

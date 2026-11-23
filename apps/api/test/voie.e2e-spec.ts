@@ -20,6 +20,7 @@ import {
   createdAt,
   createBal,
   createNumero,
+  createPositions,
   createVoie,
   deleteRepositories,
   getTypeORMModule,
@@ -607,6 +608,30 @@ describe('VOIE MODULE', () => {
       expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
 
+    it('Return 200 with null centroid and bbox when numeros have no positions', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, {
+        nom: 'rue de la paix',
+        deletedAt: updatedAt,
+      });
+      const numeroId = await createNumero(balId, voieId, {
+        numero: 1,
+        deletedAt: updatedAt,
+      });
+
+      const response = await request(app.getHttpServer())
+        .put(`/voies/${voieId}/restore`)
+        .send({ numerosIds: [numeroId] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(response.body.centroid).toBeNull();
+      expect(response.body.bbox).toBeNull();
+
+      const bal = await repositories.bals.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
+    });
+
     it('Return 403', async () => {
       const balId = await createBal({ nom: 'bal', commune: '91400' });
       const voieId = await createVoie(balId, {
@@ -637,6 +662,59 @@ describe('VOIE MODULE', () => {
 
       const bal = await repositories.bals.findOneBy({ id: balId });
       expect(bal.updatedAt.toISOString()).toEqual(updatedAt.toISOString());
+    });
+  });
+
+  describe('PUT /voies/:voieId/fusion', () => {
+    it('Return 200 and touch BAL and recompute centroid', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const otherVoieId = await createVoie(balId, { nom: 'rue de paris' });
+      const numeroId = await createNumero(balId, otherVoieId, {
+        numero: 1,
+        positions: [createPositions([8, 42])],
+      });
+
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}/fusion`)
+        .send({ otherVoieIds: [otherVoieId] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const numero = await repositories.numeros.findOneBy({ id: numeroId });
+      expect(numero.voieId).toEqual(voieId);
+
+      const voie = await repositories.voies.findOneBy({ id: voieId });
+      expect(voie.centroid).toEqual({ type: 'Point', coordinates: [8, 42] });
+      expect(voie.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
+
+      const otherVoie = await repositories.voies.findOneBy({
+        id: otherVoieId,
+      });
+      expect(otherVoie).toBeNull();
+
+      const bal = await repositories.bals.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
+    });
+
+    it('Return 200 with null centroid and bbox when numeros have no positions', async () => {
+      const balId = await createBal({ nom: 'bal', commune: '91400' });
+      const voieId = await createVoie(balId, { nom: 'rue de la paix' });
+      const otherVoieId = await createVoie(balId, { nom: 'rue de paris' });
+      await createNumero(balId, otherVoieId, { numero: 1 });
+
+      await request(app.getHttpServer())
+        .put(`/voies/${voieId}/fusion`)
+        .send({ otherVoieIds: [otherVoieId] })
+        .set('authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const voie = await repositories.voies.findOneBy({ id: voieId });
+      expect(voie.centroid).toBeNull();
+      expect(voie.bbox).toBeNull();
+
+      const bal = await repositories.bals.findOneBy({ id: balId });
+      expect(bal.updatedAt.toISOString()).not.toEqual(updatedAt.toISOString());
     });
   });
 

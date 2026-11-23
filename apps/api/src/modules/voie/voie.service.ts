@@ -290,7 +290,7 @@ export class VoieService {
         id: In(numerosIds),
       });
       // On met a jour le centroid de la voie
-      this.calcCentroidAndBbox(voie.id);
+      await this.calcCentroidAndBbox(voie.id);
     }
     // On met a jour le updatedAt de la BAL
     await this.baseLocaleService.touch(voie.balId);
@@ -357,6 +357,11 @@ export class VoieService {
       { voieId: voie.id },
     );
     await this.deleteMany({ id: In(otherVoieIds) });
+    // On recalcule le centroid de la voie qui a récupéré les numéros
+    await this.calcCentroidAndBbox(voie.id);
+    // On met a jour le updatedAt de la voie et de la BAL
+    await this.touch(voie.id);
+    await this.baseLocaleService.touch(voie.balId);
 
     return this.findOneOrFail(voie.id);
   }
@@ -391,7 +396,9 @@ export class VoieService {
 
   private async calcCentroidAndBboxWithNumeros(voieId: string): Promise<void> {
     const res = await this.numeroService.findCentroidAndBboxVoie(voieId);
-    if (res) {
+    // Si les numéros de la voie n'ont aucune position, la requête renvoie
+    // une ligne avec centroid et polygon à null : on vide alors centroid et bbox
+    if (res?.centroid && res?.polygon) {
       const { centroid, polygon } = res;
       const bbox: number[] = turf.bbox(polygon);
       await this.voiesRepository.update({ id: voieId }, { centroid, bbox });
