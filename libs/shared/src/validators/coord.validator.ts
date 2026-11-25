@@ -2,7 +2,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import * as proj from '@etalab/project-legal';
+import proj from '@etalab/project-legal';
 import { Point } from '@turf/turf';
 import { getValidateurBalColumnErrors } from '../utils/validateur-bal.utils';
 

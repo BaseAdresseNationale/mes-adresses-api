@@ -1,9 +1,9 @@
-import * as csvWriter from 'csv-write-stream';
-import * as getStream from 'get-stream';
-import * as intoStream from 'into-stream';
+import csvWriter from 'csv-write-stream';
+import getStream from 'get-stream';
+import intoStream from 'into-stream';
 import { keyBy } from 'lodash';
-import * as pumpify from 'pumpify';
-import * as proj from '@etalab/project-legal';
+import pumpify from 'pumpify';
+import proj from '@etalab/project-legal';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Numero } from '@/shared/entities/numero.entity';

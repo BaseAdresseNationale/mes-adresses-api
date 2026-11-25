@@ -1,5 +1,5 @@
-import * as cadastreCommune from '../../../../../cadastre-communes.json';
-import * as communeOutreMerMapStyles from '../../../../../com-maps-styles.json';
+import cadastreCommune from '../../../../../cadastre-communes.json';
+import communeOutreMerMapStyles from '../../../../../com-maps-styles.json';
 
 const setCadastreCommune = new Set(cadastreCommune);
 

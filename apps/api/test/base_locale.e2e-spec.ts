@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuid } from 'uuid';

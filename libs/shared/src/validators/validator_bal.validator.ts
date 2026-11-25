@@ -3,7 +3,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
-import * as languesRegionales from '@ban-team/shared-data/langues-regionales.json';
+import languesRegionales from '@ban-team/shared-data/langues-regionales.json';
 import { getValidateurBalColumnErrors } from '../utils/validateur-bal.utils';
 
 const supportedNomAlt = new Set(languesRegionales.map((l) => l.code));

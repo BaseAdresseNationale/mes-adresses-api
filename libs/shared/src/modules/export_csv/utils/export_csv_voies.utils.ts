@@ -1,7 +1,7 @@
-import * as csvWriter from 'csv-write-stream';
-import * as getStream from 'get-stream';
-import * as intoStream from 'into-stream';
-import * as pumpify from 'pumpify';
+import csvWriter from 'csv-write-stream';
+import getStream from 'get-stream';
+import intoStream from 'into-stream';
+import pumpify from 'pumpify';
 
 import { Toponyme } from '@/shared/entities/toponyme.entity';
 import { Numero } from '@/shared/entities/numero.entity';
