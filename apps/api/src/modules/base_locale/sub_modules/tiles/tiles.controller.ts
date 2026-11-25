@@ -1,7 +1,7 @@
 import { Controller, Res, Req, Get, Param, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 import { ApiParam, ApiTags, ApiOperation } from '@nestjs/swagger';
-import * as geojsonvt from 'geojson-vt';
+import geojsonvt from 'geojson-vt';
 import * as vtpbf from 'vt-pbf';
 import * as zlib from 'zlib';
 import { promisify } from 'util';

@@ -153,10 +153,10 @@ describe('TASK MODULE', () => {
   });
 
   afterEach(async () => {
-    await numeroRepository.delete({});
-    await voieRepository.delete({});
-    await balRepository.delete({});
-    await toponymeRepository.delete({});
+    await numeroRepository.createQueryBuilder().delete().execute();
+    await voieRepository.createQueryBuilder().delete().execute();
+    await balRepository.createQueryBuilder().delete().execute();
+    await toponymeRepository.createQueryBuilder().delete().execute();
     axiosMock.reset();
   });
 

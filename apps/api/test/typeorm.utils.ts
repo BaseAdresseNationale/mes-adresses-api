@@ -79,10 +79,10 @@ export function getTypeormRepository() {
 }
 
 export async function deleteRepositories() {
-  await repositories.numeros.delete({});
-  await repositories.voies.delete({});
-  await repositories.bals.delete({});
-  await repositories.toponymes.delete({});
+  await repositories.numeros.createQueryBuilder().delete().execute();
+  await repositories.voies.createQueryBuilder().delete().execute();
+  await repositories.bals.createQueryBuilder().delete().execute();
+  await repositories.toponymes.createQueryBuilder().delete().execute();
 }
 
 export async function stopPostgresContainer() {

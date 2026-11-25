@@ -1,4 +1,4 @@
-import * as sharp from 'sharp';
+import sharp, { Metadata } from 'sharp';
 
 const BLASON_BUCKET_URL =
   'https://base-adresse-locale-prod-blasons-communes.s3.fr-par.scw.cloud';
@@ -49,7 +49,7 @@ export const getCommuneFlagUrlFromBal = async (
 
 type CommuneFlagBase64 = {
   dataUrl: string;
-  metadata: sharp.Metadata;
+  metadata: Metadata;
 };
 
 export const getCommuneFlagBase64PNG = async (

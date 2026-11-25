@@ -1,6 +1,6 @@
 import { keyBy, flatten } from 'lodash';
-import * as allCommunes from '@etalab/decoupage-administratif/data/communes.json';
-import * as communesPrecedentesByChefLieu from '../../../../communes-precedentes-by-chef-lieu.json';
+import allCommunes from '@etalab/decoupage-administratif/data/communes.json';
+import communesPrecedentesByChefLieu from '../../../../communes-precedentes-by-chef-lieu.json';
 import { CommuneCOG, CommuneTypeEnum } from '../types/cog.type';
 
 // Commune actuelle => commune qui existe toujours de nos jour
